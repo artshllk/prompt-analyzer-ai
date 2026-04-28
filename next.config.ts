@@ -1,7 +1,15 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  // Use Turbopack (default in Next.js 16)
+  turbopack: {},
 
-export default nextConfig;
+  // Stripe webhook requires raw body
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
+  },
+}
+
+export default nextConfig
