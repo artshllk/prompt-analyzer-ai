@@ -55,7 +55,7 @@ export default async function InsightsPage() {
               plan="pro_monthly"
               className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all glow-violet cursor-pointer"
             >
-              Upgrade to Pro — $5/mo
+              Upgrade to Pro — $4.99/mo
             </UpgradeButton>
           </div>
         </div>

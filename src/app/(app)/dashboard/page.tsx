@@ -230,7 +230,7 @@ export default async function DashboardPage({
               <h3 className="font-bold text-[#f0f4ff] mb-1">See your full pattern report</h3>
               <p className="text-sm text-[#8b9cc8] max-w-sm">
                 Pro users get weekly insight reports: your most common prompt gaps, your improvement
-                trend, and personalized tips. Starting at $5/mo.
+                trend, and personalized tips. Starting at $4.99/mo.
               </p>
             </div>
             <UpgradeButton

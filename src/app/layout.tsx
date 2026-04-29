@@ -15,10 +15,6 @@ export const metadata: Metadata = {
   keywords: ['prompt improver', 'AI prompt improver', 'prompt analyzer', 'prompt engineering', 'improve AI prompts', 'ChatGPT prompts', 'better prompts', 'prompt optimization', 'how to write better prompts'],
   authors: [{ name: 'Deepclario', url: 'https://deepclario.com' }],
   creator: 'Deepclario',
-  icons: {
-    icon: '/logo.png',
-    apple: '/apple-touch-icon.png',
-  },
   openGraph: {
     type: 'website',
     locale: 'en_US',

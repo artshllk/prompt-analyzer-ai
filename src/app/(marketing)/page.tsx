@@ -66,7 +66,7 @@ const structuredData = {
           name: 'Is Deepclario free to use?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. The free plan includes 25 prompt analyses per month with full AI improvement. The Pro plan ($5/month) adds unlimited analyses, full history, and weekly insight reports.',
+            text: 'Yes. The free plan includes 25 prompt analyses per month with full AI improvement. The Pro plan ($4.99/month) adds unlimited analyses, full history, and weekly insight reports.',
           },
         },
         {
