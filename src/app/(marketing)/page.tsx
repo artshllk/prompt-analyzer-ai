@@ -177,10 +177,10 @@ export default function LandingPage() {
           </div>
 
           <div className="relative max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-500/20 bg-violet-500/5 text-xs font-medium text-violet-400 mb-6">
+            {/* <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-500/20 bg-violet-500/5 text-xs font-medium text-violet-400 mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
               AI prompt coach for ChatGPT, Claude &amp; Gemini
-            </div>
+            </div> */}
 
             <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-5">
               Your AI prompts are the problem.{' '}
@@ -201,7 +201,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 href="#demo"
-                className="px-7 py-3.5 rounded-2xl border border-[#2d4070] text-[#8b9cc8] hover:border-[#4a5a80] hover:text-[#f0f4ff] font-semibold transition-all text-base"
+                className="px-7 py-3.5 rounded-2xl border border-[#2d4070] text-[#8b9cc8] hover:border-[#4a5a80] hover:text-[#f0f4ff] font-semibold transition-allbase"
               >
                 See it in action
               </Link>
