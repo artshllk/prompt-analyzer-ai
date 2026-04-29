@@ -49,7 +49,14 @@ function LoginInner() {
 
     setLoading(false)
     if (error) {
-      setError(error.message)
+      const msg = error.message.toLowerCase()
+      if (msg.includes('rate') || msg.includes('limit')) {
+        setError('Too many requests. Please wait a minute and try again.')
+      } else if (msg.includes('email')) {
+        setError("We couldn't send the sign-in link. Try again or use Google.")
+      } else {
+        setError('Something went wrong. Please try again.')
+      }
     } else {
       setSent(true)
     }
