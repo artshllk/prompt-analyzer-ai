@@ -69,10 +69,16 @@ export function PromptEditor({
           className="w-full bg-transparent resize-none px-5 py-4 text-[#f0f4ff] placeholder:text-[#76819d] leading-relaxed outline-none disabled:opacity-60"
         />
         <div className="flex items-center justify-between px-5 py-3 border-t border-[#1e2d4a]">
-          <span className={`text-xs ${charCount > 2000 ? 'text-amber-400' : 'text-[#4a5a80]'}`}>
+          <span className={`text-xs ${charCount > 2000 ? 'text-amber-400' : 'text-[#8b9cc8]'}`}>
             {charCount} chars
           </span>
-          <span className="text-xs text-[#2d4070]">Enter to analyze · Shift+Enter for new line</span>
+          <span className="hidden sm:flex items-center gap-1.5 text-xs text-[#8b9cc8]">
+            <kbd className="px-1.5 py-0.5 rounded bg-[#1e2d4a] text-[#cdd5ee] font-mono text-[10px] border border-[#2d4070]">Enter</kbd>
+            <span className="text-[#8b9cc8]">to analyze</span>
+            <span className="text-[#2d4070] mx-0.5">·</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-[#1e2d4a] text-[#cdd5ee] font-mono text-[10px] border border-[#2d4070]">Shift + Enter</kbd>
+            <span className="text-[#8b9cc8]">for new line</span>
+          </span>
         </div>
       </div>
 
