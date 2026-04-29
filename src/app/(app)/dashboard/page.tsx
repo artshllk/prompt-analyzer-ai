@@ -227,7 +227,7 @@ export default async function DashboardPage({
           <div className="absolute -top-px left-1/2 -translate-x-1/2 w-48 h-px bg-gradient-to-r from-transparent via-violet-500 to-transparent" />
           <div className="flex items-start justify-between gap-6">
             <div>
-              <h3 className="text-gray-200 font-bold text-[#f0f4ff] mb-1">See your full pattern report</h3>
+              <h3 className="font-bold text-[#f0f4ff] mb-1">See your full pattern report</h3>
               <p className="text-sm text-[#8b9cc8] max-w-sm">
                 Pro users get weekly insight reports: your most common prompt gaps, your improvement
                 trend, and personalized tips. Starting at $5/mo.

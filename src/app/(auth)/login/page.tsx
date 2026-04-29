@@ -106,8 +106,8 @@ function LoginInner() {
             </div>
           ) : (
             <>
-              <h1 className="text-xl font-bold text-[#f0f4ff] mb-1">Welcome to Deepclario</h1>
-              <p className="text-sm text-[#8b9cc8] mb-6">One click to start. We&apos;ll create your account automatically.</p>
+              <h1 className="text-xl font-bold text-[#f0f4ff] mb-1">Sign in to Deepclario</h1>
+              <p className="text-sm text-[#8b9cc8] mb-6">New? An account is created automatically on first sign in.</p>
 
               <button
                 onClick={handleGoogle}

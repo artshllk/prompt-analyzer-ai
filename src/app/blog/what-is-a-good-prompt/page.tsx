@@ -1,0 +1,210 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import Image from 'next/image'
+
+export const metadata: Metadata = {
+  title: 'What Makes a Good AI Prompt? 5 Things Every Strong Prompt Has',
+  description: 'A good AI prompt has 5 things: a clear goal, enough context, a specified format, defined constraints, and ideally an example. Learn what each one means and how to add them.',
+  alternates: { canonical: 'https://deepclario.com/blog/what-is-a-good-prompt' },
+  openGraph: {
+    title: 'What Makes a Good AI Prompt? 5 Things Every Strong Prompt Has',
+    description: 'Learn the 5 elements every good AI prompt needs — with examples and a free tool to score yours.',
+    url: 'https://deepclario.com/blog/what-is-a-good-prompt',
+  },
+}
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: 'What Makes a Good AI Prompt? 5 Things Every Strong Prompt Has',
+  description: 'A good AI prompt has 5 elements: goal clarity, context, format, constraints, and examples.',
+  author: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  datePublished: '2026-04-01',
+  dateModified: '2026-04-29',
+  mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://deepclario.com/blog/what-is-a-good-prompt' },
+}
+
+const DIMENSIONS = [
+  {
+    n: 1,
+    title: 'Goal clarity',
+    slug: 'goal-clarity',
+    weight: '20 points',
+    question: 'Does the AI know exactly what you want?',
+    weak: 'Help me with my email',
+    strong: 'Rewrite this email to be more direct and cut the length by half. Keep the main ask in the first sentence.',
+    tip: 'The test: could 10 different people read your prompt and imagine 10 different outputs? If yes, your goal is not clear enough.',
+  },
+  {
+    n: 2,
+    title: 'Context',
+    slug: 'context',
+    weight: '20 points',
+    question: 'Does the AI have the background it needs?',
+    weak: 'Write a bio for my website',
+    strong: 'Write a professional bio for my personal website. I\'m a freelance UX designer, 6 years of experience, focused on fintech clients. I want to come across as approachable and credible, not corporate.',
+    tip: 'Context is the who, what, and why. Without it, the AI writes for a hypothetical person who probably isn\'t you.',
+  },
+  {
+    n: 3,
+    title: 'Format',
+    slug: 'format',
+    weight: '20 points',
+    question: 'Have you specified what the output should look like?',
+    weak: 'Give me ideas for blog posts',
+    strong: 'Give me 5 blog post ideas for a developer tools company. Format as a numbered list with: title, target reader, and one sentence on what makes it interesting.',
+    tip: 'Format means: how many items, what structure, what length. If you don\'t specify, you\'ll get whatever the model defaults to — which is usually too long.',
+  },
+  {
+    n: 4,
+    title: 'Constraints',
+    slug: 'constraints',
+    weight: '20 points',
+    question: 'Have you told the AI what to avoid or stay within?',
+    weak: 'Write a tagline for my product',
+    strong: 'Write 5 tagline options for a password manager aimed at families. Max 8 words each. Avoid fear-based messaging. Don\'t use the words "secure", "safe", or "protect".',
+    tip: 'Constraints are what separates a useful prompt from an open-ended one. Banning specific words, setting length limits, or ruling out tones gives the AI less room to go wrong.',
+  },
+  {
+    n: 5,
+    title: 'Examples',
+    slug: 'examples',
+    weight: '20 points',
+    question: 'Have you shown the AI what good looks like?',
+    weak: 'Write a product update email in a friendly tone',
+    strong: 'Write a product update email in a friendly tone. Here\'s an example of the style I want: "We just shipped something small that will save you 20 minutes a week. Here\'s what changed and why." Match the casual directness — no corporate language, no jargon.',
+    tip: 'An example is the highest-value thing you can add to a prompt. It removes all ambiguity about tone, voice, and length in a single sentence.',
+  },
+]
+
+export default function WhatIsAGoodPromptPage() {
+  return (
+    <div className="min-h-screen bg-[#0a0e1a] text-[#f0f4ff]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+
+      {/* Nav */}
+      <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 border-b border-[#1e2d4a]/60 glass">
+        <Link href="/" className="flex items-center gap-2.5">
+          <Image src="/logo.png" alt="Deepclario" width={28} height={28} className="rounded-md" />
+          <span className="font-bold text-[#f0f4ff] tracking-tight">Deepclario</span>
+        </Link>
+        <Link href="/playground" className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all">
+          Try free
+        </Link>
+      </header>
+
+      <main className="max-w-2xl mx-auto px-6 pt-28 pb-20">
+        <div className="mb-10">
+          <Link href="/blog/what-is-prompt-engineering" className="text-xs text-violet-400 hover:text-violet-300 transition-colors">
+            ← What is prompt engineering?
+          </Link>
+          <h1 className="text-3xl md:text-4xl font-bold mt-4 mb-4 leading-tight">
+            What Makes a Good AI Prompt? 5 Things Every Strong Prompt Has
+          </h1>
+          <p className="text-[#8b9cc8] leading-relaxed mb-3">
+            A good prompt isn&apos;t about using magic words or following a rigid template. It&apos;s about giving
+            the AI enough information to do exactly what you need — no more guessing, no more generic output.
+          </p>
+          <p className="text-[#8b9cc8] leading-relaxed">
+            Every prompt Deepclario analyzes is scored across 5 dimensions, each worth 20 points. Here&apos;s
+            what each one means, why it matters, and how to add it to your prompts.
+          </p>
+        </div>
+
+        {/* Score breakdown */}
+        <div className="glass rounded-2xl border border-[#1e2d4a] p-5 mb-12">
+          <p className="text-xs font-semibold text-[#4a5a80] uppercase tracking-wider mb-3">How prompts are scored (0–100)</p>
+          <div className="space-y-2">
+            {DIMENSIONS.map(d => (
+              <div key={d.n} className="flex items-center gap-3">
+                <span className="text-xs text-[#8b9cc8] w-32 shrink-0">{d.title}</span>
+                <div className="flex-1 h-1.5 rounded-full bg-[#1e2d4a]">
+                  <div className="h-full rounded-full bg-violet-500/60" style={{ width: '20%' }} />
+                </div>
+                <span className="text-xs text-[#4a5a80] w-16 text-right shrink-0">{d.weight}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-14">
+          {DIMENSIONS.map((d) => (
+            <div key={d.n} id={d.slug}>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                  {d.n}
+                </span>
+                <h2 className="text-xl font-bold text-[#f0f4ff]">{d.title}</h2>
+              </div>
+
+              <p className="text-sm text-violet-300 mb-4 font-medium">{d.question}</p>
+
+              <div className="grid md:grid-cols-2 gap-3 mb-4">
+                <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+                  <p className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-2">Missing this</p>
+                  <p className="text-sm text-[#8b9cc8] italic">&ldquo;{d.weak}&rdquo;</p>
+                </div>
+                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+                  <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">With it</p>
+                  <p className="text-sm text-[#f0f4ff] leading-relaxed">{d.strong}</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-[#8b9cc8] leading-relaxed border-l-2 border-violet-500/40 pl-4">
+                {d.tip}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* The 100-point prompt */}
+        <div className="mt-14 rounded-2xl border border-violet-500/30 bg-violet-600/8 p-6">
+          <h2 className="text-lg font-bold text-[#f0f4ff] mb-3">What a 100-point prompt looks like</h2>
+          <p className="text-sm text-[#8b9cc8] leading-relaxed mb-4">
+            A perfect score means all 5 dimensions are fully covered. In practice, most prompts score between
+            60–80 after one round of improvement. Here&apos;s an example that hits all 5:
+          </p>
+          <div className="rounded-xl border border-[#2d4070] bg-[#0a0e1a] p-4">
+            <p className="text-sm text-[#f0f4ff] leading-relaxed">
+              Act as a senior copywriter with experience in B2B SaaS marketing. Write a 3-paragraph case study
+              introduction for a company that reduced customer churn by 40% using our analytics tool. Target
+              reader: a VP of Customer Success at a 100–500 person SaaS company. Paragraph 1: the problem they
+              faced. Paragraph 2: what they tried before and why it didn&apos;t work. Paragraph 3: how they
+              discovered our tool. Avoid superlatives. Use concrete numbers. Do not mention the product name
+              in the first paragraph.
+            </p>
+          </div>
+          <p className="text-xs text-[#4a5a80] mt-3">
+            Role ✓ · Context ✓ · Format ✓ · Constraints ✓ · Implied example style ✓
+          </p>
+        </div>
+
+        <div className="mt-12 pt-8 border-t border-[#1e2d4a] space-y-4">
+          <h2 className="text-lg font-bold text-[#f0f4ff]">Score your own prompt</h2>
+          <p className="text-sm text-[#8b9cc8]">
+            Paste any prompt into Deepclario and see which of these 5 dimensions are missing.
+            You&apos;ll get a score, a breakdown, and a rewritten version — free, no account needed.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/tools/prompt-analyzer"
+              className="inline-block px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all glow-violet"
+            >
+              Analyze my prompt →
+            </Link>
+            <Link
+              href="/blog/prompt-engineering-examples"
+              className="inline-block px-5 py-2.5 rounded-xl border border-[#2d4070] text-[#8b9cc8] hover:text-[#f0f4ff] hover:border-[#4a5a80] text-sm font-medium transition-all"
+            >
+              See real examples →
+            </Link>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}

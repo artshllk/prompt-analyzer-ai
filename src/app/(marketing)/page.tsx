@@ -179,7 +179,7 @@ export default function LandingPage() {
           <div className="relative max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-500/20 bg-violet-500/5 text-xs font-medium text-violet-400 mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-              Free prompt analyzer — no account required
+              AI prompt coach for ChatGPT, Claude &amp; Gemini
             </div>
 
             <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-5">
@@ -208,7 +208,7 @@ export default function LandingPage() {
             </div>
 
             <p className="text-xs text-[#4a5a80]">
-              No account needed to try · Free tier: 25 analyses/month · No credit card ever
+              Free to try — no account or credit card required
             </p>
           </div>
         </section>
@@ -423,8 +423,8 @@ export default function LandingPage() {
         {/* Features */}
         <section className="py-20 px-6 max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-[#f0f4ff] mb-3">Everything you need to master prompts</h2>
-            <p className="text-[#8b9cc8]">Built for engineers, researchers, writers, and anyone who uses AI seriously.</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-[#f0f4ff] mb-3">How it works under the hood</h2>
+            <p className="text-[#8b9cc8]">Three things that make Deepclario different from a simple rewriter.</p>
           </div>
           <FeatureCards />
         </section>
@@ -432,8 +432,8 @@ export default function LandingPage() {
         {/* Pricing */}
         <section id="pricing" className="py-20 px-6 bg-[#080c18]">
           <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-[#f0f4ff] mb-3">Simple, honest pricing</h2>
-            <p className="text-[#8b9cc8]">Start free. No credit card. Upgrade only when you need more.</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-[#f0f4ff] mb-3">Pricing</h2>
+            <p className="text-[#8b9cc8]">Free to start. Upgrade when you want more.</p>
           </div>
           <PricingSection />
         </section>
@@ -450,18 +450,18 @@ export default function LandingPage() {
         <section className="py-20 px-6 text-center bg-[#080c18]">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-[#f0f4ff] mb-4">
-              Ready to write prompts that <span className="gradient-text">actually work?</span>
+              Try it on your next prompt
             </h2>
             <p className="text-[#8b9cc8] mb-8 max-w-lg mx-auto">
-              Paste your first prompt and see your score in under 30 seconds. No account needed to try.
+              Paste anything — rough draft, one-liner, or half-finished idea. You&apos;ll see your score in seconds.
             </p>
             <Link
               href="/playground"
               className="inline-block px-8 py-4 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white text-lg font-bold transition-all glow-violet"
             >
-              Score my prompt free →
+              Open the playground →
             </Link>
-            <p className="text-xs text-[#4a5a80] mt-4">No signup required · Free tier: 25 analyses/month</p>
+            <p className="text-xs text-[#4a5a80] mt-4">No account needed to start</p>
           </div>
         </section>
 
@@ -490,6 +490,9 @@ export default function LandingPage() {
                 <ul className="space-y-2 text-xs text-[#4a5a80]">
                   <li><Link href="/blog/what-is-prompt-engineering" className="hover:text-[#8b9cc8] transition-colors">What is Prompt Engineering?</Link></li>
                   <li><Link href="/blog/how-to-write-better-prompts" className="hover:text-[#8b9cc8] transition-colors">How to Write Better Prompts</Link></li>
+                  <li><Link href="/blog/chatgpt-prompt-tips" className="hover:text-[#8b9cc8] transition-colors">10 ChatGPT Prompt Tips</Link></li>
+                  <li><Link href="/blog/prompt-engineering-examples" className="hover:text-[#8b9cc8] transition-colors">Prompt Engineering Examples</Link></li>
+                  <li><Link href="/blog/what-is-a-good-prompt" className="hover:text-[#8b9cc8] transition-colors">What Makes a Good Prompt?</Link></li>
                 </ul>
               </div>
               <div>
@@ -501,7 +504,7 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="border-t border-[#1e2d4a] pt-6 text-center text-xs text-[#4a5a80]">
-              © 2026 Deepclario. Built for the serious AI user.
+              © 2026 Deepclario
             </div>
           </div>
         </footer>
