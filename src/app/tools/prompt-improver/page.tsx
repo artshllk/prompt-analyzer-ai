@@ -3,8 +3,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'Free AI Prompt Improver — Rewrite Any Prompt Instantly',
-  description: 'Paste any AI prompt and get an improved version in seconds. Deepclario analyzes goal clarity, context, format, constraints, and examples — then rewrites using the CRAFT framework.',
+  title: 'AI Prompt Improver — Rewrite Any Prompt for Better Results',
+  description: 'Paste any AI prompt and get an improved version in seconds. Deepclario scores it across 5 dimensions and rewrites it using the CRAFT framework. Works with ChatGPT, Claude, and Gemini.',
   alternates: { canonical: 'https://deepclario.com/tools/prompt-improver' },
   openGraph: {
     title: 'Free AI Prompt Improver',

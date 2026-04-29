@@ -3,8 +3,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'Free AI Prompt Analyzer — Score Your Prompt in Seconds',
-  description: 'Analyze any AI prompt and get a detailed clarity score across 5 dimensions. Free prompt analyzer for ChatGPT, Claude, and Gemini users. No signup required.',
+  title: 'AI Prompt Analyzer — Score and Improve Your Prompts',
+  description: 'Analyze any AI prompt and get a detailed clarity score across 5 dimensions. See exactly what is weak and why — then get a rewritten version that performs better.',
   alternates: { canonical: 'https://deepclario.com/tools/prompt-analyzer' },
   openGraph: {
     title: 'Free AI Prompt Analyzer',
