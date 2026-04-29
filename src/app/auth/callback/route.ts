@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 
 function getOrigin(req: NextRequest): string {
-  // In production behind Vercel, req.url's origin can be the internal deployment URL.
-  // Trust the forwarded headers instead so cookies and redirects target the public domain.
   const forwardedHost = req.headers.get('x-forwarded-host')
   const forwardedProto = req.headers.get('x-forwarded-proto') ?? 'https'
   if (forwardedHost) return `${forwardedProto}://${forwardedHost}`
@@ -34,16 +31,20 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  const cookieStore = await cookies()
+  // Build the response upfront so cookies set by Supabase get attached to it
+  const response = NextResponse.redirect(`${origin}${next}`)
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() { return cookieStore.getAll() },
+        getAll() {
+          return req.cookies.getAll()
+        },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
+            response.cookies.set(name, value, options)
           )
         },
       },
@@ -52,10 +53,12 @@ export async function GET(req: NextRequest) {
 
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) return NextResponse.redirect(`${origin}${next}`)
-    const url = new URL(`${origin}/auth/auth-error`)
-    url.searchParams.set('reason', error.message)
-    return NextResponse.redirect(url)
+    if (error) {
+      const url = new URL(`${origin}/auth/auth-error`)
+      url.searchParams.set('reason', error.message)
+      return NextResponse.redirect(url)
+    }
+    return response
   }
 
   if (tokenHash && type) {
@@ -63,10 +66,12 @@ export async function GET(req: NextRequest) {
       type: type as 'magiclink' | 'signup' | 'recovery' | 'email_change' | 'email',
       token_hash: tokenHash,
     })
-    if (!error) return NextResponse.redirect(`${origin}${next}`)
-    const url = new URL(`${origin}/auth/auth-error`)
-    url.searchParams.set('reason', error.message)
-    return NextResponse.redirect(url)
+    if (error) {
+      const url = new URL(`${origin}/auth/auth-error`)
+      url.searchParams.set('reason', error.message)
+      return NextResponse.redirect(url)
+    }
+    return response
   }
 
   return NextResponse.redirect(`${origin}/auth/auth-error?reason=unknown`)
