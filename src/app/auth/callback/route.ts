@@ -2,8 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
+function getOrigin(req: NextRequest): string {
+  // In production behind Vercel, req.url's origin can be the internal deployment URL.
+  // Trust the forwarded headers instead so cookies and redirects target the public domain.
+  const forwardedHost = req.headers.get('x-forwarded-host')
+  const forwardedProto = req.headers.get('x-forwarded-proto') ?? 'https'
+  if (forwardedHost) return `${forwardedProto}://${forwardedHost}`
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL
+  return req.nextUrl.origin
+}
+
 export async function GET(req: NextRequest) {
-  const { searchParams, origin } = new URL(req.url)
+  const origin = getOrigin(req)
+  const { searchParams } = req.nextUrl
   const code = searchParams.get('code')
   const tokenHash = searchParams.get('token_hash')
   const type = searchParams.get('type')
@@ -41,9 +52,7 @@ export async function GET(req: NextRequest) {
 
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
-    }
+    if (!error) return NextResponse.redirect(`${origin}${next}`)
     const url = new URL(`${origin}/auth/auth-error`)
     url.searchParams.set('reason', error.message)
     return NextResponse.redirect(url)
@@ -54,9 +63,7 @@ export async function GET(req: NextRequest) {
       type: type as 'magiclink' | 'signup' | 'recovery' | 'email_change' | 'email',
       token_hash: tokenHash,
     })
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
-    }
+    if (!error) return NextResponse.redirect(`${origin}${next}`)
     const url = new URL(`${origin}/auth/auth-error`)
     url.searchParams.set('reason', error.message)
     return NextResponse.redirect(url)
