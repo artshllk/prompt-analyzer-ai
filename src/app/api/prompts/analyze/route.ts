@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { analyzePrompt } from '@/lib/engine'
 import { getUsageInfo, recordUsage } from '@/lib/db/usage'
 import { createSession, updateSessionStatus, addClarificationExchange, saveImprovement } from '@/lib/db/sessions'
+import { take, USER_LIMIT } from '@/lib/rate-limit'
 import type { Tone } from '@/types/database'
 import type { QAPair } from '@/types'
 
@@ -19,6 +20,14 @@ export async function POST(req: NextRequest) {
 
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  }
+
+  const burst = take(`user:${user.id}`, USER_LIMIT)
+  if (!burst.allowed) {
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfterMs: burst.retryAfterMs },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(burst.retryAfterMs / 1000)) } }
+    )
   }
 
   const body: AnalyzeBody = await req.json()

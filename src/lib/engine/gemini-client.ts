@@ -56,6 +56,8 @@ async function callModel(
     if (!res.ok) {
       const detail = await res.text().catch(() => '')
       console.error(`Gemini ${model} error ${res.status}: ${detail.slice(0, 200)}`)
+      const { captureError } = await import('../observability')
+      captureError(new Error(`Gemini ${model} ${res.status}`), { detail: detail.slice(0, 500) })
       return null
     }
 

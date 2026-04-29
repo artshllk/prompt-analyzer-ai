@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
@@ -79,12 +80,8 @@ export function AppShell({ children, usage }: AppShellProps) {
         {/* Logo */}
         <div className="px-5 py-5 border-b border-[#1e2d4a]">
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center shrink-0">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 8L5 4L7.5 6L10 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <span className="font-bold text-[#f0f4ff] tracking-tight">PromptCraft</span>
+            <Image src="/logo.png" alt="Deepclario" width={28} height={28} className="rounded-md shrink-0" />
+            <span className="font-bold text-[#f0f4ff] tracking-tight">Deepclario</span>
           </Link>
         </div>
 

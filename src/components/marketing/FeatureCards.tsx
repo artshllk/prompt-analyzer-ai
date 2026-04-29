@@ -40,7 +40,7 @@ export function FeatureCards() {
           className={`rounded-2xl border ${f.border} bg-gradient-to-br ${f.color} p-6`}
         >
           <span className="text-3xl mb-4 block">{f.icon}</span>
-          <h3 className="text-base font-bold text-[#f0f4ff] mb-2">{f.title}</h3>
+          <h3 className="text-gray-200 font-bold text-[#f0f4ff] mb-2">{f.title}</h3>
           <p className="text-sm text-[#8b9cc8] leading-relaxed">{f.desc}</p>
         </motion.div>
       ))}

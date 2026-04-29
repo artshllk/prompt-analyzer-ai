@@ -44,7 +44,7 @@ export function PromptEditor({
   }, [value])
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       if (!isDisabled && value.trim()) onSubmit()
     }
@@ -72,7 +72,7 @@ export function PromptEditor({
           <span className={`text-xs ${charCount > 2000 ? 'text-amber-400' : 'text-[#4a5a80]'}`}>
             {charCount} chars
           </span>
-          <span className="text-xs text-[#2d4070]">⌘ + Enter to analyze</span>
+          <span className="text-xs text-[#2d4070]">Enter to analyze · Shift+Enter for new line</span>
         </div>
       </div>
 

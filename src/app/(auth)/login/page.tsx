@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useState } from 'react'
+import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
@@ -22,6 +23,7 @@ function LoginInner() {
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(errorFromUrl ?? '')
+  const [showEmail, setShowEmail] = useState(false)
 
   const supabase = createClient()
 
@@ -77,12 +79,8 @@ function LoginInner() {
       >
         {/* Logo */}
         <div className="flex items-center justify-center gap-2.5 mb-8">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2.5 9.5L6 5L8.5 7L12 2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="text-xl font-bold text-[#f0f4ff]">PromptCraft</span>
+          <Image src="/logo.png" alt="Deepclario" width={32} height={32} className="rounded-md" />
+          <span className="text-xl font-bold text-[#f0f4ff]">Deepclario</span>
         </div>
 
         <div className="glass rounded-2xl p-7 border border-[#1e2d4a]">
@@ -95,55 +93,70 @@ function LoginInner() {
                   <path d="M4 10L8 14L16 6" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <h2 className="text-lg font-bold text-[#f0f4ff] mb-2">Check your email</h2>
+              <h2 className="text-lg font-bold text-[#f0f4ff] mb-2">Check your inbox</h2>
               <p className="text-sm text-[#8b9cc8]">
-                We sent a magic link to <strong className="text-[#f0f4ff]">{email}</strong>
+                We sent a sign-in link to <strong className="text-[#f0f4ff]">{email}</strong>. Click it to continue.
               </p>
+              <button
+                onClick={() => { setSent(false); setEmail(''); setShowEmail(false) }}
+                className="mt-4 text-xs text-violet-400 hover:text-violet-300 underline transition-colors"
+              >
+                Use a different method
+              </button>
             </div>
           ) : (
             <>
-              <h1 className="text-xl font-bold text-[#f0f4ff] mb-1">Sign in or sign up</h1>
-              <p className="text-sm text-[#8b9cc8] mb-6">One link for both — we&apos;ll create your account if it&apos;s your first time.</p>
+              <h1 className="text-xl font-bold text-[#f0f4ff] mb-1">Welcome to Deepclario</h1>
+              <p className="text-sm text-[#8b9cc8] mb-6">One click to start. We&apos;ll create your account automatically.</p>
 
-              {/* Google */}
               <button
                 onClick={handleGoogle}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-[#1e2d4a] bg-[#0f1628] hover:bg-[#151d35] hover:border-[#2d4070] text-[#f0f4ff] text-sm font-medium transition-all mb-4"
+                className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl bg-white hover:bg-white/95 text-[#0a0e1a] text-sm font-semibold transition-all mb-3 shadow-lg shadow-violet-500/10"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M15.545 6.558a9.42 9.42 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.689 7.689 0 0 1 5.352 2.082l-2.284 2.284A4.347 4.347 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.792 4.792 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.702 3.702 0 0 0 1.599-2.431H8v-3.08h7.545z" fill="#8b9cc8"/>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                  <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+                  <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                  <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
                 </svg>
                 Continue with Google
               </button>
 
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex-1 h-px bg-[#1e2d4a]" />
-                <span className="text-xs text-[#4a5a80]">or</span>
-                <div className="flex-1 h-px bg-[#1e2d4a]" />
-              </div>
-
-              <form onSubmit={handleMagicLink} className="space-y-3">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  className="w-full bg-[#0a0e1a] border border-[#1e2d4a] focus:border-violet-500/60 rounded-xl px-4 py-3 text-[#f0f4ff] placeholder:text-[#2d4070] text-sm outline-none transition-colors"
-                />
-
-                {error && (
-                  <p className="text-xs text-red-400">{error}</p>
-                )}
-
+              {!showEmail ? (
                 <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all disabled:opacity-50"
+                  onClick={() => setShowEmail(true)}
+                  className="w-full text-center py-2.5 text-sm text-[#8b9cc8] hover:text-[#f0f4ff] transition-colors"
                 >
-                  {loading ? 'Sending...' : 'Send magic link'}
+                  Or sign in with email
                 </button>
-              </form>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 my-4">
+                    <div className="flex-1 h-px bg-[#1e2d4a]" />
+                    <span className="text-xs text-[#4a5a80]">or with email</span>
+                    <div className="flex-1 h-px bg-[#1e2d4a]" />
+                  </div>
+                  <form onSubmit={handleMagicLink} className="space-y-3">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      required
+                      autoFocus
+                      className="w-full bg-[#0a0e1a] border border-[#1e2d4a] focus:border-violet-500/60 rounded-xl px-4 py-3 text-[#f0f4ff] placeholder:text-[#2d4070] text-sm outline-none transition-colors"
+                    />
+                    {error && <p className="text-xs text-red-400">{error}</p>}
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all disabled:opacity-50"
+                    >
+                      {loading ? 'Sending link...' : 'Send sign-in link'}
+                    </button>
+                  </form>
+                </>
+              )}
             </>
           )}
         </div>

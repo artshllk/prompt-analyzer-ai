@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripe, PLANS } from '@/lib/stripe'
+import { PADDLE_PLANS, paddleRequest } from '@/lib/paddle'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -11,43 +11,42 @@ export async function POST(req: NextRequest) {
   }
 
   const { plan = 'pro_monthly' } = await req.json()
-  const selectedPlan = PLANS[plan as keyof typeof PLANS] ?? PLANS.pro_monthly
+  const selectedPlan = PADDLE_PLANS[plan as keyof typeof PADDLE_PLANS] ?? PADDLE_PLANS.pro_monthly
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('stripe_customer_id, email')
+    .select('paddle_customer_id, email')
     .eq('id', user.id)
     .single()
 
-  let customerId = profile?.stripe_customer_id
-
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: profile?.email ?? user.email ?? '',
-      metadata: { supabase_user_id: user.id },
-    })
-    customerId = customer.id
-
-    await supabase
-      .from('profiles')
-      .update({ stripe_customer_id: customerId })
-      .eq('id', user.id)
-  }
-
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: 'subscription',
-    line_items: [{ price: selectedPlan.priceId, quantity: 1 }],
-    success_url: `${appUrl}/dashboard?upgraded=true`,
-    cancel_url: `${appUrl}/dashboard`,
-    metadata: { supabase_user_id: user.id },
-    subscription_data: {
-      metadata: { supabase_user_id: user.id },
+  // Build transaction payload
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const payload: Record<string, any> = {
+    items: [{ price_id: selectedPlan.priceId, quantity: 1 }],
+    custom_data: { supabase_user_id: user.id },
+    checkout: {
+      url: `${appUrl}/dashboard?upgraded=true`,
     },
-    allow_promotion_codes: true,
+  }
+
+  if (profile?.paddle_customer_id) {
+    payload.customer_id = profile.paddle_customer_id
+  } else {
+    payload.customer = { email: profile?.email ?? user.email ?? '' }
+  }
+
+  const result = await paddleRequest('/transactions', {
+    method: 'POST',
+    body: JSON.stringify(payload),
   })
 
-  return NextResponse.json({ url: session.url })
+  // The transaction checkout URL to redirect user to
+  const checkoutUrl = result?.data?.checkout?.url
+  if (!checkoutUrl) {
+    return NextResponse.json({ error: 'checkout_failed' }, { status: 500 })
+  }
+
+  return NextResponse.json({ url: checkoutUrl })
 }

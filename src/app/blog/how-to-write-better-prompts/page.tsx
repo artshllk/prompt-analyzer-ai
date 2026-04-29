@@ -1,0 +1,166 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import Image from 'next/image'
+
+export const metadata: Metadata = {
+  title: 'How to Write Better AI Prompts — 7 Proven Techniques',
+  description: 'Learn 7 practical techniques to write better prompts for ChatGPT, Claude, and Gemini. Includes real before/after examples and a free prompt analyzer to test your prompts.',
+  alternates: { canonical: 'https://deepclario.com/blog/how-to-write-better-prompts' },
+  openGraph: {
+    title: 'How to Write Better AI Prompts — 7 Proven Techniques',
+    description: '7 practical techniques to write prompts that get better results from any AI tool. Real examples included.',
+    url: 'https://deepclario.com/blog/how-to-write-better-prompts',
+    type: 'article',
+  },
+}
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: 'How to Write Better AI Prompts — 7 Proven Techniques',
+  description: '7 practical, proven techniques to write better prompts for ChatGPT, Claude, and Gemini.',
+  author: { '@type': 'Organization', name: 'Deepclario' },
+  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  datePublished: '2026-04-01',
+  dateModified: '2026-04-28',
+}
+
+const TIPS = [
+  {
+    n: '1. Assign a role first',
+    bad: 'Explain neural networks',
+    good: 'Act as a computer science professor teaching first-year students. Explain how neural networks learn using a simple analogy, then give one real-world application.',
+    why: 'Role assignment activates relevant knowledge and sets the right expertise level. Without it, the AI uses a default, generic voice.',
+  },
+  {
+    n: '2. Specify the format',
+    bad: 'List the pros and cons of remote work',
+    good: 'List the top 5 pros and top 5 cons of remote work in a markdown table. Each point should be one sentence. Target audience: HR managers.',
+    why: 'Without format instructions, AI decides for you — and its choice rarely matches your actual use case.',
+  },
+  {
+    n: '3. Define your audience',
+    bad: 'Explain blockchain',
+    good: 'Explain blockchain to a 60-year-old small business owner with no technical background. Use simple language, one real analogy, and avoid all jargon.',
+    why: 'The same topic needs to be explained differently to different audiences. Specifying it eliminates the AI\'s most common failure: wrong level of complexity.',
+  },
+  {
+    n: '4. Give an example of what you want',
+    bad: 'Write a product description for my software',
+    good: 'Write a product description for my project management software. Example of the style I want: "Notion brings your notes, tasks, and docs into one connected workspace — so your team always knows what\'s happening." Match that tone and length.',
+    why: 'One well-chosen example is worth a paragraph of instructions. It shows rather than tells.',
+  },
+  {
+    n: '5. Add explicit constraints',
+    bad: 'Write a tweet about our product launch',
+    good: 'Write 3 tweet options for our product launch. Max 240 characters each. No hashtags. Tone: confident but not salesy. Focus on the time-saving benefit, not features.',
+    why: 'Constraints prevent the most common failure modes: too long, wrong tone, wrong focus, or inappropriate style.',
+  },
+  {
+    n: '6. State what NOT to do',
+    bad: 'Give me advice on investing',
+    good: 'Give me 5 evidence-based personal finance principles for someone in their 30s. Do not recommend specific stocks or funds. Do not give legal or tax advice. Do not use financial jargon without explaining it.',
+    why: 'Negative constraints are often more powerful than positive ones — they rule out the most common wrong answers.',
+  },
+  {
+    n: '7. Break complex tasks into steps',
+    bad: 'Write a marketing strategy for my app',
+    good: 'Step 1: Identify the top 3 target user segments for a productivity app targeting remote workers. Step 2: For each segment, suggest one acquisition channel and one message angle. Step 3: Recommend the single highest-priority channel to start with and explain why.',
+    why: 'Multi-step tasks overwhelm a single prompt. Breaking them into steps keeps each output focused and useful.',
+  },
+]
+
+export default function HowToWriteBetterPromptsPage() {
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
+      <div className="min-h-screen bg-[#0a0e1a] text-[#f0f4ff]">
+        <header className="border-b border-[#1e2d4a]/60 px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo.png" alt="Deepclario" width={24} height={24} className="rounded" />
+            <span className="font-bold text-sm">Deepclario</span>
+          </Link>
+          <Link href="/playground" className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all">
+            Try free →
+          </Link>
+        </header>
+
+        <main className="max-w-2xl mx-auto px-6 py-16">
+          <div className="mb-6">
+            <Link href="/" className="text-xs text-[#4a5a80] hover:text-[#8b9cc8] transition-colors">← Back to Deepclario</Link>
+          </div>
+
+          <div className="mb-4 flex items-center gap-2">
+            <span className="text-xs text-violet-400 font-semibold uppercase tracking-wider">Guide</span>
+            <span className="text-xs text-[#4a5a80]">· 10 min read</span>
+          </div>
+
+          <h1 className="text-4xl font-bold mb-5 leading-tight">
+            How to Write Better AI Prompts
+          </h1>
+          <p className="text-xs text-[#4a5a80] mb-6">Works with ChatGPT, Claude, Gemini, and any other LLM</p>
+
+          <p className="text-lg text-[#8b9cc8] mb-10 leading-relaxed">
+            Most people write prompts the way they send text messages — casual, short, and vague.
+            That works for humans who can ask follow-up questions. AI can&apos;t. These 7 techniques
+            will immediately make your prompts more effective across any AI tool.
+          </p>
+
+          <div className="space-y-10">
+            {TIPS.map((tip) => (
+              <section key={tip.n}>
+                <h2 className="text-xl font-bold text-[#f0f4ff] mb-4">{tip.n}</h2>
+                <div className="grid gap-3 mb-4">
+                  <div className="p-4 bg-[#080c18] rounded-xl border border-red-500/20">
+                    <p className="text-[10px] text-red-400 font-semibold uppercase tracking-wider mb-2">Before</p>
+                    <p className="text-sm text-[#8b9cc8] italic">&ldquo;{tip.bad}&rdquo;</p>
+                  </div>
+                  <div className="p-4 bg-[#080c18] rounded-xl border border-emerald-500/20">
+                    <p className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider mb-2">After</p>
+                    <p className="text-sm text-[#f0f4ff]">&ldquo;{tip.good}&rdquo;</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 p-3 rounded-lg bg-violet-500/5 border border-violet-500/15">
+                  <span className="text-violet-400 text-xs shrink-0 mt-0.5">Why it works:</span>
+                  <p className="text-xs text-[#8b9cc8] leading-relaxed">{tip.why}</p>
+                </div>
+              </section>
+            ))}
+          </div>
+
+          <section className="mt-12">
+            <h2 className="text-2xl font-bold mb-4">The fastest way to improve: get scored</h2>
+            <p className="text-[#8b9cc8] leading-relaxed mb-4">
+              Reading about prompt techniques is useful. Applying them to your actual prompts is better.
+              Deepclario scores your prompt against all 5 quality dimensions and rewrites it for you — so
+              you can see exactly what changed and why.
+            </p>
+            <p className="text-[#8b9cc8] leading-relaxed">
+              Try it on any prompt you&apos;re currently using. Free, no account required.
+            </p>
+          </section>
+
+          <div className="mt-10 rounded-2xl border border-violet-500/30 bg-violet-600/10 p-8 text-center">
+            <h2 className="text-xl font-bold mb-3">Test these techniques on your own prompt</h2>
+            <p className="text-[#8b9cc8] text-sm mb-6">Paste any prompt and see exactly how to improve it. Free.</p>
+            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white font-semibold transition-all glow-violet">
+              Analyze my prompt →
+            </Link>
+          </div>
+
+          <div className="mt-10 pt-6 border-t border-[#1e2d4a]">
+            <p className="text-xs text-[#4a5a80] mb-3">Related reading</p>
+            <div className="flex flex-col gap-2">
+              <Link href="/blog/what-is-prompt-engineering" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
+                What is prompt engineering? →
+              </Link>
+              <Link href="/tools/prompt-analyzer" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
+                Free AI Prompt Analyzer →
+              </Link>
+            </div>
+          </div>
+        </main>
+      </div>
+    </>
+  )
+}

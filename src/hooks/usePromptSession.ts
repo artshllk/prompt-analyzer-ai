@@ -40,10 +40,15 @@ const INITIAL_STATE: SessionState = {
   error: null,
 }
 
-export function usePromptSession() {
+interface UsePromptSessionOptions {
+  /** When true, calls the unauthenticated /api/anon/analyze endpoint and tracks count locally. */
+  anonymous?: boolean
+}
+
+export function usePromptSession(options: UsePromptSessionOptions = {}) {
+  const { anonymous = false } = options
   const [state, setState] = useState<SessionState>(INITIAL_STATE)
 
-  // Refs for current values — avoids stale closures inside async callbacks.
   const sessionIdRef = useRef<string | null>(null)
   const clarifyingRef = useRef<ClarifyingState | null>(null)
   const priorAnswersRef = useRef<QAPair[]>([])
@@ -65,8 +70,10 @@ export function usePromptSession() {
     toneRef.current = tone
     apply({ stage: 'analyzing', error: null, priorAnswers: [], clarifying: null, improved: null, sessionId: null })
 
+    const endpoint = anonymous ? '/api/anon/analyze' : '/api/prompts/analyze'
+
     try {
-      const res = await fetch('/api/prompts/analyze', {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, tone, priorAnswers: [] }),
@@ -78,6 +85,10 @@ export function usePromptSession() {
         if (data.error === 'usage_limit') {
           apply({ stage: 'error', error: 'usage_limit' })
           return { usageLimitReached: true, usage: data.usage }
+        }
+        if (data.error === 'rate_limited') {
+          apply({ stage: 'error', error: 'rate_limited' })
+          return null
         }
         apply({ stage: 'error', error: data.error ?? 'unknown' })
         return null
@@ -113,7 +124,7 @@ export function usePromptSession() {
     }
 
     return null
-  }, [apply])
+  }, [apply, anonymous])
 
   const submitAnswer = useCallback(async (answer: string) => {
     const sessionId = sessionIdRef.current
@@ -133,19 +144,19 @@ export function usePromptSession() {
     apply({ stage: 'improving', error: null, priorAnswers: newPriorAnswers })
 
     try {
-      // Prefer the session-scoped answer endpoint; fall back to /analyze if the
-      // session was never persisted (e.g. DB outage on first call).
-      const url = sessionId
-        ? `/api/prompts/${sessionId}/answer`
-        : '/api/prompts/analyze'
+      // Anon mode + no-session-yet path → always go through the stateless analyze endpoint.
+      const useAnon = anonymous || !sessionId
+      const url = useAnon
+        ? (anonymous ? '/api/anon/analyze' : '/api/prompts/analyze')
+        : `/api/prompts/${sessionId}/answer`
 
-      const body = sessionId
-        ? { answer, turn: clarifying.turn }
-        : {
+      const body = useAnon
+        ? {
             prompt: promptRef.current,
             tone: toneRef.current,
             priorAnswers: newPriorAnswers,
           }
+        : { answer, turn: clarifying.turn }
 
       const res = await fetch(url, {
         method: 'POST',
@@ -188,7 +199,7 @@ export function usePromptSession() {
     } catch {
       apply({ stage: 'error', error: 'network' })
     }
-  }, [apply])
+  }, [apply, anonymous])
 
   const reset = useCallback(() => {
     sessionIdRef.current = null
