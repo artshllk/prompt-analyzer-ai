@@ -71,8 +71,8 @@ export function PaywallModal({ open, onClose }: PaywallModalProps) {
               </div>
               <h2 className="text-2xl font-bold text-[#f0f4ff] mb-2">You&apos;ve hit your limit</h2>
               <p className="text-[#8b9cc8] text-sm leading-relaxed">
-                You&apos;ve used all 25 free analyses this month.<br />
-                Upgrade to Pro for unlimited access.
+                You&apos;ve used all 25 free analyses this month.
+                Upgrade to keep going.
               </p>
             </div>
 
@@ -89,9 +89,9 @@ export function PaywallModal({ open, onClose }: PaywallModalProps) {
                   }`}
                 >
                   {p === 'pro_monthly' ? (
-                    <span>Monthly <span className="font-bold">$5</span></span>
+                    <span>Monthly <span className="font-bold">$4.99</span></span>
                   ) : (
-                    <span>Annual <span className="font-bold">$48</span> <span className="text-emerald-400 text-xs">Save 20%</span></span>
+                    <span>Annual <span className="font-bold">$47.88</span> <span className="text-emerald-400 text-xs">Save 20%</span></span>
                   )}
                 </button>
               ))}
@@ -123,7 +123,7 @@ export function PaywallModal({ open, onClose }: PaywallModalProps) {
               onClick={onClose}
               className="w-full py-2 text-sm text-[#4a5a80] hover:text-[#8b9cc8] transition-colors"
             >
-              Maybe later
+              Not now
             </button>
           </motion.div>
         </motion.div>

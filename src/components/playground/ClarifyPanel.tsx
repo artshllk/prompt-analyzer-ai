@@ -34,7 +34,7 @@ export function ClarifyPanel({
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSubmit()
     }
@@ -100,7 +100,7 @@ export function ClarifyPanel({
           />
 
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#2d4070]">⌘ + Enter to submit</span>
+            <span className="text-xs text-[#2d4070]">Enter to submit · Shift+Enter for new line</span>
             <motion.button
               onClick={handleSubmit}
               disabled={!answer.trim() || isLoading}

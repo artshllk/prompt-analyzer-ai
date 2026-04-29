@@ -9,7 +9,7 @@ const FAQS = [
   },
   {
     q: 'Is Deepclario free to use?',
-    a: 'Yes. The free plan gives you 25 prompt analyses per month with full AI improvement, clarity scoring, and tone control. No credit card required. The Pro plan ($5/month) adds unlimited analyses, full history, and weekly insight reports.',
+    a: 'Yes. The free plan gives you 25 prompt analyses per month with full AI improvement, clarity scoring, and tone control. No credit card needed. The Pro plan ($4.99/month) adds unlimited analyses, full history, and weekly insight reports.',
   },
   {
     q: 'How does Deepclario improve my prompts?',

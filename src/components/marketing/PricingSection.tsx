@@ -39,7 +39,7 @@ export function PricingSection() {
           className={`relative w-11 h-6 rounded-full transition-colors ${annual ? 'bg-violet-600' : 'bg-[#1e2d4a]'}`}
           aria-label="Toggle annual billing"
         >
-          <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${annual ? 'translate-x-6' : 'translate-x-1'}`} />
+          <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${annual ? 'translate-x-5' : 'translate-x-0'}`} />
         </button>
         <span className={`text-sm transition-colors ${annual ? 'text-[#f0f4ff]' : 'text-[#4a5a80]'}`}>
           Annual
@@ -62,7 +62,7 @@ export function PricingSection() {
               <span className="text-4xl font-bold text-[#f0f4ff]">$0</span>
               <span className="text-sm text-[#4a5a80]">forever</span>
             </div>
-            <p className="text-xs text-[#4a5a80] mt-2">Perfect for occasional use and trying it out</p>
+            <p className="text-xs text-[#4a5a80] mt-2">Good for getting started</p>
           </div>
 
           <ul className="space-y-2.5 mb-6">
@@ -98,10 +98,10 @@ export function PricingSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="relative rounded-2xl p-6 border border-violet-500/40 bg-violet-600/10"
+          className="relative rounded-2xl pt-8 px-6 pb-6 border border-violet-500/40 bg-violet-600/10"
         >
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-            <span className="px-3 py-1 rounded-full bg-violet-600 text-white text-xs font-bold">Most Popular</span>
+          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
+            <span className="px-3 py-1 rounded-full bg-violet-600 text-white text-xs font-bold whitespace-nowrap shadow-lg shadow-violet-600/30">Most Popular</span>
           </div>
           <div className="absolute -top-px left-1/2 -translate-x-1/2 w-40 h-px bg-gradient-to-r from-transparent via-violet-500 to-transparent" />
 
@@ -114,7 +114,7 @@ export function PricingSection() {
               <span className="text-sm text-[#4a5a80]">/month</span>
               {annual && <span className="text-xs text-[#4a5a80] ml-1">billed $47.88/year</span>}
             </div>
-            <p className="text-xs text-[#8b9cc8] mt-2">For people who use AI seriously every day</p>
+            <p className="text-xs text-[#8b9cc8] mt-2">For people who use AI every day</p>
           </div>
 
           <ul className="space-y-2.5 mb-6">
@@ -140,7 +140,7 @@ export function PricingSection() {
       </div>
 
       <p className="text-center text-xs text-[#4a5a80] mt-8">
-        Not sure? Start with the free plan — no credit card, no time limit.
+        No credit card required to start.
       </p>
     </div>
   )

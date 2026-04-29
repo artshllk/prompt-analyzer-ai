@@ -81,7 +81,7 @@ export function SignupGate({ used, limit, onEmailCaptured }: SignupGateProps) {
                 Sign in / Sign up
               </button>
             </div>
-            <p className="text-xs text-[#4a5a80]">{used}/{limit} used · No spam · Unsubscribe anytime</p>
+            <p className="text-xs text-[#4a5a80]">{used} of {limit} used — we won&apos;t spam you</p>
           </motion.div>
         )}
 
@@ -137,7 +137,7 @@ export function SignupGate({ used, limit, onEmailCaptured }: SignupGateProps) {
           <motion.div key="auth" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center">
             <h3 className="text-lg font-bold text-[#f0f4ff] mb-1.5">Sign in to continue</h3>
             <p className="text-sm text-[#8b9cc8] max-w-sm mx-auto mb-5">
-              Free account: <strong className="text-[#f0f4ff]">25 analyses/month</strong>, full history, and insights.
+              Free account includes 25 analyses a month, full history, and insights.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
               <Link
