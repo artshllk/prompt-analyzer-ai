@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { WaitlistModal } from './WaitlistModal'
+
+const PADDLE_LIVE = process.env.NEXT_PUBLIC_PADDLE_LIVE === 'true'
 
 interface PaywallModalProps {
   open: boolean
@@ -19,8 +22,13 @@ const PRO_FEATURES = [
 export function PaywallModal({ open, onClose }: PaywallModalProps) {
   const [loading, setLoading] = useState(false)
   const [plan, setPlan] = useState<'pro_monthly' | 'pro_annual'>('pro_monthly')
+  const [showWaitlist, setShowWaitlist] = useState(false)
 
   async function handleUpgrade() {
+    if (!PADDLE_LIVE) {
+      setShowWaitlist(true)
+      return
+    }
     setLoading(true)
     try {
       const res = await fetch('/api/billing/checkout', {
@@ -33,6 +41,10 @@ export function PaywallModal({ open, onClose }: PaywallModalProps) {
     } catch {
       setLoading(false)
     }
+  }
+
+  if (showWaitlist) {
+    return <WaitlistModal open={open} onClose={() => { setShowWaitlist(false); onClose() }} />
   }
 
   return (

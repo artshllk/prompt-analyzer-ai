@@ -122,6 +122,12 @@ export type Database = {
         Update: Partial<Omit<UserPromptPatternRow, 'id' | 'created_at'>>
         Relationships: []
       }
+      pro_waitlist: {
+        Row: { id: string; email: string; created_at: string }
+        Insert: { email: string; id?: string; created_at?: string }
+        Update: { email?: string }
+        Relationships: []
+      }
     }
     Views: Record<never, never>
     Functions: Record<never, never>
