@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { WaitlistModal } from './WaitlistModal'
 
 interface UpgradeButtonProps {
@@ -33,7 +34,10 @@ export function UpgradeButton({ plan = 'pro_monthly', className, children }: Upg
       <button onClick={handleClick} className={className}>
         {children}
       </button>
-      <WaitlistModal open={waitlist} onClose={() => setWaitlist(false)} />
+      {typeof document !== 'undefined' && createPortal(
+        <WaitlistModal open={waitlist} onClose={() => setWaitlist(false)} />,
+        document.body
+      )}
     </>
   )
 }
