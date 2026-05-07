@@ -43,13 +43,13 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(payload),
     })
 
-    const checkoutUrl = result?.data?.checkout?.url
-    if (!checkoutUrl) {
-      console.error('Paddle returned no checkout URL:', JSON.stringify(result))
-      return NextResponse.json({ error: 'no_checkout_url', detail: result }, { status: 500 })
+    const transactionId = result?.data?.id
+    if (!transactionId) {
+      console.error('Paddle returned no transaction id:', JSON.stringify(result))
+      return NextResponse.json({ error: 'no_transaction_id', detail: result }, { status: 500 })
     }
 
-    return NextResponse.json({ url: checkoutUrl })
+    return NextResponse.json({ transactionId })
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'unknown'
     console.error('Checkout error:', msg)

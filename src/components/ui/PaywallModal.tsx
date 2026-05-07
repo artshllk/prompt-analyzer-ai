@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { WaitlistModal } from './WaitlistModal'
+import { usePaddle } from '@/components/PaddleProvider'
 
 const PADDLE_LIVE = process.env.NEXT_PUBLIC_PADDLE_LIVE === 'true'
 
@@ -23,12 +24,14 @@ export function PaywallModal({ open, onClose }: PaywallModalProps) {
   const [loading, setLoading] = useState(false)
   const [plan, setPlan] = useState<'pro_monthly' | 'pro_annual'>('pro_monthly')
   const [showWaitlist, setShowWaitlist] = useState(false)
+  const paddle = usePaddle()
 
   async function handleUpgrade() {
     if (!PADDLE_LIVE) {
       setShowWaitlist(true)
       return
     }
+    if (!paddle) return
     setLoading(true)
     try {
       const res = await fetch('/api/billing/checkout', {
@@ -36,9 +39,12 @@ export function PaywallModal({ open, onClose }: PaywallModalProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan }),
       })
-      const data = await res.json()
-      if (data.url) window.location.href = data.url
-    } catch {
+      const data = await res.json() as { transactionId?: string }
+      if (data.transactionId) {
+        paddle.Checkout.open({ transactionId: data.transactionId })
+        onClose()
+      }
+    } finally {
       setLoading(false)
     }
   }
