@@ -37,16 +37,22 @@ export async function POST(req: NextRequest) {
     payload.customer = { email: profile?.email ?? user.email ?? '' }
   }
 
-  const result = await paddleRequest('/transactions', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  })
+  try {
+    const result = await paddleRequest('/transactions', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
 
-  // The transaction checkout URL to redirect user to
-  const checkoutUrl = result?.data?.checkout?.url
-  if (!checkoutUrl) {
-    return NextResponse.json({ error: 'checkout_failed' }, { status: 500 })
+    const checkoutUrl = result?.data?.checkout?.url
+    if (!checkoutUrl) {
+      console.error('Paddle returned no checkout URL:', JSON.stringify(result))
+      return NextResponse.json({ error: 'no_checkout_url', detail: result }, { status: 500 })
+    }
+
+    return NextResponse.json({ url: checkoutUrl })
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'unknown'
+    console.error('Checkout error:', msg)
+    return NextResponse.json({ error: 'paddle_error', detail: msg }, { status: 500 })
   }
-
-  return NextResponse.json({ url: checkoutUrl })
 }
