@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 const ANALYZE_STEPS = [
   'Reading your prompt',
@@ -21,6 +21,9 @@ interface ProgressiveStatusProps {
   mode: 'analyzing' | 'improving'
 }
 
+/**
+ * Editorial loading state — typographic dots, hairline checklist, no glow.
+ */
 export function ProgressiveStatus({ mode }: ProgressiveStatusProps) {
   const steps = mode === 'analyzing' ? ANALYZE_STEPS : IMPROVE_STEPS
   const [activeStep, setActiveStep] = useState(0)
@@ -37,68 +40,69 @@ export function ProgressiveStatus({ mode }: ProgressiveStatusProps) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className="rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-600/8 to-cyan-500/4 px-5 py-5 overflow-hidden"
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="py-7"
+      style={{ borderTop: '1px solid var(--color-rule-strong)', borderBottom: '1px solid var(--color-rule-strong)' }}
     >
-      <div className="flex items-center gap-3 mb-4">
-        <motion.div
-          className="w-4 h-4 border-2 border-violet-500/30 border-t-violet-400 rounded-full"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
-        />
-        <span className="text-sm font-medium text-violet-200">
-          {mode === 'analyzing' ? 'Analyzing your prompt' : 'Generating improvement'}
+      <div className="flex items-center gap-3 mb-5">
+        <ThinkingDots />
+        <span className="eyebrow">
+          {mode === 'analyzing' ? 'Reading your prompt' : 'Rewriting'}
         </span>
       </div>
 
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {steps.map((step, i) => {
           const isDone = i < activeStep
           const isActive = i === activeStep
           return (
-            <li key={step} className="flex items-center gap-3 text-sm">
+            <li key={step} className="flex items-center gap-3 text-sm md:text-base">
               <span
-                className={`relative w-4 h-4 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-                  isDone
-                    ? 'bg-violet-500/80 border border-violet-400/60'
-                    : isActive
-                      ? 'bg-violet-500/20 border border-violet-400/50'
-                      : 'bg-[#0a0e1a] border border-[#1e2d4a]'
-                }`}
+                className="font-serif text-base md:text-lg tabular-nums shrink-0"
+                style={{
+                  color: isDone || isActive ? 'var(--color-paper)' : 'var(--color-paper-mute)',
+                  fontWeight: 400,
+                  width: '1.5rem',
+                }}
               >
-                {isDone && (
-                  <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
-                    <path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-                {isActive && (
-                  <motion.span
-                    className="w-1.5 h-1.5 rounded-full bg-violet-300"
-                    animate={{ opacity: [0.4, 1, 0.4] }}
-                    transition={{ duration: 1.1, repeat: Infinity }}
-                  />
-                )}
+                {String(i + 1).padStart(2, '0')}
               </span>
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={`${step}-${isDone}-${isActive}`}
-                  initial={{ opacity: 0.6 }}
-                  animate={{ opacity: isDone || isActive ? 1 : 0.45 }}
-                  className={
-                    isDone
-                      ? 'text-[#cdd5ee]'
-                      : isActive
-                        ? 'text-[#f0f4ff] font-medium'
-                        : 'text-[#5a6a90]'
-                  }
-                >
-                  {step}
-                </motion.span>
-              </AnimatePresence>
+              <span
+                style={{
+                  color: isActive
+                    ? 'var(--color-paper)'
+                    : isDone
+                    ? 'var(--color-paper)'
+                    : 'var(--color-paper-mute)',
+                  fontWeight: isActive ? 500 : 400,
+                  textDecoration: isDone ? 'line-through' : 'none',
+                  textDecorationColor: 'var(--color-rule-strong)',
+                  opacity: isDone ? 0.6 : 1,
+                  transition: 'all 0.4s ease',
+                }}
+              >
+                {step}
+              </span>
             </li>
           )
         })}
       </ul>
     </motion.div>
+  )
+}
+
+function ThinkingDots() {
+  return (
+    <span className="inline-flex items-center gap-1" aria-hidden>
+      {[0, 1, 2].map(i => (
+        <motion.span
+          key={i}
+          className="block w-1 h-1 rounded-full"
+          style={{ background: 'var(--color-paper)' }}
+          animate={{ opacity: [0.2, 1, 0.2] }}
+          transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2, ease: 'easeInOut' }}
+        />
+      ))}
+    </span>
   )
 }

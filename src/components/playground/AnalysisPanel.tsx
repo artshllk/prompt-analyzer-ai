@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ClarityScoreBadge } from '@/components/ui/ClarityScoreBadge'
 import type { ImprovementTag } from '@/types/database'
 
 interface AnalysisPanelProps {
@@ -15,16 +14,11 @@ interface AnalysisPanelProps {
   onReset: () => void
 }
 
-const TAG_COLORS: Record<ImprovementTag, { bg: string; text: string; border: string }> = {
-  context: { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
-  role: { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20' },
-  action: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
-  format: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/20' },
-  constraints: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
-  examples: { bg: 'bg-pink-500/10', text: 'text-pink-400', border: 'border-pink-500/20' },
-  specificity: { bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-500/20' },
-}
-
+/**
+ * Editorial result panel — hairlines, serif scores, no chunky cards.
+ * Side-by-side stays as the default layout, but each side is hairline-bound,
+ * not boxed.
+ */
 export function AnalysisPanel({
   originalPrompt,
   improvedPrompt,
@@ -43,120 +37,155 @@ export function AnalysisPanel({
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const delta = clarityScoreAfter - clarityScoreBefore
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="space-y-4"
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Score header */}
-      <div className="glass rounded-2xl p-5 flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <p className="text-xs text-[#4a5a80] uppercase tracking-wider mb-1">Clarity score</p>
-          <div className="flex items-center gap-4">
-            <ClarityScoreBadge score={clarityScoreBefore} size="sm" animate={false} />
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: 40 }}
-              className="h-px bg-gradient-to-r from-[#4a5a80] to-violet-500"
-            />
-            <ClarityScoreBadge score={clarityScoreAfter} size="sm" />
-            <div className="text-sm font-bold text-emerald-400">
-              +{clarityScoreAfter - clarityScoreBefore}
-            </div>
+      {/* Score row — editorial, no boxes */}
+      <div className="rule-strong" />
+      <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3 py-6">
+        <div className="flex items-baseline gap-3">
+          <span className="eyebrow">Clarity</span>
+          <span className="font-serif tabular-nums text-3xl md:text-4xl" style={{ color: scoreColor(clarityScoreBefore), fontWeight: 400 }}>
+            {clarityScoreBefore}
+          </span>
+          <span style={{ color: 'var(--color-paper-mute)' }}>→</span>
+          <span className="font-serif tabular-nums text-3xl md:text-4xl" style={{ color: scoreColor(clarityScoreAfter), fontWeight: 400 }}>
+            {clarityScoreAfter}
+          </span>
+          <span className="text-sm ml-1" style={{ color: 'var(--color-accent)' }}>+{delta}</span>
+        </div>
+        {improvementTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="eyebrow">What was added</span>
+            <span className="text-sm" style={{ color: 'var(--color-paper)' }}>
+              {improvementTags.map((t, i) => (
+                <span key={t}>
+                  {i > 0 && <span style={{ color: 'var(--color-paper-mute)' }}>, </span>}
+                  <span className="capitalize">{t}</span>
+                </span>
+              ))}
+            </span>
           </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {improvementTags.map(tag => {
-            const colors = TAG_COLORS[tag] ?? TAG_COLORS.context
-            return (
-              <span
-                key={tag}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium border capitalize ${colors.bg} ${colors.text} ${colors.border}`}
-              >
-                +{tag}
-              </span>
-            )
-          })}
-        </div>
+        )}
       </div>
+      <div className="rule" />
 
-      {/* View toggle */}
-      <div className="flex rounded-xl bg-[#0a0e1a] border border-[#1e2d4a] p-1">
-        {(['split', 'original', 'improved'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all capitalize ${
-              activeTab === tab
-                ? 'bg-[#0f1628] border border-[#2d4070] text-[#f0f4ff]'
-                : 'text-[#4a5a80] hover:text-[#8b9cc8]'
-            }`}
-          >
-            {tab === 'split' ? 'Side by Side' : tab}
-          </button>
+      {/* View toggle — text-only segmented control */}
+      <div className="flex items-center gap-x-2 gap-y-1 py-5">
+        <span className="eyebrow mr-2">View</span>
+        {(['split', 'original', 'improved'] as const).map((tab, i) => (
+          <span key={tab} className="flex items-center">
+            {i > 0 && <span className="mx-2 text-sm" style={{ color: 'var(--color-rule-strong)' }}>·</span>}
+            <button
+              onClick={() => setActiveTab(tab)}
+              className="text-sm transition-opacity"
+              style={{
+                color: activeTab === tab ? 'var(--color-paper)' : 'var(--color-paper-mute)',
+                fontWeight: activeTab === tab ? 500 : 400,
+                textDecoration: activeTab === tab ? 'underline' : 'none',
+                textUnderlineOffset: '4px',
+              }}
+            >
+              {tab === 'split' ? 'Side by side' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          </span>
         ))}
       </div>
 
       {/* Prompt comparison */}
       {activeTab === 'split' ? (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-[#1e2d4a] bg-[#0a0e1a]/50 p-4">
-            <p className="text-xs text-[#4a5a80] uppercase tracking-wider mb-3">Original</p>
-            <p className="text-[#8b9cc8] text-sm leading-relaxed whitespace-pre-wrap">{originalPrompt}</p>
+        <div className="grid md:grid-cols-2 gap-px">
+          <div className="md:pr-8 py-7" style={{ borderRight: '1px solid var(--color-rule-strong)' }}>
+            <p className="eyebrow mb-3" style={{ color: '#C25E5E' }}>Original</p>
+            <p
+              className="font-serif display-italic text-base md:text-lg leading-[1.55] whitespace-pre-wrap"
+              style={{ color: 'var(--color-paper-mute)' }}
+            >
+              {originalPrompt}
+            </p>
           </div>
-          <div className="rounded-2xl border border-violet-500/30 bg-violet-500/5 p-4">
-            <p className="text-xs text-violet-400 uppercase tracking-wider mb-3">Improved</p>
-            <p className="text-[#f0f4ff] text-sm leading-relaxed whitespace-pre-wrap">{improvedPrompt}</p>
+          <div className="md:pl-8 py-7">
+            <p className="eyebrow mb-3" style={{ color: '#7FA875' }}>Improved</p>
+            <p
+              className="font-serif text-base md:text-[1.05rem] leading-[1.55] whitespace-pre-wrap"
+              style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+            >
+              {improvedPrompt}
+            </p>
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border border-[#1e2d4a] bg-[#0f1628] p-4">
-          <p className="text-xs text-[#4a5a80] uppercase tracking-wider mb-3 capitalize">{activeTab} prompt</p>
-          <p className={`text-sm leading-relaxed whitespace-pre-wrap ${
-            activeTab === 'improved' ? 'text-[#f0f4ff]' : 'text-[#8b9cc8]'
-          }`}>
+        <div className="py-7" style={{ borderTop: '1px solid var(--color-rule-strong)', borderBottom: '1px solid var(--color-rule-strong)' }}>
+          <p className="eyebrow mb-3" style={{ color: activeTab === 'improved' ? '#7FA875' : '#C25E5E' }}>
+            {activeTab === 'original' ? 'Original' : 'Improved'}
+          </p>
+          <p
+            className="font-serif text-base md:text-[1.05rem] leading-[1.55] whitespace-pre-wrap"
+            style={{
+              color: activeTab === 'improved' ? 'var(--color-paper)' : 'var(--color-paper-mute)',
+              fontStyle: activeTab === 'improved' ? 'normal' : 'italic',
+              fontWeight: 400,
+            }}
+          >
             {activeTab === 'original' ? originalPrompt : improvedPrompt}
           </p>
         </div>
       )}
 
       {/* Explanation */}
-      <div className="rounded-2xl border border-[#1e2d4a] bg-[#0f1628] p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-cyan-400">
-            <path d="M7 1C3.686 1 1 3.686 1 7C1 10.314 3.686 13 7 13C10.314 13 13 10.314 13 7C13 3.686 10.314 1 7 1Z" stroke="currentColor" strokeWidth="1.5"/>
-            <path d="M7 6.5V10M7 4.5V4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          </svg>
-          <p className="text-xs font-medium text-cyan-400 uppercase tracking-wider">Why this works better</p>
-        </div>
-        <p className="text-[#8b9cc8] text-sm leading-relaxed">{explanation}</p>
+      <div className="mt-10">
+        <p className="eyebrow mb-3">Why it&rsquo;s sharper</p>
+        <p className="text-base md:text-lg leading-[1.65] max-w-3xl" style={{ color: 'var(--color-paper-mute)' }}>
+          {explanation}
+        </p>
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3">
-        <motion.button
+      <div className="mt-10 flex flex-wrap items-center gap-3">
+        <button
           onClick={handleCopy}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className={`flex-1 py-3.5 rounded-xl font-semibold text-sm transition-all ${
-            copied
-              ? 'bg-emerald-600 text-white'
-              : 'bg-violet-600 hover:bg-violet-500 text-white glow-violet'
-          }`}
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+          style={{
+            background: 'var(--color-paper)',
+            color: 'var(--color-ink)',
+            fontWeight: 500,
+          }}
         >
-          {copied ? '✓ Copied!' : 'Copy Improved Prompt'}
-        </motion.button>
-
+          {copied ? (
+            <>
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                <path d="M2 7L6 11L12 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Copied
+            </>
+          ) : (
+            <>
+              Copy improved prompt
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </>
+          )}
+        </button>
         <button
           onClick={onReset}
-          className="px-5 py-3.5 rounded-xl font-semibold text-sm border border-[#1e2d4a] text-[#8b9cc8] hover:border-[#2d4070] hover:text-[#f0f4ff] transition-all"
+          className="text-sm underline-offset-4 hover:underline transition-all px-2"
+          style={{ color: 'var(--color-paper-mute)' }}
         >
-          Start Over
+          Start over
         </button>
       </div>
     </motion.div>
   )
+}
+
+function scoreColor(score: number): string {
+  if (score < 30) return '#C25E5E'
+  if (score < 60) return '#C99550'
+  return '#7FA875'
 }

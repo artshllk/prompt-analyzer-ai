@@ -68,15 +68,25 @@ export function PlaygroundClient({ isSignedIn }: PlaygroundClientProps) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#f0f4ff]">Prompt Playground</h1>
-        <p className="text-sm text-[#8b9cc8] mt-1">
+    <div className="max-w-3xl mx-auto px-6 md:px-10 py-12 md:py-16 space-y-10">
+      <header>
+        <p className="eyebrow mb-4">Playground</p>
+        <h1
+          className="display text-3xl md:text-5xl"
+          style={{ color: 'var(--color-paper)' }}
+        >
+          {isAnon ? (
+            <>Bring your worst prompt.</>
+          ) : (
+            <>Bring your prompt. <span className="display-italic" style={{ color: 'var(--color-paper-mute)' }}>We sharpen it.</span></>
+          )}
+        </h1>
+        <p className="mt-4 text-base md:text-lg leading-[1.55] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
           {isAnon
-            ? `Try it free — ${Math.max(0, effectiveLimit - anonCount)} of ${effectiveLimit} analyses left, no signup needed.`
-            : "Enter a prompt. I'll coach you to make it significantly better."}
+            ? `${Math.max(0, effectiveLimit - anonCount)} of ${effectiveLimit} free analyses left this session.`
+            : 'Paste anything — rough idea, half-finished request, one-liner. We score it, ask what is missing, and rewrite.'}
         </p>
-      </div>
+      </header>
 
       {anonGated ? (
         <SignupGate used={anonCount} limit={effectiveLimit} onEmailCaptured={handleEmailCaptured} />
@@ -149,22 +159,28 @@ export function PlaygroundClient({ isSignedIn }: PlaygroundClientProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="px-5 py-4 rounded-2xl border border-red-500/20 bg-red-500/5"
+          className="py-6"
+          style={{ borderTop: '1px solid var(--color-rule-strong)', borderBottom: '1px solid var(--color-rule-strong)' }}
         >
-          <p className="text-sm text-red-400">
+          <p className="eyebrow mb-2" style={{ color: '#C25E5E' }}>Hold on</p>
+          <p
+            className="font-serif text-xl md:text-2xl"
+            style={{ color: 'var(--color-paper)', lineHeight: 1.4, fontWeight: 400 }}
+          >
             {session.error === 'rate_limited'
-              ? 'You\'re going a bit fast. Try again in a moment.'
+              ? 'Slow down a moment — try again in a few seconds.'
               : session.error === 'network'
-              ? 'Network error. Please check your connection and try again.'
+              ? 'Network hiccup. Check your connection and try again.'
               : session.error === 'ai_unavailable'
-              ? 'AI service is temporarily unavailable. Please try again in a moment.'
+              ? 'The AI service is briefly unreachable. Try again in a moment.'
               : session.error === 'session_lost' || session.error === 'session_not_found'
-              ? 'Your session expired. Please start a new analysis.'
-              : 'Something went wrong. Please try again.'}
+              ? 'Your session expired. Start a new analysis.'
+              : 'Something went sideways on our end. Try again.'}
           </p>
           <button
             onClick={handleReset}
-            className="mt-2 text-xs text-red-400/70 hover:text-red-400 underline transition-colors"
+            className="mt-4 text-sm underline-offset-4 hover:underline transition-all"
+            style={{ color: 'var(--color-paper)' }}
           >
             Try again
           </button>

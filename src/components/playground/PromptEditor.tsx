@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import { ToneSelector } from './ToneSelector'
 import type { Tone } from '@/types/database'
 import type { SessionStage } from '@/hooks/usePromptSession'
@@ -16,12 +15,7 @@ interface PromptEditorProps {
   charCount: number
 }
 
-const PLACEHOLDER = `Describe what you want the AI to do...
-
-Examples:
-• "Write a blog post about..."
-• "Create a Python function that..."
-• "Explain how to..."`
+const PLACEHOLDER = 'A rough idea, a one-liner, or a request you have not finished writing…'
 
 export function PromptEditor({
   value,
@@ -40,7 +34,7 @@ export function PromptEditor({
     const ta = textareaRef.current
     if (!ta) return
     ta.style.height = 'auto'
-    ta.style.height = `${Math.min(ta.scrollHeight, 400)}px`
+    ta.style.height = `${Math.min(ta.scrollHeight, 360)}px`
   }, [value])
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -50,14 +44,14 @@ export function PromptEditor({
     }
   }
 
+  const overLimit = charCount > 2000
+
   return (
-    <div className="space-y-4">
-      {/* Textarea */}
-      <div className={`relative rounded-2xl border transition-all duration-200 ${
-        isDisabled
-          ? 'border-[#1e2d4a] bg-[#0a0e1a]/50'
-          : 'border-[#1e2d4a] bg-[#0f1628] focus-within:border-violet-500/60 focus-within:shadow-lg focus-within:shadow-violet-500/10'
-      }`}>
+    <div className={isDisabled ? 'opacity-60 pointer-events-none' : ''}>
+      <p className="eyebrow mb-3">Your prompt</p>
+
+      {/* Textarea — hairlines, no chunky card */}
+      <div style={{ borderTop: '1px solid var(--color-rule-strong)', borderBottom: '1px solid var(--color-rule-strong)' }}>
         <textarea
           ref={textareaRef}
           value={value}
@@ -66,55 +60,82 @@ export function PromptEditor({
           disabled={isDisabled}
           placeholder={PLACEHOLDER}
           rows={6}
-          className="w-full bg-transparent resize-none px-5 py-4 text-[#f0f4ff] placeholder:text-[#76819d] leading-relaxed outline-none disabled:opacity-60"
+          className="w-full bg-transparent resize-none py-5 text-base focus:outline-none"
+          style={{
+            color: 'var(--color-paper)',
+            fontFamily: 'var(--font-inter)',
+            lineHeight: 1.55,
+          }}
         />
-        <div className="flex items-center justify-between px-5 py-3 border-t border-[#1e2d4a]">
-          <span className={`text-xs ${charCount > 2000 ? 'text-amber-400' : 'text-[#8b9cc8]'}`}>
-            {charCount} chars
-          </span>
-          <span className="hidden sm:flex items-center gap-1.5 text-xs text-[#8b9cc8]">
-            <kbd className="px-1.5 py-0.5 rounded bg-[#1e2d4a] text-[#cdd5ee] font-mono text-[10px] border border-[#2d4070]">Enter</kbd>
-            <span className="text-[#8b9cc8]">to analyze</span>
-            <span className="text-[#2d4070] mx-0.5">·</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-[#1e2d4a] text-[#cdd5ee] font-mono text-[10px] border border-[#2d4070]">Shift + Enter</kbd>
-            <span className="text-[#8b9cc8]">for new line</span>
-          </span>
-        </div>
       </div>
 
-      {/* Tone selector */}
-      <div>
-        <p className="text-xs text-[#4a5a80] mb-2 uppercase tracking-wider">Explanation tone</p>
+      {/* Meta row */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mt-3">
+        <span
+          className="text-xs tabular-nums"
+          style={{ color: overLimit ? 'var(--color-accent)' : 'var(--color-paper-mute)' }}
+        >
+          {charCount} characters
+        </span>
+        <span className="hidden sm:block text-xs" style={{ color: 'var(--color-paper-mute)' }}>
+          Enter to analyze · Shift + Enter for newline
+        </span>
+      </div>
+
+      {/* Tone */}
+      <div className="mt-8">
+        <p className="eyebrow mb-3">Tone</p>
         <ToneSelector value={tone} onChange={onToneChange} disabled={isDisabled} />
       </div>
 
-      {/* Submit button */}
-      <motion.button
+      {/* Submit */}
+      <button
         onClick={onSubmit}
         disabled={isDisabled || !value.trim()}
-        whileHover={!isDisabled && value.trim() ? { scale: 1.01 } : {}}
-        whileTap={!isDisabled && value.trim() ? { scale: 0.99 } : {}}
-        className={`w-full py-4 rounded-2xl font-semibold text-base transition-all relative overflow-hidden ${
-          !value.trim()
-            ? 'bg-violet-600/30 border border-violet-500/30 text-violet-200/80 cursor-not-allowed'
-            : isLoading
-              ? 'bg-violet-600/80 text-white cursor-wait'
-              : 'bg-violet-600 hover:bg-violet-500 text-white glow-violet cursor-pointer'
-        }`}
+        className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-full text-[14px] transition-all hover:gap-3 disabled:opacity-40 disabled:cursor-not-allowed"
+        style={{
+          background: 'var(--color-paper)',
+          color: 'var(--color-ink)',
+          fontWeight: 500,
+        }}
       >
         {isLoading ? (
-          <span className="flex items-center justify-center gap-2">
-            <motion.span
-              className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full inline-block"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-            />
-            {stage === 'analyzing' ? 'Analyzing...' : 'Improving...'}
-          </span>
+          <>
+            <SpinnerDots />
+            {stage === 'analyzing' ? 'Reading your prompt…' : 'Rewriting…'}
+          </>
         ) : (
-          'Analyze Prompt'
+          <>
+            Analyze prompt
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </>
         )}
-      </motion.button>
+      </button>
     </div>
+  )
+}
+
+function SpinnerDots() {
+  return (
+    <span className="inline-flex items-center gap-1" aria-hidden>
+      {[0, 1, 2].map(i => (
+        <span
+          key={i}
+          className="block w-1 h-1 rounded-full"
+          style={{
+            background: 'var(--color-ink)',
+            animation: `pulse-dot 1.2s infinite ${i * 0.18}s`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 0.25; }
+          50% { opacity: 1; }
+        }
+      `}</style>
+    </span>
   )
 }

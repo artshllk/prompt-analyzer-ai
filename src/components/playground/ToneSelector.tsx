@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import type { Tone } from '@/types/database'
 
 interface ToneSelectorProps {
@@ -9,42 +8,41 @@ interface ToneSelectorProps {
   disabled?: boolean
 }
 
-const TONES: { id: Tone; label: string; icon: string; desc: string }[] = [
-  { id: 'professional', label: 'Professional', icon: '💼', desc: 'Formal & precise' },
-  { id: 'friendly', label: 'Friendly', icon: '😊', desc: 'Warm & approachable' },
-  { id: 'persuasive', label: 'Persuasive', icon: '🎯', desc: 'Impact-focused' },
-  { id: 'concise', label: 'Concise', icon: '⚡', desc: 'Minimal & direct' },
-  { id: 'creative', label: 'Creative', icon: '✨', desc: 'Expressive & vivid' },
+const TONES: { id: Tone; label: string }[] = [
+  { id: 'professional', label: 'Professional' },
+  { id: 'friendly', label: 'Friendly' },
+  { id: 'persuasive', label: 'Persuasive' },
+  { id: 'concise', label: 'Concise' },
+  { id: 'creative', label: 'Creative' },
 ]
 
+/**
+ * Editorial tone picker — segmented row of text labels separated by hairlines.
+ * No emoji, no pills, no violet. Selected tone is paper-bright; rest are muted.
+ */
 export function ToneSelector({ value, onChange, disabled }: ToneSelectorProps) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {TONES.map(tone => {
+    <div className="flex flex-wrap gap-x-1 gap-y-2">
+      {TONES.map((tone, i) => {
         const isSelected = value === tone.id
         return (
-          <motion.button
-            key={tone.id}
-            onClick={() => !disabled && onChange(tone.id)}
-            disabled={disabled}
-            whileHover={!disabled ? { scale: 1.03 } : {}}
-            whileTap={!disabled ? { scale: 0.97 } : {}}
-            className={`relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all border ${
-              isSelected
-                ? 'bg-violet-600/20 border-violet-500/50 text-violet-300'
-                : 'bg-[#0f1628] border-[#1e2d4a] text-[#8b9cc8] hover:border-[#2d4070] hover:text-[#f0f4ff]'
-            } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-          >
-            {isSelected && (
-              <motion.div
-                className="absolute inset-0 rounded-xl bg-violet-500/5"
-                layoutId="tone-selection"
-                transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-              />
-            )}
-            <span className="text-base">{tone.icon}</span>
-            <span>{tone.label}</span>
-          </motion.button>
+          <span key={tone.id} className="flex items-center">
+            {i > 0 && <span className="mx-2 text-sm" style={{ color: 'var(--color-rule-strong)' }}>·</span>}
+            <button
+              type="button"
+              onClick={() => !disabled && onChange(tone.id)}
+              disabled={disabled}
+              className={`text-sm transition-opacity ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+              style={{
+                color: isSelected ? 'var(--color-paper)' : 'var(--color-paper-mute)',
+                fontWeight: isSelected ? 500 : 400,
+                textDecoration: isSelected ? 'underline' : 'none',
+                textUnderlineOffset: '4px',
+              }}
+            >
+              {tone.label}
+            </button>
+          </span>
         )
       })}
     </div>
