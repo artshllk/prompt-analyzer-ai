@@ -107,7 +107,7 @@ function LoginInner() {
             {/* Google button — paper-on-ink, calm */}
             <button
               onClick={handleGoogle}
-              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-full text-[15px] transition-all"
+              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-full text-[15px] transition-all btn-paper"
               style={{
                 background: 'var(--color-paper)',
                 color: 'var(--color-ink)',
@@ -165,7 +165,7 @@ function LoginInner() {
                   <button
                     type="submit"
                     disabled={loading || !email.trim()}
-                    className="w-full py-3 rounded-full text-[14px] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full py-3 rounded-full text-[14px] transition-all btn-outline disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{
                       background: 'transparent',
                       color: 'var(--color-paper)',

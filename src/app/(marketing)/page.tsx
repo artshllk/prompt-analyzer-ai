@@ -100,7 +100,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 href="/playground"
-                className="px-4 py-2 rounded-full text-sm transition-all"
+                className="px-4 py-2 rounded-full text-sm transition-all btn-paper"
                 style={{
                   background: 'var(--color-paper)',
                   color: 'var(--color-ink)',
@@ -262,7 +262,7 @@ export default function LandingPage() {
           </h2>
           <Link
             href="/playground"
-            className="inline-flex items-center gap-2 px-7 py-4 rounded-full text-[15px] transition-all hover:gap-3"
+            className="inline-flex items-center gap-2 px-7 py-4 rounded-full text-[15px] transition-all hover:gap-3 btn-paper"
             style={{
               background: 'var(--color-paper)',
               color: 'var(--color-ink)',
