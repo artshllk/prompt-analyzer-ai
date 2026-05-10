@@ -270,7 +270,7 @@ export function InsightsClient() {
           </p>
           <Link
             href="/playground"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
             style={{
               background: 'var(--color-paper)',
               color: 'var(--color-ink)',
@@ -369,7 +369,7 @@ function EmptyState() {
         </p>
         <Link
           href="/playground"
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
           style={{
             background: 'var(--color-paper)',
             color: 'var(--color-ink)',
@@ -404,7 +404,7 @@ function BuildingState({ count }: { count: number }) {
         </p>
         <Link
           href="/playground"
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
           style={{
             background: 'var(--color-paper)',
             color: 'var(--color-ink)',

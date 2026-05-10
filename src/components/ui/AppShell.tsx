@@ -70,7 +70,7 @@ export function AppShell({ children }: AppShellProps) {
           onClick={() => setMobileOpen(o => !o)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
-          className="p-2 -mr-2"
+          className="p-2 -mr-2 btn-icon"
         >
           {mobileOpen ? (
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -136,7 +136,7 @@ export function AppShell({ children }: AppShellProps) {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="relative flex items-center justify-between gap-3 pl-5 pr-3 py-2.5 text-[14px] transition-colors"
+                    className="relative flex items-center justify-between gap-3 pl-5 pr-3 py-2.5 text-[14px] nav-item-hover"
                     style={{
                       color: isActive ? 'var(--color-paper)' : 'var(--color-paper-mute)',
                       fontWeight: isActive ? 500 : 400,
