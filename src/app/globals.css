@@ -1,10 +1,11 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter), var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif);
 
-  /* Brand colors */
+  /* Brand colors (legacy — used by app/dashboard/playground) */
   --color-base: #0a0e1a;
   --color-base-800: #0f1628;
   --color-base-700: #151d35;
@@ -30,6 +31,17 @@
   --color-text-primary: #f0f4ff;
   --color-text-secondary: #8b9cc8;
   --color-text-muted: #4a5a80;
+
+  /* Editorial palette (used by marketing pages) */
+  --color-ink: #0E0E10;          /* warm near-black */
+  --color-ink-soft: #15151A;
+  --color-ink-card: #1A1A20;
+  --color-paper: #F5F4F1;        /* warm off-white */
+  --color-paper-mute: #A8A6A0;
+  --color-rule: rgba(245, 244, 241, 0.10);
+  --color-rule-strong: rgba(245, 244, 241, 0.18);
+  --color-accent: #E8A33D;        /* single editorial accent: warm amber */
+  --color-accent-soft: rgba(232, 163, 61, 0.14);
 }
 
 * {
@@ -163,4 +175,90 @@ body {
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* ============================================================
+   Editorial design system (marketing pages)
+   ============================================================ */
+
+.editorial {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-feature-settings: 'ss01', 'cv01';
+}
+
+.font-serif {
+  font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
+  font-optical-sizing: auto;
+}
+
+/* Display headlines: tighter tracking, balanced wrap */
+.display {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.display-italic {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+/* Eyebrow: tiny, tracked, all caps */
+.eyebrow {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-paper-mute);
+}
+
+/* Subtle film grain — covers full page with low-opacity SVG noise */
+.grain::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Hairline rule */
+.rule {
+  height: 1px;
+  background: var(--color-rule);
+}
+
+.rule-strong {
+  height: 1px;
+  background: var(--color-rule-strong);
+}
+
+/* Editorial selection */
+.editorial ::selection {
+  background: var(--color-accent);
+  color: var(--color-ink);
+}
+
+/* Confident easing tokens used by JS motion */
+:root {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Reduced motion: disable transforms but keep opacity */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -8,12 +8,17 @@ interface UsageBarProps {
   onUpgrade?: () => void
 }
 
+/**
+ * Editorial usage indicator — hairline track, paper fill, no glow.
+ */
 export function UsageBar({ usage, onUpgrade }: UsageBarProps) {
   if (usage.tier === 'pro') {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0f1628] border border-[#1e2d4a]">
-        <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
-        <span className="text-xs text-[#8b9cc8]">Pro — Unlimited</span>
+      <div className="flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-accent)' }} />
+        <span className="text-[12px]" style={{ color: 'var(--color-paper-mute)' }}>
+          Pro &middot; Unlimited
+        </span>
       </div>
     )
   }
@@ -22,30 +27,38 @@ export function UsageBar({ usage, onUpgrade }: UsageBarProps) {
   const isNearLimit = pct >= 80
   const isAtLimit = usage.isAtLimit
 
+  const fillColor = isAtLimit ? '#C25E5E' : isNearLimit ? 'var(--color-accent)' : 'var(--color-paper)'
+  const numberColor = isAtLimit ? '#C25E5E' : isNearLimit ? 'var(--color-accent)' : 'var(--color-paper)'
+
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex-1 min-w-[120px]">
-        <div className="flex justify-between mb-1">
-          <span className="text-xs text-[#4a5a80]">Free tier</span>
-          <span className={`text-xs font-medium ${isAtLimit ? 'text-red-400' : isNearLimit ? 'text-amber-400' : 'text-[#8b9cc8]'}`}>
-            {usage.used}/{usage.limit}
-          </span>
-        </div>
-        <div className="h-1.5 rounded-full bg-[#1e2d4a] overflow-hidden">
-          <motion.div
-            className={`h-full rounded-full ${isAtLimit ? 'bg-red-500' : isNearLimit ? 'bg-amber-500' : 'bg-violet-500'}`}
-            initial={{ width: 0 }}
-            animate={{ width: `${pct}%` }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-          />
-        </div>
+    <div>
+      <div className="flex items-baseline justify-between mb-2">
+        <span
+          className="text-[10px] uppercase tracking-[0.16em]"
+          style={{ color: 'var(--color-paper-mute)' }}
+        >
+          Free
+        </span>
+        <span className="tabular-nums text-[12px]" style={{ color: numberColor }}>
+          {usage.used}<span style={{ color: 'var(--color-paper-mute)' }}>/{usage.limit}</span>
+        </span>
+      </div>
+      <div className="h-px w-full" style={{ background: 'var(--color-rule-strong)' }}>
+        <motion.div
+          className="h-px"
+          style={{ background: fillColor }}
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+        />
       </div>
       {(isNearLimit || isAtLimit) && onUpgrade && (
         <button
           onClick={onUpgrade}
-          className="text-xs font-medium text-violet-400 hover:text-violet-300 transition-colors shrink-0"
+          className="mt-3 text-[12px] underline-offset-4 hover:underline transition-all"
+          style={{ color: 'var(--color-paper)' }}
         >
-          Upgrade
+          Upgrade to Pro &rarr;
         </button>
       )}
     </div>

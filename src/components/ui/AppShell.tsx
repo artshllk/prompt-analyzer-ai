@@ -3,68 +3,44 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import type { UsageInfo } from '@/types'
-import { UsageBar } from './UsageBar'
-import { useState } from 'react'
-import { PaywallModal } from './PaywallModal'
+import { useEffect, useState } from 'react'
 
-const NAV_ITEMS = [
-  {
-    href: '/playground',
-    label: 'Playground',
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M2 4H14M2 8H10M2 12H7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M13 10L15 12L13 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M10.5 12H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/dashboard',
-    label: 'Dashboard',
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
-        <rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
-        <rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
-        <rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/history',
-    label: 'History',
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M8 5V8L10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/insights',
-    label: 'Insights',
-    isPro: true,
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M1 12L5 8L8 10L12 5L15 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
+const NAV_ITEMS: { href: string; label: string; isPro?: boolean }[] = [
+  { href: '/playground', label: 'Playground' },
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/history', label: 'History' },
+  { href: '/insights', label: 'Insights', isPro: true },
 ]
 
 interface AppShellProps {
   children: React.ReactNode
+  // Kept on the prop type for compatibility with existing callers; unused for now
+  // since the sidebar no longer renders a usage meter (limits surface contextually).
   usage?: UsageInfo
 }
 
-export function AppShell({ children, usage }: AppShellProps) {
+export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const [paywallOpen, setPaywallOpen] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  // Close mobile drawer on navigation
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
+
+  // Lock body scroll when drawer is open on mobile
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [mobileOpen])
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -74,60 +50,142 @@ export function AppShell({ children, usage }: AppShellProps) {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen relative" style={{ background: 'var(--color-ink)' }}>
+      {/* Mobile top bar */}
+      <header
+        className="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-5 py-3.5"
+        style={{
+          background: 'rgba(14,14,16,0.85)',
+          backdropFilter: 'blur(8px)',
+          borderBottom: '1px solid var(--color-rule)',
+        }}
+      >
+        <Link href="/dashboard" className="flex items-center gap-2.5">
+          <Image src="/logo.png" alt="Deepclario" width={26} height={26} priority />
+          <span className="text-[15px] tracking-tight" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>
+            Deepclario
+          </span>
+        </Link>
+        <button
+          onClick={() => setMobileOpen(o => !o)}
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={mobileOpen}
+          className="p-2 -mr-2"
+        >
+          {mobileOpen ? (
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M3 6H17M3 14H17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          )}
+        </button>
+      </header>
+
+      {/* Mobile backdrop */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            className="md:hidden fixed inset-0 z-30"
+            style={{ background: 'rgba(0,0,0,0.6)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
-      <aside className="w-60 shrink-0 flex flex-col border-r border-[#1e2d4a] bg-[#0a0e1a]">
-        {/* Logo */}
-        <div className="px-5 py-5 border-b border-[#1e2d4a]">
+      <aside
+        className={`
+          fixed md:sticky md:top-0 z-40 md:z-auto
+          w-64 md:w-60 shrink-0
+          h-screen md:h-screen
+          flex flex-col
+          transition-transform duration-300 ease-out
+          ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}
+        style={{
+          background: 'var(--color-ink)',
+          borderRight: '1px solid var(--color-rule)',
+        }}
+      >
+        {/* Logo (desktop only — mobile uses top bar) */}
+        <div className="hidden md:block px-6 py-6" style={{ borderBottom: '1px solid var(--color-rule)' }}>
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="Deepclario" width={28} height={28} className="rounded-md shrink-0" />
-            <span className="font-bold text-[#f0f4ff] tracking-tight">Deepclario</span>
+            <Image src="/logo.png" alt="Deepclario" width={32} height={32} priority />
+            <span className="text-[15px] tracking-tight" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>
+              Deepclario
+            </span>
           </Link>
         </div>
 
+        {/* Spacer for mobile (top bar height) */}
+        <div className="md:hidden h-16" />
+
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {NAV_ITEMS.map(item => {
-            const isActive = pathname.startsWith(item.href)
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group ${
-                  isActive
-                    ? 'bg-violet-600/15 text-violet-300 border border-violet-500/20'
-                    : 'text-[#8b9cc8] hover:bg-[#0f1628] hover:text-[#f0f4ff] border border-transparent'
-                }`}
-              >
-                <span className={isActive ? 'text-violet-400' : 'text-[#4a5a80] group-hover:text-[#8b9cc8]'}>
-                  {item.icon}
-                </span>
-                {item.label}
-                {item.isPro && (
-                  <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-violet-500/15 text-violet-400 border border-violet-500/20">
-                    PRO
-                  </span>
-                )}
-              </Link>
-            )
-          })}
+        <nav className="flex-1 px-3 py-5">
+          <ul className="space-y-px">
+            {NAV_ITEMS.map(item => {
+              const isActive = pathname.startsWith(item.href)
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="relative flex items-center justify-between gap-3 pl-5 pr-3 py-2.5 text-[14px] transition-colors"
+                    style={{
+                      color: isActive ? 'var(--color-paper)' : 'var(--color-paper-mute)',
+                      fontWeight: isActive ? 500 : 400,
+                    }}
+                    onMouseEnter={e => {
+                      if (!isActive) e.currentTarget.style.color = 'var(--color-paper)'
+                    }}
+                    onMouseLeave={e => {
+                      if (!isActive) e.currentTarget.style.color = 'var(--color-paper-mute)'
+                    }}
+                  >
+                    {/* Active indicator: hairline bar on the left */}
+                    {isActive && (
+                      <span
+                        aria-hidden
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5"
+                        style={{ background: 'var(--color-paper)' }}
+                      />
+                    )}
+                    <span>{item.label}</span>
+                    {item.isPro && (
+                      <span
+                        className="text-[10px] tracking-[0.16em] uppercase"
+                        style={{ color: 'var(--color-paper-mute)' }}
+                      >
+                        Pro
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
         </nav>
 
-        {/* Bottom: usage + settings */}
-        <div className="p-4 border-t border-[#1e2d4a] space-y-4">
-          {usage && (
-            <UsageBar usage={usage} onUpgrade={() => setPaywallOpen(true)} />
-          )}
-          <div className="flex items-center justify-between">
+        {/* Bottom: just settings + sign out. No usage meter — limits surface contextually. */}
+        <div className="p-5" style={{ borderTop: '1px solid var(--color-rule)' }}>
+          <div className="flex items-center justify-between text-[12px]">
             <Link
               href="/settings"
-              className="text-xs text-[#4a5a80] hover:text-[#8b9cc8] transition-colors"
+              className="transition-opacity hover:opacity-100"
+              style={{ color: 'var(--color-paper-mute)' }}
             >
               Settings
             </Link>
             <button
               onClick={handleSignOut}
-              className="text-xs text-[#4a5a80] hover:text-[#8b9cc8] transition-colors"
+              className="transition-opacity hover:opacity-100"
+              style={{ color: 'var(--color-paper-mute)' }}
             >
               Sign out
             </button>
@@ -135,12 +193,13 @@ export function AppShell({ children, usage }: AppShellProps) {
         </div>
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 overflow-y-auto bg-[#0a0e1a]">
+      {/* Main content */}
+      <main className="flex-1 min-w-0 overflow-y-auto">
+        {/* Push down on mobile to clear the top bar */}
+        <div className="md:hidden h-16" />
         {children}
       </main>
 
-      <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} />
     </div>
   )
 }

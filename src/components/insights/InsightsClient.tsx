@@ -15,34 +15,19 @@ interface InsightsData {
 }
 
 const TAG_LABELS: Record<string, { label: string; tip: string }> = {
-  context: {
-    label: 'Adding context',
-    tip: 'Try giving the AI background up front — who the audience is, what came before, why it matters.',
-  },
-  role: {
-    label: 'Assigning a role',
-    tip: 'Start with "Act as a..." to anchor the response in a specific perspective.',
-  },
-  format: {
-    label: 'Specifying format',
-    tip: 'Tell the AI exactly how to structure the output — bullet list, paragraphs, length, sections.',
-  },
-  constraints: {
-    label: 'Adding constraints',
-    tip: 'Set length limits, tone rules, or words to avoid. Constraints sharpen output.',
-  },
-  examples: {
-    label: 'Including examples',
-    tip: 'One example of what good looks like beats five adjectives every time.',
-  },
-  action: {
-    label: 'Clearer action verb',
-    tip: 'Replace fuzzy verbs ("help me with", "do something") with explicit ones ("rewrite", "summarize", "list").',
-  },
-  specificity: {
-    label: 'More specificity',
-    tip: 'Replace vague nouns and adjectives with concrete details and numbers.',
-  },
+  context: { label: 'adding context', tip: 'Try giving the model the background up front — who the audience is, what came before, why it matters.' },
+  role: { label: 'assigning a role', tip: 'Start with "Act as a..." to anchor the response in a specific perspective.' },
+  format: { label: 'specifying format', tip: 'Tell the model exactly how to structure the output — bullets, paragraphs, length, sections.' },
+  constraints: { label: 'adding constraints', tip: 'Length limits, tone rules, words to avoid. Constraints sharpen output.' },
+  examples: { label: 'including examples', tip: 'One example of what good looks like beats five adjectives every time.' },
+  action: { label: 'a clearer action verb', tip: 'Replace fuzzy verbs with explicit ones — "rewrite", "summarize", "list".' },
+  specificity: { label: 'more specificity', tip: 'Replace vague nouns and adjectives with concrete details and numbers.' },
+}
+
+function scoreColor(score: number): string {
+  if (score < 30) return '#C25E5E'
+  if (score < 60) return '#C99550'
+  return '#7FA875'
 }
 
 export function InsightsClient() {
@@ -63,9 +48,20 @@ export function InsightsClient() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3, 4].map(i => (
-          <div key={i} className="glass rounded-2xl p-5 border border-[#1e2d4a] h-24 shimmer" />
+      <div className="space-y-px">
+        <div className="rule-strong" />
+        {[1, 2, 3].map(i => (
+          <div key={i}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-6 py-8">
+              {[1, 2, 3, 4].map(j => (
+                <div key={j}>
+                  <div className="h-2 w-12 mb-3" style={{ background: 'var(--color-rule-strong)' }} />
+                  <div className="h-8 w-16" style={{ background: 'var(--color-rule-strong)' }} />
+                </div>
+              ))}
+            </div>
+            <div className="rule" />
+          </div>
         ))}
       </div>
     )
@@ -73,190 +69,249 @@ export function InsightsClient() {
 
   if (error || !data) {
     return (
-      <div className="glass rounded-2xl p-10 text-center border border-[#1e2d4a]">
-        <p className="text-[#8b9cc8] text-sm">We couldn&apos;t load your insights right now. Try again in a moment.</p>
-      </div>
+      <section className="py-12">
+        <div className="rule-strong" />
+        <p className="py-8 font-serif display-italic text-xl md:text-2xl" style={{ color: 'var(--color-paper-mute)' }}>
+          We couldn&rsquo;t load your insights right now. Try again in a moment.
+        </p>
+        <div className="rule-strong" />
+      </section>
     )
   }
 
   const noData = data.week.promptsCount === 0 && data.month.promptsCount === 0
   if (noData) return <EmptyState />
-
   if (data.week.promptsCount < 3) return <BuildingState count={data.week.promptsCount} />
 
-  // Week-over-week direction
   const wowDelta = data.week.avgAfter - data.prevWeek.avgAfter
-  const trendIcon = wowDelta > 0 ? '↑' : wowDelta < 0 ? '↓' : '→'
-  const trendColor = wowDelta > 0 ? 'text-emerald-400' : wowDelta < 0 ? 'text-rose-400' : 'text-[#8b9cc8]'
+  const trendArrow = wowDelta > 0 ? '↑' : wowDelta < 0 ? '↓' : '→'
 
-  // Biggest takeaway — pick the most-applied tag and turn it into a coaching note
   const topTag = data.topTags[0]
   const tagInfo = topTag ? TAG_LABELS[topTag.tag] : null
 
   return (
-    <div className="space-y-6">
-      {/* HEADLINE */}
-      <div className="rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-600/12 via-violet-500/5 to-cyan-500/5 p-6">
-        <p className="text-xs font-semibold text-violet-300 uppercase tracking-wider mb-2">Your week in prompts</p>
-        <h2 className="text-2xl md:text-3xl font-bold text-[#f0f4ff] leading-tight">
-          You analyzed <span className="text-violet-400">{data.week.promptsCount}</span> {plural('prompt', data.week.promptsCount)} this week.
-          Your average score went from{' '}
-          <span className="text-rose-300">{data.week.avgBefore}</span>
-          {' → '}
-          <span className="text-emerald-300">{data.week.avgAfter}</span>.
-        </h2>
-        {data.prevWeek.promptsCount > 0 && (
-          <p className="text-sm text-[#8b9cc8] mt-3">
-            <span className={trendColor}>{trendIcon} {Math.abs(wowDelta)} {plural('point', Math.abs(wowDelta))}</span>
-            {' '}vs. last week ({data.prevWeek.avgAfter} avg)
+    <div className="space-y-12">
+      {/* Headline pull-quote */}
+      <section className="grid md:grid-cols-12 gap-6 md:gap-12">
+        <div className="md:col-span-3">
+          <p className="eyebrow">Your week</p>
+        </div>
+        <div className="md:col-span-9">
+          <p
+            className="font-serif display-italic text-2xl md:text-[2.4rem] leading-tight"
+            style={{ color: 'var(--color-paper)' }}
+          >
+            You analyzed <span style={{ color: 'var(--color-paper)' }}>{data.week.promptsCount}</span> {plural('prompt', data.week.promptsCount)}.
+            Average score moved from{' '}
+            <span style={{ color: scoreColor(data.week.avgBefore) }}>{data.week.avgBefore}</span>
+            {' to '}
+            <span style={{ color: scoreColor(data.week.avgAfter) }}>{data.week.avgAfter}</span>.
           </p>
-        )}
-      </div>
+          {data.prevWeek.promptsCount > 0 && (
+            <p className="mt-4 text-base" style={{ color: 'var(--color-paper-mute)' }}>
+              <span style={{ color: wowDelta > 0 ? '#7FA875' : wowDelta < 0 ? '#C25E5E' : 'var(--color-paper-mute)' }}>
+                {trendArrow} {Math.abs(wowDelta)} {plural('point', Math.abs(wowDelta))}
+              </span>{' '}
+              vs. last week ({data.prevWeek.avgAfter} avg).
+            </p>
+          )}
+        </div>
+      </section>
 
-      {/* STREAK */}
+      {/* Streak — restrained, no fire emoji */}
       {data.streak > 0 && (
-        <div className="glass rounded-2xl p-5 border border-amber-500/20 bg-amber-500/5 flex items-center gap-4">
-          <div className="text-3xl">🔥</div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-[#f0f4ff]">
-              {data.streak}-day streak
-            </p>
-            <p className="text-xs text-[#8b9cc8] mt-0.5">
-              {data.streak >= 7
-                ? "You've improved a prompt every day this week. Keep it going."
-                : `Improve a prompt today to make it ${data.streak + 1} days.`}
-            </p>
+        <section>
+          <div className="rule-strong" />
+          <div className="grid grid-cols-12 gap-3 md:gap-6 py-6 items-baseline">
+            <div className="col-span-5 md:col-span-3">
+              <p className="eyebrow">Streak</p>
+            </div>
+            <div className="col-span-7 md:col-span-9">
+              <p className="text-base md:text-lg" style={{ color: 'var(--color-paper)' }}>
+                <span className="font-serif text-2xl md:text-3xl tabular-nums mr-2" style={{ fontWeight: 400 }}>
+                  {data.streak}
+                </span>
+                {data.streak === 1 ? 'day' : 'days'} in a row.{' '}
+                <span style={{ color: 'var(--color-paper-mute)' }}>
+                  {data.streak >= 7
+                    ? 'You have improved a prompt every day this week.'
+                    : `Run one today to make it ${data.streak + 1}.`}
+                </span>
+              </p>
+            </div>
           </div>
-        </div>
+          <div className="rule" />
+        </section>
       )}
 
-      {/* THIS WEEK'S TAKEAWAY */}
-      {tagInfo && (
-        <div className="glass rounded-2xl p-6 border border-[#1e2d4a]">
-          <p className="text-xs font-semibold text-[#4a5a80] uppercase tracking-wider mb-3">This week&apos;s takeaway</p>
-          <h3 className="text-lg font-bold text-[#f0f4ff] mb-2">
-            Your prompts most often needed: <span className="text-violet-400">{tagInfo.label.toLowerCase()}</span>
-          </h3>
-          <p className="text-sm text-[#8b9cc8] leading-relaxed mb-3">
-            Out of {data.week.promptsCount} {plural('prompt', data.week.promptsCount)}, this fix came up{' '}
-            <strong className="text-[#f0f4ff]">{topTag.count} {plural('time', topTag.count)}</strong>.
-          </p>
-          <div className="border-l-2 border-violet-500/40 pl-4 py-1">
-            <p className="text-sm text-[#cdd5ee] leading-relaxed">{tagInfo.tip}</p>
+      {/* Takeaway */}
+      {tagInfo && topTag && (
+        <section className="grid md:grid-cols-12 gap-6 md:gap-12">
+          <div className="md:col-span-3">
+            <p className="eyebrow" style={{ color: 'var(--color-accent)' }}>This week&rsquo;s takeaway</p>
           </div>
-        </div>
+          <div className="md:col-span-9">
+            <p className="text-base md:text-lg leading-[1.55] mb-3" style={{ color: 'var(--color-paper)' }}>
+              Your prompts most often needed{' '}
+              <span className="font-serif" style={{ fontStyle: 'italic' }}>
+                {tagInfo.label}
+              </span>
+              .
+            </p>
+            <p className="text-sm md:text-base mb-6" style={{ color: 'var(--color-paper-mute)' }}>
+              Out of {data.week.promptsCount} {plural('prompt', data.week.promptsCount)}, this fix came up{' '}
+              <span style={{ color: 'var(--color-paper)' }}>{topTag.count} {plural('time', topTag.count)}</span>.
+            </p>
+            <div className="pl-5" style={{ borderLeft: '1px solid var(--color-rule-strong)' }}>
+              <p className="font-serif text-base md:text-lg leading-[1.55]" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
+                {tagInfo.tip}
+              </p>
+            </div>
+          </div>
+        </section>
       )}
 
-      {/* DAILY ACTIVITY */}
-      <div className="glass rounded-2xl p-5 border border-[#1e2d4a]">
-        <div className="flex items-end justify-between mb-4">
-          <div>
-            <p className="text-xs font-semibold text-[#4a5a80] uppercase tracking-wider">Daily activity</p>
-            <p className="text-xs text-[#8b9cc8] mt-1">Last 14 days · taller bar = more prompts</p>
+      {/* Daily activity */}
+      <section>
+        <div className="rule-strong" />
+        <div className="py-7">
+          <div className="flex items-baseline justify-between mb-5">
+            <p className="eyebrow">Daily activity</p>
+            <p className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>
+              Last 14 days &middot; taller bar = more prompts
+            </p>
           </div>
+          <DailyBars data={data.dailyActivity} />
         </div>
-        <DailyBars data={data.dailyActivity} />
-      </div>
+        <div className="rule-strong" />
+      </section>
 
-      {/* WHAT YOU FIXED MOST */}
+      {/* What we added most */}
       {data.topTags.length > 0 && (
-        <div className="glass rounded-2xl p-5 border border-[#1e2d4a]">
-          <p className="text-xs font-semibold text-[#4a5a80] uppercase tracking-wider mb-1">What Deepclario added most often</p>
-          <p className="text-xs text-[#8b9cc8] mb-4">
-            These are the categories of fixes you&apos;d benefit from doing yourself first.
-          </p>
-          <div className="space-y-3">
+        <section className="grid md:grid-cols-12 gap-6 md:gap-12">
+          <div className="md:col-span-3">
+            <p className="eyebrow">What we added most</p>
+            <p className="text-xs mt-2" style={{ color: 'var(--color-paper-mute)' }}>
+              The categories of fixes you&rsquo;d benefit from doing yourself first.
+            </p>
+          </div>
+          <div className="md:col-span-9 space-y-4">
             {data.topTags.map((t, i) => {
               const max = data.topTags[0].count
               const pct = Math.max(8, Math.round((t.count / max) * 100))
               const info = TAG_LABELS[t.tag]
               return (
-                <div key={t.tag} className="flex items-center gap-3">
-                  <span className="text-sm text-[#cdd5ee] w-44 shrink-0">
+                <div key={t.tag} className="flex items-center gap-4">
+                  <span className="text-sm md:text-base shrink-0 w-44 capitalize" style={{ color: 'var(--color-paper)' }}>
                     {info?.label ?? t.tag.replace(/_/g, ' ')}
                   </span>
-                  <div className="flex-1 h-2 rounded-full bg-[#1e2d4a] overflow-hidden">
+                  <div className="flex-1 h-px" style={{ background: 'var(--color-rule-strong)' }}>
                     <div
-                      className={`h-full rounded-full ${i === 0 ? 'bg-violet-500' : 'bg-violet-500/40'}`}
-                      style={{ width: `${pct}%` }}
+                      className="h-px"
+                      style={{
+                        width: `${pct}%`,
+                        background: i === 0 ? 'var(--color-paper)' : 'var(--color-paper-mute)',
+                      }}
                     />
                   </div>
-                  <span className="text-xs font-semibold text-[#8b9cc8] w-8 text-right">{t.count}×</span>
+                  <span className="font-serif text-base tabular-nums w-10 text-right" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
+                    {t.count}
+                  </span>
                 </div>
               )
             })}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* HIGHLIGHT CARDS */}
-      <div className="grid md:grid-cols-2 gap-4">
-        {data.bestThisWeek && (
-          <HighlightCard
-            label="Top score this week"
-            color="emerald"
-            score={data.bestThisWeek.after}
-            scoreLabel={`from ${data.bestThisWeek.before}`}
-            prompt={data.bestThisWeek.prompt}
-          />
-        )}
-        {data.biggestLift && (
-          <HighlightCard
-            label="Biggest improvement"
-            color="violet"
-            score={`+${data.biggestLift.delta}`}
-            scoreLabel={`${data.biggestLift.before} → ${data.biggestLift.after}`}
-            prompt={data.biggestLift.prompt}
-          />
-        )}
-      </div>
+      {/* Highlights */}
+      {(data.bestThisWeek || data.biggestLift) && (
+        <section className="grid md:grid-cols-12 gap-y-10 md:gap-x-12">
+          {data.bestThisWeek && (
+            <div className="md:col-span-6">
+              <Highlight
+                label="Top score this week"
+                color="#7FA875"
+                primary={data.bestThisWeek.after}
+                secondary={`from ${data.bestThisWeek.before}`}
+                prompt={data.bestThisWeek.prompt}
+              />
+            </div>
+          )}
+          {data.biggestLift && (
+            <div className="md:col-span-6">
+              <Highlight
+                label="Biggest lift"
+                color="var(--color-accent)"
+                primary={`+${data.biggestLift.delta}`}
+                secondary={`${data.biggestLift.before} → ${data.biggestLift.after}`}
+                prompt={data.biggestLift.prompt}
+              />
+            </div>
+          )}
+        </section>
+      )}
 
-      {/* PRACTICE NUDGE */}
-      <div className="glass rounded-2xl p-6 border border-[#1e2d4a] text-center">
-        <p className="text-xs font-semibold text-[#4a5a80] uppercase tracking-wider mb-2">Try this week</p>
-        <p className="text-[#f0f4ff] font-medium mb-3">
-          Take a prompt you used this week and rewrite it before pasting into Deepclario.
-          {tagInfo && ` Focus on ${tagInfo.label.toLowerCase()}.`}
-        </p>
-        <p className="text-sm text-[#8b9cc8] mb-5 max-w-md mx-auto">
-          The fastest way to internalize the pattern is to attempt the fix yourself, then compare.
-        </p>
-        <Link
-          href="/playground"
-          className="inline-block px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all glow-violet"
-        >
-          Open the playground →
-        </Link>
-      </div>
+      {/* Practice nudge */}
+      <section className="grid md:grid-cols-12 gap-6 md:gap-12 pt-6" style={{ borderTop: '1px solid var(--color-rule-strong)' }}>
+        <div className="md:col-span-3">
+          <p className="eyebrow">Try this week</p>
+        </div>
+        <div className="md:col-span-9">
+          <p
+            className="font-serif display-italic text-xl md:text-2xl leading-tight mb-4"
+            style={{ color: 'var(--color-paper)' }}
+          >
+            Take a prompt you used this week and rewrite it before pasting into Deepclario.
+            {tagInfo && ` Focus on ${tagInfo.label}.`}
+          </p>
+          <p className="text-base leading-[1.55] mb-6" style={{ color: 'var(--color-paper-mute)' }}>
+            The fastest way to internalize the pattern is to attempt the fix yourself, then compare.
+          </p>
+          <Link
+            href="/playground"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+            style={{
+              background: 'var(--color-paper)',
+              color: 'var(--color-ink)',
+              fontWeight: 500,
+            }}
+          >
+            Open the playground
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
+        </div>
+      </section>
     </div>
   )
 }
 
-function HighlightCard({
+function Highlight({
   label,
   color,
-  score,
-  scoreLabel,
+  primary,
+  secondary,
   prompt,
 }: {
   label: string
-  color: 'emerald' | 'violet'
-  score: number | string
-  scoreLabel: string
+  color: string
+  primary: number | string
+  secondary: string
   prompt: string
 }) {
-  const colorClass =
-    color === 'emerald'
-      ? 'border-emerald-500/25 bg-emerald-500/5 text-emerald-300'
-      : 'border-violet-500/25 bg-violet-500/5 text-violet-300'
   return (
-    <div className={`rounded-2xl border ${colorClass.split(' ').slice(0, 2).join(' ')} p-5`}>
-      <p className="text-xs font-semibold text-[#4a5a80] uppercase tracking-wider mb-3">{label}</p>
-      <div className="flex items-baseline gap-2 mb-3">
-        <span className={`text-3xl font-bold ${colorClass.split(' ')[2]}`}>{score}</span>
-        <span className="text-xs text-[#8b9cc8]">{scoreLabel}</span>
+    <div>
+      <p className="eyebrow mb-3" style={{ color }}>{label}</p>
+      <div className="flex items-baseline gap-3 mb-4">
+        <span className="font-serif text-4xl md:text-5xl tabular-nums" style={{ color, fontWeight: 400 }}>{primary}</span>
+        <span className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>{secondary}</span>
       </div>
-      <p className="text-sm text-[#cdd5ee] italic leading-relaxed line-clamp-3">
+      <p
+        className="font-serif display-italic text-base md:text-lg leading-normal line-clamp-3"
+        style={{ color: 'var(--color-paper-mute)' }}
+      >
         &ldquo;{prompt}&rdquo;
       </p>
     </div>
@@ -271,16 +326,24 @@ function DailyBars({ data }: { data: { date: string; count: number; avgAfter: nu
         const h = d.count === 0 ? 4 : Math.max(8, Math.round((d.count / max) * 100))
         const day = new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' })[0]
         return (
-          <div key={d.date} className="flex-1 flex flex-col items-center gap-1.5 group relative">
+          <div key={d.date} className="flex-1 flex flex-col items-center gap-2 group relative">
             <div
-              className={`w-full rounded-md transition-all ${
-                d.count === 0 ? 'bg-[#1e2d4a]' : 'bg-violet-500/70 group-hover:bg-violet-400'
-              }`}
-              style={{ height: `${h}%` }}
+              className="w-full transition-all"
+              style={{
+                height: `${h}%`,
+                background: d.count === 0 ? 'var(--color-rule-strong)' : 'var(--color-paper)',
+              }}
             />
-            <span className="text-[10px] text-[#4a5a80]">{day}</span>
+            <span className="text-[10px]" style={{ color: 'var(--color-paper-mute)' }}>{day}</span>
             {d.count > 0 && (
-              <div className="absolute -top-9 left-1/2 -translate-x-1/2 hidden group-hover:block bg-[#0f1628] border border-[#2d4070] rounded-lg px-2 py-1 text-[11px] text-[#cdd5ee] whitespace-nowrap z-10">
+              <div
+                className="absolute -top-9 left-1/2 -translate-x-1/2 hidden group-hover:block whitespace-nowrap z-10 px-2 py-1 text-[11px]"
+                style={{
+                  background: 'var(--color-ink-card)',
+                  color: 'var(--color-paper)',
+                  border: '1px solid var(--color-rule-strong)',
+                }}
+              >
                 {d.count} {plural('prompt', d.count)} · avg {d.avgAfter}
               </div>
             )}
@@ -293,50 +356,68 @@ function DailyBars({ data }: { data: { date: string; count: number; avgAfter: nu
 
 function EmptyState() {
   return (
-    <div className="rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-600/8 to-cyan-500/4 p-10 text-center">
-      <div className="w-14 h-14 rounded-2xl bg-violet-500/15 border border-violet-500/25 flex items-center justify-center mx-auto mb-5">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-          <path d="M3 17V13M11 17V8M19 17V4" stroke="#a78bfa" strokeWidth="1.8" strokeLinecap="round"/>
-        </svg>
+    <section className="grid md:grid-cols-12 gap-6 md:gap-12 py-8">
+      <div className="md:col-span-4">
+        <p className="eyebrow">Empty</p>
       </div>
-      <h3 className="text-lg font-bold text-[#f0f4ff] mb-2">Your insights start here</h3>
-      <p className="text-sm text-[#8b9cc8] max-w-md mx-auto mb-5">
-        Analyze a few prompts and Deepclario will start spotting patterns — what you skip most often,
-        which fixes lift your scores the fastest, and how you&apos;re trending week over week.
-      </p>
-      <Link
-        href="/playground"
-        className="inline-block px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all glow-violet"
-      >
-        Analyze your first prompt →
-      </Link>
-    </div>
+      <div className="md:col-span-8">
+        <p className="font-serif display-italic text-2xl md:text-3xl leading-tight mb-6" style={{ color: 'var(--color-paper)' }}>
+          Insights start once you have run a few prompts.
+        </p>
+        <p className="text-base md:text-lg leading-[1.6] mb-8 max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
+          Analyze a few prompts and Deepclario will start spotting patterns &mdash; what you skip most often, which fixes lift your scores fastest, and how you trend week over week.
+        </p>
+        <Link
+          href="/playground"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+          style={{
+            background: 'var(--color-paper)',
+            color: 'var(--color-ink)',
+            fontWeight: 500,
+          }}
+        >
+          Analyze your first prompt
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Link>
+      </div>
+    </section>
   )
 }
 
 function BuildingState({ count }: { count: number }) {
   const remaining = 3 - count
   return (
-    <div className="rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-600/8 to-cyan-500/4 p-8 text-center">
-      <div className="w-12 h-12 rounded-2xl bg-violet-500/15 border border-violet-500/25 flex items-center justify-center mx-auto mb-4">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <circle cx="10" cy="10" r="8" stroke="#a78bfa" strokeWidth="1.6" />
-          <path d="M10 6V10L13 12" stroke="#a78bfa" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+    <section className="grid md:grid-cols-12 gap-6 md:gap-12 py-8">
+      <div className="md:col-span-4">
+        <p className="eyebrow">Warming up</p>
       </div>
-      <h3 className="text-lg font-bold text-[#f0f4ff] mb-2">Insights are warming up</h3>
-      <p className="text-sm text-[#8b9cc8] max-w-md mx-auto mb-5">
-        You&apos;ve analyzed {count} {plural('prompt', count)} this week. Run{' '}
-        <strong className="text-[#f0f4ff]">{remaining} more</strong>{' '}
-        and we&apos;ll start showing your patterns and weekly takeaways.
-      </p>
-      <Link
-        href="/playground"
-        className="inline-block px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all glow-violet"
-      >
-        Analyze another prompt →
-      </Link>
-    </div>
+      <div className="md:col-span-8">
+        <p className="font-serif display-italic text-2xl md:text-3xl leading-tight mb-6" style={{ color: 'var(--color-paper)' }}>
+          Insights are warming up.
+        </p>
+        <p className="text-base md:text-lg leading-[1.6] mb-8 max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
+          You&rsquo;ve analyzed {count} {plural('prompt', count)} this week. Run{' '}
+          <span style={{ color: 'var(--color-paper)' }}>{remaining} more</span>{' '}
+          and we&rsquo;ll start showing your patterns and weekly takeaways.
+        </p>
+        <Link
+          href="/playground"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+          style={{
+            background: 'var(--color-paper)',
+            color: 'var(--color-ink)',
+            fontWeight: 500,
+          }}
+        >
+          Analyze another prompt
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Link>
+      </div>
+    </section>
   )
 }
 
