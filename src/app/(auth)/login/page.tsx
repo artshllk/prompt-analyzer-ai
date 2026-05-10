@@ -122,6 +122,7 @@ function LoginInner() {
               </svg>
               Continue with Google
             </button>
+            <p className="mt-2 text-sm text-center text-slate-400">Secure authentication powered by Google</p>
 
             {/* Email path */}
             {!showEmail ? (

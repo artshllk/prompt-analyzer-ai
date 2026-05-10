@@ -13,7 +13,7 @@ export default function PrivacyPage() {
           <li><strong>Account info</strong> — your email and (if signing in with Google) your display name and avatar.</li>
           <li><strong>Prompts you submit</strong> — your original prompt, clarifications, and the AI-generated improvement, stored under your account.</li>
           <li><strong>Usage events</strong> — timestamp of each analysis, used solely to enforce free-tier limits.</li>
-          <li><strong>Billing metadata</strong> — Stripe customer and subscription IDs (not card numbers — those stay with Stripe).</li>
+          <li><strong>Billing metadata</strong> — Paddle customer and subscription IDs (not card numbers — those stay with Paddle).</li>
         </ul>
       </Section>
 
@@ -29,7 +29,7 @@ export default function PrivacyPage() {
         <ul className="list-disc pl-5 space-y-1.5">
           <li><strong>Google Gemini</strong> — your prompt is sent to Google to generate the improvement. Google&apos;s policy applies to that processing.</li>
           <li><strong>Supabase</strong> — auth and database hosting (data stored in the EU/US region of our project).</li>
-          <li><strong>Stripe</strong> — payment processing for Pro subscriptions.</li>
+          <li><strong>Paddle</strong> — payment processing for Pro subscriptions.</li>
           <li><strong>Vercel</strong> — application hosting.</li>
         </ul>
       </Section>
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
       </Section>
 
       <Section title="Data retention">
-        <p>Account data is kept until you delete your account. After deletion, all rows are removed within 24 hours, including Stripe customer linkage. Backup snapshots may persist up to 30 days.</p>
+        <p>Account data is kept until you delete your account. After deletion, all rows are removed within 24 hours, including Paddle customer linkage. Backup snapshots may persist up to 30 days.</p>
       </Section>
 
       <Section title="Contact">
