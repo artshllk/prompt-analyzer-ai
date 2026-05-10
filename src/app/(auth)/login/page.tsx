@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
@@ -33,7 +34,7 @@ function LoginInner() {
     return url.toString()
   }
 
-  async function handleMagicLink(e: React.FormEvent) {
+  async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email.trim()) return
     setLoading(true)
@@ -51,11 +52,11 @@ function LoginInner() {
     if (error) {
       const msg = error.message.toLowerCase()
       if (msg.includes('rate') || msg.includes('limit')) {
-        setError('Too many requests. Please wait a minute and try again.')
+        setError('Too many attempts. Wait a minute and try again.')
       } else if (msg.includes('email')) {
-        setError("We couldn't send the sign-in link. Try again or use Google.")
+        setError("We couldn't send the link. Try Google instead.")
       } else {
-        setError('Something went wrong. Please try again.')
+        setError('Something went sideways on our end. Try again.')
       }
     } else {
       setSent(true)
@@ -65,113 +66,152 @@ function LoginInner() {
   async function handleGoogle() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: callbackUrl(),
-      },
+      options: { redirectTo: callbackUrl() },
     })
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0e1a] px-4">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-violet-600/8 blur-3xl" />
-        <div className="absolute bottom-1/4 left-1/3 w-64 h-64 rounded-full bg-cyan-500/6 blur-3xl" />
-      </div>
+    <div
+      className="editorial grain min-h-screen flex flex-col items-center justify-center px-6 py-12"
+      style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}
+    >
+      {/* Brand mark */}
+      <Link href="/" className="flex items-center gap-2.5 mb-12 transition-opacity hover:opacity-80">
+        <Image src="/logo.png" alt="Deepclario" width={32} height={32} priority />
+        <span className="text-[15px] tracking-tight" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>
+          Deepclario
+        </span>
+      </Link>
 
       <motion.div
-        className="relative w-full max-w-sm"
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-sm"
       >
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2.5 mb-8">
-          <Image src="/logo.png" alt="Deepclario" width={32} height={32} className="rounded-md" />
-          <span className="text-xl font-bold text-[#f0f4ff]">Deepclario</span>
-        </div>
+        {sent ? (
+          <SentState email={email} onChange={() => { setSent(false); setEmail(''); setShowEmail(false) }} />
+        ) : (
+          <>
+            <p className="eyebrow mb-4">Sign in</p>
+            <h1
+              className="display text-4xl mb-3"
+              style={{ color: 'var(--color-paper)' }}
+            >
+              Welcome back.
+            </h1>
+            <p className="text-base leading-[1.55] mb-8" style={{ color: 'var(--color-paper-mute)' }}>
+              New here? An account is created the first time you sign in. No setup, no password.
+            </p>
 
-        <div className="glass rounded-2xl p-7 border border-[#1e2d4a]">
-          <div className="-top-px left-1/2 -translate-x-1/2 w-24 h-px bg-gradient-to-r from-transparent via-violet-500 to-transparent absolute" />
+            {/* Google button — paper-on-ink, calm */}
+            <button
+              onClick={handleGoogle}
+              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-full text-[15px] transition-all"
+              style={{
+                background: 'var(--color-paper)',
+                color: 'var(--color-ink)',
+                fontWeight: 500,
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+                <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+              </svg>
+              Continue with Google
+            </button>
 
-          {sent ? (
-            <div className="text-center py-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M4 10L8 14L16 6" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+            {/* Email path */}
+            {!showEmail ? (
+              <button
+                onClick={() => setShowEmail(true)}
+                className="block mx-auto mt-5 text-sm underline-offset-4 hover:underline transition-all"
+                style={{ color: 'var(--color-paper-mute)' }}
+              >
+                Or use email instead
+              </button>
+            ) : (
+              <div className="mt-8">
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="flex-1 h-px" style={{ background: 'var(--color-rule)' }} />
+                  <span className="eyebrow">Email</span>
+                  <span className="flex-1 h-px" style={{ background: 'var(--color-rule)' }} />
+                </div>
+                <form onSubmit={handleEmailSubmit} className="space-y-4">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                    autoFocus
+                    className="w-full px-0 py-3 text-base focus:outline-none transition-colors"
+                    style={{
+                      background: 'transparent',
+                      color: 'var(--color-paper)',
+                      borderTop: 'none',
+                      borderLeft: 'none',
+                      borderRight: 'none',
+                      borderBottom: '1px solid var(--color-rule-strong)',
+                      borderRadius: 0,
+                      fontFamily: 'var(--font-inter)',
+                    }}
+                  />
+                  {error && (
+                    <p className="text-xs" style={{ color: '#C25E5E' }}>{error}</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={loading || !email.trim()}
+                    className="w-full py-3 rounded-full text-[14px] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{
+                      background: 'transparent',
+                      color: 'var(--color-paper)',
+                      border: '1px solid var(--color-rule-strong)',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {loading ? 'Sending link…' : 'Send sign-in link'}
+                  </button>
+                </form>
               </div>
-              <h2 className="text-lg font-bold text-[#f0f4ff] mb-2">Check your inbox</h2>
-              <p className="text-sm text-[#8b9cc8]">
-                We sent a sign-in link to <strong className="text-[#f0f4ff]">{email}</strong>. Click it to continue.
-              </p>
-              <button
-                onClick={() => { setSent(false); setEmail(''); setShowEmail(false) }}
-                className="mt-4 text-xs text-violet-400 hover:text-violet-300 underline transition-colors"
-              >
-                Use a different method
-              </button>
-            </div>
-          ) : (
-            <>
-              <h1 className="text-xl font-bold text-[#f0f4ff] mb-1">Sign in to Deepclario</h1>
-              <p className="text-sm text-[#8b9cc8] mb-6">New? An account is created automatically on first sign in.</p>
-
-              <button
-                onClick={handleGoogle}
-                className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl bg-white hover:bg-white/95 text-[#0a0e1a] text-sm font-semibold transition-all mb-3 shadow-lg shadow-violet-500/10"
-              >
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-                  <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
-                  <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-                  <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-                </svg>
-                Continue with Google
-              </button>
-
-              {!showEmail ? (
-                <button
-                  onClick={() => setShowEmail(true)}
-                  className="w-full text-center py-2.5 text-sm text-[#8b9cc8] hover:text-[#f0f4ff] transition-colors"
-                >
-                  Or sign in with email
-                </button>
-              ) : (
-                <>
-                  <div className="flex items-center gap-3 my-4">
-                    <div className="flex-1 h-px bg-[#1e2d4a]" />
-                    <span className="text-xs text-[#4a5a80]">or with email</span>
-                    <div className="flex-1 h-px bg-[#1e2d4a]" />
-                  </div>
-                  <form onSubmit={handleMagicLink} className="space-y-3">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      placeholder="your@email.com"
-                      required
-                      autoFocus
-                      className="w-full bg-[#0a0e1a] border border-[#1e2d4a] focus:border-violet-500/60 rounded-xl px-4 py-3 text-[#f0f4ff] placeholder:text-[#2d4070] text-sm outline-none transition-colors"
-                    />
-                    {error && <p className="text-xs text-red-400">{error}</p>}
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all disabled:opacity-50"
-                    >
-                      {loading ? 'Sending link...' : 'Send sign-in link'}
-                    </button>
-                  </form>
-                </>
-              )}
-            </>
-          )}
-        </div>
-
-        <p className="text-center text-xs text-[#4a5a80] mt-4">
-          By continuing, you agree to our terms and privacy policy.
-        </p>
+            )}
+          </>
+        )}
       </motion.div>
+
+      <p className="mt-12 text-xs text-center max-w-sm leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
+        By continuing you agree to our{' '}
+        <Link href="/terms" className="underline underline-offset-4 hover:opacity-100" style={{ color: 'var(--color-paper)' }}>terms</Link>{' '}and{' '}
+        <Link href="/privacy" className="underline underline-offset-4 hover:opacity-100" style={{ color: 'var(--color-paper)' }}>privacy policy</Link>.
+      </p>
+    </div>
+  )
+}
+
+function SentState({ email, onChange }: { email: string; onChange: () => void }) {
+  return (
+    <div>
+      <p className="eyebrow mb-4" style={{ color: 'var(--color-accent)' }}>Link sent</p>
+      <h1 className="display text-4xl mb-4" style={{ color: 'var(--color-paper)' }}>
+        Check your inbox.
+      </h1>
+      <p className="text-base leading-[1.55] mb-2" style={{ color: 'var(--color-paper-mute)' }}>
+        We sent a sign-in link to{' '}
+        <span style={{ color: 'var(--color-paper)' }}>{email}</span>.
+      </p>
+      <p className="text-sm leading-[1.55] mb-8" style={{ color: 'var(--color-paper-mute)' }}>
+        Click it to continue. The link works once and expires in an hour.
+      </p>
+      <button
+        onClick={onChange}
+        className="text-sm underline-offset-4 hover:underline transition-all"
+        style={{ color: 'var(--color-paper)' }}
+      >
+        Use a different method
+      </button>
     </div>
   )
 }
