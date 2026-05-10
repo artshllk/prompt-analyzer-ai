@@ -1,21 +1,22 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AppShell } from '@/components/ui/AppShell'
-import { PublicNav } from '@/components/ui/PublicNav'
 import { getUsageInfo } from '@/lib/db/usage'
 
 export default async function PlaygroundLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Anonymous visitors use the homepage demo, not the playground.
+  // This removes the duplicate flow between /#try and /playground.
   if (!user) {
-    return (
-      <div className="min-h-screen bg-[#0a0e1a]">
-        <PublicNav />
-        <div className="pt-16">{children}</div>
-      </div>
-    )
+    redirect('/?try=1#try')
   }
 
   const usage = await getUsageInfo(user.id)
-  return <AppShell usage={usage}>{children}</AppShell>
+  return (
+    <div className="editorial grain min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
+      <AppShell usage={usage}>{children}</AppShell>
+    </div>
+  )
 }

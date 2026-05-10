@@ -11,5 +11,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const usage = await getUsageInfo(user.id)
 
-  return <AppShell usage={usage}>{children}</AppShell>
+  return (
+    <div className="editorial grain min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
+      <AppShell usage={usage}>{children}</AppShell>
+    </div>
+  )
 }
