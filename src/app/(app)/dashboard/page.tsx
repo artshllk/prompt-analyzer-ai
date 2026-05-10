@@ -66,7 +66,7 @@ export default async function DashboardPage({
         <div className="md:col-span-3 flex md:justify-end">
           <Link
             href="/playground"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
             style={{
               background: 'var(--color-paper)',
               color: 'var(--color-ink)',
@@ -170,7 +170,7 @@ export default async function DashboardPage({
           <div className="md:col-span-5 md:flex md:items-end md:justify-end">
             <UpgradeButton
               plan="pro_monthly"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper cursor-pointer"
             >
               <span>Upgrade &mdash; $4.99/mo</span>
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
@@ -244,7 +244,7 @@ function EmptyState() {
               <li key={s}>
                 <Link
                   href={`/playground?example=${encodeURIComponent(s)}`}
-                  className="block py-4 text-base md:text-lg transition-opacity hover:opacity-100"
+                  className="block px-4 -mx-4 py-4 text-base md:text-lg row-hover rounded-md"
                   style={{ color: 'var(--color-paper)' }}
                 >
                   &ldquo;{s}&rdquo;
@@ -257,7 +257,7 @@ function EmptyState() {
 
         <Link
           href="/playground"
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
           style={{
             background: 'var(--color-paper)',
             color: 'var(--color-ink)',

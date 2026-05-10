@@ -87,7 +87,7 @@ export default async function HistoryPage({
         <div className="md:col-span-3 flex md:justify-end">
           <Link
             href="/playground"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
             style={{
               background: 'var(--color-paper)',
               color: 'var(--color-ink)',
@@ -175,7 +175,7 @@ export default async function HistoryPage({
             </p>
             <Link
               href="/playground"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
               style={{
                 background: 'var(--color-paper)',
                 color: 'var(--color-ink)',
@@ -194,7 +194,7 @@ export default async function HistoryPage({
           <div className="rule-strong" />
           {sessions.map(session => (
             <details key={session.id} className="group">
-              <summary className="grid grid-cols-12 gap-3 md:gap-6 py-5 items-center cursor-pointer list-none">
+              <summary className="grid grid-cols-12 gap-3 md:gap-6 px-4 -mx-4 py-5 items-center cursor-pointer list-none row-hover rounded-md">
                 <div className="col-span-2 md:col-span-1">
                   <span
                     className="font-serif text-2xl tabular-nums"
