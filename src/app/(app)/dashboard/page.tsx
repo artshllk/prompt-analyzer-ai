@@ -3,32 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getUserSessions } from '@/lib/db/sessions'
 import { getUsageInfo } from '@/lib/db/usage'
-import { ClarityScoreBadge } from '@/components/ui/ClarityScoreBadge'
 import { UpgradeButton } from '@/components/ui/UpgradeButton'
-
-function ProgressRing({ used, limit }: { used: number; limit: number | null }) {
-  const pct = limit ? Math.min((used / limit) * 100, 100) : 0
-  const r = 20
-  const circ = 2 * Math.PI * r
-  const dash = (pct / 100) * circ
-  const color = pct > 80 ? '#f97316' : pct > 60 ? '#eab308' : '#7c3aed'
-  return (
-    <svg width="52" height="52" viewBox="0 0 52 52">
-      <circle cx="26" cy="26" r={r} fill="none" stroke="#1e2d4a" strokeWidth="4" />
-      <circle
-        cx="26" cy="26" r={r} fill="none"
-        stroke={color} strokeWidth="4"
-        strokeDasharray={`${dash} ${circ}`}
-        strokeLinecap="round"
-        transform="rotate(-90 26 26)"
-        style={{ transition: 'stroke-dasharray 0.6s ease' }}
-      />
-      <text x="26" y="30" textAnchor="middle" fill="#f0f4ff" fontSize="11" fontWeight="bold">
-        {limit ? `${used}` : '∞'}
-      </text>
-    </svg>
-  )
-}
 
 export default async function DashboardPage({
   searchParams,
@@ -42,225 +17,259 @@ export default async function DashboardPage({
   const params = await searchParams
 
   const [{ data: profile }, { sessions }, usage] = await Promise.all([
-    supabase.from('profiles').select('full_name, tier, onboarding_completed').eq('id', user.id).single(),
+    supabase.from('profiles').select('full_name, tier').eq('id', user.id).single(),
     getUserSessions(user.id, 5, 0),
     getUsageInfo(user.id),
   ])
 
-  const firstName = profile?.full_name?.split(' ')[0] ?? 'there'
+  const firstName = profile?.full_name?.split(' ')[0] ?? null
 
-  const completedSessions = sessions.filter(s => s.clarityScoreAfter && s.clarityScoreBefore)
-  const avgImprovement = completedSessions.length
-    ? Math.round(completedSessions.reduce((acc, s) => acc + (s.clarityScoreAfter! - s.clarityScoreBefore!), 0) / completedSessions.length)
-    : 0
-  const avgScoreAfter = completedSessions.length
-    ? Math.round(completedSessions.reduce((acc, s) => acc + s.clarityScoreAfter!, 0) / completedSessions.length)
-    : 0
+  const completed = sessions.filter(s => s.clarityScoreAfter && s.clarityScoreBefore)
+  const avgScoreAfter = completed.length
+    ? Math.round(completed.reduce((acc, s) => acc + s.clarityScoreAfter!, 0) / completed.length)
+    : null
+  const avgLift = completed.length
+    ? Math.round(completed.reduce((acc, s) => acc + (s.clarityScoreAfter! - s.clarityScoreBefore!), 0) / completed.length)
+    : null
 
   const isNew = sessions.length === 0
-  const streakDays = sessions.length > 0 ? Math.min(sessions.length, 7) : 0
+  const isPro = profile?.tier === 'pro'
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8 space-y-8">
-      {/* Welcome */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#f0f4ff]">
-            {params.upgraded ? '🎉 Welcome to Pro!' : `Hey, ${firstName}`}
+    <div className="max-w-5xl mx-auto px-6 md:px-10 py-12 md:py-16 space-y-16">
+      {/* Heading row */}
+      <header className="grid md:grid-cols-12 gap-6 md:gap-12 items-end">
+        <div className="md:col-span-9">
+          <p className="eyebrow mb-4">
+            {params.upgraded ? 'Pro is on' : 'Dashboard'}
+          </p>
+          <h1
+            className="display text-4xl md:text-6xl"
+            style={{ color: 'var(--color-paper)' }}
+          >
+            {params.upgraded ? (
+              <>Welcome to Pro.</>
+            ) : firstName ? (
+              <>Hello, <span className="display-italic" style={{ color: 'var(--color-paper-mute)' }}>{firstName}.</span></>
+            ) : (
+              <>Hello.</>
+            )}
           </h1>
-          <p className="text-sm text-[#8b9cc8] mt-1">
+          <p className="mt-5 text-base md:text-lg leading-[1.55] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
             {params.upgraded
-              ? 'Unlimited analyses, insights, and full history are now unlocked.'
+              ? 'Unlimited analyses, full history, and weekly insights are now available.'
               : isNew
-              ? 'Paste your first prompt and see how good it is.'
-              : 'Keep improving — your scores are trending up.'}
+              ? 'Paste your first prompt and see how it scores. The number is rarely flattering. The improvement always is.'
+              : 'Pick up where you left off, or run something new.'}
           </p>
         </div>
-        <Link
-          href="/playground"
-          className="shrink-0 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all glow-violet"
-        >
-          New prompt →
-        </Link>
-      </div>
-
-      {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {/* Usage */}
-        <div className="glass rounded-2xl p-4 border border-[#1e2d4a] flex items-center gap-3">
-          <ProgressRing used={usage.used} limit={usage.limit} />
-          <div>
-            <p className="text-xs text-[#4a5a80] uppercase tracking-wider">Used</p>
-            <p className="text-sm font-bold text-[#f0f4ff]">
-              {usage.used}{usage.limit ? `/${usage.limit}` : ''}
-            </p>
-            <p className="text-xs text-[#4a5a80]">this month</p>
-          </div>
-        </div>
-
-        <div className="glass rounded-2xl p-4 border border-[#1e2d4a]">
-          <p className="text-xs text-[#4a5a80] uppercase tracking-wider mb-1">Avg score</p>
-          <p className="text-2xl font-bold text-[#f0f4ff]">{avgScoreAfter || '—'}</p>
-          <p className="text-xs text-[#4a5a80]">after improvement</p>
-        </div>
-
-        <div className="glass rounded-2xl p-4 border border-[#1e2d4a]">
-          <p className="text-xs text-[#4a5a80] uppercase tracking-wider mb-1">Avg lift</p>
-          <p className={`text-2xl font-bold ${avgImprovement > 0 ? 'text-emerald-400' : 'text-[#f0f4ff]'}`}>
-            {avgImprovement > 0 ? `+${avgImprovement}` : '—'}
-          </p>
-          <p className="text-xs text-[#4a5a80]">clarity points</p>
-        </div>
-
-        <div className="glass rounded-2xl p-4 border border-[#1e2d4a]">
-          <p className="text-xs text-[#4a5a80] uppercase tracking-wider mb-1">Sessions</p>
-          <p className="text-2xl font-bold text-[#f0f4ff]">{sessions.length}</p>
-          <p className="text-xs text-[#4a5a80]">total</p>
-        </div>
-      </div>
-
-      {/* Streak nudge — only show when user has some sessions */}
-      {streakDays > 0 && streakDays < 7 && (
-        <div className="flex items-center gap-3 px-5 py-3.5 glass rounded-2xl border border-amber-500/20 bg-amber-500/5">
-          <span className="text-amber-400 text-lg">🔥</span>
-          <p className="text-sm text-[#f0f4ff]">
-            <span className="font-semibold">{streakDays} prompt{streakDays !== 1 ? 's' : ''} improved</span>
-            <span className="text-[#8b9cc8] ml-1">— keep going to build your streak</span>
-          </p>
-          <Link href="/playground" className="ml-auto text-xs text-amber-400 hover:text-amber-300 transition-colors shrink-0 font-semibold">
-            Continue →
+        <div className="md:col-span-3 flex md:justify-end">
+          <Link
+            href="/playground"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+            style={{
+              background: 'var(--color-paper)',
+              color: 'var(--color-ink)',
+              fontWeight: 500,
+            }}
+          >
+            New analysis
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </Link>
         </div>
+      </header>
+
+      {/* Stats — single horizontal data row, hairline above and below */}
+      {!isNew && (
+        <section>
+          <div className="rule-strong" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-6 py-8">
+            <Stat label="Used this month" value={String(usage.used)} sub={usage.limit ? `of ${usage.limit}` : 'of unlimited'} />
+            <Stat label="Average clarity" value={avgScoreAfter ? String(avgScoreAfter) : '—'} sub="after rewriting" />
+            <Stat label="Average lift" value={avgLift ? `+${avgLift}` : '—'} sub="points per prompt" accent={avgLift !== null && avgLift > 0} />
+            <Stat label="Sessions" value={String(sessions.length)} sub="all time" />
+          </div>
+          <div className="rule-strong" />
+        </section>
       )}
+
+      {/* Empty state — editorial prose, no emojis, no decoration */}
+      {isNew && <EmptyState />}
 
       {/* Recent sessions */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-[#f0f4ff] uppercase tracking-wider">Recent sessions</h2>
-          {sessions.length > 0 && (
-            <Link href="/history" className="text-xs text-violet-400 hover:text-violet-300 transition-colors">
-              View all →
-            </Link>
-          )}
-        </div>
-
-        {isNew ? (
-          <div className="rounded-2xl p-8 border border-violet-500/20 bg-gradient-to-br from-violet-600/8 to-cyan-500/4 relative overflow-hidden">
-            <div className="absolute -top-px left-1/2 -translate-x-1/2 w-32 h-px bg-gradient-to-r from-transparent via-violet-400 to-transparent" />
-            <div className="relative">
-              <h3 className="text-lg font-bold text-[#f0f4ff] mb-1.5">Analyze your first prompt</h3>
-              <p className="text-sm text-[#8b9cc8] mb-5 max-w-md">
-                Paste any prompt — even rough ideas work. Deepclario scores it, asks what&apos;s missing, then rewrites it.
-                Try one of these to see it in action:
-              </p>
-              <div className="space-y-2 mb-6">
-                {[
-                  'Write a landing page hero for my SaaS',
-                  'Help me refactor this auth code',
-                  'Summarize this research paper for a non-technical reader',
-                ].map(example => (
-                  <Link
-                    key={example}
-                    href={`/playground?example=${encodeURIComponent(example)}`}
-                    className="block px-4 py-2.5 rounded-xl border border-[#1e2d4a] bg-[#0f1628]/60 hover:border-violet-500/40 hover:bg-[#0f1628] text-sm text-[#cdd5ee] transition-all"
-                  >
-                    <span className="text-[#4a5a80] mr-2">→</span>
-                    {example}
-                  </Link>
-                ))}
-              </div>
-              <Link
-                href="/playground"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all glow-violet"
-              >
-                Start with my own prompt →
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {sessions.map(session => (
-              <div
-                key={session.id}
-                className="glass rounded-2xl p-4 border border-[#1e2d4a] hover:border-[#2d4070] transition-all"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="shrink-0">
-                    <ClarityScoreBadge
-                      score={session.clarityScoreAfter ?? session.clarityScoreBefore ?? 0}
-                      size="sm"
-                      animate={false}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-[#f0f4ff] truncate font-medium">
-                      {session.originalPrompt.slice(0, 100)}
-                      {session.originalPrompt.length > 100 ? '...' : ''}
-                    </p>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-xs text-[#4a5a80] capitalize">{session.tone}</span>
-                      {session.clarifyTurns > 0 && (
-                        <span className="text-xs text-[#4a5a80]">{session.clarifyTurns} clarification{session.clarifyTurns !== 1 ? 's' : ''}</span>
-                      )}
-                      <span className="text-xs text-[#4a5a80]">
-                        {new Date(session.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  {session.clarityScoreBefore && session.clarityScoreAfter && (
-                    <div className="shrink-0 flex items-center gap-1.5 text-xs">
-                      <span className="text-[#4a5a80]">{session.clarityScoreBefore}</span>
-                      <span className="text-[#2d4070]">→</span>
-                      <span className="text-emerald-400 font-bold">{session.clarityScoreAfter}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Pro upsell for free users */}
-      {profile?.tier === 'free' && !isNew && (
-        <div className="relative overflow-hidden rounded-2xl p-6 border border-violet-500/20 bg-gradient-to-br from-violet-600/10 to-cyan-500/5">
-          <div className="absolute -top-px left-1/2 -translate-x-1/2 w-48 h-px bg-gradient-to-r from-transparent via-violet-500 to-transparent" />
-          <div className="flex items-start justify-between gap-6">
-            <div>
-              <h3 className="font-bold text-[#f0f4ff] mb-1">See your full pattern report</h3>
-              <p className="text-sm text-[#8b9cc8] max-w-sm">
-                Pro users get weekly insight reports: your most common prompt gaps, your improvement
-                trend, and personalized tips. Starting at $4.99/mo.
-              </p>
-            </div>
-            <UpgradeButton
-              plan="pro_monthly"
-              className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all cursor-pointer"
+      {!isNew && (
+        <section>
+          <div className="flex items-baseline justify-between mb-5">
+            <p className="eyebrow">Recent sessions</p>
+            <Link
+              href="/history"
+              className="text-sm transition-opacity hover:opacity-100"
+              style={{ color: 'var(--color-paper-mute)' }}
             >
-              Unlock Pro →
-            </UpgradeButton>
+              View all &rarr;
+            </Link>
           </div>
-        </div>
+          <div className="space-y-px">
+            <div className="rule-strong" />
+            {sessions.map(s => {
+              const score = s.clarityScoreAfter ?? s.clarityScoreBefore ?? 0
+              return (
+                <div key={s.id}>
+                  <div className="grid grid-cols-12 gap-3 md:gap-6 py-5 items-center">
+                    <div className="col-span-2 md:col-span-1">
+                      <ScoreInline score={score} />
+                    </div>
+                    <div className="col-span-10 md:col-span-7 min-w-0">
+                      <p
+                        className="text-sm md:text-base truncate"
+                        style={{ color: 'var(--color-paper)' }}
+                      >
+                        {s.originalPrompt.length > 120 ? s.originalPrompt.slice(0, 120) + '…' : s.originalPrompt}
+                      </p>
+                      <p className="text-xs mt-1.5" style={{ color: 'var(--color-paper-mute)' }}>
+                        <span className="capitalize">{s.tone}</span>
+                        {s.clarifyTurns > 0 && <> &middot; {s.clarifyTurns} clarification{s.clarifyTurns !== 1 ? 's' : ''}</>}
+                      </p>
+                    </div>
+                    <div className="col-span-7 md:col-span-2 text-xs md:text-right" style={{ color: 'var(--color-paper-mute)' }}>
+                      {new Date(s.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </div>
+                    <div className="col-span-5 md:col-span-2 text-right">
+                      {s.clarityScoreBefore && s.clarityScoreAfter ? (
+                        <span className="text-xs md:text-sm tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
+                          {s.clarityScoreBefore} <span style={{ color: 'var(--color-paper-mute)' }}>&rarr;</span>{' '}
+                          <span style={{ color: 'var(--color-paper)' }}>{s.clarityScoreAfter}</span>
+                        </span>
+                      ) : (
+                        <span className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>in progress</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="rule" />
+                </div>
+              )
+            })}
+          </div>
+        </section>
       )}
 
-      {/* Quick tips for new users */}
-      {isNew && (
-        <div className="glass rounded-2xl border border-[#1e2d4a] p-5">
-          <h3 className="text-sm font-semibold text-[#f0f4ff] mb-4 uppercase tracking-wider">Quick tips</h3>
-          <ul className="space-y-3">
-            {[
-              { icon: '🎯', tip: 'A good prompt scores 80+. Most people start at 20–40 — and improve to 80+ after one session.' },
-              { icon: '💬', tip: 'When Deepclario asks a clarifying question, answer honestly. The more context, the better the rewrite.' },
-              { icon: '📋', tip: 'Copy the improved prompt and paste it directly into ChatGPT, Claude, or Gemini.' },
-            ].map(({ icon, tip }) => (
-              <li key={tip} className="flex items-start gap-3 text-sm text-[#8b9cc8]">
-                <span className="shrink-0">{icon}</span>
-                {tip}
+      {/* Pro upsell — editorial, no gradient, no glow */}
+      {!isPro && !isNew && (
+        <section className="grid md:grid-cols-12 gap-6 md:gap-12 pt-8" style={{ borderTop: '1px solid var(--color-rule)' }}>
+          <div className="md:col-span-7">
+            <p className="eyebrow mb-4" style={{ color: 'var(--color-accent)' }}>Pro</p>
+            <h2 className="display text-3xl md:text-4xl mb-4" style={{ color: 'var(--color-paper)' }}>
+              See your patterns over weeks, <span className="display-italic">not days.</span>
+            </h2>
+            <p className="text-base leading-[1.6] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
+              Unlimited analyses, full history, and a weekly report on the categories of fixes you reach for most often. The way to actually get sharper at this.
+            </p>
+          </div>
+          <div className="md:col-span-5 md:flex md:items-end md:justify-end">
+            <UpgradeButton
+              plan="pro_monthly"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 cursor-pointer"
+            >
+              <span>Upgrade &mdash; $4.99/mo</span>
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </UpgradeButton>
+          </div>
+        </section>
+      )}
+    </div>
+  )
+}
+
+/* ===== Sub-components ===== */
+
+function Stat({ label, value, sub, accent }: { label: string; value: string; sub: string; accent?: boolean }) {
+  return (
+    <div>
+      <p className="eyebrow mb-3">{label}</p>
+      <p
+        className="font-serif text-3xl md:text-4xl tabular-nums"
+        style={{
+          color: accent ? 'var(--color-accent)' : 'var(--color-paper)',
+          fontWeight: 400,
+        }}
+      >
+        {value}
+      </p>
+      <p className="text-xs mt-1.5" style={{ color: 'var(--color-paper-mute)' }}>{sub}</p>
+    </div>
+  )
+}
+
+function ScoreInline({ score }: { score: number }) {
+  const color = score < 30 ? '#C25E5E' : score < 60 ? '#C99550' : '#7FA875'
+  return (
+    <span className="font-serif text-2xl tabular-nums" style={{ color, fontWeight: 400 }}>
+      {score}
+    </span>
+  )
+}
+
+const SAMPLES = [
+  'Write a landing page hero for my SaaS',
+  'Help me refactor this auth code',
+  'Summarize this research paper for a non-technical reader',
+]
+
+function EmptyState() {
+  return (
+    <section className="grid md:grid-cols-12 gap-6 md:gap-12">
+      <div className="md:col-span-4">
+        <p className="eyebrow mb-4">Start here</p>
+      </div>
+      <div className="md:col-span-8 space-y-8">
+        <p
+          className="font-serif display-italic text-2xl md:text-[2rem] leading-tight"
+          style={{ color: 'var(--color-paper)' }}
+        >
+          The fastest way to write a better prompt is to read your last one and notice what is missing.
+        </p>
+        <p className="text-base md:text-lg leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
+          Paste anything &mdash; a rough idea, a one-liner, a request you have not finished writing. Deepclario scores it, asks the questions a senior engineer would ask, and rewrites until the model has no excuse to misunderstand.
+        </p>
+
+        <div>
+          <p className="eyebrow mb-3">Try one of these</p>
+          <ul className="space-y-px">
+            <li className="rule-strong" />
+            {SAMPLES.map(s => (
+              <li key={s}>
+                <Link
+                  href={`/playground?example=${encodeURIComponent(s)}`}
+                  className="block py-4 text-base md:text-lg transition-opacity hover:opacity-100"
+                  style={{ color: 'var(--color-paper)' }}
+                >
+                  &ldquo;{s}&rdquo;
+                </Link>
+                <div className="rule" />
               </li>
             ))}
           </ul>
         </div>
-      )}
-    </div>
+
+        <Link
+          href="/playground"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+          style={{
+            background: 'var(--color-paper)',
+            color: 'var(--color-ink)',
+            fontWeight: 500,
+          }}
+        >
+          Use my own prompt
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Link>
+      </div>
+    </section>
   )
 }

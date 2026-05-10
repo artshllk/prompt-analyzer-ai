@@ -17,49 +17,57 @@ export default async function InsightsPage() {
   const isPro = profile?.tier === 'pro'
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#f0f4ff]">Insights</h1>
-        <p className="text-sm text-[#8b9cc8] mt-1">Weekly patterns and improvement trends.</p>
-      </div>
+    <div className="max-w-5xl mx-auto px-6 md:px-10 py-12 md:py-16 space-y-12">
+      {/* Heading */}
+      <header>
+        <p className="eyebrow mb-4">Insights</p>
+        <h1 className="display text-4xl md:text-6xl" style={{ color: 'var(--color-paper)' }}>
+          Patterns over weeks, <span className="display-italic" style={{ color: 'var(--color-paper-mute)' }}>not days.</span>
+        </h1>
+        <p className="mt-5 text-base md:text-lg leading-[1.55] max-w-2xl" style={{ color: 'var(--color-paper-mute)' }}>
+          The quiet trends in how you ask AI &mdash; the gaps you keep leaving, the dimensions that lift your scores fastest, the weeks you got measurably sharper.
+        </p>
+      </header>
 
       {isPro ? (
         <InsightsClient />
       ) : (
-        <div className="relative overflow-hidden rounded-2xl border border-[#1e2d4a]">
-          {/* Blurred preview */}
-          <div className="blur-sm pointer-events-none select-none p-8 space-y-6" aria-hidden>
-            <div className="grid grid-cols-3 gap-4">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="glass rounded-2xl p-5 border border-[#1e2d4a]">
-                  <div className="h-3 w-16 rounded shimmer mb-3" />
-                  <div className="h-8 w-12 rounded shimmer" />
-                </div>
-              ))}
-            </div>
-            <div className="glass rounded-2xl p-5 border border-[#1e2d4a] h-32 shimmer" />
-          </div>
-
-          {/* Overlay */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0e1a]/60 backdrop-blur-sm">
-            <div className="w-12 h-12 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mb-4">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15.5L5 18L6 12.5L2 8.5L7.5 7.5L10 2Z" stroke="#7c3aed" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <p className="text-lg font-bold text-[#f0f4ff] mb-1">Pro Feature</p>
-            <p className="text-sm text-[#8b9cc8] text-center max-w-xs mb-5">
-              Weekly insights show your common mistakes, improvement trends, and patterns.
-            </p>
-            <UpgradeButton
-              plan="pro_monthly"
-              className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all glow-violet cursor-pointer"
-            >
-              Upgrade to Pro — $4.99/mo
-            </UpgradeButton>
-          </div>
-        </div>
+        <ProGate />
       )}
     </div>
+  )
+}
+
+function ProGate() {
+  return (
+    <section className="py-10">
+      <div className="rule-strong" />
+      <div className="grid md:grid-cols-12 gap-6 md:gap-12 py-12">
+        <div className="md:col-span-3">
+          <p className="eyebrow" style={{ color: 'var(--color-accent)' }}>Pro</p>
+        </div>
+        <div className="md:col-span-9">
+          <p
+            className="font-serif display-italic text-2xl md:text-[2rem] leading-tight mb-6"
+            style={{ color: 'var(--color-paper)' }}
+          >
+            Insights are how you actually get sharper at this &mdash; the report shows what you keep forgetting and what you have started doing better.
+          </p>
+          <p className="text-base md:text-lg leading-[1.6] max-w-xl mb-8" style={{ color: 'var(--color-paper-mute)' }}>
+            A weekly note covering your most common gaps, the dimensions where your scores lift the fastest, and how this week compares to last. Quiet, useful, no charts for the sake of charts.
+          </p>
+          <UpgradeButton
+            plan="pro_monthly"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 cursor-pointer"
+          >
+            <span>Upgrade &mdash; $4.99/mo</span>
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </UpgradeButton>
+        </div>
+      </div>
+      <div className="rule-strong" />
+    </section>
   )
 }

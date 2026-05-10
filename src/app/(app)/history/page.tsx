@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getUserSessions } from '@/lib/db/sessions'
-import { ClarityScoreBadge } from '@/components/ui/ClarityScoreBadge'
 
 function ScoreTrend({ sessions }: { sessions: Array<{ clarityScoreAfter?: number | null; clarityScoreBefore?: number | null }> }) {
   const points = sessions
@@ -13,7 +12,7 @@ function ScoreTrend({ sessions }: { sessions: Array<{ clarityScoreAfter?: number
 
   if (points.length < 2) return null
 
-  const w = 80, h = 28
+  const w = 96, h = 28
   const min = Math.min(...points) - 5
   const max = Math.max(...points) + 5
   const xs = points.map((_, i) => (i / (points.length - 1)) * w)
@@ -21,17 +20,24 @@ function ScoreTrend({ sessions }: { sessions: Array<{ clarityScoreAfter?: number
   const path = xs.map((x, i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ')
 
   const trend = points[points.length - 1] - points[0]
+  const color = trend >= 0 ? '#7FA875' : '#C25E5E'
 
   return (
     <div className="flex items-center gap-2">
       <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible">
-        <path d={path} fill="none" stroke={trend >= 0 ? '#34d399' : '#f87171'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={path} fill="none" stroke={color} strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      <span className={`text-xs font-bold ${trend >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+      <span className="font-serif text-base tabular-nums" style={{ color, fontWeight: 400 }}>
         {trend >= 0 ? '+' : ''}{trend}
       </span>
     </div>
   )
+}
+
+function scoreColor(score: number): string {
+  if (score < 30) return '#C25E5E'
+  if (score < 60) return '#C99550'
+  return '#7FA875'
 }
 
 export default async function HistoryPage({
@@ -64,163 +70,255 @@ export default async function HistoryPage({
   ) : null
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8 space-y-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#f0f4ff]">Session History</h1>
-          <p className="text-sm text-[#8b9cc8] mt-1">{total} session{total !== 1 ? 's' : ''} total</p>
+    <div className="max-w-5xl mx-auto px-6 md:px-10 py-12 md:py-16 space-y-12">
+      {/* Heading */}
+      <header className="grid md:grid-cols-12 gap-6 md:gap-12 items-end">
+        <div className="md:col-span-9">
+          <p className="eyebrow mb-4">History</p>
+          <h1 className="display text-4xl md:text-6xl" style={{ color: 'var(--color-paper)' }}>
+            {total === 0 ? <>Nothing yet.</> : <>Every prompt <span className="display-italic" style={{ color: 'var(--color-paper-mute)' }}>you have sharpened.</span></>}
+          </h1>
+          {total > 0 && (
+            <p className="mt-5 text-base md:text-lg leading-[1.55] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
+              {total} session{total !== 1 ? 's' : ''}. Click any one to see the original, the questions we asked, and the rewrite.
+            </p>
+          )}
         </div>
-        <Link
-          href="/playground"
-          className="shrink-0 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all glow-violet"
-        >
-          New prompt →
-        </Link>
-      </div>
-
-      {/* Summary stats */}
-      {completed.length >= 2 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="glass rounded-2xl p-4 border border-[#1e2d4a]">
-            <p className="text-xs text-[#4a5a80] uppercase tracking-wider mb-1">Avg before</p>
-            <p className="text-2xl font-bold text-red-400">{avgBefore}</p>
-            <p className="text-xs text-[#4a5a80]">clarity score</p>
-          </div>
-          <div className="glass rounded-2xl p-4 border border-[#1e2d4a]">
-            <p className="text-xs text-[#4a5a80] uppercase tracking-wider mb-1">Avg after</p>
-            <p className="text-2xl font-bold text-emerald-400">{avgAfter}</p>
-            <p className="text-xs text-[#4a5a80]">clarity score</p>
-          </div>
-          <div className="glass rounded-2xl p-4 border border-[#1e2d4a]">
-            <p className="text-xs text-[#4a5a80] uppercase tracking-wider mb-1">Avg lift</p>
-            <p className="text-2xl font-bold text-violet-400">+{avgLift}</p>
-            <p className="text-xs text-[#4a5a80]">per session</p>
-          </div>
-          <div className="glass rounded-2xl p-4 border border-[#1e2d4a]">
-            <p className="text-xs text-[#4a5a80] uppercase tracking-wider mb-1">Score trend</p>
-            <ScoreTrend sessions={allForStats.sessions} />
-          </div>
-        </div>
-      )}
-
-      {/* Best session callout */}
-      {bestSession && (
-        <div className="flex items-center gap-4 px-5 py-4 glass rounded-2xl border border-amber-500/20 bg-amber-500/5">
-          <span className="text-2xl shrink-0">🏆</span>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-[#f0f4ff]">Your best improvement</p>
-            <p className="text-xs text-[#8b9cc8] truncate mt-0.5">{bestSession.originalPrompt.slice(0, 80)}...</p>
-          </div>
-          <div className="shrink-0 flex items-center gap-1.5 text-sm font-bold">
-            <span className="text-red-400">{bestSession.clarityScoreBefore}</span>
-            <span className="text-[#2d4070]">→</span>
-            <span className="text-emerald-400">{bestSession.clarityScoreAfter}</span>
-          </div>
-        </div>
-      )}
-
-      {sessions.length === 0 ? (
-        <div className="glass rounded-2xl p-12 text-center border border-[#1e2d4a]">
-          <p className="text-[#8b9cc8] mb-4">No sessions yet.</p>
-          <Link href="/playground" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
-            Start your first analysis →
+        <div className="md:col-span-3 flex md:justify-end">
+          <Link
+            href="/playground"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+            style={{
+              background: 'var(--color-paper)',
+              color: 'var(--color-ink)',
+              fontWeight: 500,
+            }}
+          >
+            New analysis
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </Link>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {sessions.map(session => (
-            <details key={session.id} className="group glass rounded-2xl border border-[#1e2d4a] hover:border-[#2d4070] transition-all overflow-hidden">
-              <summary className="flex items-start gap-4 p-4 cursor-pointer list-none">
-                <div className="shrink-0 mt-0.5">
-                  <ClarityScoreBadge
-                    score={session.clarityScoreAfter ?? session.clarityScoreBefore ?? 0}
-                    size="sm"
-                    animate={false}
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-[#f0f4ff] font-medium leading-snug">
-                    {session.originalPrompt.slice(0, 120)}
-                    {session.originalPrompt.length > 120 ? '...' : ''}
-                  </p>
-                  <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                    <span className="text-xs text-[#4a5a80] capitalize">{session.tone}</span>
-                    <span className="text-xs text-[#4a5a80] capitalize">{session.status}</span>
-                    {session.clarifyTurns > 0 && (
-                      <span className="text-xs text-[#4a5a80]">{session.clarifyTurns} Q&amp;A{session.clarifyTurns !== 1 ? 's' : ''}</span>
-                    )}
-                    <span className="text-xs text-[#4a5a80]">
-                      {new Date(session.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </span>
-                  </div>
-                </div>
-                {session.clarityScoreBefore != null && session.clarityScoreAfter != null && (
-                  <div className="shrink-0 flex items-center gap-1.5 text-xs font-bold">
-                    <span className="text-red-400">{session.clarityScoreBefore}</span>
-                    <span className="text-[#2d4070]">→</span>
-                    <span className="text-emerald-400">{session.clarityScoreAfter}</span>
-                    <span className="text-emerald-400 ml-1">(+{session.clarityScoreAfter - session.clarityScoreBefore})</span>
-                  </div>
-                )}
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
-                  className="shrink-0 text-[#4a5a80] group-open:rotate-180 transition-transform">
-                  <path d="M3 5L7 9L11 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </summary>
+      </header>
 
-              <div className="px-4 pb-4 space-y-3 border-t border-[#1e2d4a] pt-4">
-                <div>
-                  <p className="text-xs text-[#4a5a80] uppercase tracking-wider mb-2">Original</p>
-                  <p className="text-sm text-[#8b9cc8] leading-relaxed whitespace-pre-wrap bg-[#0a0e1a] rounded-xl p-3">
-                    {session.originalPrompt}
-                  </p>
-                </div>
-
-                {session.exchanges.length > 0 && (
-                  <div>
-                    <p className="text-xs text-[#4a5a80] uppercase tracking-wider mb-2">Clarifications</p>
-                    <div className="space-y-2">
-                      {session.exchanges.map(e => (
-                        <div key={e.turn} className="bg-[#0a0e1a] rounded-xl p-3 space-y-1.5">
-                          <p className="text-xs text-amber-400">Q: {e.question}</p>
-                          {e.answer && <p className="text-xs text-[#8b9cc8]">A: {e.answer}</p>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {session.improvement && (
-                  <div>
-                    <p className="text-xs text-[#4a5a80] uppercase tracking-wider mb-2">Improved prompt</p>
-                    <p className="text-sm text-[#f0f4ff] leading-relaxed whitespace-pre-wrap bg-violet-500/5 border border-violet-500/20 rounded-xl p-3">
-                      {session.improvement.improvedPrompt}
-                    </p>
-                    <p className="text-xs text-[#8b9cc8] mt-2 leading-relaxed">{session.improvement.explanation}</p>
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {session.improvement.improvementTags.map(tag => (
-                        <span key={tag} className="text-[10px] px-2 py-0.5 rounded-md bg-violet-500/10 border border-violet-500/20 text-violet-400 capitalize">
-                          +{tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </details>
-          ))}
-        </div>
+      {/* Summary stats — single horizontal data row */}
+      {completed.length >= 2 && (
+        <section>
+          <div className="rule-strong" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-6 py-8">
+            <div>
+              <p className="eyebrow mb-3">Average before</p>
+              <p className="font-serif text-3xl md:text-4xl tabular-nums" style={{ color: scoreColor(avgBefore), fontWeight: 400 }}>{avgBefore}</p>
+              <p className="text-xs mt-1.5" style={{ color: 'var(--color-paper-mute)' }}>clarity score</p>
+            </div>
+            <div>
+              <p className="eyebrow mb-3">Average after</p>
+              <p className="font-serif text-3xl md:text-4xl tabular-nums" style={{ color: scoreColor(avgAfter), fontWeight: 400 }}>{avgAfter}</p>
+              <p className="text-xs mt-1.5" style={{ color: 'var(--color-paper-mute)' }}>clarity score</p>
+            </div>
+            <div>
+              <p className="eyebrow mb-3">Average lift</p>
+              <p className="font-serif text-3xl md:text-4xl tabular-nums" style={{ color: 'var(--color-accent)', fontWeight: 400 }}>+{avgLift}</p>
+              <p className="text-xs mt-1.5" style={{ color: 'var(--color-paper-mute)' }}>per session</p>
+            </div>
+            <div>
+              <p className="eyebrow mb-3">Trend</p>
+              <ScoreTrend sessions={allForStats.sessions} />
+            </div>
+          </div>
+          <div className="rule-strong" />
+        </section>
       )}
 
+      {/* Best session callout — editorial pull-quote */}
+      {bestSession && (
+        <section className="grid md:grid-cols-12 gap-6 md:gap-12 py-2">
+          <div className="md:col-span-3">
+            <p className="eyebrow">Your best lift</p>
+          </div>
+          <div className="md:col-span-9">
+            <p
+              className="font-serif display-italic text-xl md:text-2xl leading-tight mb-3"
+              style={{ color: 'var(--color-paper)' }}
+            >
+              &ldquo;{bestSession.originalPrompt.slice(0, 120)}{bestSession.originalPrompt.length > 120 ? '…' : ''}&rdquo;
+            </p>
+            <div className="flex items-baseline gap-2 text-base">
+              <span className="font-serif tabular-nums text-2xl" style={{ color: scoreColor(bestSession.clarityScoreBefore!), fontWeight: 400 }}>
+                {bestSession.clarityScoreBefore}
+              </span>
+              <span style={{ color: 'var(--color-paper-mute)' }}>→</span>
+              <span className="font-serif tabular-nums text-2xl" style={{ color: scoreColor(bestSession.clarityScoreAfter!), fontWeight: 400 }}>
+                {bestSession.clarityScoreAfter}
+              </span>
+              <span className="text-sm ml-1" style={{ color: 'var(--color-accent)' }}>
+                +{bestSession.clarityScoreAfter! - bestSession.clarityScoreBefore!}
+              </span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Sessions list */}
+      {sessions.length === 0 ? (
+        <section className="grid md:grid-cols-12 gap-6 md:gap-12 py-8">
+          <div className="md:col-span-4">
+            <p className="eyebrow">Empty</p>
+          </div>
+          <div className="md:col-span-8">
+            <p
+              className="font-serif display-italic text-2xl md:text-3xl leading-tight mb-6"
+              style={{ color: 'var(--color-paper)' }}
+            >
+              You have not run anything through the playground yet.
+            </p>
+            <Link
+              href="/playground"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+              style={{
+                background: 'var(--color-paper)',
+                color: 'var(--color-ink)',
+                fontWeight: 500,
+              }}
+            >
+              Start your first session
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
+          </div>
+        </section>
+      ) : (
+        <section>
+          <div className="rule-strong" />
+          {sessions.map(session => (
+            <details key={session.id} className="group">
+              <summary className="grid grid-cols-12 gap-3 md:gap-6 py-5 items-center cursor-pointer list-none">
+                <div className="col-span-2 md:col-span-1">
+                  <span
+                    className="font-serif text-2xl tabular-nums"
+                    style={{
+                      color: scoreColor(session.clarityScoreAfter ?? session.clarityScoreBefore ?? 0),
+                      fontWeight: 400,
+                    }}
+                  >
+                    {session.clarityScoreAfter ?? session.clarityScoreBefore ?? 0}
+                  </span>
+                </div>
+                <div className="col-span-10 md:col-span-7 min-w-0">
+                  <p className="text-sm md:text-base truncate" style={{ color: 'var(--color-paper)' }}>
+                    {session.originalPrompt.length > 120 ? session.originalPrompt.slice(0, 120) + '…' : session.originalPrompt}
+                  </p>
+                  <p className="text-xs mt-1.5" style={{ color: 'var(--color-paper-mute)' }}>
+                    <span className="capitalize">{session.tone}</span>
+                    {session.clarifyTurns > 0 && <> · {session.clarifyTurns} clarification{session.clarifyTurns !== 1 ? 's' : ''}</>}
+                    <> · </>
+                    {new Date(session.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </div>
+                <div className="col-span-10 md:col-span-3 text-right">
+                  {session.clarityScoreBefore != null && session.clarityScoreAfter != null ? (
+                    <span className="text-sm tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
+                      {session.clarityScoreBefore} <span style={{ color: 'var(--color-paper-mute)' }}>→</span>{' '}
+                      <span style={{ color: 'var(--color-paper)' }}>{session.clarityScoreAfter}</span>
+                      <span className="ml-2" style={{ color: 'var(--color-accent)' }}>+{session.clarityScoreAfter - session.clarityScoreBefore}</span>
+                    </span>
+                  ) : (
+                    <span className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>in progress</span>
+                  )}
+                </div>
+                <div className="col-span-2 md:col-span-1 flex justify-end">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"
+                    className="group-open:rotate-180 transition-transform"
+                    style={{ color: 'var(--color-paper-mute)' }}>
+                    <path d="M3 5L7 9L11 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </summary>
+
+              {/* Expanded session detail */}
+              <div className="grid grid-cols-12 gap-3 md:gap-6 py-6">
+                <div className="col-span-12 md:col-start-2 md:col-span-11 space-y-7">
+                  <div>
+                    <p className="eyebrow mb-3" style={{ color: '#C25E5E' }}>Original</p>
+                    <p
+                      className="font-serif display-italic text-base md:text-lg leading-[1.55] whitespace-pre-wrap"
+                      style={{ color: 'var(--color-paper-mute)' }}
+                    >
+                      {session.originalPrompt}
+                    </p>
+                  </div>
+
+                  {session.exchanges.length > 0 && (
+                    <div>
+                      <p className="eyebrow mb-3" style={{ color: 'var(--color-accent)' }}>Clarifications</p>
+                      <ul className="space-y-5">
+                        {session.exchanges.map(e => (
+                          <li key={e.turn} className="pl-5" style={{ borderLeft: '1px solid var(--color-rule-strong)' }}>
+                            <p
+                              className="font-serif text-base md:text-lg mb-1"
+                              style={{ color: 'var(--color-paper)', fontStyle: 'italic', fontWeight: 400 }}
+                            >
+                              {e.question}
+                            </p>
+                            {e.answer && (
+                              <p className="text-sm md:text-base" style={{ color: 'var(--color-paper-mute)' }}>
+                                {e.answer}
+                              </p>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {session.improvement && (
+                    <div>
+                      <p className="eyebrow mb-3" style={{ color: '#7FA875' }}>Rewrite</p>
+                      <p
+                        className="font-serif text-base md:text-lg leading-[1.55] whitespace-pre-wrap mb-4"
+                        style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+                      >
+                        {session.improvement.improvedPrompt}
+                      </p>
+                      <p className="text-sm md:text-base leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
+                        {session.improvement.explanation}
+                      </p>
+                      {session.improvement.improvementTags.length > 0 && (
+                        <p className="mt-4 text-sm" style={{ color: 'var(--color-paper)' }}>
+                          <span className="eyebrow mr-2">Added</span>
+                          {session.improvement.improvementTags.map((t, i) => (
+                            <span key={t}>
+                              {i > 0 && <span style={{ color: 'var(--color-paper-mute)' }}>, </span>}
+                              <span className="capitalize">{t}</span>
+                            </span>
+                          ))}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="rule" />
+            </details>
+          ))}
+        </section>
+      )}
+
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 pt-4">
+        <div className="flex justify-center items-center gap-1 pt-4">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
             <a
               key={p}
               href={`?page=${p}`}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-all ${
-                p === page ? 'bg-violet-600 text-white' : 'text-[#8b9cc8] hover:bg-[#0f1628] border border-[#1e2d4a]'
-              }`}
+              className="w-9 h-9 flex items-center justify-center rounded-full text-sm transition-all"
+              style={{
+                background: p === page ? 'var(--color-paper)' : 'transparent',
+                color: p === page ? 'var(--color-ink)' : 'var(--color-paper-mute)',
+                fontWeight: p === page ? 500 : 400,
+              }}
             >
               {p}
             </a>
