@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono, Fraunces, Inter } from 'next/font/google'
 import './globals.css'
 import { PaddleProvider } from '@/components/PaddleProvider'
+import { Analytics } from '@vercel/analytics/react'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${inter.variable} h-full`}>
       <body className="min-h-full">
         <PaddleProvider>{children}</PaddleProvider>
+        <Analytics />
       </body>
     </html>
   )
