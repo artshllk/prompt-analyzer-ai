@@ -106,7 +106,7 @@ export function ClarifyPanel({
           <button
             onClick={handleSubmit}
             disabled={!answer.trim() || isLoading}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[14px] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[14px] transition-all btn-paper disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
               background: 'var(--color-paper)',
               color: 'var(--color-ink)',

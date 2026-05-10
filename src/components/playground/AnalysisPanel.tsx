@@ -87,7 +87,7 @@ export function AnalysisPanel({
               style={{
                 color: activeTab === tab ? 'var(--color-paper)' : 'var(--color-paper-mute)',
                 fontWeight: activeTab === tab ? 500 : 400,
-                textDecoration: activeTab === tab ? 'underline' : 'none',
+                textDecorationLine: activeTab === tab ? 'underline' : 'none',
                 textUnderlineOffset: '4px',
               }}
             >
@@ -149,7 +149,7 @@ export function AnalysisPanel({
       <div className="mt-10 flex flex-wrap items-center gap-3">
         <button
           onClick={handleCopy}
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
           style={{
             background: 'var(--color-paper)',
             color: 'var(--color-ink)',

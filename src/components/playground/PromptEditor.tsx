@@ -92,7 +92,7 @@ export function PromptEditor({
       <button
         onClick={onSubmit}
         disabled={isDisabled || !value.trim()}
-        className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-full text-[14px] transition-all hover:gap-3 disabled:opacity-40 disabled:cursor-not-allowed"
+        className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper disabled:opacity-40 disabled:cursor-not-allowed"
         style={{
           background: 'var(--color-paper)',
           color: 'var(--color-ink)',

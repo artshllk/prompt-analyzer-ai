@@ -75,7 +75,7 @@ export function ProgressiveStatus({ mode }: ProgressiveStatusProps) {
                     ? 'var(--color-paper)'
                     : 'var(--color-paper-mute)',
                   fontWeight: isActive ? 500 : 400,
-                  textDecoration: isDone ? 'line-through' : 'none',
+                  textDecorationLine: isDone ? 'line-through' : 'none',
                   textDecorationColor: 'var(--color-rule-strong)',
                   opacity: isDone ? 0.6 : 1,
                   transition: 'all 0.4s ease',

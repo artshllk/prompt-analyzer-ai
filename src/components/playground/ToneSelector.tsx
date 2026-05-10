@@ -36,7 +36,7 @@ export function ToneSelector({ value, onChange, disabled }: ToneSelectorProps) {
               style={{
                 color: isSelected ? 'var(--color-paper)' : 'var(--color-paper-mute)',
                 fontWeight: isSelected ? 500 : 400,
-                textDecoration: isSelected ? 'underline' : 'none',
+                textDecorationLine: isSelected ? 'underline' : 'none',
                 textUnderlineOffset: '4px',
               }}
             >

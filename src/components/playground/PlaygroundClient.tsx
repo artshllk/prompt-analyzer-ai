@@ -10,6 +10,7 @@ import { SignupGate } from '@/components/playground/SignupGate'
 import { PaywallModal } from '@/components/ui/PaywallModal'
 import { usePromptSession } from '@/hooks/usePromptSession'
 import type { Tone } from '@/types/database'
+import type { UsageInfo } from '@/types'
 
 const ANON_LIMIT = 2
 const ANON_EXTRA_KEY = 'pc_anon_extra'
@@ -17,9 +18,10 @@ const ANON_KEY = 'pc_anon_count'
 
 interface PlaygroundClientProps {
   isSignedIn: boolean
+  usage?: UsageInfo
 }
 
-export function PlaygroundClient({ isSignedIn }: PlaygroundClientProps) {
+export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
   const [prompt, setPrompt] = useState('')
   const [tone, setTone] = useState<Tone>('professional')
   const [paywallOpen, setPaywallOpen] = useState(false)
@@ -87,6 +89,24 @@ export function PlaygroundClient({ isSignedIn }: PlaygroundClientProps) {
             : 'Paste anything — rough idea, half-finished request, one-liner. We score it, ask what is missing, and rewrite.'}
         </p>
       </header>
+
+      {/* Inline usage note — only when free tier and ≥80% used. Quiet, contextual, on the page they're using. */}
+      {!isAnon && usage && usage.tier === 'free' && usage.limit && usage.used / usage.limit >= 0.8 && (
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-3" style={{ borderTop: '1px solid var(--color-rule-strong)', borderBottom: '1px solid var(--color-rule-strong)' }}>
+          <p className="text-sm" style={{ color: usage.isAtLimit ? '#C25E5E' : 'var(--color-accent)' }}>
+            {usage.isAtLimit
+              ? `You've used all ${usage.limit} free analyses this month.`
+              : `You've used ${usage.used} of ${usage.limit} free analyses this month.`}
+          </p>
+          <button
+            onClick={() => setPaywallOpen(true)}
+            className="text-sm underline-offset-4 hover:underline transition-all"
+            style={{ color: 'var(--color-paper)' }}
+          >
+            Upgrade to Pro for unlimited →
+          </button>
+        </div>
+      )}
 
       {anonGated ? (
         <SignupGate used={anonCount} limit={effectiveLimit} onEmailCaptured={handleEmailCaptured} />
