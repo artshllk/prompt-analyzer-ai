@@ -255,7 +255,7 @@ function BottomCTA({ visible, reduce }: { visible: boolean; reduce: boolean }) {
     >
       <Link
         href="#try"
-        className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] transition-all hover:gap-3"
+        className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] transition-all hover:gap-3 btn-paper"
         style={{
           background: 'var(--color-paper)',
           color: 'var(--color-ink)',

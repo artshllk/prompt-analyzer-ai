@@ -213,7 +213,7 @@ export function LivePromptDemo() {
             <button
               type="submit"
               disabled={!prompt.trim() || thinking}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-[15px] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-[15px] transition-all btn-paper disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
                 background: 'var(--color-paper)',
                 color: 'var(--color-ink)',
@@ -243,13 +243,11 @@ export function LivePromptDemo() {
                 <button
                   key={s}
                   onClick={() => setPrompt(s)}
-                  className="text-sm px-3 py-1.5 rounded-full transition-colors"
+                  className="text-sm px-3 py-1.5 rounded-full chip-hover"
                   style={{
                     color: 'var(--color-paper-mute)',
                     border: '1px solid var(--color-rule-strong)',
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-paper)')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-paper-mute)')}
                 >
                   &ldquo;{s}&rdquo;
                 </button>
@@ -435,7 +433,7 @@ function AskedPanel({
           <button
             type="submit"
             disabled={!answer?.trim()}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[14px] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[14px] transition-all btn-paper disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
               background: 'var(--color-paper)',
               color: 'var(--color-ink)',
@@ -515,21 +513,21 @@ function DonePanel({
       <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={() => navigator.clipboard.writeText(rewrite)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all btn-paper"
           style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
         >
           Copy rewrite
         </button>
         <Link
           href="/playground"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all btn-outline"
           style={{ border: '1px solid var(--color-rule-strong)', color: 'var(--color-paper)' }}
         >
           Open playground
         </Link>
         <button
           onClick={onReset}
-          className="text-sm transition-opacity"
+          className="text-sm transition-opacity btn-text"
           style={{ color: 'var(--color-paper-mute)' }}
         >
           Try another
@@ -549,7 +547,7 @@ function ErrorPanel({ message, onRetry }: { message: string; onRetry: () => void
       </p>
       <button
         onClick={onRetry}
-        className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all"
+        className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all btn-outline"
         style={{ border: '1px solid var(--color-rule-strong)', color: 'var(--color-paper)' }}
       >
         Try again

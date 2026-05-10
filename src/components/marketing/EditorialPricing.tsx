@@ -97,7 +97,7 @@ export function EditorialPricing() {
           <div className="col-span-12 md:col-span-2 flex md:justify-end">
             <Link
               href="/login"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm transition-all mt-2 md:mt-0"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm transition-all btn-paper mt-2 md:mt-0"
               style={{
                 background: 'var(--color-paper)',
                 color: 'var(--color-ink)',
