@@ -72,7 +72,7 @@ export function LivePromptDemo() {
         resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [state.kind])
 
   async function analyze(currentPrompt: string, qaHistory: QA[]) {
@@ -175,8 +175,11 @@ export function LivePromptDemo() {
             See it scored.
           </span>
         </h2>
-        <p className="text-base md:text-lg leading-[1.65] mb-8" style={{ color: 'var(--color-paper-mute)' }}>
-          A real prompt, your prompt &mdash; analyzed by the same engine running in the playground. No signup. No catch.
+        <p className="text-base md:text-lg leading-[1.65] mb-3" style={{ color: 'var(--color-paper-mute)' }}>
+          A real prompt, your prompt analyzed by the same engine running in the playground. No signup. No catch.
+        </p>
+        <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--color-paper-mute)' }}>
+          We do not store anything you paste here. The text is sent to the model, analyzed once, and discarded.
         </p>
 
         {/* Textarea form */}

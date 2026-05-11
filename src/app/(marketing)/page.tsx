@@ -6,11 +6,11 @@ import { EditorialPricing } from '@/components/marketing/EditorialPricing'
 import { LivePromptDemo } from '@/components/marketing/LivePromptDemo'
 
 export const metadata: Metadata = {
-  title: 'Deepclario — A clarity tool for serious AI users',
+  title: 'Deepclario — Prompt analyzer for ChatGPT, Claude, and Gemini',
   description: 'Most AI failures are prompt failures. Deepclario scores your prompt across five dimensions, asks the questions a senior engineer would ask, and rewrites it until the model has no excuse to misunderstand you.',
   alternates: { canonical: 'https://deepclario.com' },
   openGraph: {
-    title: 'Deepclario — A clarity tool for serious AI users',
+    title: 'Deepclario — Prompt analyzer for ChatGPT, Claude, and Gemini',
     description: 'Score your prompt, answer what is missing, get a rewrite that actually works.',
     url: 'https://deepclario.com',
     type: 'website',
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Deepclario — A clarity tool for serious AI users',
+    title: 'Deepclario — Prompt analyzer for ChatGPT, Claude, and Gemini',
     description: 'Score your prompt, answer what is missing, get a rewrite that actually works.',
     images: ['https://deepclario.com/logo.png'],
   },
@@ -33,7 +33,7 @@ const structuredData = {
       applicationCategory: 'ProductivityApplication',
       operatingSystem: 'Web',
       url: 'https://deepclario.com',
-      description: 'A clarity tool that scores your AI prompts, asks what is missing, and rewrites them for measurably better results.',
+      description: 'Scores your prompts across five dimensions, asks what is missing, and rewrites them for measurably better results from ChatGPT, Claude, and Gemini.',
       offers: {
         '@type': 'Offer',
         price: '0',
@@ -117,13 +117,13 @@ export default function LandingPage() {
         <section className="pt-40 md:pt-48 pb-20 md:pb-28 px-6 md:px-10 relative">
           <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-12 items-end">
             <div className="md:col-span-9">
-              <p className="eyebrow mb-8">A clarity tool for serious AI users · Issue 01</p>
+              <p className="eyebrow mb-8">Prompt analyzer · ChatGPT · Claude · Gemini</p>
               <h1
                 className="display text-[12vw] md:text-[7.5rem] leading-[0.95]"
                 style={{ color: 'var(--color-paper)' }}
               >
                 Most AI failures<br/>
-                <span className="display-italic" style={{ color: 'var(--color-accent)' }}>are prompt failures.</span>
+                <span style={{ color: 'var(--color-accent)' }}>are prompt failures.</span>
               </h1>
             </div>
             <div className="md:col-span-3">
@@ -156,8 +156,8 @@ export default function LandingPage() {
             </div>
             <div className="md:col-span-9 space-y-6">
               <p
-                className="display-italic text-3xl md:text-[2.6rem] leading-[1.18]"
-                style={{ color: 'var(--color-paper)' }}
+                className="font-serif text-3xl md:text-[2.4rem] leading-tight tracking-tight"
+                style={{ color: 'var(--color-paper)', fontWeight: 400 }}
               >
                 A senior engineer never accepts vague requirements. They ask questions until the work is impossible to misunderstand.
               </p>
@@ -187,7 +187,7 @@ export default function LandingPage() {
                   style={{ color: 'var(--color-paper)' }}
                 >
                   Five dimensions.<br/>
-                  <span className="display-italic" style={{ color: 'var(--color-paper-mute)' }}>One score.</span>
+                  <span style={{ color: 'var(--color-paper-mute)' }}>One score.</span>
                 </h2>
               </div>
             </div>
@@ -210,19 +210,19 @@ export default function LandingPage() {
                 className="display text-3xl md:text-5xl"
                 style={{ color: 'var(--color-paper)' }}
               >
-                <span className="display-italic">&ldquo;Can&rsquo;t I just ask</span><br/>
+                &ldquo;Can&rsquo;t I just ask<br/>
                 ChatGPT to do this?&rdquo;
               </h2>
             </div>
             <div className="md:col-span-7 space-y-6">
               <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper)' }}>
-                You can. It will rewrite your prompt. It will not tell you which of the five dimensions you are weakest in. It will not score the result. It will not show you, six weeks from now, that you have stopped forgetting to specify the audience.
+                Yes, you can ask ChatGPT to rewrite your prompt. It will give you a new version, but it won't explain what's wrong with your original or how to improve it.
               </p>
               <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
-                A rewriter hands you a fish. Deepclario teaches you to write the kind of brief a fish-cooker would actually want.
+                Deepclario analyzes your prompt across five dimensions, scores it, and shows you exactly what to fix. It tracks your progress so you get better over time.
               </p>
               <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
-                The point is not to outsource your thinking forever. The point is to get good at this, faster.
+                Use ChatGPT for quick changes. Use Deepclario to learn and improve.
               </p>
             </div>
           </div>
@@ -233,13 +233,13 @@ export default function LandingPage() {
           <div className="max-w-4xl mx-auto text-center">
             <p className="eyebrow mb-10">Principles</p>
             <p
-              className="display-italic text-3xl md:text-[3.2rem] leading-[1.15]"
-              style={{ color: 'var(--color-paper)' }}
+              className="font-serif text-3xl md:text-[2.8rem] leading-tight tracking-tight"
+              style={{ color: 'var(--color-paper)', fontWeight: 400 }}
             >
               We don&rsquo;t want you to spend more time with AI. We want you to spend it better.
             </p>
             <p className="mt-12 text-base md:text-lg max-w-xl mx-auto leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
-              Deepclario is built for the small, growing class of people who use AI seriously every day. Engineers, writers, founders, researchers. People for whom &ldquo;ask better&rdquo; is the highest-leverage skill of the next decade.
+              Deepclario is for professionals who work with AI every day—engineers, writers, founders, researchers. For anyone who sees better prompting as a valuable skill for the future.
             </p>
           </div>
         </section>
@@ -288,7 +288,7 @@ export default function LandingPage() {
                 <span className="text-sm" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>Deepclario</span>
               </div>
               <p className="text-sm leading-[1.7] max-w-sm" style={{ color: 'var(--color-paper-mute)' }}>
-                A clarity tool for serious AI users. Built by people who write to AI every day, for people who want to do it better.
+                A prompt analyzer for ChatGPT, Claude, and Gemini. Built by Art Shllaku, for anyone who uses AI for real work.
               </p>
             </div>
             <FooterCol title="Product" links={[
@@ -310,7 +310,7 @@ export default function LandingPage() {
             ]} />
           </div>
           <div className="max-w-6xl mx-auto mt-16 pt-6 text-xs" style={{ borderTop: '1px solid var(--color-rule)', color: 'var(--color-paper-mute)' }}>
-            © 2026 Deepclario · Made carefully.
+            © 2026 Deepclario · An independent project by Art Shllaku.
           </div>
         </footer>
       </div>

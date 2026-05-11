@@ -22,7 +22,7 @@ export default async function InsightsPage() {
       <header>
         <p className="eyebrow mb-4">Insights</p>
         <h1 className="display text-4xl md:text-6xl" style={{ color: 'var(--color-paper)' }}>
-          Patterns over weeks, <span className="display-italic" style={{ color: 'var(--color-paper-mute)' }}>not days.</span>
+          Patterns over weeks, <span style={{ color: 'var(--color-paper-mute)' }}>not days.</span>
         </h1>
         <p className="mt-5 text-base md:text-lg leading-[1.55] max-w-2xl" style={{ color: 'var(--color-paper-mute)' }}>
           The quiet trends in how you ask AI &mdash; the gaps you keep leaving, the dimensions that lift your scores fastest, the weeks you got measurably sharper.
@@ -48,8 +48,8 @@ function ProGate() {
         </div>
         <div className="md:col-span-9">
           <p
-            className="font-serif display-italic text-2xl md:text-[2rem] leading-tight mb-6"
-            style={{ color: 'var(--color-paper)' }}
+            className="font-serif text-2xl md:text-[2rem] leading-tight tracking-tight mb-6"
+            style={{ color: 'var(--color-paper)', fontWeight: 400 }}
           >
             Insights are how you actually get sharper at this &mdash; the report shows what you keep forgetting and what you have started doing better.
           </p>

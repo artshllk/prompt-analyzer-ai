@@ -113,7 +113,7 @@ export function EditorialPricing() {
         <div className="rule-strong" />
 
         <p className="pt-4 text-xs" style={{ color: 'var(--color-paper-mute)' }}>
-          Cancel anytime. No card required to try the free plan.
+          Cancel anytime. No card required to try the free plan. Payments handled securely by Paddle.
         </p>
       </div>
     </div>

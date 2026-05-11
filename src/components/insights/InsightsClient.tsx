@@ -71,7 +71,7 @@ export function InsightsClient() {
     return (
       <section className="py-12">
         <div className="rule-strong" />
-        <p className="py-8 font-serif display-italic text-xl md:text-2xl" style={{ color: 'var(--color-paper-mute)' }}>
+        <p className="py-8 font-serif tracking-tight text-xl md:text-2xl" style={{ color: 'var(--color-paper-mute)' }}>
           We couldn&rsquo;t load your insights right now. Try again in a moment.
         </p>
         <div className="rule-strong" />
@@ -98,7 +98,7 @@ export function InsightsClient() {
         </div>
         <div className="md:col-span-9">
           <p
-            className="font-serif display-italic text-2xl md:text-[2.4rem] leading-tight"
+            className="font-serif tracking-tight text-2xl md:text-[2.4rem] leading-tight"
             style={{ color: 'var(--color-paper)' }}
           >
             You analyzed <span style={{ color: 'var(--color-paper)' }}>{data.week.promptsCount}</span> {plural('prompt', data.week.promptsCount)}.
@@ -259,7 +259,7 @@ export function InsightsClient() {
         </div>
         <div className="md:col-span-9">
           <p
-            className="font-serif display-italic text-xl md:text-2xl leading-tight mb-4"
+            className="font-serif tracking-tight text-xl md:text-2xl leading-tight mb-4"
             style={{ color: 'var(--color-paper)' }}
           >
             Take a prompt you used this week and rewrite it before pasting into Deepclario.
@@ -309,7 +309,7 @@ function Highlight({
         <span className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>{secondary}</span>
       </div>
       <p
-        className="font-serif display-italic text-base md:text-lg leading-normal line-clamp-3"
+        className="font-serif tracking-tight text-base md:text-lg leading-normal line-clamp-3"
         style={{ color: 'var(--color-paper-mute)' }}
       >
         &ldquo;{prompt}&rdquo;
