@@ -307,7 +307,7 @@ export default function LandingPage() {
             ]} />
           </div>
           <div className="max-w-6xl mx-auto mt-16 pt-6 text-xs" style={{ borderTop: '1px solid var(--color-rule)', color: 'var(--color-paper-mute)' }}>
-            © 2026 Deepclario · An independent project by Art Shllaku.
+            © 2026 Deepclario
           </div>
         </footer>
       </div>
