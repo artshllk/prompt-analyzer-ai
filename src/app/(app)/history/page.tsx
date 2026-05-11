@@ -76,7 +76,7 @@ export default async function HistoryPage({
         <div className="md:col-span-9">
           <p className="eyebrow mb-4">History</p>
           <h1 className="display text-4xl md:text-6xl" style={{ color: 'var(--color-paper)' }}>
-            {total === 0 ? <>Nothing yet.</> : <>Every prompt <span className="display-italic" style={{ color: 'var(--color-paper-mute)' }}>you have sharpened.</span></>}
+            {total === 0 ? <>Nothing yet.</> : <>Every prompt <span style={{ color: 'var(--color-paper-mute)' }}>you have sharpened.</span></>}
           </h1>
           {total > 0 && (
             <p className="mt-5 text-base md:text-lg leading-[1.55] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
@@ -139,8 +139,8 @@ export default async function HistoryPage({
           </div>
           <div className="md:col-span-9">
             <p
-              className="font-serif display-italic text-xl md:text-2xl leading-tight mb-3"
-              style={{ color: 'var(--color-paper)' }}
+              className="font-serif text-xl md:text-2xl leading-snug mb-3"
+              style={{ color: 'var(--color-paper)', fontWeight: 400 }}
             >
               &ldquo;{bestSession.originalPrompt.slice(0, 120)}{bestSession.originalPrompt.length > 120 ? '…' : ''}&rdquo;
             </p>
@@ -168,8 +168,8 @@ export default async function HistoryPage({
           </div>
           <div className="md:col-span-8">
             <p
-              className="font-serif display-italic text-2xl md:text-3xl leading-tight mb-6"
-              style={{ color: 'var(--color-paper)' }}
+              className="font-serif text-2xl md:text-3xl leading-tight tracking-tight mb-6"
+              style={{ color: 'var(--color-paper)', fontWeight: 400 }}
             >
               You have not run anything through the playground yet.
             </p>
@@ -243,7 +243,7 @@ export default async function HistoryPage({
                   <div>
                     <p className="eyebrow mb-3" style={{ color: '#C25E5E' }}>Original</p>
                     <p
-                      className="font-serif display-italic text-base md:text-lg leading-[1.55] whitespace-pre-wrap"
+                      className="font-serif tracking-tight text-base md:text-lg leading-[1.55] whitespace-pre-wrap"
                       style={{ color: 'var(--color-paper-mute)' }}
                     >
                       {session.originalPrompt}

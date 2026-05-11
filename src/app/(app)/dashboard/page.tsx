@@ -50,7 +50,7 @@ export default async function DashboardPage({
             {params.upgraded ? (
               <>Welcome to Pro.</>
             ) : firstName ? (
-              <>Hello, <span className="display-italic" style={{ color: 'var(--color-paper-mute)' }}>{firstName}.</span></>
+              <>Hello, <span style={{ color: 'var(--color-paper-mute)' }}>{firstName}.</span></>
             ) : (
               <>Hello.</>
             )}
@@ -161,7 +161,7 @@ export default async function DashboardPage({
           <div className="md:col-span-7">
             <p className="eyebrow mb-4" style={{ color: 'var(--color-accent)' }}>Pro</p>
             <h2 className="display text-3xl md:text-4xl mb-4" style={{ color: 'var(--color-paper)' }}>
-              See your patterns over weeks, <span className="display-italic">not days.</span>
+              See your patterns over weeks, <span style={{ color: 'var(--color-paper-mute)' }}>not days.</span>
             </h2>
             <p className="text-base leading-[1.6] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
               Unlimited analyses, full history, and a weekly report on the categories of fixes you reach for most often. The way to actually get sharper at this.
@@ -227,8 +227,8 @@ function EmptyState() {
       </div>
       <div className="md:col-span-8 space-y-8">
         <p
-          className="font-serif display-italic text-2xl md:text-[2rem] leading-tight"
-          style={{ color: 'var(--color-paper)' }}
+          className="font-serif text-2xl md:text-[2rem] leading-tight tracking-tight"
+          style={{ color: 'var(--color-paper)', fontWeight: 400 }}
         >
           The fastest way to write a better prompt is to read your last one and notice what is missing.
         </p>
