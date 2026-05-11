@@ -159,16 +159,13 @@ export default function LandingPage() {
                 className="font-serif text-3xl md:text-[2.4rem] leading-tight tracking-tight"
                 style={{ color: 'var(--color-paper)', fontWeight: 400 }}
               >
-                A senior engineer never accepts vague requirements. They ask questions until the work is impossible to misunderstand.
+                A senior engineer never accepts vague requirements. They ask questions until the work is clear.
               </p>
               <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper)' }}>
-                Yet most of us hand AI requirements that would never survive a code review. We type a sentence, the model guesses, and we blame the model.
+                Most people give AI prompts that are too vague. We write a quick sentence, the AI guesses what we mean, and we get frustrated when the result isn't right.
               </p>
               <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
-                Deepclario reads your prompt the way a senior engineer reads a ticket. It scores what is there, asks for what is missing, and rewrites the request so the answer becomes inevitable. You walk away with a clearer prompt &mdash; and, over time, a clearer way of thinking.
-              </p>
-              <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
-                We do not believe AI tools should think for you. We believe they should make <em className="font-serif" style={{ fontStyle: 'italic' }}>your</em> thinking sharper.
+                Deepclario reviews your prompt like a senior engineer reviews requirements. It identifies what's missing, asks the right questions, and rewrites it for better results. You get a stronger prompt—and learn to write better ones over time.
               </p>
             </div>
           </div>

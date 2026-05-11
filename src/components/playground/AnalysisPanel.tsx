@@ -103,7 +103,7 @@ export function AnalysisPanel({
           <div className="md:pr-8 py-7" style={{ borderRight: '1px solid var(--color-rule-strong)' }}>
             <p className="eyebrow mb-3" style={{ color: '#C25E5E' }}>Original</p>
             <p
-              className="font-serif display-italic text-base md:text-lg leading-[1.55] whitespace-pre-wrap"
+              className="font-serif tracking-tight text-base md:text-lg leading-[1.55] whitespace-pre-wrap"
               style={{ color: 'var(--color-paper-mute)' }}
             >
               {originalPrompt}

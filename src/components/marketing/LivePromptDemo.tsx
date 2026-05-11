@@ -171,7 +171,7 @@ export function LivePromptDemo() {
           style={{ color: 'var(--color-paper)' }}
         >
           Paste a prompt.<br />
-          <span className="display-italic" style={{ color: 'var(--color-paper-mute)' }}>
+          <span className="tracking-tight" style={{ color: 'var(--color-paper-mute)' }}>
             See it scored.
           </span>
         </h2>
@@ -331,7 +331,7 @@ function ThinkingPanel({ label }: { label: string }) {
         <ThinkingDots />
         <span className="eyebrow">{label}</span>
       </div>
-      <p className="mt-4 font-serif text-2xl md:text-3xl display-italic" style={{ color: 'var(--color-paper-mute)' }}>
+      <p className="mt-4 font-serif text-2xl md:text-3xl tracking-tight" style={{ color: 'var(--color-paper-mute)' }}>
         Reading what you wrote, the way a senior engineer reads a ticket.
       </p>
     </motion.div>
@@ -391,7 +391,7 @@ function AskedPanel({
       </div>
 
       <p className="eyebrow mb-2" style={{ color: 'var(--color-accent)' }}>What we&rsquo;d ask</p>
-      <p className="font-serif display-italic text-2xl md:text-[2rem] leading-[1.2]" style={{ color: 'var(--color-paper)' }}>
+      <p className="font-serif tracking-tight text-2xl md:text-[2rem] leading-[1.2]" style={{ color: 'var(--color-paper)' }}>
         {question}
       </p>
       {gap && (

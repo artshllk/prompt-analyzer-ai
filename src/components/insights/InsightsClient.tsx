@@ -361,7 +361,7 @@ function EmptyState() {
         <p className="eyebrow">Empty</p>
       </div>
       <div className="md:col-span-8">
-        <p className="font-serif display-italic text-2xl md:text-3xl leading-tight mb-6" style={{ color: 'var(--color-paper)' }}>
+        <p className="font-serif tracking-tight text-2xl md:text-3xl leading-tight mb-6" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
           Insights start once you have run a few prompts.
         </p>
         <p className="text-base md:text-lg leading-[1.6] mb-8 max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
@@ -394,7 +394,7 @@ function BuildingState({ count }: { count: number }) {
         <p className="eyebrow">Warming up</p>
       </div>
       <div className="md:col-span-8">
-        <p className="font-serif display-italic text-2xl md:text-3xl leading-tight mb-6" style={{ color: 'var(--color-paper)' }}>
+        <p className="font-serif tracking-tight text-2xl md:text-3xl leading-tight mb-6" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
           Insights are warming up.
         </p>
         <p className="text-base md:text-lg leading-[1.6] mb-8 max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>

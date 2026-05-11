@@ -74,7 +74,7 @@ export function ClarifyPanel({
 
         {/* The question itself, in display serif */}
         <p
-          className="font-serif display-italic text-2xl md:text-[2rem] leading-[1.2] py-7"
+          className="font-serif tracking-tight text-2xl md:text-[2rem] leading-[1.2] py-7"
           style={{ color: 'var(--color-paper)' }}
         >
           {question}
