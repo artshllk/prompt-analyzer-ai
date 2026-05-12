@@ -113,39 +113,36 @@ export default function LandingPage() {
           </div>
         </header>
 
-        {/* Opening — large editorial title, asymmetric */}
-        <section className="pt-40 md:pt-48 pb-20 md:pb-28 px-6 md:px-10 relative">
-          <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-12 items-end">
-            <div className="md:col-span-9">
-              <p className="eyebrow mb-8">Prompt analyzer · ChatGPT · Claude · Gemini</p>
+        {/* Hero — copy + live demo, above the fold. Demo is pre-populated
+            so the first action available is one click on Analyze. */}
+        <section id="try" className="pt-28 md:pt-36 pb-20 md:pb-24 px-6 md:px-10 relative">
+          <div className="max-w-6xl mx-auto">
+            <div className="max-w-3xl mb-12 md:mb-16">
+              <p className="eyebrow mb-6">Prompt analyzer · ChatGPT · Claude · Gemini</p>
               <h1
-                className="display text-[12vw] md:text-[7.5rem] leading-[0.95]"
+                className="display text-5xl md:text-[5.5rem] leading-tight tracking-tight"
                 style={{ color: 'var(--color-paper)' }}
               >
-                Most AI failures<br/>
+                Most AI failures{' '}
                 <span style={{ color: 'var(--color-accent)' }}>are prompt failures.</span>
               </h1>
-            </div>
-            <div className="md:col-span-3">
-              <div className="rule-strong mb-5" />
-              <p className="text-base md:text-[17px] leading-[1.55]" style={{ color: 'var(--color-paper-mute)' }}>
-                The model is rarely the problem. Almost always, it is what we asked it &mdash; vague, half-formed, missing the one detail that would make the answer obvious.
-              </p>
-              <p className="text-base md:text-[17px] leading-[1.55] mt-4" style={{ color: 'var(--color-paper-mute)' }}>
-                Deepclario fixes that step.
+              <p
+                className="mt-6 md:mt-8 text-lg md:text-xl leading-relaxed max-w-2xl"
+                style={{ color: 'var(--color-paper-mute)' }}
+              >
+                Paste your prompt below. We score it, ask what is missing, and rewrite it so the model has no excuse to misunderstand you.
               </p>
             </div>
+            <LivePromptDemo
+              defaultPrompt="Write me a blog post about AI"
+              compact
+            />
           </div>
         </section>
 
-        {/* Cinematic scroll-driven prompt transformation */}
-        <CinematicHero />
-
-        {/* Live interactive demo — the visitor uses the real product, no signup */}
-        <section id="try" className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
-          <div className="max-w-6xl mx-auto">
-            <LivePromptDemo />
-          </div>
+        {/* Cinematic — visual story of how the rewrite works, now below the demo */}
+        <section style={{ borderTop: '1px solid var(--color-rule)' }}>
+          <CinematicHero />
         </section>
 
         {/* The thesis — long-form editorial paragraph */}

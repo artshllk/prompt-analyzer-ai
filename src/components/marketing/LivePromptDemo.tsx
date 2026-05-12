@@ -53,8 +53,15 @@ type QA = { question: string; answer: string; turn: number }
 
 const MAX_TURNS = 3
 
-export function LivePromptDemo() {
-  const [prompt, setPrompt] = useState('')
+interface LivePromptDemoProps {
+  /** Pre-populate the textarea with a sample prompt so visitors can hit Analyze immediately. */
+  defaultPrompt?: string
+  /** When true, hide the built-in headline so the surrounding page can provide its own. */
+  compact?: boolean
+}
+
+export function LivePromptDemo({ defaultPrompt = '', compact = false }: LivePromptDemoProps = {}) {
+  const [prompt, setPrompt] = useState(defaultPrompt)
   const [state, setState] = useState<State>({ kind: 'idle' })
   // Accumulate answers across turns so the engine sees the full conversation.
   const [history, setHistory] = useState<QA[]>([])
@@ -165,19 +172,23 @@ export function LivePromptDemo() {
     <div className="grid md:grid-cols-12 gap-8 md:gap-16">
       {/* Left: input column (asymmetric — narrower on desktop) */}
       <div className="md:col-span-5">
-        <p className="eyebrow mb-6">Try it now</p>
-        <h2
-          className="display text-4xl md:text-5xl mb-6"
-          style={{ color: 'var(--color-paper)' }}
-        >
-          Paste a prompt.<br />
-          <span className="tracking-tight" style={{ color: 'var(--color-paper-mute)' }}>
-            See it scored.
-          </span>
-        </h2>
-        <p className="text-base md:text-lg leading-[1.65] mb-3" style={{ color: 'var(--color-paper-mute)' }}>
-          A real prompt, your prompt analyzed by the same engine running in the playground. No signup. No catch.
-        </p>
+        {!compact && (
+          <>
+            <p className="eyebrow mb-6">Try it now</p>
+            <h2
+              className="display text-4xl md:text-5xl mb-6"
+              style={{ color: 'var(--color-paper)' }}
+            >
+              Paste a prompt.<br />
+              <span className="tracking-tight" style={{ color: 'var(--color-paper-mute)' }}>
+                See it scored.
+              </span>
+            </h2>
+            <p className="text-base md:text-lg leading-[1.65] mb-3" style={{ color: 'var(--color-paper-mute)' }}>
+              A real prompt, your prompt analyzed by the same engine running in the playground. No signup. No catch.
+            </p>
+          </>
+        )}
         <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--color-paper-mute)' }}>
           We do not store anything you paste here. The text is sent to the model, analyzed once, and discarded.
         </p>
