@@ -6,11 +6,11 @@ import { EditorialPricing } from '@/components/marketing/EditorialPricing'
 import { LivePromptDemo } from '@/components/marketing/LivePromptDemo'
 
 export const metadata: Metadata = {
-  title: 'Deepclario — Prompt analyzer for ChatGPT, Claude, and Gemini',
+  title: 'Deepclario - Prompt analyzer for ChatGPT, Claude, and Gemini',
   description: 'Most AI failures are prompt failures. Deepclario scores your prompt across five dimensions, asks the questions a senior engineer would ask, and rewrites it until the model has no excuse to misunderstand you.',
   alternates: { canonical: 'https://deepclario.com' },
   openGraph: {
-    title: 'Deepclario — Prompt analyzer for ChatGPT, Claude, and Gemini',
+    title: 'Deepclario - Prompt analyzer for ChatGPT, Claude, and Gemini',
     description: 'Score your prompt, answer what is missing, get a rewrite that actually works.',
     url: 'https://deepclario.com',
     type: 'website',
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Deepclario — Prompt analyzer for ChatGPT, Claude, and Gemini',
+    title: 'Deepclario - Prompt analyzer for ChatGPT, Claude, and Gemini',
     description: 'Score your prompt, answer what is missing, get a rewrite that actually works.',
     images: ['https://deepclario.com/logo.png'],
   },
