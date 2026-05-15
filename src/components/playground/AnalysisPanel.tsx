@@ -101,7 +101,7 @@ export function AnalysisPanel({
       {activeTab === 'split' ? (
         <div className="grid md:grid-cols-2 gap-px">
           <div className="md:pr-8 py-7" style={{ borderRight: '1px solid var(--color-rule-strong)' }}>
-            <p className="eyebrow mb-3" style={{ color: '#C25E5E' }}>Original</p>
+            <p className="eyebrow mb-3" style={{ color: 'var(--color-paper-mute)' }}>Original</p>
             <p
               className="font-serif tracking-tight text-base md:text-lg leading-[1.55] whitespace-pre-wrap"
               style={{ color: 'var(--color-paper-mute)' }}
@@ -110,7 +110,7 @@ export function AnalysisPanel({
             </p>
           </div>
           <div className="md:pl-8 py-7">
-            <p className="eyebrow mb-3" style={{ color: '#7FA875' }}>Improved</p>
+            <p className="eyebrow mb-3" style={{ color: 'var(--color-paper)' }}>Improved</p>
             <p
               className="font-serif text-base md:text-[1.05rem] leading-[1.55] whitespace-pre-wrap"
               style={{ color: 'var(--color-paper)', fontWeight: 400 }}
@@ -121,7 +121,7 @@ export function AnalysisPanel({
         </div>
       ) : (
         <div className="py-7" style={{ borderTop: '1px solid var(--color-rule-strong)', borderBottom: '1px solid var(--color-rule-strong)' }}>
-          <p className="eyebrow mb-3" style={{ color: activeTab === 'improved' ? '#7FA875' : '#C25E5E' }}>
+          <p className="eyebrow mb-3" style={{ color: activeTab === 'improved' ? 'var(--color-paper)' : 'var(--color-paper-mute)' }}>
             {activeTab === 'original' ? 'Original' : 'Improved'}
           </p>
           <p
@@ -186,6 +186,6 @@ export function AnalysisPanel({
 
 function scoreColor(score: number): string {
   if (score < 30) return '#C25E5E'
-  if (score < 60) return '#C99550'
-  return '#7FA875'
+  if (score < 60) return 'var(--color-paper-mute)'
+  return 'var(--color-paper)'
 }

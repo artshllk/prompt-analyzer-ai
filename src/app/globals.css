@@ -40,8 +40,11 @@
   --color-paper-mute: #A8A6A0;
   --color-rule: rgba(245, 244, 241, 0.10);
   --color-rule-strong: rgba(245, 244, 241, 0.18);
-  --color-accent: #E8A33D;        /* single editorial accent: warm amber */
-  --color-accent-soft: rgba(232, 163, 61, 0.14);
+  /* Monochrome system: no brand accent. The logo is the only color on the
+     site. "Accent" now means "bright paper" — emphasis via luminance, not
+     hue. Linear / Vercel pattern. */
+  --color-accent: #F5F4F1;        /* = paper; emphasis via brightness only */
+  --color-accent-soft: rgba(245, 244, 241, 0.08);
 }
 
 * {
