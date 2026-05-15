@@ -80,52 +80,52 @@ const DIMENSIONS = [
 
 export default function WhatIsAGoodPromptPage() {
   return (
-    <div className="min-h-screen bg-[#0a0e1a] text-[#f0f4ff]">
+    <div className="editorial grain min-h-screen">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
       {/* Nav */}
-      <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 border-b border-[#1e2d4a]/60 glass">
+      <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 border-b border-[color:var(--color-rule)]">
         <Link href="/" className="flex items-center gap-2.5">
           <Image src="/logo.png" alt="Deepclario" width={28} height={28} className="rounded-md" />
-          <span className="font-bold text-[#f0f4ff] tracking-tight">Deepclario</span>
+          <span className="font-bold text-[color:var(--color-paper)] tracking-tight">Deepclario</span>
         </Link>
-        <Link href="/playground" className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all">
+        <Link href="/playground" className="px-4 py-2 rounded-xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] text-sm font-semibold transition-all">
           Try free
         </Link>
       </header>
 
       <main className="max-w-2xl mx-auto px-6 pt-28 pb-20">
         <div className="mb-10">
-          <Link href="/blog/what-is-prompt-engineering" className="text-xs text-violet-400 hover:text-violet-300 transition-colors">
+          <Link href="/blog/what-is-prompt-engineering" className="text-xs text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
             ← What is prompt engineering?
           </Link>
           <h1 className="text-3xl md:text-4xl font-bold mt-4 mb-4 leading-tight">
             What Makes a Good AI Prompt? 5 Things Every Strong Prompt Has
           </h1>
-          <p className="text-[#8b9cc8] leading-relaxed mb-3">
+          <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-3">
             A good prompt isn&apos;t about using magic words or following a rigid template. It&apos;s about giving
             the AI enough information to do exactly what you need — no more guessing, no more generic output.
           </p>
-          <p className="text-[#8b9cc8] leading-relaxed">
+          <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
             Every prompt Deepclario analyzes is scored across 5 dimensions, each worth 20 points. Here&apos;s
             what each one means, why it matters, and how to add it to your prompts.
           </p>
         </div>
 
         {/* Score breakdown */}
-        <div className="glass rounded-2xl border border-[#1e2d4a] p-5 mb-12">
-          <p className="text-xs font-semibold text-[#4a5a80] uppercase tracking-wider mb-3">How prompts are scored (0–100)</p>
+        <div className="rounded-2xl border border-[color:var(--color-rule)] p-5 mb-12">
+          <p className="text-xs font-semibold text-[color:var(--color-paper-mute)] uppercase tracking-wider mb-3">How prompts are scored (0–100)</p>
           <div className="space-y-2">
             {DIMENSIONS.map(d => (
               <div key={d.n} className="flex items-center gap-3">
-                <span className="text-xs text-[#8b9cc8] w-32 shrink-0">{d.title}</span>
+                <span className="text-xs text-[color:var(--color-paper-mute)] w-32 shrink-0">{d.title}</span>
                 <div className="flex-1 h-1.5 rounded-full bg-[#1e2d4a]">
-                  <div className="h-full rounded-full bg-violet-500/60" style={{ width: '20%' }} />
+                  <div className="h-full rounded-full bg-[color:var(--color-paper)]" style={{ width: '20%' }} />
                 </div>
-                <span className="text-xs text-[#4a5a80] w-16 text-right shrink-0">{d.weight}</span>
+                <span className="text-xs text-[color:var(--color-paper-mute)] w-16 text-right shrink-0">{d.weight}</span>
               </div>
             ))}
           </div>
@@ -135,26 +135,26 @@ export default function WhatIsAGoodPromptPage() {
           {DIMENSIONS.map((d) => (
             <div key={d.n} id={d.slug}>
               <div className="flex items-center gap-3 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                <span className="w-7 h-7 rounded-lg bg-[color:var(--color-paper)] flex items-center justify-center text-[color:var(--color-ink)] font-bold text-sm shrink-0">
                   {d.n}
                 </span>
-                <h2 className="text-xl font-bold text-[#f0f4ff]">{d.title}</h2>
+                <h2 className="text-xl font-bold text-[color:var(--color-paper)]">{d.title}</h2>
               </div>
 
-              <p className="text-sm text-violet-300 mb-4 font-medium">{d.question}</p>
+              <p className="text-sm text-[color:var(--color-paper)] mb-4 font-medium">{d.question}</p>
 
               <div className="grid md:grid-cols-2 gap-3 mb-4">
-                <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
-                  <p className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-2">Missing this</p>
-                  <p className="text-sm text-[#8b9cc8] italic">&ldquo;{d.weak}&rdquo;</p>
+                <div className="rounded-xl border border-[color:var(--color-rule-strong)] bg-red-500/5 p-4">
+                  <p className="text-xs font-semibold text-[#C25E5E] uppercase tracking-wider mb-2">Missing this</p>
+                  <p className="text-sm text-[color:var(--color-paper-mute)] italic">&ldquo;{d.weak}&rdquo;</p>
                 </div>
-                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-                  <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">With it</p>
-                  <p className="text-sm text-[#f0f4ff] leading-relaxed">{d.strong}</p>
+                <div className="rounded-xl border border-[color:var(--color-rule-strong)] bg-emerald-500/5 p-4">
+                  <p className="text-xs font-semibold text-[color:var(--color-paper)] uppercase tracking-wider mb-2">With it</p>
+                  <p className="text-sm text-[color:var(--color-paper)] leading-relaxed">{d.strong}</p>
                 </div>
               </div>
 
-              <p className="text-sm text-[#8b9cc8] leading-relaxed border-l-2 border-violet-500/40 pl-4">
+              <p className="text-sm text-[color:var(--color-paper-mute)] leading-relaxed border-l-2 border-[color:var(--color-rule-strong)] pl-4">
                 {d.tip}
               </p>
             </div>
@@ -162,14 +162,14 @@ export default function WhatIsAGoodPromptPage() {
         </div>
 
         {/* The 100-point prompt */}
-        <div className="mt-14 rounded-2xl border border-violet-500/30 bg-violet-600/8 p-6">
-          <h2 className="text-lg font-bold text-[#f0f4ff] mb-3">What a 100-point prompt looks like</h2>
-          <p className="text-sm text-[#8b9cc8] leading-relaxed mb-4">
+        <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-6">
+          <h2 className="text-lg font-bold text-[color:var(--color-paper)] mb-3">What a 100-point prompt looks like</h2>
+          <p className="text-sm text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
             A perfect score means all 5 dimensions are fully covered. In practice, most prompts score between
             60–80 after one round of improvement. Here&apos;s an example that hits all 5:
           </p>
-          <div className="rounded-xl border border-[#2d4070] bg-[#0a0e1a] p-4">
-            <p className="text-sm text-[#f0f4ff] leading-relaxed">
+          <div className="rounded-xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-4">
+            <p className="text-sm text-[color:var(--color-paper)] leading-relaxed">
               Act as a senior copywriter with experience in B2B SaaS marketing. Write a 3-paragraph case study
               introduction for a company that reduced customer churn by 40% using our analytics tool. Target
               reader: a VP of Customer Success at a 100–500 person SaaS company. Paragraph 1: the problem they
@@ -178,27 +178,27 @@ export default function WhatIsAGoodPromptPage() {
               in the first paragraph.
             </p>
           </div>
-          <p className="text-xs text-[#4a5a80] mt-3">
+          <p className="text-xs text-[color:var(--color-paper-mute)] mt-3">
             Role ✓ · Context ✓ · Format ✓ · Constraints ✓ · Implied example style ✓
           </p>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-[#1e2d4a] space-y-4">
-          <h2 className="text-lg font-bold text-[#f0f4ff]">Score your own prompt</h2>
-          <p className="text-sm text-[#8b9cc8]">
+        <div className="mt-12 pt-8 border-t border-[color:var(--color-rule)] space-y-4">
+          <h2 className="text-lg font-bold text-[color:var(--color-paper)]">Score your own prompt</h2>
+          <p className="text-sm text-[color:var(--color-paper-mute)]">
             Paste any prompt into Deepclario and see which of these 5 dimensions are missing.
             You&apos;ll get a score, a breakdown, and a rewritten version — free, no account needed.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
               href="/tools/prompt-analyzer"
-              className="inline-block px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all glow-violet"
+              className="inline-block px-5 py-2.5 rounded-xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] text-sm font-semibold transition-all"
             >
               Analyze my prompt →
             </Link>
             <Link
               href="/blog/prompt-engineering-examples"
-              className="inline-block px-5 py-2.5 rounded-xl border border-[#2d4070] text-[#8b9cc8] hover:text-[#f0f4ff] hover:border-[#4a5a80] text-sm font-medium transition-all"
+              className="inline-block px-5 py-2.5 rounded-xl border border-[color:var(--color-rule-strong)] text-[color:var(--color-paper-mute)] hover:text-[color:var(--color-paper)] hover:border-[#4a5a80] text-sm font-medium transition-all"
             >
               See real examples →
             </Link>

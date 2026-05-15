@@ -29,45 +29,45 @@ export default function WhatIsPromptEngineeringPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <div className="min-h-screen bg-[#0a0e1a] text-[#f0f4ff]">
-        <header className="border-b border-[#1e2d4a]/60 px-6 py-4 flex items-center justify-between">
+      <div className="editorial grain min-h-screen">
+        <header className="border-b border-[color:var(--color-rule)] px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Image src="/logo.png" alt="Deepclario" width={24} height={24} className="rounded" />
             <span className="font-bold text-sm">Deepclario</span>
           </Link>
-          <Link href="/playground" className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all">
+          <Link href="/playground" className="px-4 py-2 rounded-xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] text-sm font-semibold transition-all">
             Try free →
           </Link>
         </header>
 
         <main className="max-w-2xl mx-auto px-6 py-16">
           <div className="mb-6">
-            <Link href="/" className="text-xs text-[#4a5a80] hover:text-[#8b9cc8] transition-colors">← Back to Deepclario</Link>
+            <Link href="/" className="text-xs text-[color:var(--color-paper-mute)] hover:text-[color:var(--color-paper-mute)] transition-colors">← Back to Deepclario</Link>
           </div>
 
           <div className="mb-4 flex items-center gap-2">
-            <span className="text-xs text-violet-400 font-semibold uppercase tracking-wider">Guide</span>
-            <span className="text-xs text-[#4a5a80]">· 8 min read</span>
+            <span className="text-xs text-[color:var(--color-paper)] font-semibold uppercase tracking-wider">Guide</span>
+            <span className="text-xs text-[color:var(--color-paper-mute)]">· 8 min read</span>
           </div>
 
           <h1 className="text-4xl font-bold mb-5 leading-tight">
             What is Prompt Engineering?
           </h1>
 
-          <p className="text-lg text-[#8b9cc8] mb-10 leading-relaxed">
+          <p className="text-lg text-[color:var(--color-paper-mute)] mb-10 leading-relaxed">
             Prompt engineering is the practice of writing structured, precise instructions for AI language models
             to get consistently useful output. It&apos;s the difference between asking a vague question and
             giving a well-briefed task.
           </p>
 
-          <article className="prose prose-invert prose-sm max-w-none space-y-10">
+          <article className="max-w-none space-y-10">
             <section>
-              <h2 className="text-2xl font-bold text-[#f0f4ff] mb-4">Why prompts matter more than you think</h2>
-              <p className="text-[#8b9cc8] leading-relaxed mb-4">
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Why prompts matter more than you think</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
                 When people get bad results from ChatGPT or Claude, they often blame the AI. But most of the time,
                 the problem is the prompt — not the model.
               </p>
-              <p className="text-[#8b9cc8] leading-relaxed">
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
                 AI language models are exceptionally powerful, but they can only work with the information you
                 give them. A vague prompt produces a vague answer. A prompt missing context produces a generic
                 answer. A well-engineered prompt consistently produces exactly what you need.
@@ -75,8 +75,8 @@ export default function WhatIsPromptEngineeringPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-[#f0f4ff] mb-4">The 5 dimensions of a good prompt</h2>
-              <p className="text-[#8b9cc8] leading-relaxed mb-5">
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The 5 dimensions of a good prompt</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-5">
                 Research into prompt effectiveness points to five elements that separate high-quality prompts from
                 poor ones. This is the same framework Deepclario uses to score every prompt:
               </p>
@@ -88,32 +88,32 @@ export default function WhatIsPromptEngineeringPage() {
                   { n: '4. Constraints', d: 'Constraints tell the AI what NOT to do. "Avoid jargon", "don\'t recommend paid tools", "assume the reader has no coding background" — these prevent common failure modes.' },
                   { n: '5. Examples', d: 'Showing the AI an example of what you want (few-shot prompting) dramatically improves accuracy. Even one example shifts output quality significantly.' },
                 ].map(item => (
-                  <div key={item.n} className="p-5 glass rounded-xl border border-[#1e2d4a]">
-                    <h3 className="font-bold text-[#f0f4ff] mb-2">{item.n}</h3>
-                    <p className="text-sm text-[#8b9cc8] leading-relaxed">{item.d}</p>
+                  <div key={item.n} className="p-5 rounded-xl border border-[color:var(--color-rule)]">
+                    <h3 className="font-bold text-[color:var(--color-paper)] mb-2">{item.n}</h3>
+                    <p className="text-sm text-[color:var(--color-paper-mute)] leading-relaxed">{item.d}</p>
                   </div>
                 ))}
               </div>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-[#f0f4ff] mb-4">A before and after example</h2>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">A before and after example</h2>
               <div className="grid gap-4">
-                <div className="p-5 bg-[#080c18] rounded-xl border border-red-500/20">
-                  <p className="text-xs text-red-400 font-semibold uppercase mb-2">Weak prompt</p>
-                  <p className="text-sm text-[#8b9cc8] italic">&ldquo;Summarize this article&rdquo;</p>
-                  <p className="text-xs text-[#4a5a80] mt-3">Score: ~12/100 — No audience, no format, no length, no purpose</p>
+                <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                  <p className="text-xs text-[#C25E5E] font-semibold uppercase mb-2">Weak prompt</p>
+                  <p className="text-sm text-[color:var(--color-paper-mute)] italic">&ldquo;Summarize this article&rdquo;</p>
+                  <p className="text-xs text-[color:var(--color-paper-mute)] mt-3">Score: ~12/100 — No audience, no format, no length, no purpose</p>
                 </div>
-                <div className="p-5 bg-[#080c18] rounded-xl border border-emerald-500/20">
-                  <p className="text-xs text-emerald-400 font-semibold uppercase mb-2">Engineered prompt</p>
-                  <p className="text-sm text-[#f0f4ff]">&ldquo;Summarize the key findings of this research article in 3 bullet points for a non-technical executive audience. Each bullet should be one sentence. Focus on practical implications, not methodology.&rdquo;</p>
-                  <p className="text-xs text-[#4a5a80] mt-3">Score: ~89/100 — Audience ✓ Format ✓ Length ✓ Constraints ✓</p>
+                <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                  <p className="text-xs text-[color:var(--color-paper)] font-semibold uppercase mb-2">Engineered prompt</p>
+                  <p className="text-sm text-[color:var(--color-paper)]">&ldquo;Summarize the key findings of this research article in 3 bullet points for a non-technical executive audience. Each bullet should be one sentence. Focus on practical implications, not methodology.&rdquo;</p>
+                  <p className="text-xs text-[color:var(--color-paper-mute)] mt-3">Score: ~89/100 — Audience ✓ Format ✓ Length ✓ Constraints ✓</p>
                 </div>
               </div>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-[#f0f4ff] mb-4">Common prompt engineering techniques</h2>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Common prompt engineering techniques</h2>
               <div className="space-y-3">
                 {[
                   { t: 'Role assignment', d: 'Starting with "Act as a [role]" primes the AI to respond with appropriate expertise and tone.' },
@@ -122,56 +122,56 @@ export default function WhatIsPromptEngineeringPage() {
                   { t: 'Output constraints', d: 'Specifying format, length, and what to avoid gives the AI clear guardrails.' },
                   { t: 'Iterative refinement', d: 'Follow-up prompts that correct or extend previous answers are often more efficient than one perfect prompt.' },
                 ].map(item => (
-                  <div key={item.t} className="p-4 glass rounded-xl border border-[#1e2d4a]">
-                    <p className="font-semibold text-[#f0f4ff] text-sm mb-1">{item.t}</p>
-                    <p className="text-xs text-[#8b9cc8]">{item.d}</p>
+                  <div key={item.t} className="p-4 rounded-xl border border-[color:var(--color-rule)]">
+                    <p className="font-semibold text-[color:var(--color-paper)] text-sm mb-1">{item.t}</p>
+                    <p className="text-xs text-[color:var(--color-paper-mute)]">{item.d}</p>
                   </div>
                 ))}
               </div>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-[#f0f4ff] mb-4">Who needs prompt engineering?</h2>
-              <p className="text-[#8b9cc8] leading-relaxed mb-4">
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Who needs prompt engineering?</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
                 Anyone who uses an AI tool more than a few times a week benefits from better prompts:
               </p>
-              <ul className="space-y-2 text-sm text-[#8b9cc8]">
-                <li className="flex gap-2"><span className="text-violet-400">→</span> Developers using Copilot, Cursor, or Claude for code generation</li>
-                <li className="flex gap-2"><span className="text-violet-400">→</span> Writers using AI for drafts, editing, or ideation</li>
-                <li className="flex gap-2"><span className="text-violet-400">→</span> Marketers generating copy, campaigns, or briefs</li>
-                <li className="flex gap-2"><span className="text-violet-400">→</span> Students using AI for research, summaries, or study plans</li>
-                <li className="flex gap-2"><span className="text-violet-400">→</span> Founders and teams building AI-powered workflows</li>
+              <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Developers using Copilot, Cursor, or Claude for code generation</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Writers using AI for drafts, editing, or ideation</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Marketers generating copy, campaigns, or briefs</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Students using AI for research, summaries, or study plans</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Founders and teams building AI-powered workflows</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-[#f0f4ff] mb-4">How to get started</h2>
-              <p className="text-[#8b9cc8] leading-relaxed mb-4">
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">How to get started</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
                 The fastest way to improve your prompts is to get scored feedback on what you&apos;re already writing.
                 Paste any prompt into Deepclario and see exactly which dimensions are weak — with a rewritten version
                 that fixes them.
               </p>
-              <p className="text-[#8b9cc8] leading-relaxed">
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
                 No theory required. Try it on a real prompt you&apos;re working on right now.
               </p>
             </section>
           </article>
 
-          <div className="mt-14 rounded-2xl border border-violet-500/30 bg-violet-600/10 p-8 text-center">
+          <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Practice with your own prompts</h2>
-            <p className="text-[#8b9cc8] text-sm mb-6">Paste any prompt. See your score. Get the improved version. Free, no account needed.</p>
-            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white font-semibold transition-all glow-violet">
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Paste any prompt. See your score. Get the improved version. Free, no account needed.</p>
+            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] font-semibold transition-all">
               Analyze my prompt →
             </Link>
           </div>
 
-          <div className="mt-10 pt-6 border-t border-[#1e2d4a]">
-            <p className="text-xs text-[#4a5a80] mb-3">Related reading</p>
+          <div className="mt-10 pt-6 border-t border-[color:var(--color-rule)]">
+            <p className="text-xs text-[color:var(--color-paper-mute)] mb-3">Related reading</p>
             <div className="flex flex-col gap-2">
-              <Link href="/blog/how-to-write-better-prompts" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
+              <Link href="/blog/how-to-write-better-prompts" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 How to write better prompts for ChatGPT, Claude, and Gemini →
               </Link>
-              <Link href="/tools/prompt-improver" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
+              <Link href="/tools/prompt-improver" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 Free AI Prompt Improver →
               </Link>
             </div>

@@ -74,33 +74,33 @@ export default function HowToWriteBetterPromptsPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
-      <div className="min-h-screen bg-[#0a0e1a] text-[#f0f4ff]">
-        <header className="border-b border-[#1e2d4a]/60 px-6 py-4 flex items-center justify-between">
+      <div className="editorial grain min-h-screen">
+        <header className="border-b border-[color:var(--color-rule)] px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Image src="/logo.png" alt="Deepclario" width={24} height={24} className="rounded" />
             <span className="font-bold text-sm">Deepclario</span>
           </Link>
-          <Link href="/playground" className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all">
+          <Link href="/playground" className="px-4 py-2 rounded-xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] text-sm font-semibold transition-all">
             Try free →
           </Link>
         </header>
 
         <main className="max-w-2xl mx-auto px-6 py-16">
           <div className="mb-6">
-            <Link href="/" className="text-xs text-[#4a5a80] hover:text-[#8b9cc8] transition-colors">← Back to Deepclario</Link>
+            <Link href="/" className="text-xs text-[color:var(--color-paper-mute)] hover:text-[color:var(--color-paper-mute)] transition-colors">← Back to Deepclario</Link>
           </div>
 
           <div className="mb-4 flex items-center gap-2">
-            <span className="text-xs text-violet-400 font-semibold uppercase tracking-wider">Guide</span>
-            <span className="text-xs text-[#4a5a80]">· 10 min read</span>
+            <span className="text-xs text-[color:var(--color-paper)] font-semibold uppercase tracking-wider">Guide</span>
+            <span className="text-xs text-[color:var(--color-paper-mute)]">· 10 min read</span>
           </div>
 
           <h1 className="text-4xl font-bold mb-5 leading-tight">
             How to Write Better AI Prompts
           </h1>
-          <p className="text-xs text-[#4a5a80] mb-6">Works with ChatGPT, Claude, Gemini, and any other LLM</p>
+          <p className="text-xs text-[color:var(--color-paper-mute)] mb-6">Works with ChatGPT, Claude, Gemini, and any other LLM</p>
 
-          <p className="text-lg text-[#8b9cc8] mb-10 leading-relaxed">
+          <p className="text-lg text-[color:var(--color-paper-mute)] mb-10 leading-relaxed">
             Most people write prompts the way they send text messages — casual, short, and vague.
             That works for humans who can ask follow-up questions. AI can&apos;t. These 7 techniques
             will immediately make your prompts more effective across any AI tool.
@@ -109,20 +109,20 @@ export default function HowToWriteBetterPromptsPage() {
           <div className="space-y-10">
             {TIPS.map((tip) => (
               <section key={tip.n}>
-                <h2 className="text-xl font-bold text-[#f0f4ff] mb-4">{tip.n}</h2>
+                <h2 className="text-xl font-bold text-[color:var(--color-paper)] mb-4">{tip.n}</h2>
                 <div className="grid gap-3 mb-4">
-                  <div className="p-4 bg-[#080c18] rounded-xl border border-red-500/20">
-                    <p className="text-[10px] text-red-400 font-semibold uppercase tracking-wider mb-2">Before</p>
-                    <p className="text-sm text-[#8b9cc8] italic">&ldquo;{tip.bad}&rdquo;</p>
+                  <div className="p-4 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                    <p className="text-[10px] text-[#C25E5E] font-semibold uppercase tracking-wider mb-2">Before</p>
+                    <p className="text-sm text-[color:var(--color-paper-mute)] italic">&ldquo;{tip.bad}&rdquo;</p>
                   </div>
-                  <div className="p-4 bg-[#080c18] rounded-xl border border-emerald-500/20">
-                    <p className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider mb-2">After</p>
-                    <p className="text-sm text-[#f0f4ff]">&ldquo;{tip.good}&rdquo;</p>
+                  <div className="p-4 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                    <p className="text-[10px] text-[color:var(--color-paper)] font-semibold uppercase tracking-wider mb-2">After</p>
+                    <p className="text-sm text-[color:var(--color-paper)]">&ldquo;{tip.good}&rdquo;</p>
                   </div>
                 </div>
-                <div className="flex gap-2 p-3 rounded-lg bg-violet-500/5 border border-violet-500/15">
-                  <span className="text-violet-400 text-xs shrink-0 mt-0.5">Why it works:</span>
-                  <p className="text-xs text-[#8b9cc8] leading-relaxed">{tip.why}</p>
+                <div className="flex gap-2 p-3 rounded-lg bg-[color:var(--color-ink-card)] border border-[color:var(--color-rule-strong)]">
+                  <span className="text-[color:var(--color-paper)] text-xs shrink-0 mt-0.5">Why it works:</span>
+                  <p className="text-xs text-[color:var(--color-paper-mute)] leading-relaxed">{tip.why}</p>
                 </div>
               </section>
             ))}
@@ -130,31 +130,31 @@ export default function HowToWriteBetterPromptsPage() {
 
           <section className="mt-12">
             <h2 className="text-2xl font-bold mb-4">The fastest way to improve: get scored</h2>
-            <p className="text-[#8b9cc8] leading-relaxed mb-4">
+            <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
               Reading about prompt techniques is useful. Applying them to your actual prompts is better.
               Deepclario scores your prompt against all 5 quality dimensions and rewrites it for you — so
               you can see exactly what changed and why.
             </p>
-            <p className="text-[#8b9cc8] leading-relaxed">
+            <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
               Try it on any prompt you&apos;re currently using. Free, no account required.
             </p>
           </section>
 
-          <div className="mt-10 rounded-2xl border border-violet-500/30 bg-violet-600/10 p-8 text-center">
+          <div className="mt-10 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Test these techniques on your own prompt</h2>
-            <p className="text-[#8b9cc8] text-sm mb-6">Paste any prompt and see exactly how to improve it. Free.</p>
-            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white font-semibold transition-all glow-violet">
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Paste any prompt and see exactly how to improve it. Free.</p>
+            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] font-semibold transition-all">
               Analyze my prompt →
             </Link>
           </div>
 
-          <div className="mt-10 pt-6 border-t border-[#1e2d4a]">
-            <p className="text-xs text-[#4a5a80] mb-3">Related reading</p>
+          <div className="mt-10 pt-6 border-t border-[color:var(--color-rule)]">
+            <p className="text-xs text-[color:var(--color-paper-mute)] mb-3">Related reading</p>
             <div className="flex flex-col gap-2">
-              <Link href="/blog/what-is-prompt-engineering" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
+              <Link href="/blog/what-is-prompt-engineering" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 What is prompt engineering? →
               </Link>
-              <Link href="/tools/prompt-analyzer" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
+              <Link href="/tools/prompt-analyzer" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 Free AI Prompt Analyzer →
               </Link>
             </div>

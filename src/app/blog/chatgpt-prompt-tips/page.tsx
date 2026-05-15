@@ -90,32 +90,32 @@ const TIPS = [
 
 export default function ChatGPTPromptTipsPage() {
   return (
-    <div className="min-h-screen bg-[#0a0e1a] text-[#f0f4ff]">
+    <div className="editorial grain min-h-screen">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
       {/* Nav */}
-      <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 border-b border-[#1e2d4a]/60 glass">
+      <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 border-b border-[color:var(--color-rule)]">
         <Link href="/" className="flex items-center gap-2.5">
           <Image src="/logo.png" alt="Deepclario" width={28} height={28} className="rounded-md" />
-          <span className="font-bold text-[#f0f4ff] tracking-tight">Deepclario</span>
+          <span className="font-bold text-[color:var(--color-paper)] tracking-tight">Deepclario</span>
         </Link>
-        <Link href="/playground" className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all">
+        <Link href="/playground" className="px-4 py-2 rounded-xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] text-sm font-semibold transition-all">
           Try free
         </Link>
       </header>
 
       <main className="max-w-2xl mx-auto px-6 pt-28 pb-20">
         <div className="mb-10">
-          <Link href="/blog/how-to-write-better-prompts" className="text-xs text-violet-400 hover:text-violet-300 transition-colors">
+          <Link href="/blog/how-to-write-better-prompts" className="text-xs text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
             ← More prompt guides
           </Link>
           <h1 className="text-3xl md:text-4xl font-bold mt-4 mb-4 leading-tight">
             10 ChatGPT Prompt Tips That Actually Work
           </h1>
-          <p className="text-[#8b9cc8] leading-relaxed">
+          <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
             Most ChatGPT users get mediocre results not because the model is bad — but because the prompt is
             too vague. These 10 techniques cover the most common gaps. Each one has a before/after example
             you can use immediately.
@@ -125,20 +125,20 @@ export default function ChatGPTPromptTipsPage() {
         <div className="space-y-12">
           {TIPS.map((tip) => (
             <div key={tip.n}>
-              <h2 className="text-xl font-bold text-[#f0f4ff] mb-4">{tip.n}</h2>
+              <h2 className="text-xl font-bold text-[color:var(--color-paper)] mb-4">{tip.n}</h2>
 
               <div className="grid md:grid-cols-2 gap-3 mb-4">
-                <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
-                  <p className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-2">Before</p>
-                  <p className="text-sm text-[#8b9cc8] italic">&ldquo;{tip.bad}&rdquo;</p>
+                <div className="rounded-xl border border-[color:var(--color-rule-strong)] bg-red-500/5 p-4">
+                  <p className="text-xs font-semibold text-[#C25E5E] uppercase tracking-wider mb-2">Before</p>
+                  <p className="text-sm text-[color:var(--color-paper-mute)] italic">&ldquo;{tip.bad}&rdquo;</p>
                 </div>
-                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-                  <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">After</p>
-                  <p className="text-sm text-[#f0f4ff] leading-relaxed">{tip.good}</p>
+                <div className="rounded-xl border border-[color:var(--color-rule-strong)] bg-emerald-500/5 p-4">
+                  <p className="text-xs font-semibold text-[color:var(--color-paper)] uppercase tracking-wider mb-2">After</p>
+                  <p className="text-sm text-[color:var(--color-paper)] leading-relaxed">{tip.good}</p>
                 </div>
               </div>
 
-              <p className="text-sm text-[#8b9cc8] leading-relaxed border-l-2 border-violet-500/40 pl-4">
+              <p className="text-sm text-[color:var(--color-paper-mute)] leading-relaxed border-l-2 border-[color:var(--color-rule-strong)] pl-4">
                 {tip.why}
               </p>
             </div>
@@ -146,9 +146,9 @@ export default function ChatGPTPromptTipsPage() {
         </div>
 
         {/* Internal links */}
-        <div className="mt-16 pt-8 border-t border-[#1e2d4a] space-y-4">
-          <h2 className="text-lg font-bold text-[#f0f4ff]">Test these tips on your own prompts</h2>
-          <p className="text-sm text-[#8b9cc8]">
+        <div className="mt-16 pt-8 border-t border-[color:var(--color-rule)] space-y-4">
+          <h2 className="text-lg font-bold text-[color:var(--color-paper)]">Test these tips on your own prompts</h2>
+          <p className="text-sm text-[color:var(--color-paper-mute)]">
             Paste any prompt into Deepclario and get a score across all 5 dimensions — goal clarity, context,
             format, constraints, and examples. See exactly which of these tips applies to your prompt, and get
             a rewritten version that scores higher.
@@ -156,13 +156,13 @@ export default function ChatGPTPromptTipsPage() {
           <div className="flex flex-wrap gap-3">
             <Link
               href="/playground"
-              className="inline-block px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all glow-violet"
+              className="inline-block px-5 py-2.5 rounded-xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] text-sm font-semibold transition-all"
             >
               Analyze my prompt →
             </Link>
             <Link
               href="/blog/how-to-write-better-prompts"
-              className="inline-block px-5 py-2.5 rounded-xl border border-[#2d4070] text-[#8b9cc8] hover:text-[#f0f4ff] hover:border-[#4a5a80] text-sm font-medium transition-all"
+              className="inline-block px-5 py-2.5 rounded-xl border border-[color:var(--color-rule-strong)] text-[color:var(--color-paper-mute)] hover:text-[color:var(--color-paper)] hover:border-[#4a5a80] text-sm font-medium transition-all"
             >
               7 more prompt techniques →
             </Link>
