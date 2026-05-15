@@ -133,10 +133,7 @@ export default function LandingPage() {
                 Paste your prompt below. We score it, ask what is missing, and rewrite it so the model has no excuse to misunderstand you.
               </p>
             </div>
-            <LivePromptDemo
-              defaultPrompt="Write me a blog post about AI"
-              compact
-            />
+            <LivePromptDemo compact />
           </div>
         </section>
 

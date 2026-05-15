@@ -47,8 +47,8 @@ const SCORE_TO = 87
 
 function scoreColor(score: number): string {
   if (score < 30) return '#C25E5E'
-  if (score < 60) return '#C99550'
-  return '#7FA875'
+  if (score < 60) return 'var(--color-paper-mute)'
+  return 'var(--color-paper)'
 }
 
 export function CinematicHero() {
@@ -160,7 +160,7 @@ const stageMotionProps = (reduce: boolean) =>
 function DesktopVagueStage({ reduce }: { reduce: boolean }) {
   return (
     <motion.div {...stageMotionProps(reduce)} className="absolute inset-0">
-      <p className="eyebrow mb-4" style={{ color: '#C25E5E' }}>What you typed</p>
+      <p className="eyebrow mb-4" style={{ color: 'var(--color-paper-mute)' }}>What you typed</p>
       <p
         className="font-serif text-[5.2rem] leading-tight tracking-tight"
         style={{ color: 'var(--color-paper)', fontWeight: 400 }}
@@ -211,7 +211,7 @@ function DesktopQuestionsStage({ reduce }: { reduce: boolean }) {
 function DesktopRewriteStage({ reduce }: { reduce: boolean }) {
   return (
     <motion.div {...stageMotionProps(reduce)} className="absolute inset-0">
-      <p className="eyebrow mb-4" style={{ color: '#7FA875' }}>What we send to the model</p>
+      <p className="eyebrow mb-4" style={{ color: 'var(--color-paper)' }}>What we send to the model</p>
       <p
         className="font-serif text-[1.55rem] leading-snug whitespace-pre-line"
         style={{ color: 'var(--color-paper)', fontWeight: 400 }}
@@ -286,7 +286,7 @@ function MobileStacked() {
   return (
     <section aria-label="How Deepclario transforms a prompt" className="px-6 py-12 space-y-16">
       <MobileStage
-        eyebrowColor="#C25E5E"
+        eyebrowColor="var(--color-paper-mute)"
         eyebrow="01 · What you typed"
         score={SCORE_FROM}
         reduce={!!reduce}
@@ -330,7 +330,7 @@ function MobileStacked() {
       </MobileStage>
 
       <MobileStage
-        eyebrowColor="#7FA875"
+        eyebrowColor="var(--color-paper-mute)"
         eyebrow="03 · What we send"
         score={SCORE_TO}
         reduce={!!reduce}

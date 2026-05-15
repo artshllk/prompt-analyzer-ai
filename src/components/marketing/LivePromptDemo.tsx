@@ -201,21 +201,20 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
             disabled={!showInputForm}
-            placeholder="Write me a blog post about AI..."
+            placeholder="Type a prompt — even a rough one. e.g. “Write me a blog post about AI”"
             rows={5}
             maxLength={4000}
             className="w-full p-4 text-base resize-none focus:outline-none transition-colors"
             style={{
-              background: 'transparent',
+              background: 'var(--color-ink-card)',
               color: 'var(--color-paper)',
-              borderTop: '1px solid var(--color-rule-strong)',
-              borderBottom: '1px solid var(--color-rule-strong)',
-              borderLeft: 'none',
-              borderRight: 'none',
-              borderRadius: 0,
+              border: '1px solid var(--color-rule-strong)',
+              borderRadius: '12px',
               fontFamily: 'var(--font-inter)',
               lineHeight: 1.55,
             }}
+            onFocus={e => { e.currentTarget.style.borderColor = 'var(--color-paper-mute)' }}
+            onBlur={e => { e.currentTarget.style.borderColor = 'var(--color-rule-strong)' }}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
@@ -366,7 +365,7 @@ function ThinkingDots() {
 }
 
 function ScoreNumber({ value }: { value: number }) {
-  const color = value < 30 ? '#C25E5E' : value < 60 ? '#C99550' : '#7FA875'
+  const color = value < 30 ? '#C25E5E' : value < 60 ? 'var(--color-paper-mute)' : 'var(--color-paper)'
   return (
     <span className="font-serif tabular-nums" style={{ color, fontWeight: 400 }}>
       {value}
@@ -499,7 +498,7 @@ function DonePanel({
         </div>
       </div>
 
-      <p className="eyebrow mb-3" style={{ color: '#7FA875' }}>The rewrite</p>
+      <p className="eyebrow mb-3" style={{ color: 'var(--color-paper)' }}>The rewrite</p>
       <div
         className="p-5 mb-5"
         style={{
