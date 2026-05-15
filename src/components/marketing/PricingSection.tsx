@@ -60,7 +60,7 @@ export function PricingSection() {
             <p className="text-xs font-semibold text-[#4a5a80] uppercase tracking-wider mb-2">Free</p>
             <div className="flex items-baseline gap-1">
               <span className="text-4xl font-bold text-[#f0f4ff]">$0</span>
-              <span className="text-sm text-[#4a5a80]">forever</span>
+              {/* <span className="text-sm text-[#4a5a80]">forever</span> */}
             </div>
             <p className="text-xs text-[#4a5a80] mt-2">Good for getting started</p>
           </div>

@@ -185,13 +185,13 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
               </span>
             </h2>
             <p className="text-base md:text-lg leading-[1.65] mb-3" style={{ color: 'var(--color-paper-mute)' }}>
-              A real prompt, your prompt analyzed by the same engine running in the playground. No signup. No catch.
+              A real prompt, your prompt analyzed by the same engine running in the playground.
             </p>
           </>
         )}
-        <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--color-paper-mute)' }}>
+        {/* <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--color-paper-mute)' }}>
           We do not store anything you paste here. The text is sent to the model, analyzed once, and discarded.
-        </p>
+        </p> */}
 
         {/* Textarea form */}
         <form onSubmit={handleSubmit} className={!showInputForm ? 'opacity-50 pointer-events-none' : ''}>

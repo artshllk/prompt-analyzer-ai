@@ -14,7 +14,7 @@ interface PaywallModalProps {
 
 const PRO_FEATURES = [
   'Unlimited prompt analyses',
-  'Full session history forever',
+  'Full session history',
   'Weekly insights & pattern reports',
   'Mistake pattern analysis',
   'CSV export',

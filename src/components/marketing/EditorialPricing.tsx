@@ -50,7 +50,7 @@ export function EditorialPricing() {
           <div className="col-span-4 md:col-span-3">
             <p className="eyebrow mb-2">Free</p>
             <p className="font-serif text-3xl tabular-nums" style={{ color: 'var(--color-paper)' }}>$0</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--color-paper-mute)' }}>forever</p>
+            {/* <p className="text-xs mt-1" style={{ color: 'var(--color-paper-mute)' }}>forever</p> */}
           </div>
           <div className="col-span-8 md:col-span-7">
             <p className="text-sm mb-3" style={{ color: 'var(--color-paper)' }}>

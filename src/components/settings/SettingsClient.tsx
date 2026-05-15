@@ -154,7 +154,7 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
                   disabled={confirmText !== 'DELETE' || deleting}
                   className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  {deleting ? 'Deleting…' : 'Delete forever'}
+                  {deleting ? 'Deleting…' : 'Delete account'}
                 </button>
               </div>
             </motion.div>
