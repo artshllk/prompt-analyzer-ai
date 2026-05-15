@@ -20,7 +20,7 @@ function ScoreTrend({ sessions }: { sessions: Array<{ clarityScoreAfter?: number
   const path = xs.map((x, i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ')
 
   const trend = points[points.length - 1] - points[0]
-  const color = trend >= 0 ? '#7FA875' : '#C25E5E'
+  const color = trend >= 0 ? 'var(--color-paper)' : '#C25E5E'
 
   return (
     <div className="flex items-center gap-2">
@@ -36,8 +36,8 @@ function ScoreTrend({ sessions }: { sessions: Array<{ clarityScoreAfter?: number
 
 function scoreColor(score: number): string {
   if (score < 30) return '#C25E5E'
-  if (score < 60) return '#C99550'
-  return '#7FA875'
+  if (score < 60) return 'var(--color-paper-mute)'
+  return 'var(--color-paper)'
 }
 
 export default async function HistoryPage({
@@ -241,7 +241,7 @@ export default async function HistoryPage({
               <div className="grid grid-cols-12 gap-3 md:gap-6 py-6">
                 <div className="col-span-12 md:col-start-2 md:col-span-11 space-y-7">
                   <div>
-                    <p className="eyebrow mb-3" style={{ color: '#C25E5E' }}>Original</p>
+                    <p className="eyebrow mb-3" style={{ color: 'var(--color-paper-mute)' }}>Original</p>
                     <p
                       className="font-serif tracking-tight text-base md:text-lg leading-[1.55] whitespace-pre-wrap"
                       style={{ color: 'var(--color-paper-mute)' }}
@@ -275,7 +275,7 @@ export default async function HistoryPage({
 
                   {session.improvement && (
                     <div>
-                      <p className="eyebrow mb-3" style={{ color: '#7FA875' }}>Rewrite</p>
+                      <p className="eyebrow mb-3" style={{ color: 'var(--color-paper)' }}>Rewrite</p>
                       <p
                         className="font-serif text-base md:text-lg leading-[1.55] whitespace-pre-wrap mb-4"
                         style={{ color: 'var(--color-paper)', fontWeight: 400 }}

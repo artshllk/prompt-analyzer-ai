@@ -205,7 +205,7 @@ function Stat({ label, value, sub, accent }: { label: string; value: string; sub
 }
 
 function ScoreInline({ score }: { score: number }) {
-  const color = score < 30 ? '#C25E5E' : score < 60 ? '#C99550' : '#7FA875'
+  const color = score < 30 ? '#C25E5E' : score < 60 ? 'var(--color-paper-mute)' : 'var(--color-paper)'
   return (
     <span className="font-serif text-2xl tabular-nums" style={{ color, fontWeight: 400 }}>
       {score}

@@ -26,8 +26,8 @@ const TAG_LABELS: Record<string, { label: string; tip: string }> = {
 
 function scoreColor(score: number): string {
   if (score < 30) return '#C25E5E'
-  if (score < 60) return '#C99550'
-  return '#7FA875'
+  if (score < 60) return 'var(--color-paper-mute)'
+  return 'var(--color-paper)'
 }
 
 export function InsightsClient() {
@@ -109,7 +109,7 @@ export function InsightsClient() {
           </p>
           {data.prevWeek.promptsCount > 0 && (
             <p className="mt-4 text-base" style={{ color: 'var(--color-paper-mute)' }}>
-              <span style={{ color: wowDelta > 0 ? '#7FA875' : wowDelta < 0 ? '#C25E5E' : 'var(--color-paper-mute)' }}>
+              <span style={{ color: wowDelta > 0 ? 'var(--color-paper)' : wowDelta < 0 ? '#C25E5E' : 'var(--color-paper-mute)' }}>
                 {trendArrow} {Math.abs(wowDelta)} {plural('point', Math.abs(wowDelta))}
               </span>{' '}
               vs. last week ({data.prevWeek.avgAfter} avg).
@@ -231,7 +231,7 @@ export function InsightsClient() {
             <div className="md:col-span-6">
               <Highlight
                 label="Top score this week"
-                color="#7FA875"
+                color="var(--color-paper)"
                 primary={data.bestThisWeek.after}
                 secondary={`from ${data.bestThisWeek.before}`}
                 prompt={data.bestThisWeek.prompt}
