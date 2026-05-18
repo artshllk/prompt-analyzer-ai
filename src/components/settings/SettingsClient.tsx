@@ -53,7 +53,7 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
         <h2 className="text-sm font-semibold text-[#f0f4ff] uppercase tracking-wider">Account</h2>
         <div className="space-y-3 text-sm">
           <Row label="Email" value={email} />
-          <Row label="Name" value={fullName ?? '—'} />
+          <Row label="Name" value={fullName ?? '-'} />
           <Row
             label="Plan"
             value={
@@ -97,7 +97,7 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
       <section className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 space-y-4">
         <h2 className="text-sm font-semibold text-red-300 uppercase tracking-wider">Danger zone</h2>
         <p className="text-sm text-[#8b9cc8]">
-          Permanently delete your account and all associated data — sessions, history, and insights. This cannot be undone.
+          Permanently delete your account and all associated data - sessions, history, and insights. This cannot be undone.
           {isPro && (
             <span className="block mt-2 text-amber-400">
               Cancel your subscription via &quot;Manage billing&quot; first to avoid further charges.

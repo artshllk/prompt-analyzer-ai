@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://deepclario.com/blog/what-is-a-good-prompt' },
   openGraph: {
     title: 'What Makes a Good AI Prompt? 5 Things Every Strong Prompt Has',
-    description: 'Learn the 5 elements every good AI prompt needs — with examples and a free tool to score yours.',
+    description: 'Learn the 5 elements every good AI prompt needs - with examples and a free tool to score yours.',
     url: 'https://deepclario.com/blog/what-is-a-good-prompt',
   },
 }
@@ -54,7 +54,7 @@ const DIMENSIONS = [
     question: 'Have you specified what the output should look like?',
     weak: 'Give me ideas for blog posts',
     strong: 'Give me 5 blog post ideas for a developer tools company. Format as a numbered list with: title, target reader, and one sentence on what makes it interesting.',
-    tip: 'Format means: how many items, what structure, what length. If you don\'t specify, you\'ll get whatever the model defaults to — which is usually too long.',
+    tip: 'Format means: how many items, what structure, what length. If you don\'t specify, you\'ll get whatever the model defaults to - which is usually too long.',
   },
   {
     n: 4,
@@ -73,7 +73,7 @@ const DIMENSIONS = [
     weight: '20 points',
     question: 'Have you shown the AI what good looks like?',
     weak: 'Write a product update email in a friendly tone',
-    strong: 'Write a product update email in a friendly tone. Here\'s an example of the style I want: "We just shipped something small that will save you 20 minutes a week. Here\'s what changed and why." Match the casual directness — no corporate language, no jargon.',
+    strong: 'Write a product update email in a friendly tone. Here\'s an example of the style I want: "We just shipped something small that will save you 20 minutes a week. Here\'s what changed and why." Match the casual directness - no corporate language, no jargon.',
     tip: 'An example is the highest-value thing you can add to a prompt. It removes all ambiguity about tone, voice, and length in a single sentence.',
   },
 ]
@@ -107,7 +107,7 @@ export default function WhatIsAGoodPromptPage() {
           </h1>
           <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-3">
             A good prompt isn&apos;t about using magic words or following a rigid template. It&apos;s about giving
-            the AI enough information to do exactly what you need — no more guessing, no more generic output.
+            the AI enough information to do exactly what you need - no more guessing, no more generic output.
           </p>
           <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
             Every prompt Deepclario analyzes is scored across 5 dimensions, each worth 20 points. Here&apos;s
@@ -187,7 +187,7 @@ export default function WhatIsAGoodPromptPage() {
           <h2 className="text-lg font-bold text-[color:var(--color-paper)]">Score your own prompt</h2>
           <p className="text-sm text-[color:var(--color-paper-mute)]">
             Paste any prompt into Deepclario and see which of these 5 dimensions are missing.
-            You&apos;ll get a score, a breakdown, and a rewritten version — free, no account needed.
+            You&apos;ll get a score, a breakdown, and a rewritten version - free, no account needed.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link

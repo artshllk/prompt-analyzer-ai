@@ -5,7 +5,7 @@ import { useState } from 'react'
 const FAQS = [
   {
     q: 'What is prompt engineering?',
-    a: 'Prompt engineering is the practice of structuring your instructions to an AI model so it produces consistently useful output. A well-engineered prompt specifies role, context, output format, and constraints — reducing guesswork and dramatically improving response quality.',
+    a: 'Prompt engineering is the practice of structuring your instructions to an AI model so it produces consistently useful output. A well-engineered prompt specifies role, context, output format, and constraints - reducing guesswork and dramatically improving response quality.',
   },
   {
     q: 'Is Deepclario free to use?',
@@ -17,11 +17,11 @@ const FAQS = [
   },
   {
     q: 'What AI tools does this work with?',
-    a: 'The improved prompts work with any AI — ChatGPT, Claude, Gemini, Grok, Copilot, or any other LLM. Deepclario improves the prompt itself, not the AI you use it with.',
+    a: 'The improved prompts work with any AI - ChatGPT, Claude, Gemini, Grok, Copilot, or any other LLM. Deepclario improves the prompt itself, not the AI you use it with.',
   },
   {
     q: "Why not just ask ChatGPT to improve my prompt?",
-    a: "ChatGPT will rewrite your prompt, but it won't score it, identify which specific dimensions are weak, ask the targeted questions that actually matter, or track your improvement over time. Deepclario is purpose-built for this workflow — it makes you better at prompting, not just dependent on a tool.",
+    a: "ChatGPT will rewrite your prompt, but it won't score it, identify which specific dimensions are weak, ask the targeted questions that actually matter, or track your improvement over time. Deepclario is purpose-built for this workflow - it makes you better at prompting, not just dependent on a tool.",
   },
   {
     q: 'What is the CRAFT framework?',
@@ -33,7 +33,7 @@ const FAQS = [
   },
   {
     q: 'Can I cancel Pro anytime?',
-    a: 'Yes. Cancel anytime from your account settings — no questions asked. You keep Pro access until the end of your billing period.',
+    a: 'Yes. Cancel anytime from your account settings - no questions asked. You keep Pro access until the end of your billing period.',
   },
 ]
 

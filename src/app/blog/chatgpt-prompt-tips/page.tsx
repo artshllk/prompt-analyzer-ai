@@ -4,7 +4,7 @@ import Image from 'next/image'
 
 export const metadata: Metadata = {
   title: '10 ChatGPT Prompt Tips That Actually Work',
-  description: 'Most ChatGPT users get mediocre results because their prompts are too vague. These 10 practical tips will immediately improve what you get back — with real before and after examples.',
+  description: 'Most ChatGPT users get mediocre results because their prompts are too vague. These 10 practical tips will immediately improve what you get back - with real before and after examples.',
   alternates: { canonical: 'https://deepclario.com/blog/chatgpt-prompt-tips' },
   openGraph: {
     title: '10 ChatGPT Prompt Tips That Actually Work',
@@ -53,7 +53,7 @@ const TIPS = [
   {
     n: '5. Show an example of what you want',
     bad: 'Write a tweet about our new feature',
-    good: 'Write a tweet about our new feature. Style example: "We just shipped something we\'ve been building for 3 months. It\'s small. It will save you an hour a week. Check it out →" — match that casual, direct tone.',
+    good: 'Write a tweet about our new feature. Style example: "We just shipped something we\'ve been building for 3 months. It\'s small. It will save you an hour a week. Check it out →" - match that casual, direct tone.',
     why: 'One example is worth a thousand adjectives. It removes ambiguity about tone, length, and style instantly.',
   },
   {
@@ -77,13 +77,13 @@ const TIPS = [
   {
     n: '9. Iterate, don\'t restart',
     bad: '[Writes a whole new prompt from scratch]',
-    good: '"The tone is right but the second paragraph is too long — cut it in half and add a concrete example where it ends."',
+    good: '"The tone is right but the second paragraph is too long - cut it in half and add a concrete example where it ends."',
     why: 'Most people abandon a good response instead of refining it. A surgical follow-up prompt is almost always better than starting over.',
   },
   {
     n: '10. Test your prompt on a real task',
     bad: 'Assume the first response is good enough',
-    good: 'Run the same prompt 3 times and compare. If the outputs vary wildly, your prompt is under-specified. If they\'re all mediocre, one of the dimensions — role, context, format — is missing.',
+    good: 'Run the same prompt 3 times and compare. If the outputs vary wildly, your prompt is under-specified. If they\'re all mediocre, one of the dimensions - role, context, format - is missing.',
     why: 'Consistency is the signal. A well-structured prompt produces reliably good output, not occasionally good output.',
   },
 ]
@@ -116,7 +116,7 @@ export default function ChatGPTPromptTipsPage() {
             10 ChatGPT Prompt Tips That Actually Work
           </h1>
           <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-            Most ChatGPT users get mediocre results not because the model is bad — but because the prompt is
+            Most ChatGPT users get mediocre results not because the model is bad - but because the prompt is
             too vague. These 10 techniques cover the most common gaps. Each one has a before/after example
             you can use immediately.
           </p>
@@ -149,7 +149,7 @@ export default function ChatGPTPromptTipsPage() {
         <div className="mt-16 pt-8 border-t border-[color:var(--color-rule)] space-y-4">
           <h2 className="text-lg font-bold text-[color:var(--color-paper)]">Test these tips on your own prompts</h2>
           <p className="text-sm text-[color:var(--color-paper-mute)]">
-            Paste any prompt into Deepclario and get a score across all 5 dimensions — goal clarity, context,
+            Paste any prompt into Deepclario and get a score across all 5 dimensions - goal clarity, context,
             format, constraints, and examples. See exactly which of these tips applies to your prompt, and get
             a rewritten version that scores higher.
           </p>

@@ -17,7 +17,7 @@ const TONES: { id: Tone; label: string }[] = [
 ]
 
 /**
- * Editorial tone picker — segmented row of text labels separated by hairlines.
+ * Editorial tone picker - segmented row of text labels separated by hairlines.
  * No emoji, no pills, no violet. Selected tone is paper-bright; rest are muted.
  */
 export function ToneSelector({ value, onChange, disabled }: ToneSelectorProps) {

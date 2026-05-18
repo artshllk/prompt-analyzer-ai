@@ -40,5 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# build artifact — the served copy is public/deepclario-extension.zip
+# build artifact - the served copy is public/deepclario-extension.zip
 /deepclario-extension.zip

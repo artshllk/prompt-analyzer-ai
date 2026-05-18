@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'AI Prompt Improver — Rewrite Any Prompt for Better Results',
+  title: 'AI Prompt Improver - Rewrite Any Prompt for Better Results',
   description: 'Paste any AI prompt and get an improved version in seconds. Deepclario scores it across 5 dimensions and rewrites it using the CRAFT framework. Works with ChatGPT, Claude, and Gemini.',
   alternates: { canonical: 'https://deepclario.com/tools/prompt-improver' },
   openGraph: {
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 }
 
 const HOW_IT_WORKS = [
-  { step: '1', title: 'Paste your prompt', desc: 'Any prompt — rough, half-formed, or specific. Deepclario handles all of it.' },
+  { step: '1', title: 'Paste your prompt', desc: 'Any prompt - rough, half-formed, or specific. Deepclario handles all of it.' },
   { step: '2', title: 'Get scored and clarified', desc: 'Your prompt is scored 0–100. If key elements are missing, Deepclario asks up to 3 targeted questions.' },
   { step: '3', title: 'Receive the improved version', desc: 'A rewritten prompt using the CRAFT framework, ready to paste into any AI tool.' },
 ]
@@ -52,7 +52,7 @@ export default function PromptImproverPage() {
         <p className="text-lg text-[color:var(--color-paper-mute)] mb-8 leading-relaxed">
           Paste any prompt and get a smarter, more specific version in under 30 seconds.
           Our AI prompt improver analyzes your input, identifies what&apos;s missing, and rewrites it
-          using the <strong className="text-[color:var(--color-paper)]">CRAFT framework</strong> — the same method used
+          using the <strong className="text-[color:var(--color-paper)]">CRAFT framework</strong> - the same method used
           by professional prompt engineers.
         </p>
 
@@ -105,11 +105,11 @@ export default function PromptImproverPage() {
           </p>
           <dl className="space-y-3">
             {[
-              { term: 'C — Context', def: 'Relevant background information the AI needs to understand the task.' },
-              { term: 'R — Role', def: 'Assign a specific role to the AI: "Act as a senior developer..."' },
-              { term: 'A — Action', def: 'A clear, verb-explicit instruction for what to produce.' },
-              { term: 'F — Format', def: 'Specify output structure, length, sections, or style.' },
-              { term: 'T — Tone & Constraints', def: 'Define tone, limits, and what to avoid.' },
+              { term: 'C - Context', def: 'Relevant background information the AI needs to understand the task.' },
+              { term: 'R - Role', def: 'Assign a specific role to the AI: "Act as a senior developer..."' },
+              { term: 'A - Action', def: 'A clear, verb-explicit instruction for what to produce.' },
+              { term: 'F - Format', def: 'Specify output structure, length, sections, or style.' },
+              { term: 'T - Tone & Constraints', def: 'Define tone, limits, and what to avoid.' },
             ].map(item => (
               <div key={item.term} className="p-4 rounded-xl border border-[color:var(--color-rule)]">
                 <dt className="font-bold text-[color:var(--color-paper)] text-sm mb-1">{item.term}</dt>
@@ -122,12 +122,12 @@ export default function PromptImproverPage() {
         <section className="mb-16">
           <h2 className="text-2xl font-bold mb-3">Which AI tools does this work with?</h2>
           <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-            The improved prompt works with any AI model — <strong className="text-[color:var(--color-paper)]">ChatGPT</strong>,{' '}
+            The improved prompt works with any AI model - <strong className="text-[color:var(--color-paper)]">ChatGPT</strong>,{' '}
             <strong className="text-[color:var(--color-paper)]">Claude</strong>,{' '}
             <strong className="text-[color:var(--color-paper)]">Gemini</strong>,{' '}
             <strong className="text-[color:var(--color-paper)]">Grok</strong>,{' '}
             <strong className="text-[color:var(--color-paper)]">Microsoft Copilot</strong>, or any other LLM.
-            Deepclario improves the input — what you do with the output is up to you.
+            Deepclario improves the input - what you do with the output is up to you.
           </p>
         </section>
 

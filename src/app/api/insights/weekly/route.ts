@@ -77,7 +77,7 @@ export async function GET() {
     })
   }
 
-  // Streak — consecutive days from today backwards with at least 1 prompt
+  // Streak - consecutive days from today backwards with at least 1 prompt
   let streak = 0
   for (let i = dailyActivity.length - 1; i >= 0; i--) {
     if (dailyActivity[i].count > 0) streak++

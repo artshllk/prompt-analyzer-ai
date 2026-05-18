@@ -1,8 +1,8 @@
-// Deepclario extension — content script.
+// Deepclario extension - content script.
 //
 // Injects a floating "Sharpen prompt" button on ChatGPT / Claude / Gemini.
 // Reads the prompt you're about to send, scores it, asks one clarifying
-// question if needed, and gives you a sharpened rewrite — without leaving
+// question if needed, and gives you a sharpened rewrite - without leaving
 // the page. Everything lives in a Shadow DOM so the host site's CSS can't
 // touch it and ours can't leak out.
 
@@ -170,7 +170,7 @@
             <button class="x" id="close" aria-label="Close">×</button>
           </div>
           <h2>Sharpen your prompt</h2>
-          <p class="sub">We score it, ask what is missing, and rewrite it — before you send it.</p>
+          <p class="sub">We score it, ask what is missing, and rewrite it - before you send it.</p>
 
           <div id="stage"></div>
         </div>
@@ -224,7 +224,7 @@
 
   function renderError(kind) {
     const msg = kind === 'rate_limited'
-      ? 'Slow down a moment — free analyses are rate-limited by IP. Try again in a minute.'
+      ? 'Slow down a moment - free analyses are rate-limited by IP. Try again in a minute.'
       : kind === 'network'
       ? 'Network hiccup. Check your connection and try again.'
       : 'Something went sideways on our end. Try again.'

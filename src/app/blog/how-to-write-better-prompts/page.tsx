@@ -3,11 +3,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'How to Write Better AI Prompts — 7 Proven Techniques',
+  title: 'How to Write Better AI Prompts - 7 Proven Techniques',
   description: 'Learn 7 practical techniques to write better prompts for ChatGPT, Claude, and Gemini. Includes real before/after examples and a free prompt analyzer to test your prompts.',
   alternates: { canonical: 'https://deepclario.com/blog/how-to-write-better-prompts' },
   openGraph: {
-    title: 'How to Write Better AI Prompts — 7 Proven Techniques',
+    title: 'How to Write Better AI Prompts - 7 Proven Techniques',
     description: '7 practical techniques to write prompts that get better results from any AI tool. Real examples included.',
     url: 'https://deepclario.com/blog/how-to-write-better-prompts',
     type: 'article',
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'How to Write Better AI Prompts — 7 Proven Techniques',
+  headline: 'How to Write Better AI Prompts - 7 Proven Techniques',
   description: '7 practical, proven techniques to write better prompts for ChatGPT, Claude, and Gemini.',
   author: { '@type': 'Organization', name: 'Deepclario' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
@@ -36,7 +36,7 @@ const TIPS = [
     n: '2. Specify the format',
     bad: 'List the pros and cons of remote work',
     good: 'List the top 5 pros and top 5 cons of remote work in a markdown table. Each point should be one sentence. Target audience: HR managers.',
-    why: 'Without format instructions, AI decides for you — and its choice rarely matches your actual use case.',
+    why: 'Without format instructions, AI decides for you - and its choice rarely matches your actual use case.',
   },
   {
     n: '3. Define your audience',
@@ -47,7 +47,7 @@ const TIPS = [
   {
     n: '4. Give an example of what you want',
     bad: 'Write a product description for my software',
-    good: 'Write a product description for my project management software. Example of the style I want: "Notion brings your notes, tasks, and docs into one connected workspace — so your team always knows what\'s happening." Match that tone and length.',
+    good: 'Write a product description for my project management software. Example of the style I want: "Notion brings your notes, tasks, and docs into one connected workspace - so your team always knows what\'s happening." Match that tone and length.',
     why: 'One well-chosen example is worth a paragraph of instructions. It shows rather than tells.',
   },
   {
@@ -60,7 +60,7 @@ const TIPS = [
     n: '6. State what NOT to do',
     bad: 'Give me advice on investing',
     good: 'Give me 5 evidence-based personal finance principles for someone in their 30s. Do not recommend specific stocks or funds. Do not give legal or tax advice. Do not use financial jargon without explaining it.',
-    why: 'Negative constraints are often more powerful than positive ones — they rule out the most common wrong answers.',
+    why: 'Negative constraints are often more powerful than positive ones - they rule out the most common wrong answers.',
   },
   {
     n: '7. Break complex tasks into steps',
@@ -101,7 +101,7 @@ export default function HowToWriteBetterPromptsPage() {
           <p className="text-xs text-[color:var(--color-paper-mute)] mb-6">Works with ChatGPT, Claude, Gemini, and any other LLM</p>
 
           <p className="text-lg text-[color:var(--color-paper-mute)] mb-10 leading-relaxed">
-            Most people write prompts the way they send text messages — casual, short, and vague.
+            Most people write prompts the way they send text messages - casual, short, and vague.
             That works for humans who can ask follow-up questions. AI can&apos;t. These 7 techniques
             will immediately make your prompts more effective across any AI tool.
           </p>
@@ -132,7 +132,7 @@ export default function HowToWriteBetterPromptsPage() {
             <h2 className="text-2xl font-bold mb-4">The fastest way to improve: get scored</h2>
             <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
               Reading about prompt techniques is useful. Applying them to your actual prompts is better.
-              Deepclario scores your prompt against all 5 quality dimensions and rewrites it for you — so
+              Deepclario scores your prompt against all 5 quality dimensions and rewrites it for you - so
               you can see exactly what changed and why.
             </p>
             <p className="text-[color:var(--color-paper-mute)] leading-relaxed">

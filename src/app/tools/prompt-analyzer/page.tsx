@@ -3,8 +3,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'AI Prompt Analyzer — Score and Improve Your Prompts',
-  description: 'Analyze any AI prompt and get a detailed clarity score across 5 dimensions. See exactly what is weak and why — then get a rewritten version that performs better.',
+  title: 'AI Prompt Analyzer - Score and Improve Your Prompts',
+  description: 'Analyze any AI prompt and get a detailed clarity score across 5 dimensions. See exactly what is weak and why - then get a rewritten version that performs better.',
   alternates: { canonical: 'https://deepclario.com/tools/prompt-analyzer' },
   openGraph: {
     title: 'Free AI Prompt Analyzer',
@@ -45,7 +45,7 @@ export default function PromptAnalyzerPage() {
         <p className="text-lg text-[color:var(--color-paper-mute)] mb-8 leading-relaxed">
           Most people have no idea why their AI prompts fail. Our free prompt analyzer gives you a
           precise <strong className="text-[color:var(--color-paper)]">clarity score from 0–100</strong> with a
-          dimension-by-dimension breakdown — so you know exactly what to fix.
+          dimension-by-dimension breakdown - so you know exactly what to fix.
         </p>
 
         <Link
@@ -102,7 +102,7 @@ export default function PromptAnalyzerPage() {
           <h2 className="text-2xl font-bold mb-3">Prompt analyzer vs. prompt improver</h2>
           <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
             The <strong className="text-[color:var(--color-paper)]">prompt analyzer</strong> tells you what&apos;s wrong and gives you a score.
-            The <strong className="text-[color:var(--color-paper)]">prompt improver</strong> fixes it — rewriting the prompt using the CRAFT framework.
+            The <strong className="text-[color:var(--color-paper)]">prompt improver</strong> fixes it - rewriting the prompt using the CRAFT framework.
           </p>
           <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
             Deepclario does both in a single workflow. You get the analysis <em>and</em> the improved version,

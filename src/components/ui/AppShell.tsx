@@ -114,7 +114,7 @@ export function AppShell({ children }: AppShellProps) {
           borderRight: '1px solid var(--color-rule)',
         }}
       >
-        {/* Logo (desktop only — mobile uses top bar) */}
+        {/* Logo (desktop only - mobile uses top bar) */}
         <div className="hidden md:block px-6 py-6" style={{ borderBottom: '1px solid var(--color-rule)' }}>
           <Link href="/dashboard" className="flex items-center gap-2.5">
             <Image src="/logo.png" alt="Deepclario" width={32} height={32} priority />
@@ -172,7 +172,7 @@ export function AppShell({ children }: AppShellProps) {
           </ul>
         </nav>
 
-        {/* Bottom: just settings + sign out. No usage meter — limits surface contextually. */}
+        {/* Bottom: just settings + sign out. No usage meter - limits surface contextually. */}
         <div className="p-5" style={{ borderTop: '1px solid var(--color-rule)' }}>
           <div className="flex items-center justify-between text-[12px]">
             <Link

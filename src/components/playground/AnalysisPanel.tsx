@@ -15,7 +15,7 @@ interface AnalysisPanelProps {
 }
 
 /**
- * Editorial result panel — hairlines, serif scores, no chunky cards.
+ * Editorial result panel - hairlines, serif scores, no chunky cards.
  * Side-by-side stays as the default layout, but each side is hairline-bound,
  * not boxed.
  */
@@ -45,7 +45,7 @@ export function AnalysisPanel({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Score row — editorial, no boxes */}
+      {/* Score row - editorial, no boxes */}
       <div className="rule-strong" />
       <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3 py-6">
         <div className="flex items-baseline gap-3">
@@ -75,7 +75,7 @@ export function AnalysisPanel({
       </div>
       <div className="rule" />
 
-      {/* View toggle — text-only segmented control */}
+      {/* View toggle - text-only segmented control */}
       <div className="flex items-center gap-x-2 gap-y-1 py-5">
         <span className="eyebrow mr-2">View</span>
         {(['split', 'original', 'improved'] as const).map((tab, i) => (

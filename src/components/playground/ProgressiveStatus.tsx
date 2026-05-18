@@ -22,7 +22,7 @@ interface ProgressiveStatusProps {
 }
 
 /**
- * Editorial loading state — typographic dots, hairline checklist, no glow.
+ * Editorial loading state - typographic dots, hairline checklist, no glow.
  */
 export function ProgressiveStatus({ mode }: ProgressiveStatusProps) {
   const steps = mode === 'analyzing' ? ANALYZE_STEPS : IMPROVE_STEPS

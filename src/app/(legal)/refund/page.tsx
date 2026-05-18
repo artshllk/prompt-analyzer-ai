@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Refund Policy — Deepclario',
+  title: 'Refund Policy - Deepclario',
   alternates: { canonical: 'https://deepclario.com/refund' },
 }
 
@@ -57,7 +57,7 @@ export default function RefundPage() {
           <Link href="/terms" className="text-violet-400 hover:text-violet-300 transition-colors">
             Terms of Service
           </Link>
-          {' '}— for example, abuse, fraud, or automated misuse of the platform.
+          {' '}- for example, abuse, fraud, or automated misuse of the platform.
         </p>
       </Section>
 

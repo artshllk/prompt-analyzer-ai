@@ -15,12 +15,12 @@ interface InsightsData {
 }
 
 const TAG_LABELS: Record<string, { label: string; tip: string }> = {
-  context: { label: 'adding context', tip: 'Try giving the model the background up front — who the audience is, what came before, why it matters.' },
+  context: { label: 'adding context', tip: 'Try giving the model the background up front - who the audience is, what came before, why it matters.' },
   role: { label: 'assigning a role', tip: 'Start with "Act as a..." to anchor the response in a specific perspective.' },
-  format: { label: 'specifying format', tip: 'Tell the model exactly how to structure the output — bullets, paragraphs, length, sections.' },
+  format: { label: 'specifying format', tip: 'Tell the model exactly how to structure the output - bullets, paragraphs, length, sections.' },
   constraints: { label: 'adding constraints', tip: 'Length limits, tone rules, words to avoid. Constraints sharpen output.' },
   examples: { label: 'including examples', tip: 'One example of what good looks like beats five adjectives every time.' },
-  action: { label: 'a clearer action verb', tip: 'Replace fuzzy verbs with explicit ones — "rewrite", "summarize", "list".' },
+  action: { label: 'a clearer action verb', tip: 'Replace fuzzy verbs with explicit ones - "rewrite", "summarize", "list".' },
   specificity: { label: 'more specificity', tip: 'Replace vague nouns and adjectives with concrete details and numbers.' },
 }
 
@@ -118,7 +118,7 @@ export function InsightsClient() {
         </div>
       </section>
 
-      {/* Streak — restrained, no fire emoji */}
+      {/* Streak - restrained, no fire emoji */}
       {data.streak > 0 && (
         <section>
           <div className="rule-strong" />

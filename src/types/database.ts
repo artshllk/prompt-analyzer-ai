@@ -6,7 +6,7 @@ export type SessionStatus = 'analyzing' | 'clarifying' | 'improving' | 'complete
 export type Tone = 'friendly' | 'professional' | 'persuasive' | 'concise' | 'creative'
 export type ImprovementTag = 'context' | 'role' | 'action' | 'format' | 'constraints' | 'examples' | 'specificity'
 
-// Row types as `type` aliases (not interfaces) — required for Supabase's Record<string, unknown> checks
+// Row types as `type` aliases (not interfaces) - required for Supabase's Record<string, unknown> checks
 export type ProfileRow = {
   id: string
   email: string

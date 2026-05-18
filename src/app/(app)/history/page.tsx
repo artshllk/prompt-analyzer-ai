@@ -102,7 +102,7 @@ export default async function HistoryPage({
         </div>
       </header>
 
-      {/* Summary stats — single horizontal data row */}
+      {/* Summary stats - single horizontal data row */}
       {completed.length >= 2 && (
         <section>
           <div className="rule-strong" />
@@ -131,7 +131,7 @@ export default async function HistoryPage({
         </section>
       )}
 
-      {/* Best session callout — editorial pull-quote */}
+      {/* Best session callout - editorial pull-quote */}
       {bestSession && (
         <section className="grid md:grid-cols-12 gap-6 md:gap-12 py-2">
           <div className="md:col-span-3">

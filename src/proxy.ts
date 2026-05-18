@@ -26,7 +26,7 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  // Refresh session — do not run logic between createServerClient and getUser
+  // Refresh session - do not run logic between createServerClient and getUser
   const { data: { user } } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl

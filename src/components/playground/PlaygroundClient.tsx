@@ -86,11 +86,11 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
         <p className="mt-4 text-base md:text-lg leading-[1.55] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
           {isAnon
             ? `${Math.max(0, effectiveLimit - anonCount)} of ${effectiveLimit} free analyses left this session.`
-            : 'Paste anything — rough idea, half-finished request, one-liner. We score it, ask what is missing, and rewrite.'}
+            : 'Paste anything - rough idea, half-finished request, one-liner. We score it, ask what is missing, and rewrite.'}
         </p>
       </header>
 
-      {/* Inline usage note — only when free tier and ≥80% used. Quiet, contextual, on the page they're using. */}
+      {/* Inline usage note - only when free tier and ≥80% used. Quiet, contextual, on the page they're using. */}
       {!isAnon && usage && usage.tier === 'free' && usage.limit && usage.used / usage.limit >= 0.8 && (
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-3" style={{ borderTop: '1px solid var(--color-rule-strong)', borderBottom: '1px solid var(--color-rule-strong)' }}>
           <p className="text-sm" style={{ color: usage.isAtLimit ? '#C25E5E' : 'var(--color-accent)' }}>
@@ -188,7 +188,7 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
             style={{ color: 'var(--color-paper)', lineHeight: 1.4, fontWeight: 400 }}
           >
             {session.error === 'rate_limited'
-              ? 'Slow down a moment — try again in a few seconds.'
+              ? 'Slow down a moment - try again in a few seconds.'
               : session.error === 'network'
               ? 'Network hiccup. Check your connection and try again.'
               : session.error === 'ai_unavailable'

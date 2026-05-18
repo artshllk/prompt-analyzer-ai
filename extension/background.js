@@ -1,4 +1,4 @@
-// Deepclario extension — background service worker.
+// Deepclario extension - background service worker.
 //
 // The content script can't reliably make the cross-origin request itself
 // (page CSP / CORS), so it delegates to here. The worker has

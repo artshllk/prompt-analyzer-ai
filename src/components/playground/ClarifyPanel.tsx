@@ -13,7 +13,7 @@ interface ClarifyPanelProps {
 }
 
 /**
- * Editorial clarification panel — hairlines, serif question, no boxes.
+ * Editorial clarification panel - hairlines, serif question, no boxes.
  * Replaces the previous violet/amber chunky-card variant.
  */
 export function ClarifyPanel({

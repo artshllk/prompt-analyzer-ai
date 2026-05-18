@@ -50,7 +50,7 @@ export function PromptEditor({
     <div className={isDisabled ? 'opacity-60 pointer-events-none' : ''}>
       <p className="eyebrow mb-3">Your prompt</p>
 
-      {/* Textarea — hairlines, no chunky card */}
+      {/* Textarea - hairlines, no chunky card */}
       <div style={{ borderTop: '1px solid var(--color-rule-strong)', borderBottom: '1px solid var(--color-rule-strong)' }}>
         <textarea
           ref={textareaRef}

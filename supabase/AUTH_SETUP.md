@@ -1,4 +1,4 @@
-# Auth setup — production checklist
+# Auth setup - production checklist
 
 Three items only require dashboard config (can't be done from code). Do these once and the auth UX matches the experience the redesigned `/login` page implies.
 
@@ -10,7 +10,7 @@ Three items only require dashboard config (can't be done from code). Do these on
 
 - **Confirm email**: turn this **OFF**.
   - Magic links are themselves an email-verification primitive: clicking the link proves the user owns the inbox. A second confirmation step adds friction with no security gain.
-  - For Google OAuth, Google has already verified the email — no second confirmation needed either.
+  - For Google OAuth, Google has already verified the email - no second confirmation needed either.
 - **Secure email change**: keep ON.
 
 ---
@@ -33,12 +33,12 @@ You **must** also have an OAuth consent screen configured (External, with at lea
 
 **Dashboard → Authentication → URL Configuration**
 
-| Field | Local | Production |
-|---|---|---|
-| Site URL | `http://localhost:3000` | `https://your-domain.com` |
+| Field                     | Local                                 | Production                              |
+| ------------------------- | ------------------------------------- | --------------------------------------- |
+| Site URL                  | `http://localhost:3000`               | `https://your-domain.com`               |
 | Redirect URLs (allowlist) | `http://localhost:3000/auth/callback` | `https://your-domain.com/auth/callback` |
 
-Anything not on the allowlist gets rewritten to Site URL — this is the #1 cause of "the magic link goes to the wrong page."
+Anything not on the allowlist gets rewritten to Site URL - this is the #1 cause of "the magic link goes to the wrong page."
 
 ---
 
@@ -50,9 +50,9 @@ The default Supabase SMTP works for testing but emails frequently land in spam, 
 
 1. **Create Resend account** → resend.com (free tier: 3,000 emails/month, plenty for early stage).
 2. **Add and verify your domain.** Resend will show you the DNS records to add:
-   - `SPF` (TXT) — authorizes Resend to send from your domain
-   - `DKIM` (CNAME × 3) — signs outgoing mail
-   - `DMARC` (TXT) — tells receiving servers what to do with unsigned mail
+   - `SPF` (TXT) - authorizes Resend to send from your domain
+   - `DKIM` (CNAME × 3) - signs outgoing mail
+   - `DMARC` (TXT) - tells receiving servers what to do with unsigned mail
 3. **Generate an API key** in Resend → Settings → API Keys.
 4. **Configure SMTP in Supabase**: Dashboard → Project Settings → Auth → SMTP Settings:
    - Host: `smtp.resend.com`
@@ -71,6 +71,7 @@ The template is table-based so it renders correctly in Gmail (which strips most 
 ### Verify deliverability
 
 Send a magic link to a Gmail address. Open the email → "Show original" → check:
+
 - **SPF: PASS**
 - **DKIM: PASS**
 - **DMARC: PASS**
@@ -92,7 +93,7 @@ STRIPE_SECRET_KEY=<stripe key>
 STRIPE_WEBHOOK_SECRET=<webhook secret>
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=<stripe public key>
 
-# Optional — enables Sentry when set
+# Optional - enables Sentry when set
 NEXT_PUBLIC_SENTRY_DSN=
 ```
 
@@ -115,7 +116,7 @@ Mirror these in Vercel → Project Settings → Environment Variables.
 
 - Anonymous trial → first 2 analyses without signup → soft signup wall after value is shown.
 - Google OAuth as primary, email magic link as a tucked-away fallback.
-- No email confirmation friction — magic link is the verification.
+- No email confirmation friction - magic link is the verification.
 - Branded emails from your own domain, delivered to the inbox not spam.
 - Account deletion endpoint at `POST /api/account/delete`.
 - Per-IP rate limit on anonymous traffic, per-user burst limit on the authenticated endpoint.

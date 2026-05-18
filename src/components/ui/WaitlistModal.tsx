@@ -67,7 +67,7 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                 </div>
                 <h2 className="text-xl font-bold text-[#f0f4ff] mb-2">You&apos;re on the list</h2>
                 <p className="text-[#8b9cc8] text-sm mb-6">
-                  We&apos;ll email you the moment Pro goes live — usually within a few days.
+                  We&apos;ll email you the moment Pro goes live - usually within a few days.
                 </p>
                 <button
                   onClick={onClose}
@@ -86,7 +86,7 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                   </div>
                   <h2 className="text-2xl font-bold text-[#f0f4ff] mb-2">Pro is launching soon</h2>
                   <p className="text-[#8b9cc8] text-sm leading-relaxed">
-                    We&apos;re finalizing payment processing. Leave your email and you&apos;ll be first to know — and first in line.
+                    We&apos;re finalizing payment processing. Leave your email and you&apos;ll be first to know - and first in line.
                   </p>
                 </div>
 

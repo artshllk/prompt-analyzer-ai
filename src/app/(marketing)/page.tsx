@@ -81,7 +81,7 @@ export default function LandingPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <div className="editorial grain min-h-screen relative" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
-        {/* Nav — minimal, editorial */}
+        {/* Nav - minimal, editorial */}
         <header className="fixed top-0 left-0 right-0 z-40 backdrop-blur-md" style={{ background: 'rgba(14,14,16,0.72)', borderBottom: '1px solid var(--color-rule)' }}>
           <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2.5">
@@ -113,7 +113,7 @@ export default function LandingPage() {
           </div>
         </header>
 
-        {/* Hero — copy + live demo, above the fold. Demo is pre-populated
+        {/* Hero - copy + live demo, above the fold. Demo is pre-populated
             so the first action available is one click on Analyze. */}
         <section id="try" className="pt-28 md:pt-36 pb-20 md:pb-24 px-6 md:px-10 relative">
           <div className="max-w-6xl mx-auto">
@@ -137,12 +137,12 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Cinematic — visual story of how the rewrite works, now below the demo */}
+        {/* Cinematic - visual story of how the rewrite works, now below the demo */}
         <section style={{ borderTop: '1px solid var(--color-rule)' }}>
           <CinematicHero />
         </section>
 
-        {/* The thesis — long-form editorial paragraph */}
+        {/* The thesis - long-form editorial paragraph */}
         <section id="why" className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
           <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
             <div className="md:col-span-3">
@@ -159,13 +159,13 @@ export default function LandingPage() {
                 Most people give AI prompts that are too vague. We write a quick sentence, the AI guesses what we mean, and we get frustrated when the result isn't right.
               </p>
               <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
-                Deepclario reviews your prompt like a senior engineer reviews requirements. It identifies what's missing, asks the right questions, and rewrites it for better results. You get a stronger prompt—and learn to write better ones over time.
+                Deepclario reviews your prompt like a senior engineer reviews requirements. It identifies what's missing, asks the right questions, and rewrites it for better results. You get a stronger prompt-and learn to write better ones over time.
               </p>
             </div>
           </div>
         </section>
 
-        {/* The five dimensions — editorial number list */}
+        {/* The five dimensions - editorial number list */}
         <section className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-12 gap-8 md:gap-16 mb-16 md:mb-24">
@@ -219,7 +219,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Browser extension CTA — visitors who liked the demo are the
+        {/* Browser extension CTA - visitors who liked the demo are the
             perfect extension audience. */}
         <section className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
           <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
@@ -235,7 +235,7 @@ export default function LandingPage() {
               </h2>
               <p className="text-base md:text-lg leading-[1.6] max-w-xl mb-8" style={{ color: 'var(--color-paper-mute)' }}>
                 The browser extension adds a Sharpen button right in the chat
-                box — same engine, no tab switching. Free, no account.
+                box - same engine, no tab switching. Free, no account.
               </p>
               <Link
                 href="/extension"
@@ -262,7 +262,7 @@ export default function LandingPage() {
               We don&rsquo;t want you to spend more time with AI. We want you to spend it better.
             </p>
             <p className="mt-12 text-base md:text-lg max-w-xl mx-auto leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
-              Deepclario is for professionals who work with AI every day—engineers, writers, founders, researchers. For anyone who sees better prompting as a valuable skill for the future.
+              Deepclario is for professionals who work with AI every day-engineers, writers, founders, researchers. For anyone who sees better prompting as a valuable skill for the future.
             </p>
           </div>
         </section>

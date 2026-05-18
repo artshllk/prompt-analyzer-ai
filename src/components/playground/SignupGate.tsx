@@ -63,7 +63,7 @@ export function SignupGate({ used, limit, onEmailCaptured }: SignupGateProps) {
               You&apos;ve used your {limit} free analyses
             </h3>
             <p className="text-sm text-[#8b9cc8] max-w-sm mx-auto mb-6">
-              Get <strong className="text-[#f0f4ff]">3 more free analyses</strong> instantly with your email —
+              Get <strong className="text-[#f0f4ff]">3 more free analyses</strong> instantly with your email -
               or sign in to unlock 25 every month plus history and insights.
             </p>
 
@@ -81,7 +81,7 @@ export function SignupGate({ used, limit, onEmailCaptured }: SignupGateProps) {
                 Sign in / Sign up
               </button>
             </div>
-            <p className="text-xs text-[#4a5a80]">{used} of {limit} used — we won&apos;t spam you</p>
+            <p className="text-xs text-[#4a5a80]">{used} of {limit} used - we won&apos;t spam you</p>
           </motion.div>
         )}
 

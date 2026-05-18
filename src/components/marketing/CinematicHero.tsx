@@ -14,7 +14,7 @@ import {
 import Link from 'next/link'
 
 /**
- * Cinematic hero — two implementations, one component.
+ * Cinematic hero - two implementations, one component.
  *
  *  Desktop  (md and up):  scroll-pinned, three exclusive stages with a
  *                         clarity score that climbs as the user scrolls.
@@ -22,9 +22,9 @@ import Link from 'next/link'
  *                         No sticky, no momentum-scroll surprises.
  *
  * Both versions tell the same three-act story:
- *   01  What you typed   — the vague prompt
- *   02  What we asked    — three clarifying questions
- *   03  What we send     — the rewrite
+ *   01  What you typed   - the vague prompt
+ *   02  What we asked    - three clarifying questions
+ *   03  What we send     - the rewrite
  */
 
 const VAGUE_PROMPT = 'Write me a blog post about AI'
@@ -67,7 +67,7 @@ export function CinematicHero() {
 }
 
 /* =====================================================
-   Desktop — scroll-pinned, three exclusive stages
+   Desktop - scroll-pinned, three exclusive stages
    ===================================================== */
 
 const STAGE_2_START = 0.33
@@ -168,7 +168,7 @@ function DesktopVagueStage({ reduce }: { reduce: boolean }) {
         &ldquo;{VAGUE_PROMPT}.&rdquo;
       </p>
       <p className="mt-8 text-lg max-w-md" style={{ color: 'var(--color-paper-mute)' }}>
-        Eight words. The model has to guess everything — audience, length, tone, goal, structure. It will guess wrong.
+        Eight words. The model has to guess everything - audience, length, tone, goal, structure. It will guess wrong.
       </p>
     </motion.div>
   )
@@ -277,7 +277,7 @@ function DesktopBottomCTA({ visible, reduce }: { visible: boolean; reduce: boole
 }
 
 /* =====================================================
-   Mobile — stacked, no sticky, fades in on scroll
+   Mobile - stacked, no sticky, fades in on scroll
    ===================================================== */
 
 function MobileStacked() {
@@ -298,7 +298,7 @@ function MobileStacked() {
           &ldquo;{VAGUE_PROMPT}.&rdquo;
         </p>
         <p className="mt-5 text-base" style={{ color: 'var(--color-paper-mute)' }}>
-          Eight words. The model has to guess everything — audience, length, tone, goal, structure. It will guess wrong.
+          Eight words. The model has to guess everything - audience, length, tone, goal, structure. It will guess wrong.
         </p>
       </MobileStage>
 

@@ -10,7 +10,7 @@ interface GeminiRequest {
   maxOutputTokens?: number
   /**
    * JSON Schema (Gemini OpenAPI subset) the response must conform to.
-   * When set, Gemini guarantees parseable JSON matching the schema —
+   * When set, Gemini guarantees parseable JSON matching the schema -
    * eliminates the "invalid JSON, retrying" loop entirely.
    */
   responseSchema?: Record<string, unknown>
@@ -97,7 +97,7 @@ export async function callGemini<T>(req: GeminiRequest): Promise<T | null> {
       if (result && result.text) {
         const parsed = parseJSON<T>(result.text)
         if (parsed !== null) return parsed
-        // Parse failed despite responseSchema — log once and try next model.
+        // Parse failed despite responseSchema - log once and try next model.
         // No point retrying same model with same prompt; output is deterministic-ish.
         console.warn(`Gemini ${model} returned unparseable JSON; falling back`)
         break

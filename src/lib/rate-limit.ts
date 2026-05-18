@@ -1,5 +1,5 @@
 /**
- * Lightweight in-memory token bucket. Single-instance only — fine for early
+ * Lightweight in-memory token bucket. Single-instance only - fine for early
  * Vercel traffic (one warm Lambda usually serves many users); for multi-region
  * scale swap to Upstash Redis without changing the call sites.
  *
@@ -26,7 +26,7 @@ export function take(key: string, config: LimitConfig): { allowed: boolean; retr
 
   if (!bucket) {
     if (buckets.size >= MAX_KEYS) {
-      // Crude eviction — clear oldest 10% when full
+      // Crude eviction - clear oldest 10% when full
       const cutoff = now - 60_000
       for (const [k, b] of buckets) {
         if (b.lastRefill < cutoff) buckets.delete(k)
@@ -52,10 +52,10 @@ export function take(key: string, config: LimitConfig): { allowed: boolean; retr
   }
 }
 
-/** Strict per-IP cap for anonymous traffic — abuse protection. */
+/** Strict per-IP cap for anonymous traffic - abuse protection. */
 export const ANON_LIMIT: LimitConfig = { capacity: 6, refillPerSecond: 6 / 3600 } // 6/hour
 
-/** Per-user cap layered on top of monthly quota — burst protection. */
+/** Per-user cap layered on top of monthly quota - burst protection. */
 export const USER_LIMIT: LimitConfig = { capacity: 10, refillPerSecond: 10 / 60 } // 10/minute
 
 export function getClientIp(req: Request): string {

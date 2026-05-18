@@ -1,4 +1,4 @@
-# Supabase setup — fixes the `PGRST205 / Could not find the table 'public.prompt_sessions'` error
+# Supabase setup - fixes the `PGRST205 / Could not find the table 'public.prompt_sessions'` error
 
 The schema file in `supabase/migrations/001_initial_schema.sql` has not been applied to your Supabase project yet. Apply it once and the error goes away.
 
@@ -10,7 +10,7 @@ The schema file in `supabase/migrations/001_initial_schema.sql` has not been app
 
 That creates all 6 tables, RLS policies, the auto-create-profile trigger, and the `get_monthly_usage()` helper.
 
-After running, refresh the schema cache (Settings → API → "Reload schema cache") or just wait ~10s — PostgREST notices new tables on its own.
+After running, refresh the schema cache (Settings → API → "Reload schema cache") or just wait ~10s - PostgREST notices new tables on its own.
 
 ## Verify it worked
 
@@ -21,7 +21,7 @@ select count(*) from public.prompt_sessions;
 -- should return 0, NOT an error
 ```
 
-Or hit your dev server's `/playground` page — the `createSession error: PGRST205` log should be gone.
+Or hit your dev server's `/playground` page - the `createSession error: PGRST205` log should be gone.
 
 ## CLI alternative (if you prefer)
 

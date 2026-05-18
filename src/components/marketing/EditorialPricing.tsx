@@ -42,7 +42,7 @@ export function EditorialPricing() {
         </div>
       </div>
 
-      {/* Right: two stacked tiers, editorial style — no boxes, no shadows, just hairlines */}
+      {/* Right: two stacked tiers, editorial style - no boxes, no shadows, just hairlines */}
       <div className="md:col-span-7 space-y-px">
         {/* Free */}
         <div className="rule-strong" />

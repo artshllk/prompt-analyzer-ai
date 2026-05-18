@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://deepclario.com/blog/what-is-prompt-engineering' },
   openGraph: {
     title: 'What is Prompt Engineering? A Complete Guide',
-    description: 'Learn prompt engineering fundamentals — what it is, why it matters, and how to write prompts that consistently get great AI results.',
+    description: 'Learn prompt engineering fundamentals - what it is, why it matters, and how to write prompts that consistently get great AI results.',
     url: 'https://deepclario.com/blog/what-is-prompt-engineering',
     type: 'article',
   },
@@ -18,7 +18,7 @@ const faqSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What is Prompt Engineering? A Complete Guide for Beginners',
-  description: 'A comprehensive guide to prompt engineering — what it is, why it matters, and how to write better prompts for ChatGPT, Claude, and Gemini.',
+  description: 'A comprehensive guide to prompt engineering - what it is, why it matters, and how to write better prompts for ChatGPT, Claude, and Gemini.',
   author: { '@type': 'Organization', name: 'Deepclario' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: '2026-04-01',
@@ -65,7 +65,7 @@ export default function WhatIsPromptEngineeringPage() {
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Why prompts matter more than you think</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
                 When people get bad results from ChatGPT or Claude, they often blame the AI. But most of the time,
-                the problem is the prompt — not the model.
+                the problem is the prompt - not the model.
               </p>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
                 AI language models are exceptionally powerful, but they can only work with the information you
@@ -85,7 +85,7 @@ export default function WhatIsPromptEngineeringPage() {
                   { n: '1. Goal clarity', d: 'The desired output must be unambiguous. "Write something" is a goal. "Write a 500-word explainer for a non-technical audience on how neural networks learn" is a goal with clarity.' },
                   { n: '2. Context', d: 'AI models don\'t know your situation. Who is the audience? What\'s the tone? What domain are you in? Providing this context removes guesswork.' },
                   { n: '3. Format specification', d: 'If you don\'t specify structure, the AI invents one. Tell it: bullet list, numbered steps, JSON, markdown table, paragraph form, max 300 words, etc.' },
-                  { n: '4. Constraints', d: 'Constraints tell the AI what NOT to do. "Avoid jargon", "don\'t recommend paid tools", "assume the reader has no coding background" — these prevent common failure modes.' },
+                  { n: '4. Constraints', d: 'Constraints tell the AI what NOT to do. "Avoid jargon", "don\'t recommend paid tools", "assume the reader has no coding background" - these prevent common failure modes.' },
                   { n: '5. Examples', d: 'Showing the AI an example of what you want (few-shot prompting) dramatically improves accuracy. Even one example shifts output quality significantly.' },
                 ].map(item => (
                   <div key={item.n} className="p-5 rounded-xl border border-[color:var(--color-rule)]">
@@ -102,12 +102,12 @@ export default function WhatIsPromptEngineeringPage() {
                 <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
                   <p className="text-xs text-[#C25E5E] font-semibold uppercase mb-2">Weak prompt</p>
                   <p className="text-sm text-[color:var(--color-paper-mute)] italic">&ldquo;Summarize this article&rdquo;</p>
-                  <p className="text-xs text-[color:var(--color-paper-mute)] mt-3">Score: ~12/100 — No audience, no format, no length, no purpose</p>
+                  <p className="text-xs text-[color:var(--color-paper-mute)] mt-3">Score: ~12/100 - No audience, no format, no length, no purpose</p>
                 </div>
                 <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
                   <p className="text-xs text-[color:var(--color-paper)] font-semibold uppercase mb-2">Engineered prompt</p>
                   <p className="text-sm text-[color:var(--color-paper)]">&ldquo;Summarize the key findings of this research article in 3 bullet points for a non-technical executive audience. Each bullet should be one sentence. Focus on practical implications, not methodology.&rdquo;</p>
-                  <p className="text-xs text-[color:var(--color-paper-mute)] mt-3">Score: ~89/100 — Audience ✓ Format ✓ Length ✓ Constraints ✓</p>
+                  <p className="text-xs text-[color:var(--color-paper-mute)] mt-3">Score: ~89/100 - Audience ✓ Format ✓ Length ✓ Constraints ✓</p>
                 </div>
               </div>
             </section>
@@ -148,7 +148,7 @@ export default function WhatIsPromptEngineeringPage() {
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">How to get started</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
                 The fastest way to improve your prompts is to get scored feedback on what you&apos;re already writing.
-                Paste any prompt into Deepclario and see exactly which dimensions are weak — with a rewritten version
+                Paste any prompt into Deepclario and see exactly which dimensions are weak - with a rewritten version
                 that fixes them.
               </p>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">

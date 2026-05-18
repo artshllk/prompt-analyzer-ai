@@ -104,7 +104,7 @@ function LoginInner() {
               New here? An account is created the first time you sign in. No setup, no password.
             </p>
 
-            {/* Google button — paper-on-ink, calm */}
+            {/* Google button - paper-on-ink, calm */}
             <button
               onClick={handleGoogle}
               className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-full text-[15px] transition-all btn-paper"

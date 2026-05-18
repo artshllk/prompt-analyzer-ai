@@ -3,12 +3,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'Chrome extension — Sharpen prompts inside ChatGPT, Claude & Gemini',
+  title: 'Chrome extension - Sharpen prompts inside ChatGPT, Claude & Gemini',
   description:
-    'The Deepclario browser extension adds a Sharpen button inside ChatGPT, Claude, and Gemini. Score and rewrite your prompt before you send it — without leaving the page.',
+    'The Deepclario browser extension adds a Sharpen button inside ChatGPT, Claude, and Gemini. Score and rewrite your prompt before you send it - without leaving the page.',
   alternates: { canonical: 'https://deepclario.com/extension' },
   openGraph: {
-    title: 'Deepclario — Chrome extension',
+    title: 'Deepclario - Chrome extension',
     description:
       'Sharpen your prompt inside ChatGPT, Claude, and Gemini. One click, in-page, no tab switching.',
     url: 'https://deepclario.com/extension',
@@ -21,7 +21,7 @@ const STEPS = [
   {
     n: '01',
     t: 'Download',
-    d: 'Get the extension folder. It is a small zip — no installer, no account.',
+    d: 'Get the extension folder. It is a small zip - no installer, no account.',
   },
   {
     n: '02',
@@ -36,7 +36,7 @@ const STEPS = [
   {
     n: '04',
     t: 'Turn on Developer mode',
-    d: 'Toggle “Developer mode” on — it is the switch in the top-right corner of that page.',
+    d: 'Toggle “Developer mode” on - it is the switch in the top-right corner of that page.',
   },
   {
     n: '05',
@@ -87,7 +87,7 @@ export default function ExtensionPage() {
           <p className="mt-6 md:mt-8 text-lg md:text-xl leading-relaxed max-w-2xl" style={{ color: 'var(--color-paper-mute)' }}>
             Adds a Sharpen button directly inside ChatGPT, Claude, and Gemini.
             Score your prompt, answer one question if something is missing, and
-            get a rewrite — without leaving the page or opening another tab.
+            get a rewrite - without leaving the page or opening another tab.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
@@ -175,7 +175,7 @@ export default function ExtensionPage() {
             </p>
             <p className="text-base md:text-lg leading-[1.6] mb-8 max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
               Paste a prompt on the homepage and get the exact same score and
-              rewrite — no extension, no signup.
+              rewrite - no extension, no signup.
             </p>
             <Link
               href="/#try"

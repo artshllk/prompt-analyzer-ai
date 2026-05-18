@@ -13,7 +13,7 @@ const DEMO_STEPS = [
 type StepId = typeof DEMO_STEPS[number]['id']
 
 const WEAK_PROMPT = 'Write me a blog post about AI tools'
-const CLARIFICATION = 'Who is the target audience — technical developers or general business users?'
+const CLARIFICATION = 'Who is the target audience - technical developers or general business users?'
 const ANSWER = 'General business users who are curious but not technical'
 const IMPROVED = 'Write a 900-word blog post for non-technical business professionals explaining the top 5 AI tools that save time in everyday work tasks. For each tool, include: what it does in one sentence, one concrete example of a task it handles, and an estimated time saved per week. Use a friendly, encouraging tone. Avoid technical jargon.'
 

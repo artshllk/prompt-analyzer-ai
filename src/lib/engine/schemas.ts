@@ -1,6 +1,6 @@
 /**
  * Gemini responseSchema definitions (OpenAPI 3.0 subset).
- * Setting these forces structurally valid JSON — no parse retries needed.
+ * Setting these forces structurally valid JSON - no parse retries needed.
  */
 
 export const STEP_SCHEMA = {

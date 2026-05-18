@@ -25,7 +25,7 @@ export async function initObservability() {
 
   try {
     // Dynamic, string-based import so TypeScript doesn't require the package
-    // to be installed. Sentry is optional — install only if you opt in.
+    // to be installed. Sentry is optional - install only if you opt in.
     const moduleName = '@sentry/nextjs'
     const Sentry = await (Function('m', 'return import(m)')(moduleName) as Promise<{
       init: (opts: Record<string, unknown>) => void
@@ -43,7 +43,7 @@ export async function initObservability() {
       Sentry.captureException(err, context ? { extra: context } : undefined)
     }
   } catch {
-    // Stay silent — observability must never crash the app.
+    // Stay silent - observability must never crash the app.
   }
 }
 

@@ -5,7 +5,7 @@
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-serif);
 
-  /* Brand colors (legacy — used by app/dashboard/playground) */
+  /* Brand colors (legacy - used by app/dashboard/playground) */
   --color-base: #0a0e1a;
   --color-base-800: #0f1628;
   --color-base-700: #151d35;
@@ -41,7 +41,7 @@
   --color-rule: rgba(245, 244, 241, 0.10);
   --color-rule-strong: rgba(245, 244, 241, 0.18);
   /* Monochrome system: no brand accent. The logo is the only color on the
-     site. "Accent" now means "bright paper" — emphasis via luminance, not
+     site. "Accent" now means "bright paper" - emphasis via luminance, not
      hue. Linear / Vercel pattern. */
   --color-accent: #F5F4F1;        /* = paper; emphasis via brightness only */
   --color-accent-soft: rgba(245, 244, 241, 0.08);
@@ -223,7 +223,7 @@ body {
   color: var(--color-paper-mute);
 }
 
-/* Subtle film grain — covers full page with low-opacity SVG noise */
+/* Subtle film grain - covers full page with low-opacity SVG noise */
 .grain::before {
   content: '';
   position: fixed;
@@ -267,7 +267,7 @@ body {
 }
 
 /* ============================================================
-   Interaction feedback — cursor + hover signals
+   Interaction feedback - cursor + hover signals
    ============================================================ */
 
 /* Global default: every interactive element gets a pointer cursor.
@@ -285,7 +285,7 @@ a[aria-disabled="true"],
   cursor: not-allowed;
 }
 
-/* Filled paper button — subtle opacity dip on hover, gentle press scale on active.
+/* Filled paper button - subtle opacity dip on hover, gentle press scale on active.
    Use on any element styled with paper background + ink text. */
 .btn-paper {
   transition: opacity 200ms ease, transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -297,7 +297,7 @@ a[aria-disabled="true"],
   transform: scale(0.98);
 }
 
-/* Hairline-bordered "outline" button — fills with a faint paper tint on hover. */
+/* Hairline-bordered "outline" button - fills with a faint paper tint on hover. */
 .btn-outline {
   transition: background-color 200ms ease, border-color 200ms ease;
 }
@@ -305,7 +305,7 @@ a[aria-disabled="true"],
   background-color: rgba(245, 244, 241, 0.05);
 }
 
-/* Plain text button / inline link in editorial palette — paper-mute → paper. */
+/* Plain text button / inline link in editorial palette - paper-mute → paper. */
 .btn-text {
   transition: color 200ms ease, opacity 200ms ease;
   color: var(--color-paper-mute);
@@ -314,7 +314,7 @@ a[aria-disabled="true"],
   color: var(--color-paper);
 }
 
-/* Icon-only buttons (hamburger, dismiss, close) — opacity feedback. */
+/* Icon-only buttons (hamburger, dismiss, close) - opacity feedback. */
 .btn-icon {
   opacity: 0.7;
   transition: opacity 200ms ease, transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -326,7 +326,7 @@ a[aria-disabled="true"],
   transform: scale(0.92);
 }
 
-/* Editorial clickable row — subtle bg tint, signals "this is interactive". */
+/* Editorial clickable row - subtle bg tint, signals "this is interactive". */
 .row-hover {
   transition: background-color 200ms ease;
 }
@@ -334,7 +334,7 @@ a[aria-disabled="true"],
   background-color: rgba(245, 244, 241, 0.025);
 }
 
-/* Sidebar / drawer nav item — paler hover bg without obscuring text. */
+/* Sidebar / drawer nav item - paler hover bg without obscuring text. */
 .nav-item-hover {
   transition: background-color 200ms ease, color 200ms ease;
   border-radius: 6px;
@@ -343,7 +343,7 @@ a[aria-disabled="true"],
   background-color: rgba(245, 244, 241, 0.04);
 }
 
-/* Pill/chip button (samples, filter tags) — fills on hover. */
+/* Pill/chip button (samples, filter tags) - fills on hover. */
 .chip-hover {
   transition: color 200ms ease, border-color 200ms ease, background-color 200ms ease;
 }

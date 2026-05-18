@@ -1,9 +1,9 @@
-# Deepclario browser extension — Phase 1
+# Deepclario browser extension - Phase 1
 
 A Manifest V3 Chrome/Edge/Brave extension that adds a **Sharpen prompt**
 button on ChatGPT, Claude, and Gemini. It reads the prompt you're about to
 send, scores it, asks one clarifying question if needed, and gives you a
-rewrite — without leaving the page.
+rewrite - without leaving the page.
 
 It reuses the existing public endpoint `https://deepclario.com/api/anon/analyze`
 (no backend changes, no auth, IP rate-limited).
@@ -24,7 +24,7 @@ It reuses the existing public endpoint `https://deepclario.com/api/anon/analyze`
 2. Toggle **Developer mode** (top right)
 3. Click **Load unpacked**
 4. Select this `extension/` folder
-5. Open chatgpt.com — the button appears bottom-right
+5. Open chatgpt.com - the button appears bottom-right
 
 Works in Chrome, Edge, Brave, Arc (anything Chromium).
 
@@ -40,7 +40,7 @@ This part is gated by Google, not by code:
    ```
 3. In the dev console: **New item** → upload the zip.
 4. Fill the store listing:
-   - Name: Deepclario — Sharpen your AI prompts
+   - Name: Deepclario - Sharpen your AI prompts
    - Summary: Score and rewrite your prompt before sending it to ChatGPT,
      Claude, or Gemini.
    - Category: Productivity
@@ -58,11 +58,11 @@ This part is gated by Google, not by code:
   not stored (no account, no DB write on the anon endpoint).
 - No analytics, no tracking, no other network calls.
 
-## Known Phase-1 limitations (intentional — this is a test)
+## Known Phase-1 limitations (intentional - this is a test)
 
 - "Replace in chat" is best-effort. ChatGPT/Claude/Gemini use custom
   rich-text editors whose DOM changes often; if a replace fails, the
-  Copy button always works. This is acceptable for a validation test —
+  Copy button always works. This is acceptable for a validation test -
   we're measuring "does anyone click Sharpen twice", not polish.
 - No accounts, no saved history, no live-as-you-type scoring. That's
   Phase 2, only if Phase 1 shows real repeat usage.
@@ -72,9 +72,9 @@ This part is gated by Google, not by code:
 
 ## Files
 
-| File | Purpose |
-|---|---|
-| `manifest.json` | MV3 manifest, host perms, content-script matches |
-| `background.js` | Service worker — does the cross-origin API fetch |
-| `content.js` | Injected UI (Shadow DOM), prompt read/write, panel |
-| `icons/` | 16 / 48 / 128 px (generated from the site logo) |
+| File            | Purpose                                            |
+| --------------- | -------------------------------------------------- |
+| `manifest.json` | MV3 manifest, host perms, content-script matches   |
+| `background.js` | Service worker - does the cross-origin API fetch   |
+| `content.js`    | Injected UI (Shadow DOM), prompt read/write, panel |
+| `icons/`        | 16 / 48 / 128 px (generated from the site logo)    |

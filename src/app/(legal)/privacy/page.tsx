@@ -1,4 +1,4 @@
-export const metadata = { title: 'Privacy Policy — Deepclario' }
+export const metadata = { title: 'Privacy Policy - Deepclario' }
 
 export default function PrivacyPage() {
   return (
@@ -10,10 +10,10 @@ export default function PrivacyPage() {
 
       <Section title="What we collect">
         <ul className="list-disc pl-5 space-y-1.5">
-          <li><strong>Account info</strong> — your email and (if signing in with Google) your display name and avatar.</li>
-          <li><strong>Prompts you submit</strong> — your original prompt, clarifications, and the AI-generated improvement, stored under your account.</li>
-          <li><strong>Usage events</strong> — timestamp of each analysis, used solely to enforce free-tier limits.</li>
-          <li><strong>Billing metadata</strong> — Paddle customer and subscription IDs (not card numbers — those stay with Paddle).</li>
+          <li><strong>Account info</strong> - your email and (if signing in with Google) your display name and avatar.</li>
+          <li><strong>Prompts you submit</strong> - your original prompt, clarifications, and the AI-generated improvement, stored under your account.</li>
+          <li><strong>Usage events</strong> - timestamp of each analysis, used solely to enforce free-tier limits.</li>
+          <li><strong>Billing metadata</strong> - Paddle customer and subscription IDs (not card numbers - those stay with Paddle).</li>
         </ul>
       </Section>
 
@@ -27,10 +27,10 @@ export default function PrivacyPage() {
 
       <Section title="Third-party services">
         <ul className="list-disc pl-5 space-y-1.5">
-          <li><strong>Google Gemini</strong> — your prompt is sent to Google to generate the improvement. Google&apos;s policy applies to that processing.</li>
-          <li><strong>Supabase</strong> — auth and database hosting (data stored in the EU/US region of our project).</li>
-          <li><strong>Paddle</strong> — payment processing for Pro subscriptions.</li>
-          <li><strong>Vercel</strong> — application hosting.</li>
+          <li><strong>Google Gemini</strong> - your prompt is sent to Google to generate the improvement. Google&apos;s policy applies to that processing.</li>
+          <li><strong>Supabase</strong> - auth and database hosting (data stored in the EU/US region of our project).</li>
+          <li><strong>Paddle</strong> - payment processing for Pro subscriptions.</li>
+          <li><strong>Vercel</strong> - application hosting.</li>
         </ul>
       </Section>
 

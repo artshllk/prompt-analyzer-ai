@@ -1,4 +1,4 @@
-export const metadata = { title: 'Terms of Service — Deepclario' }
+export const metadata = { title: 'Terms of Service - Deepclario' }
 
 export default function TermsPage() {
   return (

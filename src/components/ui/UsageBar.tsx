@@ -9,7 +9,7 @@ interface UsageBarProps {
 }
 
 /**
- * Editorial usage indicator — hairline track, paper fill, no glow.
+ * Editorial usage indicator - hairline track, paper fill, no glow.
  */
 export function UsageBar({ usage, onUpgrade }: UsageBarProps) {
   if (usage.tier === 'pro') {

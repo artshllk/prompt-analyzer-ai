@@ -69,7 +69,7 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
   const resultsRef = useRef<HTMLDivElement>(null)
 
   // Focus the answer textarea + scroll into view ONLY when we transition
-  // into a stage — never on every keystroke.
+  // into a stage - never on every keystroke.
   useEffect(() => {
     if (state.kind === 'asked' && answerRef.current) {
       answerRef.current.focus()
@@ -99,7 +99,7 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
       if (res.status === 429) {
         setState({
           kind: 'error',
-          message: 'Slow down a moment — we limit free analyses by IP. Try again in a minute, or open the playground for unlimited use.',
+          message: 'Slow down a moment - we limit free analyses by IP. Try again in a minute, or open the playground for unlimited use.',
         })
         return
       }
@@ -170,7 +170,7 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
 
   return (
     <div className="grid md:grid-cols-12 gap-8 md:gap-16">
-      {/* Left: input column (asymmetric — narrower on desktop) */}
+      {/* Left: input column (asymmetric - narrower on desktop) */}
       <div className="md:col-span-5">
         {!compact && (
           <>
@@ -201,7 +201,7 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
             disabled={!showInputForm}
-            placeholder="Type a prompt — even a rough one. e.g. “Write me a blog post about AI”"
+            placeholder="Type a prompt - even a rough one. e.g. “Write me a blog post about AI”"
             rows={5}
             maxLength={4000}
             className="w-full p-4 text-base resize-none focus:outline-none transition-colors"

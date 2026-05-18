@@ -81,21 +81,21 @@ export default async function DashboardPage({
         </div>
       </header>
 
-      {/* Stats — single horizontal data row, hairline above and below */}
+      {/* Stats - single horizontal data row, hairline above and below */}
       {!isNew && (
         <section>
           <div className="rule-strong" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-6 py-8">
             <Stat label="Used this month" value={String(usage.used)} sub={usage.limit ? `of ${usage.limit}` : 'of unlimited'} />
-            <Stat label="Average clarity" value={avgScoreAfter ? String(avgScoreAfter) : '—'} sub="after rewriting" />
-            <Stat label="Average lift" value={avgLift ? `+${avgLift}` : '—'} sub="points per prompt" accent={avgLift !== null && avgLift > 0} />
+            <Stat label="Average clarity" value={avgScoreAfter ? String(avgScoreAfter) : '-'} sub="after rewriting" />
+            <Stat label="Average lift" value={avgLift ? `+${avgLift}` : '-'} sub="points per prompt" accent={avgLift !== null && avgLift > 0} />
             <Stat label="Sessions" value={String(sessions.length)} sub="all time" />
           </div>
           <div className="rule-strong" />
         </section>
       )}
 
-      {/* Empty state — editorial prose, no emojis, no decoration */}
+      {/* Empty state - editorial prose, no emojis, no decoration */}
       {isNew && <EmptyState />}
 
       {/* Recent sessions */}
@@ -155,7 +155,7 @@ export default async function DashboardPage({
         </section>
       )}
 
-      {/* Pro upsell — editorial, no gradient, no glow */}
+      {/* Pro upsell - editorial, no gradient, no glow */}
       {!isPro && !isNew && (
         <section className="grid md:grid-cols-12 gap-6 md:gap-12 pt-8" style={{ borderTop: '1px solid var(--color-rule)' }}>
           <div className="md:col-span-7">

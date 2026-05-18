@@ -13,7 +13,7 @@ const FEATURES = [
   {
     icon: '🎯',
     title: 'Socratic Coaching',
-    desc: 'AI acts like a senior engineer. It asks clarifying questions before rewriting — not after.',
+    desc: 'AI acts like a senior engineer. It asks clarifying questions before rewriting - not after.',
     color: 'from-cyan-600/20 to-cyan-600/5',
     border: 'border-cyan-500/20',
   },

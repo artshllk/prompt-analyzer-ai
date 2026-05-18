@@ -10,7 +10,7 @@ interface AnonAnalyzeBody {
   priorAnswers?: QAPair[]
 }
 
-// Permissive CORS — this endpoint is public, no-auth, and per-IP rate
+// Permissive CORS - this endpoint is public, no-auth, and per-IP rate
 // limited. Allowing any origin lets the browser extension call it directly.
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',

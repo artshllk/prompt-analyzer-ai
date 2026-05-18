@@ -133,7 +133,7 @@ export function PricingSection() {
             href="/login"
             className="block w-full py-3 rounded-xl text-sm font-semibold text-center bg-violet-600 hover:bg-violet-500 text-white transition-all glow-violet"
           >
-            Unlock Pro — {annual ? '$3.99' : '$4.99'}/month →
+            Unlock Pro - {annual ? '$3.99' : '$4.99'}/month →
           </Link>
           <p className="text-center text-xs text-[#4a5a80] mt-3">Cancel anytime · No questions asked</p>
         </motion.div>
