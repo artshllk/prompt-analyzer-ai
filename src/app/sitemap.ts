@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: base, lastModified: now, changeFrequency: 'weekly', priority: 1 },
     { url: `${base}/playground`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${base}/extension`, lastModified: now, changeFrequency: 'monthly', priority: 0.85 },
     { url: `${base}/tools/prompt-improver`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${base}/tools/prompt-analyzer`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${base}/blog/what-is-prompt-engineering`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
