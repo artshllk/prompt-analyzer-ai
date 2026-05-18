@@ -90,7 +90,7 @@ export default function LandingPage() {
             </Link>
             <nav className="hidden md:flex items-center gap-8 text-sm" style={{ color: 'var(--color-paper-mute)' }}>
               <Link href="#try" className="hover:opacity-100 transition-opacity opacity-80">Try it</Link>
-              <Link href="#why" className="hover:opacity-100 transition-opacity opacity-80">Why it works</Link>
+              <Link href="/extension" className="hover:opacity-100 transition-opacity opacity-80">Extension</Link>
               <Link href="#pricing" className="hover:opacity-100 transition-opacity opacity-80">Pricing</Link>
               <Link href="/blog/what-is-prompt-engineering" className="hover:opacity-100 transition-opacity opacity-80">Reading</Link>
             </nav>
@@ -219,6 +219,38 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Browser extension CTA — visitors who liked the demo are the
+            perfect extension audience. */}
+        <section className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
+          <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
+            <div className="md:col-span-3">
+              <p className="eyebrow">Use it everywhere</p>
+            </div>
+            <div className="md:col-span-9">
+              <h2
+                className="font-serif text-3xl md:text-5xl leading-tight tracking-tight mb-6"
+                style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+              >
+                Sharpen prompts inside ChatGPT, Claude, and Gemini.
+              </h2>
+              <p className="text-base md:text-lg leading-[1.6] max-w-xl mb-8" style={{ color: 'var(--color-paper-mute)' }}>
+                The browser extension adds a Sharpen button right in the chat
+                box — same engine, no tab switching. Free, no account.
+              </p>
+              <Link
+                href="/extension"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] transition-all btn-paper"
+                style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+              >
+                Get the browser extension
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </section>
+
         {/* Manifesto / closing */}
         <section className="px-6 md:px-10 py-32 md:py-40" style={{ borderTop: '1px solid var(--color-rule)' }}>
           <div className="max-w-4xl mx-auto text-center">
@@ -284,6 +316,7 @@ export default function LandingPage() {
             </div>
             <FooterCol title="Product" links={[
               { href: '/playground', label: 'Playground' },
+              { href: '/extension', label: 'Browser extension' },
               { href: '/tools/prompt-improver', label: 'Prompt Improver' },
               { href: '/tools/prompt-analyzer', label: 'Prompt Analyzer' },
               { href: '#pricing', label: 'Pricing' },
