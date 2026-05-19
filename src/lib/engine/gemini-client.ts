@@ -1,7 +1,13 @@
 const MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'] as const
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
-const TIMEOUT_MS = 12000
-const MAX_RETRIES = 2
+// A healthy generation returns in 2-5s. Past ~8s it almost always ends
+// up failing anyway, so a shorter timeout caps worst-case wall time and
+// cuts the duration of 503s instead of stacking 12s waits.
+const TIMEOUT_MS = 8000
+// 1 retry per model. With 2 models that is max 2 attempts (was 4). A
+// transient error rarely clears on a retry of the same prompt, and the
+// fallback model already provides a second chance.
+const MAX_RETRIES = 1
 
 interface GeminiRequest {
   systemPrompt: string

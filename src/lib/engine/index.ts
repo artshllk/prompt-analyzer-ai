@@ -133,7 +133,10 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
     systemPrompt: buildSystemPrompt(input),
     userMessage: buildUserMessage(input),
     temperature: 0.4,
-    maxOutputTokens: 1400,
+    // Improved prompts are spec'd at 80-250 words plus a short
+    // explanation and score JSON. ~900 tokens is comfortable headroom;
+    // the extra 500 only added generation latency.
+    maxOutputTokens: 900,
     responseSchema: STEP_SCHEMA as unknown as Record<string, unknown>,
   })
 
