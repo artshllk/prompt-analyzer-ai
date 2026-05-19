@@ -8,6 +8,9 @@ interface AnonAnalyzeBody {
   prompt: string
   tone: Tone
   priorAnswers?: QAPair[]
+  /** Where the call came from. Defaults to 'web' (homepage demo).
+   *  The browser extension sends 'extension'. Used only for analytics. */
+  source?: string
 }
 
 // Permissive CORS - this endpoint is public, no-auth, and per-IP rate
@@ -53,6 +56,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { prompt, tone, priorAnswers = [] } = body
+  const source = body.source === 'extension' ? 'extension' : 'web'
 
   if (!prompt?.trim()) {
     return withCors(NextResponse.json({ error: 'prompt_required' }, { status: 400 }))
@@ -60,6 +64,15 @@ export async function POST(req: NextRequest) {
   if (prompt.length > 4000) {
     return withCors(NextResponse.json({ error: 'prompt_too_long' }, { status: 400 }))
   }
+
+  // Analytics-only log. One structured line per analyze so we can tell
+  // extension usage apart from web demo usage in the Vercel logs, and
+  // see if the same IP returns across days. No DB write, no PII (the IP
+  // is hashed to a short bucket; the prompt text is never logged).
+  const ipBucket = ip.split('.').slice(0, 3).join('.') + '.x'
+  console.log(
+    `[anon-analyze] source=${source} turn=${priorAnswers.length} ipBucket=${ipBucket} ts=${new Date().toISOString()}`
+  )
 
   const result = await analyzePrompt({ prompt, tone, priorAnswers })
   if (!result) {

@@ -16,6 +16,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       prompt: msg.prompt,
       tone: 'professional',
       priorAnswers: msg.priorAnswers || [],
+      source: 'extension',
     }),
   })
     .then(async res => {
