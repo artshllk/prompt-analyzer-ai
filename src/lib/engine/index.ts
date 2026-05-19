@@ -140,7 +140,14 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
     responseSchema: STEP_SCHEMA as unknown as Record<string, unknown>,
   })
 
-  if (!result || !result.score) return null
+  if (!result || !result.score) {
+    // callGemini already logged the failure trail; this distinguishes
+    // "Gemini failed entirely" from "returned JSON but missing score".
+    console.error(
+      `[engine] null result: ${!result ? 'gemini_failed' : 'response_missing_score'}`
+    )
+    return null
+  }
 
   const wantsImprove =
     result.decision === 'improve' ||
@@ -168,6 +175,13 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
     }
   }
 
-  // Model returned decision without matching payload - treat as failure so caller surfaces error.
+  // Model returned a valid score but neither an improvement nor a
+  // question payload. This is a model-output bug, not infra — log it
+  // distinctly so we don't confuse it with a Gemini outage.
+  console.error(
+    `[engine] decision=${result.decision} but no payload ` +
+    `(improvement=${!!result.improvement} question=${!!result.question} ` +
+    `confidence=${result.score.confidence})`
+  )
   return null
 }

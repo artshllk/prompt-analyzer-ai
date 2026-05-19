@@ -1,13 +1,13 @@
 const MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'] as const
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
-// A healthy generation returns in 2-5s. Past ~8s it almost always ends
-// up failing anyway, so a shorter timeout caps worst-case wall time and
-// cuts the duration of 503s instead of stacking 12s waits.
-const TIMEOUT_MS = 8000
-// 1 retry per model. With 2 models that is max 2 attempts (was 4). A
-// transient error rarely clears on a retry of the same prompt, and the
-// fallback model already provides a second chance.
-const MAX_RETRIES = 1
+// Worst case is exactly MODELS.length attempts (no same-model retries).
+// A same-model retry of an identical prompt rarely turns a timeout into
+// a success and doubles the wall-time budget — that stacking is what
+// produced the 17s+ failures. Resilience comes from the fallback MODEL.
+// 12s per call: structured-JSON generation is slower than free text,
+// so 8s false-failed valid slow responses; 12s lets them finish while
+// the absolute ceiling stays at ~MODELS.length * 12s = ~24s (rare).
+const TIMEOUT_MS = 12000
 
 interface GeminiRequest {
   systemPrompt: string
@@ -28,11 +28,19 @@ interface GeminiResponse {
   }>
 }
 
-async function callModel(
-  model: string,
-  req: GeminiRequest
-): Promise<{ text: string; transient: boolean } | null> {
+/**
+ * Result of one model attempt. `reason` is never empty — every path
+ * names why it ended, so a 503 is never silent in the logs.
+ */
+interface ModelResult {
+  text: string
+  transient: boolean
+  reason: string
+}
+
+async function callModel(model: string, req: GeminiRequest): Promise<ModelResult> {
   const controller = new AbortController()
+  const started = Date.now()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
   try {
@@ -55,24 +63,37 @@ async function callModel(
       }
     )
 
+    const ms = Date.now() - started
+
     if (res.status === 429 || res.status >= 500) {
-      return { text: '', transient: true }
+      return { text: '', transient: true, reason: `http_${res.status}_in_${ms}ms` }
     }
 
     if (!res.ok) {
       const detail = await res.text().catch(() => '')
-      console.error(`Gemini ${model} error ${res.status}: ${detail.slice(0, 200)}`)
+      console.error(`[gemini] ${model} error ${res.status} in ${ms}ms: ${detail.slice(0, 300)}`)
       const { captureError } = await import('../observability')
       captureError(new Error(`Gemini ${model} ${res.status}`), { detail: detail.slice(0, 500) })
-      return null
+      return { text: '', transient: false, reason: `http_${res.status}` }
     }
 
     const data: GeminiResponse = await res.json()
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
-    return { text, transient: false }
+    if (!text) {
+      // 200 OK but empty — almost always a safety block or finishReason
+      // other than STOP. Log the raw shape so we can see it.
+      console.error(`[gemini] ${model} empty text in ${ms}ms: ${JSON.stringify(data).slice(0, 400)}`)
+      return { text: '', transient: false, reason: `empty_response_in_${ms}ms` }
+    }
+    return { text, transient: false, reason: `ok_in_${ms}ms` }
   } catch (err) {
+    const ms = Date.now() - started
     const isAbort = (err as Error).name === 'AbortError'
-    return { text: '', transient: isAbort }
+    return {
+      text: '',
+      transient: isAbort,
+      reason: isAbort ? `timeout_after_${ms}ms` : `fetch_error:${(err as Error).message}`,
+    }
   } finally {
     clearTimeout(timer)
   }
@@ -96,27 +117,27 @@ function parseJSON<T>(raw: string): T | null {
 }
 
 export async function callGemini<T>(req: GeminiRequest): Promise<T | null> {
+  const trail: string[] = []
+
+  // One attempt per model, in order. No same-model retry — that
+  // stacking is what created the 17s+ failures. Resilience comes from
+  // falling through to the next model. Worst case = MODELS.length calls.
   for (const model of MODELS) {
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      const result = await callModel(model, req)
+    const result = await callModel(model, req)
+    trail.push(`${model}:${result.reason}`)
 
-      if (result && result.text) {
-        const parsed = parseJSON<T>(result.text)
-        if (parsed !== null) return parsed
-        // Parse failed despite responseSchema - log once and try next model.
-        // No point retrying same model with same prompt; output is deterministic-ish.
-        console.warn(`Gemini ${model} returned unparseable JSON; falling back`)
-        break
-      }
-
-      // No result, or transient error → retry same model
-      if (result?.transient && attempt < MAX_RETRIES) {
-        await new Promise(r => setTimeout(r, 400 * attempt))
-        continue
-      }
-      break
+    if (result.text) {
+      const parsed = parseJSON<T>(result.text)
+      if (parsed !== null) return parsed
+      // Parse failed despite responseSchema. Rare. Fall to next model.
+      trail.push(`${model}:parse_failed`)
+      continue
     }
+    // Empty / timeout / http error → try the fallback model.
+    continue
   }
 
+  // Every analyze failure is now explained in one line.
+  console.error(`[gemini] all attempts failed -> ${trail.join(' | ')}`)
   return null
 }
