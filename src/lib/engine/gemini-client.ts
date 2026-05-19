@@ -1,4 +1,10 @@
-const MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'] as const
+const MODELS = [
+  'gemini-2.5-flash',       // Your current baseline
+  'gemini-2.5-flash-lite',  // Your current fallback
+  'gemini-3.1-flash-lite-preview', // Brand new Google preview (Separate free quota!)
+  'gemini-3-flash-preview',      // Another separate free quota bucket from Google
+  'gemini-1.5-flash'        // Google legacy flash (More generous: 15 RPM / 1,500 Daily limit)
+] as const;
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
 // Worst case is exactly MODELS.length attempts (no same-model retries).
 // A same-model retry of an identical prompt rarely turns a timeout into
