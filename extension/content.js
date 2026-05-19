@@ -208,11 +208,18 @@
         <button class="btn" id="go">Sharpen</button>
       </div>
     `
-    $('#go').addEventListener('click', () => {
+    const submit = () => {
       const v = $('#ta').value.trim()
       if (!v) return
       lastPrompt = v
       analyze(v, [])
+    }
+    $('#go').addEventListener('click', submit)
+    $('#ta').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        submit()
+      }
     })
   }
 
@@ -251,11 +258,18 @@
         <button class="btn ghost" id="skip">Start over</button>
       </div>
     `
-    $('#send').addEventListener('click', () => {
+    const submit = () => {
       const a = $('#ans').value.trim()
       if (!a) return
       history.push({ question: d.question, answer: a, turn: history.length + 1 })
       analyze(lastPrompt, history)
+    }
+    $('#send').addEventListener('click', submit)
+    $('#ans').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        submit()
+      }
     })
     $('#skip').addEventListener('click', () => renderInput(lastPrompt))
   }
