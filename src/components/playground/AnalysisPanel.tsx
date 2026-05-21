@@ -139,7 +139,7 @@ export function AnalysisPanel({
 
       {/* Explanation */}
       <div className="mt-10">
-        <p className="eyebrow mb-3">Why it&rsquo;s sharper</p>
+        <p className="eyebrow mb-3">Why it&rsquo;s better</p>
         <p className="text-base md:text-lg leading-[1.65] max-w-3xl" style={{ color: 'var(--color-paper-mute)' }}>
           {explanation}
         </p>

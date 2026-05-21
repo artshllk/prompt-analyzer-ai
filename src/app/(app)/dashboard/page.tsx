@@ -155,6 +155,32 @@ export default async function DashboardPage({
         </section>
       )}
 
+      {/* Browser extension - quiet entry point so signed-in users can find
+          the connection-code page without typing the URL. */}
+      <section className="grid md:grid-cols-12 gap-6 md:gap-12 pt-8" style={{ borderTop: '1px solid var(--color-rule)' }}>
+        <div className="md:col-span-7">
+          <p className="eyebrow mb-4">Browser extension</p>
+          <h2 className="display text-2xl md:text-3xl mb-3" style={{ color: 'var(--color-paper)' }}>
+            Improve prompts <span style={{ color: 'var(--color-paper-mute)' }}>inside ChatGPT, Claude, Gemini.</span>
+          </h2>
+          <p className="text-base leading-[1.6] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
+            Connect the extension so it uses your {isPro ? 'unlimited' : '25 / month'} allowance instead of the public free quota.
+          </p>
+        </div>
+        <div className="md:col-span-5 md:flex md:items-end md:justify-end gap-3 flex-wrap">
+          <Link
+            href="/extension/connect"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
+            style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+          >
+            Get connection code
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
+        </div>
+      </section>
+
       {/* Pro upsell - editorial, no gradient, no glow */}
       {!isPro && !isNew && (
         <section className="grid md:grid-cols-12 gap-6 md:gap-12 pt-8" style={{ borderTop: '1px solid var(--color-rule)' }}>
@@ -164,7 +190,7 @@ export default async function DashboardPage({
               See your patterns over weeks, <span style={{ color: 'var(--color-paper-mute)' }}>not days.</span>
             </h2>
             <p className="text-base leading-[1.6] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
-              Unlimited analyses, full history, and a weekly report on the categories of fixes you reach for most often. The way to actually get sharper at this.
+              Unlimited analyses, full history, and a weekly report on the categories of fixes you reach for most often. The way to actually get better at this.
             </p>
           </div>
           <div className="md:col-span-5 md:flex md:items-end md:justify-end">

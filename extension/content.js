@@ -1,8 +1,8 @@
 // Deepclario extension - content script.
 //
-// Injects a floating "Sharpen prompt" button on ChatGPT / Claude / Gemini.
+// Injects a floating "Improve prompt" button on ChatGPT / Claude / Gemini.
 // Reads the prompt you're about to send, scores it, asks one clarifying
-// question if needed, and gives you a sharpened rewrite - without leaving
+// question if needed, and gives you an improved rewrite - without leaving
 // the page. Everything lives in a Shadow DOM so the host site's CSS can't
 // touch it and ours can't leak out.
 
@@ -177,7 +177,7 @@
     </style>
 
     <button class="fab" id="fab">
-      <span class="mark">✦</span> Sharpen prompt
+      <span class="mark">✦</span> Improve prompt
     </button>
 
     <div class="overlay" id="overlay">
@@ -187,7 +187,7 @@
             <span class="eyebrow">Deepclario</span>
             <button class="x" id="close" aria-label="Close">×</button>
           </div>
-          <h2>Sharpen your prompt</h2>
+          <h2>Improve your prompt</h2>
           <p class="sub">We score it, ask what is missing, and rewrite it - before you send it.</p>
 
           <div id="stage"></div>
@@ -261,7 +261,7 @@
       <div class="label">Your prompt</div>
       <textarea id="ta">${esc(text)}</textarea>
       <div class="actions">
-        <button class="btn" id="go">Sharpen</button>
+        <button class="btn" id="go">Improve</button>
       </div>
     `
     const submit = () => {
@@ -383,9 +383,9 @@
         <span class="arrow">→</span>
         <span class="score ${scoreClass(a)}">${a}</span>
       </div>
-      <div class="label">Sharpened prompt</div>
+      <div class="label">Improved prompt</div>
       <div class="result-box" id="rw">${esc(d.improvedPrompt)}</div>
-      ${d.explanation ? `<div class="label">Why it is sharper</div><p class="sub" style="margin:0">${esc(d.explanation)}</p>` : ''}
+      ${d.explanation ? `<div class="label">Why it is better</div><p class="sub" style="margin:0">${esc(d.explanation)}</p>` : ''}
       <div class="actions">
         <button class="btn" id="copy">Copy</button>
         <button class="btn ghost" id="replace">Replace in chat</button>

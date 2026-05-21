@@ -25,7 +25,7 @@ export default async function InsightsPage() {
           Patterns over weeks, <span style={{ color: 'var(--color-paper-mute)' }}>not days.</span>
         </h1>
         <p className="mt-5 text-base md:text-lg leading-[1.55] max-w-2xl" style={{ color: 'var(--color-paper-mute)' }}>
-          The quiet trends in how you ask AI &mdash; the gaps you keep leaving, the dimensions that lift your scores fastest, the weeks you got measurably sharper.
+          The quiet trends in how you ask AI &mdash; the gaps you keep leaving, the dimensions that lift your scores fastest, the weeks you got measurably better.
         </p>
       </header>
 
@@ -51,7 +51,7 @@ function ProGate() {
             className="font-serif text-2xl md:text-[2rem] leading-tight tracking-tight mb-6"
             style={{ color: 'var(--color-paper)', fontWeight: 400 }}
           >
-            Insights are how you actually get sharper at this &mdash; the report shows what you keep forgetting and what you have started doing better.
+            Insights are how you actually get better at this &mdash; the report shows what you keep forgetting and what you have started doing well.
           </p>
           <p className="text-base md:text-lg leading-[1.6] max-w-xl mb-8" style={{ color: 'var(--color-paper-mute)' }}>
             A weekly note covering your most common gaps, the dimensions where your scores lift the fastest, and how this week compares to last. Quiet, useful, no charts for the sake of charts.

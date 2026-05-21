@@ -3,14 +3,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'Chrome extension - Sharpen prompts inside ChatGPT, Claude & Gemini',
+  title: 'Chrome extension - Improve prompts inside ChatGPT, Claude & Gemini',
   description:
-    'The Deepclario browser extension adds a Sharpen button inside ChatGPT, Claude, and Gemini. Score and rewrite your prompt before you send it - without leaving the page.',
+    'The Deepclario browser extension adds an Improve button inside ChatGPT, Claude, and Gemini. Score and rewrite your prompt before you send it - without leaving the page.',
   alternates: { canonical: 'https://deepclario.com/extension' },
   openGraph: {
     title: 'Deepclario - Chrome extension',
     description:
-      'Sharpen your prompt inside ChatGPT, Claude, and Gemini. One click, in-page, no tab switching.',
+      'Improve your prompt inside ChatGPT, Claude, and Gemini. One click, in-page, no tab switching.',
     url: 'https://deepclario.com/extension',
     type: 'website',
     images: [{ url: 'https://deepclario.com/logo.png', width: 512, height: 512, alt: 'Deepclario' }],
@@ -46,7 +46,7 @@ const STEPS = [
   {
     n: '06',
     t: 'Use it',
-    d: 'Open chatgpt.com, claude.ai, or gemini.google.com. A “✦ Sharpen prompt” button appears bottom-right.',
+    d: 'Open chatgpt.com, claude.ai, or gemini.google.com. A “✦ Improve prompt” button appears bottom-right.',
   },
 ]
 
@@ -81,11 +81,11 @@ export default function ExtensionPage() {
             className="display text-5xl md:text-[5rem] leading-tight tracking-tight"
             style={{ color: 'var(--color-paper)' }}
           >
-            Sharpen your prompt{' '}
+            Improve your prompt{' '}
             <span style={{ color: 'var(--color-paper-mute)' }}>where you write it.</span>
           </h1>
           <p className="mt-6 md:mt-8 text-lg md:text-xl leading-relaxed max-w-2xl" style={{ color: 'var(--color-paper-mute)' }}>
-            Adds a Sharpen button directly inside ChatGPT, Claude, and Gemini.
+            Adds an Improve button directly inside ChatGPT, Claude, and Gemini.
             Score your prompt, answer one question if something is missing, and
             get a rewrite - without leaving the page or opening another tab.
           </p>
@@ -150,7 +150,7 @@ export default function ExtensionPage() {
           <div className="md:col-span-9 space-y-5">
             <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper)' }}>
               The only thing sent anywhere is the prompt text you choose to
-              sharpen. It goes to Deepclario, is analyzed once, and is not stored.
+              improve. It goes to Deepclario, is analyzed once, and is not stored.
             </p>
             <p className="text-base leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
               No account, no tracking, no analytics inside the extension, no other

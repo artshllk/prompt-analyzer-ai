@@ -114,7 +114,7 @@ function DesktopCinematic() {
       <div className="sticky top-0 h-screen flex items-center overflow-hidden">
         <div className="w-full max-w-6xl mx-auto px-10">
           <div className="flex items-baseline justify-between mb-16">
-            <span className="eyebrow">A real prompt, sharpened</span>
+            <span className="eyebrow">A real prompt, improved</span>
             <div className="flex items-baseline gap-3">
               <span className="eyebrow">Clarity</span>
               <span

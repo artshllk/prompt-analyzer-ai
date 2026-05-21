@@ -39,7 +39,7 @@ type State =
   | { kind: 'idle' }
   | { kind: 'thinking' }
   | { kind: 'asked'; question: string; gap: string; score: number; answer: string }
-  | { kind: 'sharpening' }
+  | { kind: 'rewriting' }
   | { kind: 'done'; before: number; after: number; rewrite: string; explanation: string }
   | { kind: 'error'; message: string }
 
@@ -83,7 +83,7 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
   }, [state.kind])
 
   async function analyze(currentPrompt: string, qaHistory: QA[]) {
-    setState({ kind: qaHistory.length > 0 ? 'sharpening' : 'thinking' })
+    setState({ kind: qaHistory.length > 0 ? 'rewriting' : 'thinking' })
 
     try {
       const res = await fetch('/api/anon/analyze', {
@@ -143,7 +143,7 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
 
   function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault()
-    if (!prompt.trim() || state.kind === 'thinking' || state.kind === 'sharpening') return
+    if (!prompt.trim() || state.kind === 'thinking' || state.kind === 'rewriting') return
     setHistory([])
     analyze(prompt.trim(), [])
   }
@@ -165,7 +165,7 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
     setState({ kind: 'idle' })
   }
 
-  const thinking = state.kind === 'thinking' || state.kind === 'sharpening'
+  const thinking = state.kind === 'thinking' || state.kind === 'rewriting'
   const showInputForm = state.kind === 'idle' || state.kind === 'thinking' || state.kind === 'error'
 
   return (
@@ -274,8 +274,8 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
       <div ref={resultsRef} className="md:col-span-7 min-h-[18rem]">
         <AnimatePresence mode="wait">
           {state.kind === 'idle' && <IdlePanel key="idle" />}
-          {(state.kind === 'thinking' || state.kind === 'sharpening') && (
-            <ThinkingPanel key="thinking" label={state.kind === 'sharpening' ? 'Rewriting…' : 'Reading your prompt…'} />
+          {(state.kind === 'thinking' || state.kind === 'rewriting') && (
+            <ThinkingPanel key="thinking" label={state.kind === 'rewriting' ? 'Rewriting…' : 'Reading your prompt…'} />
           )}
           {state.kind === 'asked' && (
             <AskedPanel
@@ -318,7 +318,7 @@ function IdlePanel() {
         {[
           { n: '01', t: 'A clarity score, 0–100', d: 'Scored across five dimensions: goal, context, format, constraints, examples.' },
           { n: '02', t: 'A real follow-up question', d: 'The thing the model would have had to guess. We ask it instead.' },
-          { n: '03', t: 'The rewrite', d: 'Your prompt, sharpened. Ready to paste into ChatGPT, Claude, or Gemini.' },
+          { n: '03', t: 'The rewrite', d: 'Your prompt, improved. Ready to paste into ChatGPT, Claude, or Gemini.' },
         ].map(({ n, t, d }) => (
           <li key={n} className="grid grid-cols-12 gap-3 md:gap-4">
             <span className="col-span-2 md:col-span-1 font-serif text-xl tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>{n}</span>
@@ -516,7 +516,7 @@ function DonePanel({
 
       {explanation && (
         <>
-          <p className="eyebrow mb-2">Why it&rsquo;s sharper</p>
+          <p className="eyebrow mb-2">Why it&rsquo;s better</p>
           <p className="text-sm md:text-base leading-[1.65] mb-6" style={{ color: 'var(--color-paper-mute)' }}>
             {explanation}
           </p>

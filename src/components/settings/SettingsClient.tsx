@@ -73,6 +73,20 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
         </div>
       </section>
 
+      {/* Browser extension */}
+      <section className="glass rounded-2xl border border-[#1e2d4a] p-6 space-y-4">
+        <h2 className="text-sm font-semibold text-[#f0f4ff] uppercase tracking-wider">Browser extension</h2>
+        <p className="text-sm text-[#8b9cc8]">
+          Connect the Deepclario extension to this account so it uses your plan {isPro ? '(unlimited)' : '(25 / month)'} instead of the public free quota.
+        </p>
+        <a
+          href="/extension/connect"
+          className="inline-block px-4 py-2.5 rounded-xl bg-[#0f1628] border border-[#1e2d4a] hover:border-[#2d4070] text-[#f0f4ff] text-sm font-medium transition-all"
+        >
+          Get connection code →
+        </a>
+      </section>
+
       {/* Billing */}
       <section className="glass rounded-2xl border border-[#1e2d4a] p-6 space-y-4">
         <h2 className="text-sm font-semibold text-[#f0f4ff] uppercase tracking-wider">Billing</h2>

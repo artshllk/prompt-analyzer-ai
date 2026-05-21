@@ -76,7 +76,7 @@ export default async function HistoryPage({
         <div className="md:col-span-9">
           <p className="eyebrow mb-4">History</p>
           <h1 className="display text-4xl md:text-6xl" style={{ color: 'var(--color-paper)' }}>
-            {total === 0 ? <>Nothing yet.</> : <>Every prompt <span style={{ color: 'var(--color-paper-mute)' }}>you have sharpened.</span></>}
+            {total === 0 ? <>Nothing yet.</> : <>Every prompt <span style={{ color: 'var(--color-paper-mute)' }}>you have improved.</span></>}
           </h1>
           {total > 0 && (
             <p className="mt-5 text-base md:text-lg leading-[1.55] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>

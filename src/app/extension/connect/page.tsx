@@ -84,7 +84,7 @@ export default async function ExtensionConnectPage() {
           <p className="eyebrow mb-4">How to paste it</p>
           <ol className="space-y-3 text-base leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
             <li>1. Open ChatGPT, Claude, or Gemini in another tab.</li>
-            <li>2. Click the ✦ <span style={{ color: 'var(--color-paper)' }}>Sharpen prompt</span> button bottom-right.</li>
+            <li>2. Click the ✦ <span style={{ color: 'var(--color-paper)' }}>Improve prompt</span> button bottom-right.</li>
             <li>3. In the panel, click <span style={{ color: 'var(--color-paper)' }}>Connect account</span> and paste the code.</li>
           </ol>
         </section>

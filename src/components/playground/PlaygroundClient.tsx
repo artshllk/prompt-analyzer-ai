@@ -80,7 +80,7 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
           {isAnon ? (
             <>Bring your worst prompt.</>
           ) : (
-            <>Bring your prompt. <span className="tracking-tight" style={{ color: 'var(--color-paper-mute)' }}>We sharpen it.</span></>
+            <>Bring your prompt. <span className="tracking-tight" style={{ color: 'var(--color-paper-mute)' }}>We improve it.</span></>
           )}
         </h1>
         <p className="mt-4 text-base md:text-lg leading-[1.55] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>

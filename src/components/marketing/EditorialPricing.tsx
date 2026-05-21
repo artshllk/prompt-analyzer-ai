@@ -91,7 +91,7 @@ export function EditorialPricing() {
               Unlimited prompts. Full history. Weekly insights that show your patterns and progress.
             </p>
             <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-              For people who write to AI every day &mdash; engineers, writers, founders &mdash; and want to get measurably sharper at it.
+              For people who write to AI every day &mdash; engineers, writers, founders &mdash; and want to get measurably better at it.
             </p>
           </div>
           <div className="col-span-12 md:col-span-2 flex md:justify-end">

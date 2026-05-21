@@ -231,10 +231,10 @@ export default function LandingPage() {
                 className="font-serif text-3xl md:text-5xl leading-tight tracking-tight mb-6"
                 style={{ color: 'var(--color-paper)', fontWeight: 400 }}
               >
-                Sharpen prompts inside ChatGPT, Claude, and Gemini.
+                Improve prompts inside ChatGPT, Claude, and Gemini.
               </h2>
               <p className="text-base md:text-lg leading-[1.6] max-w-xl mb-8" style={{ color: 'var(--color-paper-mute)' }}>
-                The browser extension adds a Sharpen button right in the chat
+                The browser extension adds an Improve button right in the chat
                 box - same engine, no tab switching. Free, no account.
               </p>
               <Link
