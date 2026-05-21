@@ -156,6 +156,24 @@
       .foot a { color: #A8A6A0; font-size: 12px; text-decoration: none; }
       .foot a:hover { color: #F5F4F1; }
       .err { color: #C25E5E; font-size: 14px; line-height: 1.5; }
+      .account-row {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 10px; margin-bottom: 18px; min-height: 24px;
+      }
+      .badge {
+        display: inline-flex; align-items: center; padding: 4px 10px;
+        border-radius: 999px; font-size: 11px; font-weight: 600;
+        letter-spacing: .04em; color: #A8A6A0;
+        border: 1px solid rgba(245,244,241,.18);
+      }
+      .badge.pro { background: #F5F4F1; color: #0E0E10; border-color: transparent; }
+      .link {
+        background: none; border: none; color: #A8A6A0; font-size: 12px;
+        cursor: pointer; padding: 4px 0; text-decoration: underline;
+        text-underline-offset: 3px; font-family: inherit;
+      }
+      .link:hover { color: #F5F4F1; }
+      a { color: #F5F4F1; }
     </style>
 
     <button class="fab" id="fab">
@@ -186,13 +204,41 @@
   const stage = $('#stage')
   let history = []
   let lastPrompt = ''
+  let authState = { token: null, tier: 'anon' }  // tier: 'anon' | 'free' | 'pro'
+
+  /* ---------- Account / token storage ---------- */
+
+  function loadAuth() {
+    return new Promise(resolve => {
+      try {
+        chrome.storage.local.get(['dc_token', 'dc_tier'], v => {
+          authState.token = v?.dc_token || null
+          authState.tier = v?.dc_tier || (authState.token ? 'free' : 'anon')
+          resolve()
+        })
+      } catch { resolve() }
+    })
+  }
+
+  function saveAuth(token, tier) {
+    authState.token = token
+    authState.tier = tier
+    try { chrome.storage.local.set({ dc_token: token, dc_tier: tier }) } catch {}
+  }
+
+  function clearAuth() {
+    authState.token = null
+    authState.tier = 'anon'
+    try { chrome.storage.local.remove(['dc_token', 'dc_tier']) } catch {}
+  }
 
   function scoreClass(n) { return n < 30 ? 'lo' : n < 60 ? 'mid' : 'hi' }
   function esc(s) {
     const d = document.createElement('div'); d.innerText = s || ''; return d.innerHTML
   }
 
-  function openPanel() {
+  async function openPanel() {
+    await loadAuth()
     lastPrompt = readPrompt()
     history = []
     renderInput(lastPrompt)
@@ -201,7 +247,17 @@
   function closePanel() { overlay.classList.remove('open') }
 
   function renderInput(text) {
+    const badge = authState.tier === 'pro'
+      ? `<span class="badge pro">Pro</span>`
+      : authState.tier === 'free'
+      ? `<span class="badge">Account connected</span>`
+      : ''
+    const accountAction = authState.token
+      ? `<button class="link" id="disconnect">Disconnect</button>`
+      : `<button class="link" id="connect">Connect account</button>`
+
     stage.innerHTML = `
+      <div class="account-row">${badge}${accountAction}</div>
       <div class="label">Your prompt</div>
       <textarea id="ta">${esc(text)}</textarea>
       <div class="actions">
@@ -221,6 +277,46 @@
         submit()
       }
     })
+    const connectBtn = $('#connect')
+    if (connectBtn) connectBtn.addEventListener('click', renderConnect)
+    const disconnectBtn = $('#disconnect')
+    if (disconnectBtn) disconnectBtn.addEventListener('click', () => {
+      clearAuth()
+      renderInput(lastPrompt)
+    })
+  }
+
+  function renderConnect() {
+    stage.innerHTML = `
+      <div class="rule"></div>
+      <h2 style="margin-top:0">Connect your account</h2>
+      <p class="sub">
+        Open <a id="open-connect" href="https://deepclario.com/extension/connect" target="_blank" rel="noopener">deepclario.com/extension/connect</a>,
+        copy the code shown there, and paste it below.
+      </p>
+      <div class="label">Connection code</div>
+      <textarea id="code" placeholder="dc_..." style="min-height:80px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px"></textarea>
+      <div class="actions">
+        <button class="btn" id="save">Connect</button>
+        <button class="btn ghost" id="back">Back</button>
+      </div>
+      <p id="connect-err" class="err" style="display:none; margin-top:10px"></p>
+    `
+    $('#back').addEventListener('click', () => renderInput(lastPrompt))
+    $('#save').addEventListener('click', () => {
+      const v = $('#code').value.trim()
+      const err = $('#connect-err')
+      if (!v.startsWith('dc_')) {
+        err.style.display = 'block'
+        err.textContent = 'That does not look like a Deepclario code. It starts with "dc_".'
+        return
+      }
+      // We don't validate against the server here - the next analyze call
+      // will either succeed (token good) or silently fall back to anon
+      // (token bad). Keeping the connect path offline keeps it instant.
+      saveAuth(v, 'free')
+      renderInput(lastPrompt)
+    })
   }
 
   function renderLoading() {
@@ -231,7 +327,9 @@
 
   function renderError(kind) {
     const msg = kind === 'rate_limited'
-      ? 'Slow down a moment - free analyses are rate-limited by IP. Try again in a minute.'
+      ? 'Slow down a moment - free analyses are rate-limited by IP. Connect a Deepclario account for higher limits.'
+      : kind === 'monthly_limit'
+      ? 'You have used all 25 free prompts this month. Upgrade to Pro at deepclario.com for unlimited use.'
       : kind === 'network'
       ? 'Network hiccup. Check your connection and try again.'
       : 'Something went sideways on our end. Try again.'
@@ -310,10 +408,15 @@
   function analyze(prompt, prior) {
     renderLoading()
     chrome.runtime.sendMessage(
-      { type: 'DEEPCLARIO_ANALYZE', prompt, priorAnswers: prior },
+      { type: 'DEEPCLARIO_ANALYZE', prompt, priorAnswers: prior, token: authState.token },
       resp => {
         if (!resp || !resp.ok) { renderError(resp ? resp.error : 'network'); return }
         const d = resp.data
+        // Sync tier from the server's authoritative response so the badge
+        // updates the moment a Pro user's token is recognized.
+        if (d.tier && d.tier !== 'anon' && authState.token) {
+          saveAuth(authState.token, d.tier)
+        }
         if (d.type === 'clarifying' && prior.length < 3) renderClarify(d)
         else if (d.type === 'improved') renderDone(d)
         else renderError('server_error')

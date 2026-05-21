@@ -193,7 +193,7 @@ export default function ExtensionPage() {
 
       <footer className="px-6 md:px-10 py-10" style={{ borderTop: '1px solid var(--color-rule)' }}>
         <div className="max-w-5xl mx-auto text-xs" style={{ color: 'var(--color-paper-mute)' }}>
-          © 2026 Deepclario·{' '}
+          © 2026 Deepclario{' '}
           <Link href="/" className="underline underline-offset-4" style={{ color: 'var(--color-paper)' }}>
             deepclario.com
           </Link>

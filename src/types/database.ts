@@ -65,6 +65,16 @@ export type UsageEventRow = {
   created_at: string
 }
 
+export type ApiTokenRow = {
+  id: string
+  user_id: string
+  token_hash: string
+  label: string
+  last_used_at: string | null
+  revoked_at: string | null
+  created_at: string
+}
+
 export type UserPromptPatternRow = {
   id: string
   user_id: string
@@ -120,6 +130,17 @@ export type Database = {
         Row: UserPromptPatternRow
         Insert: Omit<UserPromptPatternRow, 'id' | 'created_at'> & { id?: string }
         Update: Partial<Omit<UserPromptPatternRow, 'id' | 'created_at'>>
+        Relationships: []
+      }
+      api_tokens: {
+        Row: ApiTokenRow
+        Insert: Omit<ApiTokenRow, 'id' | 'created_at' | 'last_used_at' | 'revoked_at' | 'label'> & {
+          id?: string
+          label?: string
+          last_used_at?: string | null
+          revoked_at?: string | null
+        }
+        Update: Partial<Omit<ApiTokenRow, 'id' | 'created_at'>>
         Relationships: []
       }
       pro_waitlist: {

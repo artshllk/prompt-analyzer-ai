@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Deepclario - Sharpen your AI prompts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Score and rewrite the prompt you're about to send to ChatGPT, Claude, or Gemini - without leaving the page.",
   "icons": {
     "16": "icons/icon16.png",
@@ -19,6 +19,7 @@
   "background": {
     "service_worker": "background.js"
   },
+  "permissions": ["storage"],
   "host_permissions": [
     "https://deepclario.com/*"
   ],
