@@ -311,7 +311,7 @@ export default function LandingPage() {
                 <span className="text-sm" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>Deepclario</span>
               </div>
               <p className="text-sm leading-[1.7] max-w-sm" style={{ color: 'var(--color-paper-mute)' }}>
-                A prompt analyzer for ChatGPT, Claude, and Gemini. Built by Art Shllaku, for anyone who uses AI for real work.
+                A prompt analyzer for ChatGPT, Claude, and Gemini.
               </p>
             </div>
             <FooterCol title="Product" links={[
