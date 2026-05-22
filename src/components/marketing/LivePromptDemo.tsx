@@ -51,7 +51,9 @@ const SAMPLES = [
 
 type QA = { question: string; answer: string; turn: number }
 
-const MAX_TURNS = 3
+// Mirror of MAX_CLARIFY_TURNS in the engine. The server is authoritative
+// (it forces a rewrite at this turn), this is just a defensive UI cap.
+const MAX_TURNS = 2
 
 interface LivePromptDemoProps {
   /** Pre-populate the textarea with a sample prompt so visitors can hit Analyze immediately. */
@@ -313,7 +315,7 @@ function IdlePanel() {
   return (
     <motion.div {...panelMotion} className="h-full flex flex-col justify-center" style={{ minHeight: '18rem' }}>
       <div className="rule-strong mb-6" />
-      <p className="eyebrow mb-4">What you'll see</p>
+      <p className="eyebrow mb-4">What you&rsquo;ll see</p>
       <ol className="space-y-4">
         {[
           { n: '01', t: 'A clarity score, 0–100', d: 'Scored across five dimensions: goal, context, format, constraints, examples.' },

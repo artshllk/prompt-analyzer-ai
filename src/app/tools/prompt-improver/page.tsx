@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 const HOW_IT_WORKS = [
   { step: '1', title: 'Paste your prompt', desc: 'Any prompt - rough, half-formed, or specific. Deepclario handles all of it.' },
-  { step: '2', title: 'Get scored and clarified', desc: 'Your prompt is scored 0–100. If key elements are missing, Deepclario asks up to 3 targeted questions.' },
+  { step: '2', title: 'Get scored and clarified', desc: 'Your prompt is scored 0–100. If something critical is missing, Deepclario asks one or two targeted questions - no more.' },
   { step: '3', title: 'Receive the improved version', desc: 'A rewritten prompt using the CRAFT framework, ready to paste into any AI tool.' },
 ]
 

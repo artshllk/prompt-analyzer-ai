@@ -144,7 +144,7 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
             <ClarifyPanel
               question={session.clarifying.question}
               turn={session.clarifying.turn}
-              maxTurns={3}
+              maxTurns={2}
               confidenceSoFar={session.clarifying.confidenceSoFar}
               onSubmit={session.submitAnswer}
               isLoading={session.stage === 'improving'}

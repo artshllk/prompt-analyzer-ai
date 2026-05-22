@@ -417,7 +417,7 @@
         if (d.tier && d.tier !== 'anon' && authState.token) {
           saveAuth(authState.token, d.tier)
         }
-        if (d.type === 'clarifying' && prior.length < 3) renderClarify(d)
+        if (d.type === 'clarifying' && prior.length < 2) renderClarify(d)
         else if (d.type === 'improved') renderDone(d)
         else renderError('server_error')
       }

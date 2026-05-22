@@ -3,8 +3,14 @@ import { STEP_SCHEMA } from './schemas'
 import type { AnalyzeInput, AnalyzeResult } from '@/types'
 import type { ImprovementTag, Tone } from '@/types/database'
 
-const MAX_CLARIFY_TURNS = 3
-const DIRECT_IMPROVE_THRESHOLD = 80
+// A clarifying question has a real UX cost: each one is a gate the user
+// can abandon at, and a bored user types junk answers that *degrade* the
+// rewrite. So the ceiling is 2, not 3, and the model is told to treat
+// asking as expensive (see buildSystemPrompt). 75 (not 80) lets the model
+// jump straight to a rewrite sooner - a "good enough" rewrite beats a
+// third interrogation.
+const MAX_CLARIFY_TURNS = 2
+const DIRECT_IMPROVE_THRESHOLD = 75
 
 const TONE_RULES: Record<Tone, string> = {
   friendly: 'Conversational. Use "you". Avoid jargon. Warm but precise.',
@@ -51,11 +57,24 @@ Given a user's raw prompt (and any prior clarification Q&A), do ONE of two thing
 1. **decision = "ask"** - If a critical piece of intent is missing and answering one question would meaningfully change the rewritten prompt, ask exactly ONE question.
 2. **decision = "improve"** - If you have enough to write a substantially better prompt, rewrite it.
 
-# DECISION RULES
+# DECISION RULES - BIAS HARD TOWARD IMPROVING
 
-- Confidence ≥ ${DIRECT_IMPROVE_THRESHOLD}% → decision MUST be "improve".
-- Confidence < ${DIRECT_IMPROVE_THRESHOLD}% AND turns remaining ≥ 1 → decision MUST be "ask".
-- ${mustImprove ? 'You have used all clarifying turns. decision MUST be "improve" regardless of confidence.' : `Clarifying turns remaining: ${remainingTurns}.`}
+A clarifying question is expensive. Every question is a gate the user can
+abandon at, and an impatient user types a throwaway answer that makes the
+final rewrite *worse*. Your job is to ship a substantially better prompt
+with the fewest possible questions - not a perfect prompt after an
+interview. A strong rewrite the user gets immediately beats a marginally
+stronger one they never wait for.
+
+- Confidence ≥ ${DIRECT_IMPROVE_THRESHOLD}% → decision MUST be "improve". Do not ask.
+- Below ${DIRECT_IMPROVE_THRESHOLD}%, only ask IF the missing piece is genuinely
+  critical - meaning the rewrite would be substantively different (not just
+  marginally better) depending on the answer. If you could write a strong,
+  useful rewrite by making one reasonable assumption and stating it, do
+  that instead: decision = "improve".
+- Never ask to satisfy a checklist. "Could be nicer to know" is not a
+  reason to ask. "I cannot write a good prompt without this" is.
+- ${mustImprove ? 'You have used all clarifying turns. decision MUST be "improve" regardless of confidence.' : `Clarifying turns remaining: ${remainingTurns}. Treat asking again as a last resort.`}
 
 # WHEN ASKING - DO IT LIKE THE BEST IN THE FIELD
 

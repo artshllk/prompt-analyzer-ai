@@ -13,7 +13,7 @@ const FAQS = [
   },
   {
     q: 'How does Deepclario improve my prompts?',
-    a: 'Deepclario scores your prompt across 5 dimensions (goal clarity, context, format, constraints, examples). If your score is below 80%, it asks up to 3 targeted clarifying questions to understand your intent. Then it rewrites your prompt using the CRAFT framework and shows exactly what changed and why.',
+    a: 'Deepclario scores your prompt across 5 dimensions (goal clarity, context, format, constraints, examples). If something critical is missing, it asks one or two targeted clarifying questions - never more - to understand your intent. Then it rewrites your prompt using the CRAFT framework and shows exactly what changed and why.',
   },
   {
     q: 'What AI tools does this work with?',
