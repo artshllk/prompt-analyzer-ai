@@ -47,7 +47,7 @@ export const PROMPT_LIBRARY: PromptEntry[] = [
       'A free, ready-to-use ChatGPT prompt that writes a tailored cover letter from a job description and your background. Copy, paste, fill in the blanks.',
     heading: 'ChatGPT prompt for writing a cover letter',
     intro:
-      'Most cover letters written by ChatGPT sound generic because the prompt is generic. This one forces the model to tie your real experience to the specific job, in a human voice — not the usual "I am writing to express my interest" template.',
+      'Most cover letters written by ChatGPT sound generic because the prompt is generic. This one forces the model to tie your real experience to the specific job, in a human voice, instead of the usual "I am writing to express my interest" template.',
     category: 'Work',
     prompt: `You are an experienced career coach who has reviewed thousands of cover letters and knows what hiring managers actually read.
 
@@ -66,18 +66,18 @@ Rules:
 - Maximum 250 words, 3 short paragraphs.
 - Open with a specific hook, not "I am writing to apply for".
 - Connect ONE concrete achievement to ONE requirement from the job description.
-- Sound like a real person — confident, warm, no corporate clichés ("synergy", "passionate", "results-driven").
+- Sound like a real person: confident, warm, no corporate clichés ("synergy", "passionate", "results-driven").
 - End with a clear, low-pressure call to action.
 
 Return only the cover letter, ready to send.`,
     whyItWorks: [
       'It assigns a role ("experienced career coach") so the model writes from expertise, not from a template.',
-      'It demands a concrete achievement tied to a real job requirement — this is what stops the output sounding generic.',
+      'It demands a concrete achievement tied to a real job requirement. That link is what stops the output sounding generic.',
       'The hard rules (word count, banned clichés, no "I am writing to apply") cut the exact phrases that make AI cover letters obvious.',
     ],
     tips: [
-      'Paste only the 3-4 most important lines from the job post, not the whole thing — the model focuses better.',
-      'Use real numbers in your achievement ("cut response time 40%") — vague claims produce vague letters.',
+      'Paste only the 3-4 most important lines from the job post, not the whole thing. The model focuses better that way.',
+      'Use real numbers in your achievement, like "cut response time 40%". Vague claims produce vague letters.',
       'If the first draft is too formal, add one line: "Make it slightly warmer and less stiff."',
     ],
   },
@@ -87,10 +87,10 @@ Return only the cover letter, ready to send.`,
     searchTerm: 'chatgpt prompt to summarize an article',
     metaTitle: 'ChatGPT Prompt to Summarize Any Article (Free)',
     metaDescription:
-      'A free ChatGPT prompt that summarizes long articles into a clear, structured brief — key points, takeaways, and what to do next. Copy and paste.',
+      'A free ChatGPT prompt that summarizes long articles into a clear, structured brief: key points, takeaways, and what to do next. Copy and paste.',
     heading: 'ChatGPT prompt to summarize an article',
     intro:
-      'Asking ChatGPT to "summarize this" gives you a vague blob. This prompt produces a structured brief you can actually act on — the core argument, the key points, and what it means for you — at whatever length you need.',
+      'Asking ChatGPT to "summarize this" gives you a vague blob. This prompt produces a structured brief you can actually act on: the core argument, the key points, and what it means for you, at whatever length you need.',
     category: 'Learning',
     prompt: `You are a sharp research assistant who is excellent at separating signal from noise.
 
@@ -105,7 +105,7 @@ Produce the summary in this exact structure:
 
 **Key points:** 3-5 bullet points, each one a distinct idea (not a rephrasing of the sentence above).
 
-**Why it matters:** 1-2 sentences on the practical takeaway — what a reader should think or do differently.
+**Why it matters:** 1-2 sentences on the practical takeaway. What should a reader think or do differently?
 
 Rules:
 - Be faithful to the article. Do not add facts, opinions, or examples that are not in the text.
@@ -115,7 +115,7 @@ Rules:
 Return only the structured summary.`,
     whyItWorks: [
       'The fixed structure (one sentence → key points → why it matters) gives you a consistent, scannable result every time instead of a shapeless paragraph.',
-      '"Do not add facts not in the text" is an explicit guard against the model inventing detail — the most common failure when summarizing.',
+      '"Do not add facts not in the text" is an explicit guard against the model inventing detail, the most common failure when summarizing.',
       'Asking for the practical takeaway turns a passive summary into something you can act on.',
     ],
     tips: [
@@ -130,16 +130,16 @@ Return only the structured summary.`,
     searchTerm: 'chatgpt prompt for writing emails',
     metaTitle: 'ChatGPT Prompt for Writing Professional Emails (Free)',
     metaDescription:
-      'A free, copy-paste ChatGPT prompt for writing clear, professional emails that get a reply. Set the goal, tone, and context — get a ready-to-send draft.',
+      'A free, copy-paste ChatGPT prompt for writing clear, professional emails that get a reply. Set the goal, tone, and context, then get a ready-to-send draft.',
     heading: 'ChatGPT prompt for writing a professional email',
     intro:
-      'A good email has one job and a clear ask. This prompt makes ChatGPT write emails that are short, get to the point, and make it easy for the other person to say yes — instead of the long, over-polite drafts AI usually produces.',
+      'A good email has one job and a clear ask. This prompt makes ChatGPT write emails that are short, get to the point, and make it easy for the other person to say yes, instead of the long, over-polite drafts AI usually produces.',
     category: 'Work',
     prompt: `You are a clear, concise communicator who writes emails people actually reply to.
 
 Write an email based on the details below.
 
-WHO IT IS TO: [WHO RECEIVES THIS — e.g. "my manager", "a client", "a stranger I want a favor from"]
+WHO IT IS TO: [WHO RECEIVES THIS, e.g. "my manager", "a client", "a stranger I want a favor from"]
 WHAT I WANT: [THE ONE THING THIS EMAIL SHOULD ACHIEVE]
 CONTEXT THEY NEED: [ANY BACKGROUND THE READER NEEDS TO UNDERSTAND THE ASK]
 TONE: [e.g. friendly, formal, apologetic, firm but polite]
@@ -153,12 +153,12 @@ Rules:
 
 Return the subject line and the email body, ready to send.`,
     whyItWorks: [
-      'It separates "what I want" from "context they need" — so the ask is never buried under background.',
+      'It separates "what I want" from "context they need", so the ask is never buried under background.',
       'The 120-word cap fights the #1 weakness of AI emails: they are far too long and too polite.',
       'Demanding a specific call to action ("confirm by Thursday") is what actually gets a reply.',
     ],
     tips: [
-      'Be blunt in the "WHAT I WANT" field — the model mirrors your clarity.',
+      'Be blunt in the "WHAT I WANT" field. The model mirrors your clarity.',
       'For a hard email (saying no, chasing a late payment), set TONE to "firm but polite" and it handles it well.',
       'If the draft feels stiff, ask: "Rewrite this the way a friendly colleague would say it out loud."',
     ],
@@ -169,7 +169,7 @@ Return the subject line and the email body, ready to send.`,
     searchTerm: 'chatgpt prompt for code review',
     metaTitle: 'ChatGPT Prompt for Code Review (Free, Copy-Paste)',
     metaDescription:
-      'A free ChatGPT prompt that reviews your code like a senior engineer — bugs, edge cases, readability, and security — with prioritized, specific feedback.',
+      'A free ChatGPT prompt that reviews your code like a senior engineer. It covers bugs, edge cases, readability, and security, with prioritized, specific feedback.',
     heading: 'ChatGPT prompt for reviewing your code',
     intro:
       'Pasting code and asking "is this good?" gets you a vague thumbs-up. This prompt makes ChatGPT review like a senior engineer: it finds real bugs, flags edge cases, and gives you prioritized, specific feedback instead of generic praise.',
@@ -188,23 +188,23 @@ CODE:
 
 Give your review in this order:
 
-1. **Bugs & correctness** — anything that is wrong or will break. Include edge cases the code does not handle. If there are none, say so.
-2. **Readability & maintainability** — naming, structure, anything that would confuse the next developer.
-3. **Performance & security** — only real issues, not theoretical ones.
-4. **One thing done well** — be specific.
+1. **Bugs & correctness:** anything that is wrong or will break. Include edge cases the code does not handle. If there are none, say so.
+2. **Readability & maintainability:** naming, structure, anything that would confuse the next developer.
+3. **Performance & security:** only real issues, not theoretical ones.
+4. **One thing done well:** be specific.
 
 Rules:
 - Be specific. Point to the exact line or function, and show the fix.
 - Prioritize. Lead with what matters most. Do not list trivial style nits as if they were bugs.
-- Do not rewrite the whole file unless asked — explain, then show the smallest change that fixes it.`,
+- Do not rewrite the whole file unless asked. Explain first, then show the smallest change that fixes it.`,
     whyItWorks: [
-      'Telling the model what the code is "supposed to do" lets it catch logic bugs — without that, it can only check syntax.',
+      'Telling the model what the code is "supposed to do" lets it catch logic bugs. Without that, it can only check syntax.',
       'The fixed review order (bugs → readability → performance) stops the model from burying a real bug under style nitpicks.',
       '"Show the fix, point to the exact line" forces actionable feedback instead of vague advice like "consider refactoring".',
     ],
     tips: [
-      'Paste one function or file at a time — reviews get sharper and more specific on smaller chunks.',
-      'Always fill in "what this code is supposed to do" — it is the difference between a real review and a syntax check.',
+      'Paste one function or file at a time. Reviews get sharper and more specific on smaller chunks.',
+      'Always fill in "what this code is supposed to do". It is the difference between a real review and a syntax check.',
       'Follow up with "Now show me the corrected version of the highest-priority issue" to get the fix in full.',
     ],
   },

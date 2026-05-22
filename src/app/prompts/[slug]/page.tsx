@@ -189,7 +189,7 @@ export default async function PromptPage({
           </h2>
           <p className="text-base leading-[1.6] mb-6 max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
             A template gets you started. Deepclario takes <em>your</em> version of a prompt, scores it,
-            asks what is missing, and rewrites it for your specific task — free, no account needed.
+            asks what is missing, and rewrites it for your specific task. Free, no account needed.
           </p>
           <Link
             href="/playground"

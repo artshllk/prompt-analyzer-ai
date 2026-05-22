@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Free ChatGPT Prompt Library',
     description:
-      'Ready-to-use prompts for real tasks — cover letters, emails, summaries, code review. Copy and paste.',
+      'Ready-to-use prompts for real tasks: cover letters, emails, summaries, code review. Copy and paste.',
     url: 'https://deepclario.com/prompts',
     type: 'website',
     images: [{ url: 'https://deepclario.com/logo.png', width: 512, height: 512, alt: 'Deepclario' }],
@@ -70,7 +70,7 @@ export default function PromptsIndexPage() {
           <p className="mt-6 md:mt-8 text-lg md:text-xl leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
             Ready-to-use prompts for real tasks. Copy one, paste it into ChatGPT, Claude,
             or Gemini, and fill in the blanks. Each one is written the way a prompt
-            engineer would write it — and free.
+            engineer would write it, and free.
           </p>
         </div>
 
@@ -118,7 +118,7 @@ export default function PromptsIndexPage() {
           </h2>
           <p className="text-base md:text-lg leading-[1.6] mb-6 max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
             Templates are a starting point. Deepclario takes the prompt <em>you</em> wrote,
-            scores it, and rewrites it for your exact task — free, no account needed.
+            scores it, and rewrites it for your exact task. Free, no account needed.
           </p>
           <Link
             href="/playground"
