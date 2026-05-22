@@ -90,6 +90,7 @@ export default function LandingPage() {
             </Link>
             <nav className="hidden md:flex items-center gap-8 text-sm" style={{ color: 'var(--color-paper-mute)' }}>
               <Link href="#try" className="hover:opacity-100 transition-opacity opacity-80">Try it</Link>
+              <Link href="/prompts" className="hover:opacity-100 transition-opacity opacity-80">Prompts</Link>
               <Link href="/extension" className="hover:opacity-100 transition-opacity opacity-80">Extension</Link>
               <Link href="#pricing" className="hover:opacity-100 transition-opacity opacity-80">Pricing</Link>
               <Link href="/blog/what-is-prompt-engineering" className="hover:opacity-100 transition-opacity opacity-80">Reading</Link>
@@ -316,6 +317,7 @@ export default function LandingPage() {
             </div>
             <FooterCol title="Product" links={[
               { href: '/playground', label: 'Playground' },
+              { href: '/prompts', label: 'Prompt library' },
               { href: '/extension', label: 'Browser extension' },
               { href: '/tools/prompt-improver', label: 'Prompt Improver' },
               { href: '/tools/prompt-analyzer', label: 'Prompt Analyzer' },
