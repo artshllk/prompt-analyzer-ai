@@ -51,31 +51,105 @@ export default async function PromptPage({
     ...PROMPT_LIBRARY.filter(e => e.slug !== entry.slug && e.category !== entry.category),
   ].slice(0, 3)
 
-  // Structured data — lets Google understand this is a how-to article with
-  // a concrete answer, which can earn a richer search result.
-  const jsonLd = {
+  const pageUrl = `${BASE}/prompts/${entry.slug}`
+
+  const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: entry.heading,
     description: entry.metaDescription,
-    author: { '@type': 'Organization', name: 'Deepclario' },
+    author: { '@type': 'Organization', name: 'Deepclario', url: BASE },
     publisher: {
       '@type': 'Organization',
       name: 'Deepclario',
       logo: { '@type': 'ImageObject', url: `${BASE}/logo.png` },
     },
-    mainEntityOfPage: `${BASE}/prompts/${entry.slug}`,
+    mainEntityOfPage: pageUrl,
+    datePublished: '2026-04-01',
+    dateModified: '2026-05-01',
   }
+
+  // HowTo schema — Google can surface the prompt steps directly in search results
+  const howToSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: entry.heading,
+    description: entry.metaDescription,
+    step: [
+      {
+        '@type': 'HowToStep',
+        name: 'Copy the prompt',
+        text: 'Copy the ready-to-use prompt from the box above.',
+      },
+      {
+        '@type': 'HowToStep',
+        name: 'Fill in the placeholders',
+        text: 'Replace every [SQUARE BRACKET] placeholder with your own details.',
+      },
+      {
+        '@type': 'HowToStep',
+        name: 'Paste into your AI tool',
+        text: 'Paste the completed prompt into ChatGPT, Claude, or Gemini and run it.',
+      },
+    ],
+  }
+
+  // FAQ schema from whyItWorks — earns expanded FAQ rich result in Google
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: `Why does this ${entry.title.toLowerCase()} prompt work better than a basic one?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: entry.whyItWorks[0] ?? entry.metaDescription,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `How do I adapt this prompt for my specific situation?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: entry.tips[0] ?? 'Replace the placeholders in square brackets with your own details.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `Does this prompt work with Claude and Gemini as well as ChatGPT?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes. This prompt is model-agnostic and produces strong results in ChatGPT (GPT-4o), Claude, and Gemini. Paste it into any of them.',
+        },
+      },
+    ],
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: BASE },
+      { '@type': 'ListItem', position: 2, name: 'Prompt Library', item: `${BASE}/prompts` },
+      { '@type': 'ListItem', position: 3, name: entry.title, item: pageUrl },
+    ],
+  }
+
+  const jsonLd = [articleSchema, howToSchema, faqSchema, breadcrumbSchema]
 
   return (
     <div
       className="editorial grain min-h-screen"
       style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {jsonLd.map((schema, i) => (
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
 
       {/* Nav */}
       <header

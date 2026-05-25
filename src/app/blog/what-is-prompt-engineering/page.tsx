@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   },
 }
 
-const faqSchema = {
+const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What is Prompt Engineering? A Complete Guide for Beginners',
@@ -25,10 +25,53 @@ const faqSchema = {
   dateModified: '2026-04-28',
 }
 
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'What is prompt engineering?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Prompt engineering is the practice of writing structured, precise instructions for AI language models to consistently get useful, accurate output. It involves techniques like role assignment, format specification, chain-of-thought reasoning, and constraint setting to guide model behavior.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Do I need to know coding to do prompt engineering?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No. Prompt engineering is a writing and communication skill, not a technical one. The core techniques can be learned and applied by anyone who uses ChatGPT, Claude, or Gemini — no programming knowledge required.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Is prompt engineering a real job?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. Prompt engineering roles exist at AI companies, large enterprises, and agencies. However, more broadly, prompt engineering is a skill that makes any knowledge worker more effective — writers, marketers, analysts, developers, and managers all benefit from learning it.',
+      },
+    },
+  ],
+}
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://deepclario.com' },
+    { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://deepclario.com/blog' },
+    { '@type': 'ListItem', position: 3, name: 'What is Prompt Engineering', item: 'https://deepclario.com/blog/what-is-prompt-engineering' },
+  ],
+}
+
 export default function WhatIsPromptEngineeringPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <div className="editorial grain min-h-screen">
         <header className="border-b border-[color:var(--color-rule)] px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
@@ -173,6 +216,15 @@ export default function WhatIsPromptEngineeringPage() {
               </Link>
               <Link href="/tools/prompt-improver" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 Free AI Prompt Improver →
+              </Link>
+              <Link href="/prompts/chatgpt-blog-post" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                Free prompt: write a blog post with ChatGPT →
+              </Link>
+              <Link href="/prompts/chatgpt-explain-concept-simply" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                Free prompt: explain any concept simply →
+              </Link>
+              <Link href="/prompts" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                Browse all free prompts →
               </Link>
             </div>
           </div>

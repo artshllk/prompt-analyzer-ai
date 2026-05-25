@@ -25,6 +25,47 @@ const structuredData = {
   mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://deepclario.com/blog/prompt-engineering-examples' },
 }
 
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'What is a prompt engineering example?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'A prompt engineering example shows the difference between a vague prompt and a well-structured one for the same task. For instance, instead of "write an email", a strong prompt specifies the recipient, the goal, the tone, and the desired length. The improved version consistently produces output that requires little or no editing.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What are the most important prompt engineering techniques?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'The most impactful techniques are: role prompting (assigning the AI an expert identity), few-shot examples (showing the format you want), chain-of-thought (asking the AI to reason step by step), and constraint setting (specifying word count, tone, and what to avoid). These four account for most of the improvement you can get from better prompts.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can prompt engineering work for non-technical users?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. Prompt engineering does not require coding or technical knowledge. The core techniques are patterns any writer or professional can learn in under an hour. Assigning a role, specifying a format, and adding context are skills, not technical abilities.',
+      },
+    },
+  ],
+}
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://deepclario.com' },
+    { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://deepclario.com/blog' },
+    { '@type': 'ListItem', position: 3, name: 'Prompt Engineering Examples', item: 'https://deepclario.com/blog/prompt-engineering-examples' },
+  ],
+}
+
 const EXAMPLES = [
   {
     category: 'Writing',
@@ -91,10 +132,9 @@ const EXAMPLES = [
 export default function PromptEngineeringExamplesPage() {
   return (
     <div className="editorial grain min-h-screen">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
       {/* Nav */}
       <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 border-b border-[color:var(--color-rule)]">
@@ -184,6 +224,16 @@ export default function PromptEngineeringExamplesPage() {
             >
               10 more ChatGPT tips →
             </Link>
+          </div>
+        </div>
+
+        <div className="mt-10 pt-6 border-t border-[color:var(--color-rule)]">
+          <p className="text-xs text-[color:var(--color-paper-mute)] mb-3">Free ready-to-use prompts</p>
+          <div className="flex flex-col gap-2">
+            <Link href="/prompts/chatgpt-summarize-article" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Free prompt: summarize any article →</Link>
+            <Link href="/prompts/chatgpt-marketing-copy" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Free prompt: write marketing copy →</Link>
+            <Link href="/prompts/chatgpt-swot-analysis" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Free prompt: run a SWOT analysis →</Link>
+            <Link href="/prompts" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Browse all free prompts →</Link>
           </div>
         </div>
       </main>

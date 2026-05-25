@@ -25,6 +25,47 @@ const articleSchema = {
   dateModified: '2026-04-28',
 }
 
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'How do I write better AI prompts?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Write better AI prompts by assigning a role, specifying the output format, providing context about your situation, adding constraints (word count, tone, what to avoid), and giving an example of good output when possible. Each of these elements removes ambiguity the AI would otherwise fill in with generic defaults.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What is the difference between a good and bad AI prompt?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'A bad prompt is a one-liner with no context, no role, and no format instruction. A good prompt specifies who the AI should be, what exactly you need, what format the output should take, and what the output will be used for. The difference in output quality is dramatic.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Does prompt quality matter more than which AI model you use?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes, in most cases. A well-written prompt in ChatGPT 4o will outperform a vague prompt in any model. The model sets the ceiling; your prompt determines how close to that ceiling you get.',
+      },
+    },
+  ],
+}
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://deepclario.com' },
+    { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://deepclario.com/blog' },
+    { '@type': 'ListItem', position: 3, name: 'How to Write Better AI Prompts', item: 'https://deepclario.com/blog/how-to-write-better-prompts' },
+  ],
+}
+
 const TIPS = [
   {
     n: '1. Assign a role first',
@@ -74,6 +115,8 @@ export default function HowToWriteBetterPromptsPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <div className="editorial grain min-h-screen">
         <header className="border-b border-[color:var(--color-rule)] px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
@@ -156,6 +199,15 @@ export default function HowToWriteBetterPromptsPage() {
               </Link>
               <Link href="/tools/prompt-analyzer" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 Free AI Prompt Analyzer →
+              </Link>
+              <Link href="/prompts/chatgpt-email-writing" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                Free prompt: write any email with ChatGPT →
+              </Link>
+              <Link href="/prompts/chatgpt-marketing-copy" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                Free prompt: write marketing copy →
+              </Link>
+              <Link href="/prompts" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                Browse all free prompts →
               </Link>
             </div>
           </div>

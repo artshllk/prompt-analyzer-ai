@@ -25,6 +25,47 @@ const structuredData = {
   mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://deepclario.com/blog/chatgpt-prompt-tips' },
 }
 
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'What makes a good ChatGPT prompt?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'A good ChatGPT prompt includes a role (who the AI should be), a specific task with clear constraints, the desired output format, and enough context for the AI to understand the situation. Vague one-liners consistently produce generic output.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Why does ChatGPT give bad answers?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Most bad ChatGPT answers are caused by a bad prompt, not a bad model. The AI can only work with what you give it. Missing context, no format instructions, and no assigned role are the three most common causes of poor output.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How do I get ChatGPT to stop giving generic answers?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Add specificity: assign a role ("act as a senior copywriter"), define the audience, specify the format (bullet list, table, paragraph), and give constraints (word count, tone, things to avoid). The more precise the prompt, the less generic the output.',
+      },
+    },
+  ],
+}
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://deepclario.com' },
+    { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://deepclario.com/blog' },
+    { '@type': 'ListItem', position: 3, name: '10 ChatGPT Prompt Tips', item: 'https://deepclario.com/blog/chatgpt-prompt-tips' },
+  ],
+}
+
 const TIPS = [
   {
     n: '1. Give ChatGPT a role',
@@ -91,10 +132,9 @@ const TIPS = [
 export default function ChatGPTPromptTipsPage() {
   return (
     <div className="editorial grain min-h-screen">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
       {/* Nav */}
       <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 border-b border-[color:var(--color-rule)]">
@@ -166,6 +206,16 @@ export default function ChatGPTPromptTipsPage() {
             >
               7 more prompt techniques →
             </Link>
+          </div>
+        </div>
+
+        <div className="mt-10 pt-6 border-t border-[color:var(--color-rule)]">
+          <p className="text-xs text-[color:var(--color-paper-mute)] mb-3">Free ready-to-use prompts</p>
+          <div className="flex flex-col gap-2">
+            <Link href="/prompts/chatgpt-email-writing" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Free prompt: write any email with ChatGPT →</Link>
+            <Link href="/prompts/chatgpt-blog-post" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Free prompt: write a blog post →</Link>
+            <Link href="/prompts/chatgpt-social-media-post" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Free prompt: write a social media post →</Link>
+            <Link href="/prompts" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Browse all free prompts →</Link>
           </div>
         </div>
       </main>

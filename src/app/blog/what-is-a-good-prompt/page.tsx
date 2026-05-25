@@ -25,6 +25,47 @@ const structuredData = {
   mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://deepclario.com/blog/what-is-a-good-prompt' },
 }
 
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'What makes a good AI prompt?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'A good AI prompt has five elements: a clear goal (what output do you want), sufficient context (who is the audience, what is the situation), a format specification (list, paragraph, table), constraints (word count, tone, what to avoid), and ideally an example of the style you want. Missing any of these forces the AI to guess, which produces generic output.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How long should an AI prompt be?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'A prompt should be as long as it needs to be to remove ambiguity. For simple tasks, 2-3 sentences is often enough. For complex tasks like writing, analysis, or code, 5-10 lines with explicit instructions typically produces much better output than a single sentence. There is no penalty for being specific.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What is the most common mistake people make with AI prompts?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'The most common mistake is being too vague. Writing "write me a blog post about marketing" gives the AI no information about your audience, tone, length, structure, or angle. The more you specify, the less the AI has to guess, and the less editing you have to do afterward.',
+      },
+    },
+  ],
+}
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://deepclario.com' },
+    { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://deepclario.com/blog' },
+    { '@type': 'ListItem', position: 3, name: 'What Makes a Good AI Prompt', item: 'https://deepclario.com/blog/what-is-a-good-prompt' },
+  ],
+}
+
 const DIMENSIONS = [
   {
     n: 1,
@@ -81,10 +122,9 @@ const DIMENSIONS = [
 export default function WhatIsAGoodPromptPage() {
   return (
     <div className="editorial grain min-h-screen">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
       {/* Nav */}
       <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 border-b border-[color:var(--color-rule)]">
@@ -202,6 +242,16 @@ export default function WhatIsAGoodPromptPage() {
             >
               See real examples →
             </Link>
+          </div>
+        </div>
+
+        <div className="mt-10 pt-6 border-t border-[color:var(--color-rule)]">
+          <p className="text-xs text-[color:var(--color-paper-mute)] mb-3">Free ready-to-use prompts</p>
+          <div className="flex flex-col gap-2">
+            <Link href="/prompts/chatgpt-cover-letter" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Free prompt: write a cover letter →</Link>
+            <Link href="/prompts/chatgpt-business-plan" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Free prompt: write a business plan →</Link>
+            <Link href="/prompts/chatgpt-code-review" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Free prompt: code review with ChatGPT →</Link>
+            <Link href="/prompts" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Browse all free prompts →</Link>
           </div>
         </div>
       </main>
