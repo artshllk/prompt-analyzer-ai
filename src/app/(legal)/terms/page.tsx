@@ -22,8 +22,8 @@ export default function TermsPage() {
 
       <Section title="Plans and billing">
         <ul className="list-disc pl-5 space-y-1.5">
-          <li><strong>Free</strong>: 25 analyses per calendar month.</li>
-          <li><strong>Pro</strong> ($4.99/month or $47.88/year): unlimited analyses, full history, weekly insights.</li>
+          <li><strong>Free</strong>: 25 prompt rewrites per calendar month.</li>
+          <li><strong>Pro</strong> ($9.99/month or $95.88/year): unlimited prompt rewrites, full history, weekly insights.</li>
           <li>Subscriptions renew automatically. Cancel anytime in Settings → Manage billing. No prorated refunds.</li>
         </ul>
       </Section>

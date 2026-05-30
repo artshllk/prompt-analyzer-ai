@@ -1,14 +1,17 @@
 # Deepclario
 
-> Deepclario is a prompt analyzer for ChatGPT, Claude, and Gemini. It scores
-> your prompt across five dimensions (goal clarity, context, format,
-> constraints, examples), asks one or two clarifying questions when needed,
-> and rewrites the prompt so the AI has no excuse to misunderstand the task.
+> Deepclario is the layer between you and every AI model. You type a rough
+> prompt. Deepclario fixes what is missing, asks the questions a senior
+> teammate would ask, and rewrites it so ChatGPT, Claude, or Gemini return
+> the answer you actually wanted on the first try. The internal scoring
+> across five dimensions (goal clarity, context, format, constraints,
+> examples) is the credibility device behind the rewrite, not the product.
 
 Deepclario is built for people who use ChatGPT, Claude, or Gemini for real
-work and want consistently better output. The free tier includes prompt
-scoring, clarifying questions, and a full rewrite. Pro removes the monthly
-analysis limit and unlocks weekly insights and full history.
+work and want better output without learning prompt engineering. The free
+plan gives 25 rewrites per month with no credit card. Pro is $9.99 a month
+and removes the limit, adds full history, persona memory, and weekly
+insights.
 
 ## Core pages
 

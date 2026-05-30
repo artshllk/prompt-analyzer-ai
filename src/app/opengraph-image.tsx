@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'Deepclario - Prompt analyzer for ChatGPT, Claude, and Gemini'
+export const alt = 'Deepclario - AI that actually understands what you mean'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -46,26 +46,26 @@ export default async function Image() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div
             style={{
-              fontSize: '76px',
+              fontSize: '74px',
               fontWeight: 600,
               lineHeight: 1.05,
               letterSpacing: '-0.03em',
-              maxWidth: '900px',
+              maxWidth: '1000px',
               display: 'flex',
             }}
           >
-            Most AI failures are prompt failures.
+            AI that actually understands what you mean.
           </div>
           <div
             style={{
-              fontSize: '32px',
+              fontSize: '30px',
               color: '#a3aabc',
               lineHeight: 1.3,
-              maxWidth: '900px',
+              maxWidth: '950px',
               display: 'flex',
             }}
           >
-            Score your prompt. Answer what is missing. Get a rewrite that works.
+            Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini stop guessing.
           </div>
         </div>
 

@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 export function EditorialPricing() {
   const [annual, setAnnual] = useState(false)
-  const proPrice = annual ? '3.99' : '4.99'
+  const proPrice = annual ? '7.99' : '9.99'
 
   return (
     <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-start">
@@ -88,10 +88,10 @@ export function EditorialPricing() {
           </div>
           <div className="col-span-8 md:col-span-7">
             <p className="text-sm mb-3" style={{ color: 'var(--color-paper)' }}>
-              Unlimited prompts. Full history. Weekly insights that show your patterns and progress.
+              Unlimited rewrites. Full history. Weekly insights on what you write and how the output improves.
             </p>
             <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-              For people who write to AI every day &mdash; engineers, writers, founders &mdash; and want to get measurably better at it.
+              For people who reach for AI every day. Engineers, writers, founders, marketers. The ones who want the layer that quietly makes every prompt better.
             </p>
           </div>
           <div className="col-span-12 md:col-span-2 flex md:justify-end">

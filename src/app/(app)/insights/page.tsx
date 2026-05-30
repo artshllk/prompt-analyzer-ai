@@ -60,7 +60,7 @@ function ProGate() {
             plan="pro_monthly"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper cursor-pointer"
           >
-            <span>Upgrade &mdash; $4.99/mo</span>
+            <span>Upgrade &mdash; $9.99/mo</span>
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
               <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

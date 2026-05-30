@@ -26,10 +26,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL('https://deepclario.com'),
   title: {
-    default: 'Deepclario - Prompt analyzer for ChatGPT, Claude, and Gemini',
+    default: 'Deepclario - AI that actually understands what you mean',
     template: '%s | Deepclario',
   },
-  description: 'Most AI failures are prompt failures. Deepclario scores what you wrote, asks the questions a senior engineer would ask, and rewrites your prompt until the model has no excuse to misunderstand you.',
+  description: 'Stop rewriting your prompts. Deepclario fixes what is missing and asks the questions a senior teammate would ask. ChatGPT, Claude, and Gemini stop guessing. You stop editing.',
   keywords: ['prompt improver', 'AI prompt improver', 'prompt analyzer', 'prompt engineering', 'improve AI prompts', 'ChatGPT prompts', 'better prompts', 'prompt optimization', 'how to write better prompts'],
   authors: [{ name: 'Deepclario', url: 'https://deepclario.com' }],
   creator: 'Deepclario',
@@ -38,16 +38,16 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://deepclario.com',
     siteName: 'Deepclario',
-    title: 'Deepclario - Prompt analyzer for ChatGPT, Claude, and Gemini',
-    description: 'Score your prompt across five dimensions, get a clarifying question or two, and a rewrite that actually works with ChatGPT, Claude, and Gemini.',
+    title: 'Deepclario - AI that actually understands what you mean',
+    description: 'Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.',
     // OG image is auto-generated from src/app/opengraph-image.tsx (1200x630).
   },
   twitter: {
     card: 'summary_large_image',
     site: '@deepclario',
     creator: '@deepclario',
-    title: 'Deepclario - Prompt analyzer for ChatGPT, Claude, and Gemini',
-    description: 'Score your prompt, answer what is missing, get a rewrite that actually works.',
+    title: 'Deepclario - AI that actually understands what you mean',
+    description: 'Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.',
   },
   robots: {
     index: true,

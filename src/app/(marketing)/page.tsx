@@ -6,21 +6,19 @@ import { EditorialPricing } from '@/components/marketing/EditorialPricing'
 import { LivePromptDemo } from '@/components/marketing/LivePromptDemo'
 
 export const metadata: Metadata = {
-  title: 'Deepclario - Prompt analyzer for ChatGPT, Claude, and Gemini',
-  description: 'Most AI failures are prompt failures. Deepclario scores your prompt across five dimensions, asks the questions a senior engineer would ask, and rewrites it until the model has no excuse to misunderstand you.',
+  title: 'Deepclario - AI that actually understands what you mean',
+  description: 'Stop rewriting your prompts. Deepclario fixes what is missing and asks the questions a senior teammate would ask. ChatGPT, Claude, and Gemini stop guessing. You stop editing.',
   alternates: { canonical: 'https://deepclario.com' },
   openGraph: {
-    title: 'Deepclario - Prompt analyzer for ChatGPT, Claude, and Gemini',
-    description: 'Score your prompt, answer what is missing, get a rewrite that actually works.',
+    title: 'Deepclario - AI that actually understands what you mean',
+    description: 'Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.',
     url: 'https://deepclario.com',
     type: 'website',
-    images: [{ url: 'https://deepclario.com/logo.png', width: 512, height: 512, alt: 'Deepclario' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Deepclario - Prompt analyzer for ChatGPT, Claude, and Gemini',
-    description: 'Score your prompt, answer what is missing, get a rewrite that actually works.',
-    images: ['https://deepclario.com/logo.png'],
+    title: 'Deepclario - AI that actually understands what you mean',
+    description: 'Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.',
   },
 }
 
@@ -33,12 +31,12 @@ const structuredData = {
       applicationCategory: 'ProductivityApplication',
       operatingSystem: 'Web',
       url: 'https://deepclario.com',
-      description: 'Scores your prompts across five dimensions, asks what is missing, and rewrites them for measurably better results from ChatGPT, Claude, and Gemini.',
+      description: 'Type the rough idea. Deepclario fixes what is missing in your prompt and asks the questions a senior teammate would ask, so ChatGPT, Claude, and Gemini return the answer you wanted on the first try.',
       offers: {
         '@type': 'Offer',
         price: '0',
         priceCurrency: 'USD',
-        description: 'Free tier with 25 analyses per month',
+        description: 'Free plan with 25 prompt rewrites per month',
       },
     },
     {
@@ -57,7 +55,7 @@ const structuredData = {
           name: 'How does Deepclario improve my prompts?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Deepclario scores your prompt across five dimensions, asks up to three targeted clarifying questions when confidence is low, then rewrites your prompt using the CRAFT framework. You see exactly what changed and why.',
+            text: 'You paste a rough prompt. Deepclario spots the gaps a fresh-eyes reviewer would catch, asks one quick question if it has to, and rewrites the prompt so ChatGPT, Claude, or Gemini can return the right output on the first try.',
           },
         },
         {
@@ -65,7 +63,7 @@ const structuredData = {
           name: 'Is Deepclario free?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. The free plan is 25 analyses a month, with full AI improvement and scoring. Pro is $4.99 a month for unlimited use, full history, and weekly insights.',
+            text: 'Yes. The free plan gives you 25 prompt rewrites every month with no credit card. Pro is $9.99 a month and removes the limit, adds full history, persona memory, and weekly insights.',
           },
         },
       ],
@@ -119,19 +117,19 @@ export default function LandingPage() {
         <section id="try" className="pt-28 md:pt-36 pb-20 md:pb-24 px-6 md:px-10 relative">
           <div className="max-w-6xl mx-auto">
             <div className="max-w-3xl mb-12 md:mb-16">
-              <p className="eyebrow mb-6">Prompt analyzer · ChatGPT · Claude · Gemini</p>
+              <p className="eyebrow mb-6">Stop rewriting your prompts</p>
               <h1
                 className="display text-5xl md:text-[5.5rem] leading-tight tracking-tight"
                 style={{ color: 'var(--color-paper)' }}
               >
-                Most AI failures{' '}
-                <span style={{ color: 'var(--color-accent)' }}>are prompt failures.</span>
+                AI that actually{' '}
+                <span style={{ color: 'var(--color-accent)' }}>understands what you mean.</span>
               </h1>
               <p
                 className="mt-6 md:mt-8 text-lg md:text-xl leading-relaxed max-w-2xl"
                 style={{ color: 'var(--color-paper-mute)' }}
               >
-                Paste your prompt below. We score it, ask what is missing, and rewrite it so the model has no excuse to misunderstand you.
+                You type the rough idea. Deepclario fixes what is missing and asks the questions a senior teammate would ask. ChatGPT, Claude, and Gemini stop guessing. You stop editing.
               </p>
             </div>
             <LivePromptDemo compact />
@@ -154,39 +152,42 @@ export default function LandingPage() {
                 className="font-serif text-3xl md:text-[2.4rem] leading-tight tracking-tight"
                 style={{ color: 'var(--color-paper)', fontWeight: 400 }}
               >
-                A senior engineer never accepts vague requirements. They ask questions until the work is clear.
+                The model is fine. The brief was vague.
               </p>
               <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper)' }}>
-                Most people give AI prompts that are too vague. We write a quick sentence, the AI guesses what we mean, and we get frustrated when the result isn't right.
+                Most &ldquo;ChatGPT gave me a bad answer&rdquo; moments are actually &ldquo;I sent a bad prompt&rdquo; moments. One-line briefs, no audience, no format, no constraints. The AI guesses. You edit. You retry.
               </p>
               <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
-                Deepclario reviews your prompt like a senior engineer reviews requirements. It identifies what's missing, asks the right questions, and rewrites it for better results. You get a stronger prompt-and learn to write better ones over time.
+                Deepclario catches the vague brief before it costs you a generation. It reviews your prompt the way a senior teammate would, asks one quick question if it has to, and hands ChatGPT, Claude, or Gemini something they can act on. You get the output you wanted, first try.
               </p>
             </div>
           </div>
         </section>
 
-        {/* The five dimensions - editorial number list */}
+        {/* Outcome-first three-tile value prop. Replaces the old
+            "five dimensions" mechanism section. Each tile is a step
+            in the user's actual experience, not a feature of our model. */}
         <section className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-12 gap-8 md:gap-16 mb-16 md:mb-24">
               <div className="md:col-span-3">
-                <p className="eyebrow">How we read a prompt</p>
+                <p className="eyebrow">How it feels to use</p>
               </div>
               <div className="md:col-span-9">
                 <h2
                   className="display text-4xl md:text-6xl"
                   style={{ color: 'var(--color-paper)' }}
                 >
-                  Five dimensions.<br/>
-                  <span style={{ color: 'var(--color-paper-mute)' }}>One score.</span>
+                  Three steps.<br/>
+                  <span style={{ color: 'var(--color-paper-mute)' }}>None of them is hard.</span>
                 </h2>
               </div>
             </div>
 
             <div className="space-y-px">
-              {DIMENSIONS.map((d, i) => (
-                <Dimension key={d.title} index={i} {...d} />
+              <div className="rule-strong" />
+              {STEPS.map((s, i) => (
+                <Step key={s.title} index={i} {...s} />
               ))}
               <div className="rule-strong" />
             </div>
@@ -208,46 +209,53 @@ export default function LandingPage() {
             </div>
             <div className="md:col-span-7 space-y-6">
               <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper)' }}>
-                Yes, you can ask ChatGPT to rewrite your prompt. It will give you a new version, but it won't explain what's wrong with your original or how to improve it.
+                You can. But you have to know your prompt was the problem in the first place. ChatGPT will not tell you. It will just produce something generic and let you guess what went wrong.
               </p>
               <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
-                Deepclario analyzes your prompt across five dimensions, scores it, and shows you exactly what to fix. It tracks your progress so you get better over time.
+                Deepclario catches the gap before you send. It asks one quick question if it has to, then hands you the fixed prompt or runs it for you. No rewrite spiral, no second guessing, no five-prompt session to land on the answer you wanted in the first place.
               </p>
               <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
-                Use ChatGPT for quick changes. Use Deepclario to learn and improve.
+                One layer between you and every AI model. Same model. Better output. Less of your time.
               </p>
             </div>
           </div>
         </section>
 
-        {/* Browser extension CTA - visitors who liked the demo are the
-            perfect extension audience. */}
+        {/* Browser extension - the primary surface going forward.
+            Position this as the main product, not the demo. */}
         <section className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
           <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
             <div className="md:col-span-3">
-              <p className="eyebrow">Use it everywhere</p>
+              <p className="eyebrow">Works where you already work</p>
             </div>
             <div className="md:col-span-9">
               <h2
                 className="font-serif text-3xl md:text-5xl leading-tight tracking-tight mb-6"
                 style={{ color: 'var(--color-paper)', fontWeight: 400 }}
               >
-                Improve prompts inside ChatGPT, Claude, and Gemini.
+                One click inside ChatGPT, Claude, and Gemini.
               </h2>
-              <p className="text-base md:text-lg leading-[1.6] max-w-xl mb-8" style={{ color: 'var(--color-paper-mute)' }}>
-                The browser extension adds an Improve button right in the chat
-                box - same engine, no tab switching. Free, no account.
+              <p className="text-base md:text-lg leading-[1.6] max-w-xl mb-4" style={{ color: 'var(--color-paper-mute)' }}>
+                Install the extension and an Improve button shows up in the chat box. Click it. Your prompt gets rewritten in place.
               </p>
-              <Link
-                href="/extension"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] transition-all btn-paper"
-                style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
-              >
-                Get the browser extension
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
+              <p className="text-base md:text-lg leading-[1.6] max-w-xl mb-8" style={{ color: 'var(--color-paper-mute)' }}>
+                No copy-paste. No new tab. No panel to dig into. Just better output, with one keystroke.
+              </p>
+              <div className="flex flex-wrap items-center gap-6">
+                <Link
+                  href="/extension"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] transition-all btn-paper"
+                  style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+                >
+                  Install the extension
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+                <span className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
+                  Chrome and Brave. Free, no account.
+                </span>
+              </div>
             </div>
           </div>
         </section>
@@ -312,7 +320,7 @@ export default function LandingPage() {
                 <span className="text-sm" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>Deepclario</span>
               </div>
               <p className="text-sm leading-[1.7] max-w-sm" style={{ color: 'var(--color-paper-mute)' }}>
-                A prompt analyzer for ChatGPT, Claude, and Gemini.
+                One layer between you and ChatGPT, Claude, and Gemini, so the model finally understands what you mean.
               </p>
             </div>
             <FooterCol title="Product" links={[
@@ -346,33 +354,24 @@ export default function LandingPage() {
 
 /* ===== Sub-components ===== */
 
-const DIMENSIONS = [
+const STEPS = [
   {
-    title: 'Goal clarity',
-    description: 'Is it obvious what success looks like? Or could the model produce ten different things, all technically correct, none useful?',
+    title: 'Type what you mean',
+    description: 'Rough notes, half-formed thoughts, one-line briefs. Same as you would send a colleague before a meeting. No prompt-engineering degree required.',
   },
   {
-    title: 'Context',
-    description: 'Does the model know who is reading, what came before, what constraint matters? Without this, every answer is generic.',
+    title: 'We fix what is missing',
+    description: 'Deepclario spots the gaps a fresh-eyes reviewer would catch and asks one quick question if it has to. Then it rewrites the prompt for clarity, in the background.',
   },
   {
-    title: 'Format',
-    description: 'Length, structure, sections, tone. Asking for "a summary" is a different request from asking for "three bullet points, each under twelve words."',
-  },
-  {
-    title: 'Constraints',
-    description: 'What to avoid. What to include. The negative space of a prompt is often more important than the positive.',
-  },
-  {
-    title: 'Examples',
-    description: 'One example of what good looks like beats five adjectives every time. Show, do not describe.',
+    title: 'You get the answer you wanted',
+    description: 'The output comes back tight, on-format, and on-voice. First try. ChatGPT, Claude, or Gemini, your pick. No copy-paste loop, no five-prompt rewrite spiral.',
   },
 ]
 
-function Dimension({ index, title, description }: { index: number; title: string; description: string }) {
+function Step({ index, title, description }: { index: number; title: string; description: string }) {
   return (
     <>
-      <div className="rule-strong" />
       <div className="grid grid-cols-12 gap-4 md:gap-8 py-8 md:py-10 group">
         <div className="col-span-2 md:col-span-1">
           <p className="font-serif text-2xl md:text-3xl tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
@@ -393,6 +392,7 @@ function Dimension({ index, title, description }: { index: number; title: string
           </p>
         </div>
       </div>
+      <div className="rule" />
     </>
   )
 }

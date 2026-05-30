@@ -109,10 +109,10 @@ export function PricingSection() {
             <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider mb-2">Pro</p>
             <div className="flex items-baseline gap-1">
               <span className="text-4xl font-bold text-[#f0f4ff]">
-                {annual ? '$3.99' : '$4.99'}
+                {annual ? '$7.99' : '$9.99'}
               </span>
               <span className="text-sm text-[#4a5a80]">/month</span>
-              {annual && <span className="text-xs text-[#4a5a80] ml-1">billed $47.88/year</span>}
+              {annual && <span className="text-xs text-[#4a5a80] ml-1">billed $95.88/year</span>}
             </div>
             <p className="text-xs text-[#8b9cc8] mt-2">For people who use AI every day</p>
           </div>
@@ -133,7 +133,7 @@ export function PricingSection() {
             href="/login"
             className="block w-full py-3 rounded-xl text-sm font-semibold text-center bg-violet-600 hover:bg-violet-500 text-white transition-all glow-violet"
           >
-            Unlock Pro - {annual ? '$3.99' : '$4.99'}/month →
+            Unlock Pro - {annual ? '$7.99' : '$9.99'}/month →
           </Link>
           <p className="text-center text-xs text-[#4a5a80] mt-3">Cancel anytime · No questions asked</p>
         </motion.div>

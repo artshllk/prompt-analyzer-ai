@@ -4,36 +4,36 @@ import { useState } from 'react'
 
 const FAQS = [
   {
-    q: 'What is prompt engineering?',
-    a: 'Prompt engineering is the practice of structuring your instructions to an AI model so it produces consistently useful output. A well-engineered prompt specifies role, context, output format, and constraints - reducing guesswork and dramatically improving response quality.',
+    q: 'What does Deepclario actually do?',
+    a: 'You type a rough prompt. Deepclario reviews it, asks one quick question if it has to, and rewrites it for clarity. ChatGPT, Claude, or Gemini get a brief they can actually act on, and you get the output you wanted on the first try.',
   },
   {
     q: 'Is Deepclario free to use?',
-    a: 'Yes. The free plan gives you 25 prompt analyses per month with full AI improvement, clarity scoring, and tone control. No credit card needed. The Pro plan ($4.99/month) adds unlimited analyses, full history, and weekly insight reports.',
+    a: 'Yes. The free plan gives you 25 prompt rewrites per month with full clarity scoring and the full rewrite. No credit card needed. Pro is $9.99 a month and removes the limit, adds full history, persona memory, and weekly insights.',
   },
   {
-    q: 'How does Deepclario improve my prompts?',
-    a: 'Deepclario scores your prompt across 5 dimensions (goal clarity, context, format, constraints, examples). If something critical is missing, it asks one or two targeted clarifying questions - never more - to understand your intent. Then it rewrites your prompt using the CRAFT framework and shows exactly what changed and why.',
+    q: 'Do I have to learn prompt engineering to use this?',
+    a: 'No. That is the whole point. You write the rough idea. Deepclario fills in the gaps. You do not need to know what a system prompt is, or what CRAFT stands for, or what role-playing means. The product handles it.',
   },
   {
     q: 'What AI tools does this work with?',
-    a: 'The improved prompts work with any AI - ChatGPT, Claude, Gemini, Grok, Copilot, or any other LLM. Deepclario improves the prompt itself, not the AI you use it with.',
+    a: 'ChatGPT, Claude, Gemini, and any other major LLM. Deepclario improves the prompt itself, so the same rewrite works no matter which model you paste it into.',
   },
   {
-    q: "Why not just ask ChatGPT to improve my prompt?",
-    a: "ChatGPT will rewrite your prompt, but it won't score it, identify which specific dimensions are weak, ask the targeted questions that actually matter, or track your improvement over time. Deepclario is purpose-built for this workflow - it makes you better at prompting, not just dependent on a tool.",
+    q: 'Why not just ask ChatGPT to improve my prompt?',
+    a: 'You can, but you have to know your prompt was the problem in the first place. ChatGPT will not tell you. It will just produce something generic and leave you guessing. Deepclario catches the gap before you send and does the rewrite for you, so you skip the back-and-forth.',
   },
   {
-    q: 'What is the CRAFT framework?',
-    a: 'CRAFT stands for Context, Role, Action, Format, and Tone/Constraints. It\'s a structured approach to writing prompts that ensures every critical element is present. Deepclario uses it as the foundation for every rewrite.',
+    q: 'What is prompt engineering?',
+    a: 'Prompt engineering is the practice of writing instructions for an AI model that are specific enough to produce useful output. A good prompt names the role, the audience, the format, and the constraints. A bad prompt forces the model to guess. Deepclario does this work for you.',
   },
   {
     q: 'Does Deepclario store my prompts?',
-    a: 'Signed-in users get full session history. Anonymous users (no account) get 2 free analyses with no data stored. You can delete your account and all data at any time from Settings.',
+    a: 'Signed-in users get full session history. Anonymous users (no account) get 2 free rewrites with no data stored. You can delete your account and all data at any time from Settings.',
   },
   {
     q: 'Can I cancel Pro anytime?',
-    a: 'Yes. Cancel anytime from your account settings - no questions asked. You keep Pro access until the end of your billing period.',
+    a: 'Yes. Cancel anytime from your account settings, no questions asked. You keep Pro access until the end of your billing period.',
   },
 ]
 

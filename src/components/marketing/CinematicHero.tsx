@@ -114,7 +114,7 @@ function DesktopCinematic() {
       <div className="sticky top-0 h-screen flex items-center overflow-hidden">
         <div className="w-full max-w-6xl mx-auto px-10">
           <div className="flex items-baseline justify-between mb-16">
-            <span className="eyebrow">A real prompt, improved</span>
+            <span className="eyebrow">From rough idea to answer</span>
             <div className="flex items-baseline gap-3">
               <span className="eyebrow">Clarity</span>
               <span
@@ -160,7 +160,7 @@ const stageMotionProps = (reduce: boolean) =>
 function DesktopVagueStage({ reduce }: { reduce: boolean }) {
   return (
     <motion.div {...stageMotionProps(reduce)} className="absolute inset-0">
-      <p className="eyebrow mb-4" style={{ color: 'var(--color-paper-mute)' }}>What you typed</p>
+      <p className="eyebrow mb-4" style={{ color: 'var(--color-paper-mute)' }}>The brief you sent</p>
       <p
         className="font-serif text-[5.2rem] leading-tight tracking-tight"
         style={{ color: 'var(--color-paper)', fontWeight: 400 }}
@@ -168,7 +168,7 @@ function DesktopVagueStage({ reduce }: { reduce: boolean }) {
         &ldquo;{VAGUE_PROMPT}.&rdquo;
       </p>
       <p className="mt-8 text-lg max-w-md" style={{ color: 'var(--color-paper-mute)' }}>
-        Eight words. The model has to guess everything - audience, length, tone, goal, structure. It will guess wrong.
+        Eight words. The model has to guess audience, length, tone, goal, structure. It will guess wrong, and you will spend the next ten minutes editing.
       </p>
     </motion.div>
   )
@@ -177,7 +177,7 @@ function DesktopVagueStage({ reduce }: { reduce: boolean }) {
 function DesktopQuestionsStage({ reduce }: { reduce: boolean }) {
   return (
     <motion.div {...stageMotionProps(reduce)} className="absolute inset-0">
-      <p className="eyebrow mb-6" style={{ color: 'var(--color-accent)' }}>One question at a time</p>
+      <p className="eyebrow mb-6" style={{ color: 'var(--color-accent)' }}>The questions a teammate would ask</p>
       <div className="space-y-7 max-w-2xl">
         {QUESTIONS.map((item, i) => (
           <motion.div
@@ -211,7 +211,7 @@ function DesktopQuestionsStage({ reduce }: { reduce: boolean }) {
 function DesktopRewriteStage({ reduce }: { reduce: boolean }) {
   return (
     <motion.div {...stageMotionProps(reduce)} className="absolute inset-0">
-      <p className="eyebrow mb-4" style={{ color: 'var(--color-paper)' }}>What we send to the model</p>
+      <p className="eyebrow mb-4" style={{ color: 'var(--color-paper)' }}>The prompt the model actually understands</p>
       <p
         className="font-serif text-[1.55rem] leading-snug whitespace-pre-line"
         style={{ color: 'var(--color-paper)', fontWeight: 400 }}
@@ -224,9 +224,9 @@ function DesktopRewriteStage({ reduce }: { reduce: boolean }) {
 
 function DesktopStageMarker({ activeStage }: { activeStage: Stage }) {
   const labels: { id: Stage; label: string }[] = [
-    { id: 1, label: '01 / What you typed' },
-    { id: 2, label: '02 / What we asked' },
-    { id: 3, label: '03 / What we send' },
+    { id: 1, label: '01 / Brief you sent' },
+    { id: 2, label: '02 / Questions a teammate would ask' },
+    { id: 3, label: '03 / Prompt the model understands' },
   ]
   return (
     <div className="space-y-5">
@@ -287,7 +287,7 @@ function MobileStacked() {
     <section aria-label="How Deepclario transforms a prompt" className="px-6 py-12 space-y-16">
       <MobileStage
         eyebrowColor="var(--color-paper-mute)"
-        eyebrow="01 · What you typed"
+        eyebrow="01 · Brief you sent"
         score={SCORE_FROM}
         reduce={!!reduce}
       >
@@ -304,7 +304,7 @@ function MobileStacked() {
 
       <MobileStage
         eyebrowColor="var(--color-accent)"
-        eyebrow="02 · One question at a time"
+        eyebrow="02 · Questions a teammate would ask"
         score={SCORE_FROM}
         reduce={!!reduce}
       >
@@ -331,7 +331,7 @@ function MobileStacked() {
 
       <MobileStage
         eyebrowColor="var(--color-paper-mute)"
-        eyebrow="03 · What we send"
+        eyebrow="03 · Prompt the model understands"
         score={SCORE_TO}
         reduce={!!reduce}
       >
