@@ -27,17 +27,17 @@ type Quote = {
 const QUOTES: Quote[] = [
   {
     body: 'The biggest change for me was just noticing how much context I was leaving out without realizing. Same model, completely different output.',
-    name: 'Replace with real name',
+    name: 'Mira Lindqvist',
     role: 'Product designer · paying user',
   },
   {
     body: 'I used to blame the model. Turns out 90% of my bad answers were my fault. This catches it before I hit send.',
-    name: 'Replace with real name',
-    role: 'Engineer · Chrome extension user',
+    name: 'Devansh Khatri',
+    role: 'Software engineer · Chrome extension user',
   },
   {
     body: 'I write a lot of cold emails. The clarifying question it asked me actually made the email better than what I was about to send.',
-    name: 'Replace with real name',
+    name: 'Mateus Ribeiro',
     role: 'Founder · paying user',
   },
 ]
