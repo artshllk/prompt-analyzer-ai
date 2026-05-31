@@ -4,6 +4,16 @@ import Image from 'next/image'
 import { CinematicHero } from '@/components/marketing/CinematicHero'
 import { EditorialPricing } from '@/components/marketing/EditorialPricing'
 import { LivePromptDemo } from '@/components/marketing/LivePromptDemo'
+import { UseCases } from '@/components/marketing/UseCases'
+import { Testimonials } from '@/components/marketing/Testimonials'
+import { TrustStrip } from '@/components/marketing/TrustStrip'
+import { FAQSection } from '@/components/marketing/FAQSection'
+import { getPromptsImprovedCount, DISPLAY_THRESHOLD } from '@/lib/stats'
+
+// Marketing page is a Server Component. We pull the real prompt count
+// once per build and revalidate hourly so the trust strip stays current
+// without hammering the DB on every visit.
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'Deepclario - AI that actually understands what you mean',
@@ -71,7 +81,11 @@ const structuredData = {
   ],
 }
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  // Trust strip: pull lifetime count, only show if it crosses the credibility line.
+  const rawCount = await getPromptsImprovedCount()
+  const promptsCount = rawCount >= DISPLAY_THRESHOLD ? rawCount : 0
+
   return (
     <>
       <script
@@ -86,12 +100,14 @@ export default function LandingPage() {
               <Image src="/logo.png" alt="Deepclario" width={28} height={28} priority />
               <span className="text-[15px] tracking-tight" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>Deepclario</span>
             </Link>
-            <nav className="hidden md:flex items-center gap-8 text-sm" style={{ color: 'var(--color-paper-mute)' }}>
+            <nav className="hidden md:flex items-center gap-7 text-sm" style={{ color: 'var(--color-paper-mute)' }}>
               <Link href="#try" className="hover:opacity-100 transition-opacity opacity-80">Try it</Link>
+              <Link href="#use-cases" className="hover:opacity-100 transition-opacity opacity-80">Use cases</Link>
               <Link href="/prompts" className="hover:opacity-100 transition-opacity opacity-80">Prompts</Link>
               <Link href="/extension" className="hover:opacity-100 transition-opacity opacity-80">Extension</Link>
               <Link href="#pricing" className="hover:opacity-100 transition-opacity opacity-80">Pricing</Link>
-              <Link href="/blog/what-is-prompt-engineering" className="hover:opacity-100 transition-opacity opacity-80">Reading</Link>
+              <Link href="#faq" className="hover:opacity-100 transition-opacity opacity-80">FAQ</Link>
+              <Link href="/blog" className="hover:opacity-100 transition-opacity opacity-80">Blog</Link>
             </nav>
             <div className="flex items-center gap-5">
               <Link href="/login" className="text-sm hover:opacity-100 transition-opacity opacity-80" style={{ color: 'var(--color-paper)' }}>
@@ -131,6 +147,7 @@ export default function LandingPage() {
               >
                 You type the rough idea. Deepclario fixes what is missing and asks the questions a senior teammate would ask. ChatGPT, Claude, and Gemini stop guessing. You stop editing.
               </p>
+              <TrustStrip promptsCount={promptsCount} />
             </div>
             <LivePromptDemo compact />
           </div>
@@ -194,6 +211,10 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Use cases - 6 concrete scenarios linked to real prompt pages.
+            Translates "what is this" into "what does it do for me." */}
+        <UseCases />
+
         {/* Why not just ask ChatGPT */}
         <section className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)', background: 'var(--color-ink-soft)' }}>
           <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
@@ -220,6 +241,10 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* Testimonials - placeholder quotes until real ones are collected.
+            See src/components/marketing/Testimonials.tsx for swap instructions. */}
+        <Testimonials />
 
         {/* Browser extension - the primary surface going forward.
             Position this as the main product, not the demo. */}
@@ -280,6 +305,20 @@ export default function LandingPage() {
         <section id="pricing" className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
           <div className="max-w-6xl mx-auto">
             <EditorialPricing />
+          </div>
+        </section>
+
+        {/* FAQ - last-objection handler before the final CTA. */}
+        <section id="faq" className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
+          <div className="max-w-3xl mx-auto">
+            <p className="eyebrow mb-6">Questions</p>
+            <h2
+              className="display text-4xl md:text-5xl mb-12"
+              style={{ color: 'var(--color-paper)' }}
+            >
+              Asked and answered.
+            </h2>
+            <FAQSection />
           </div>
         </section>
 

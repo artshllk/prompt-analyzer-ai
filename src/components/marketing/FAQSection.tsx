@@ -41,29 +41,45 @@ export function FAQSection() {
   const [open, setOpen] = useState<number | null>(null)
 
   return (
-    <div className="space-y-2">
-      {FAQS.map((faq, i) => (
-        <div key={i} className="glass rounded-2xl border border-[#1e2d4a] overflow-hidden">
-          <button
-            onClick={() => setOpen(open === i ? null : i)}
-            className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
-            aria-expanded={open === i}
-          >
-            <span className="text-sm font-semibold text-[#f0f4ff]">{faq.q}</span>
-            <svg
-              width="14" height="14" viewBox="0 0 14 14" fill="none"
-              className={`shrink-0 text-[#4a5a80] transition-transform duration-200 ${open === i ? 'rotate-180' : ''}`}
+    <ul className="space-y-px">
+      <li className="rule-strong" />
+      {FAQS.map((faq, i) => {
+        const isOpen = open === i
+        return (
+          <li key={i}>
+            <button
+              onClick={() => setOpen(isOpen ? null : i)}
+              className="w-full flex items-center justify-between gap-6 py-6 text-left row-hover -mx-3 px-3 rounded-md"
+              aria-expanded={isOpen}
             >
-              <path d="M3 5L7 9L11 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          {open === i && (
-            <div className="px-5 pb-4">
-              <p className="text-sm text-[#8b9cc8] leading-relaxed">{faq.a}</p>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
+              <span
+                className="text-[15px] md:text-base leading-snug"
+                style={{ color: 'var(--color-paper)', fontWeight: 500 }}
+              >
+                {faq.q}
+              </span>
+              <svg
+                width="14" height="14" viewBox="0 0 14 14" fill="none"
+                className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                style={{ color: 'var(--color-paper-mute)' }}
+              >
+                <path d="M3 5L7 9L11 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            {isOpen && (
+              <div className="pb-7 pr-10 -mt-2">
+                <p
+                  className="text-[15px] leading-[1.7]"
+                  style={{ color: 'var(--color-paper-mute)' }}
+                >
+                  {faq.a}
+                </p>
+              </div>
+            )}
+            <div className="rule" />
+          </li>
+        )
+      })}
+    </ul>
   )
 }

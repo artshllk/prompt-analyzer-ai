@@ -36,15 +36,19 @@
   --color-ink: #0E0E10;          /* warm near-black */
   --color-ink-soft: #15151A;
   --color-ink-card: #1A1A20;
+  --color-ink-card-elevated: #1F1F26;  /* one step brighter for raised cards */
   --color-paper: #F5F4F1;        /* warm off-white */
   --color-paper-mute: #A8A6A0;
   --color-rule: rgba(245, 244, 241, 0.10);
   --color-rule-strong: rgba(245, 244, 241, 0.18);
-  /* Monochrome system: no brand accent. The logo is the only color on the
-     site. "Accent" now means "bright paper" - emphasis via luminance, not
-     hue. Linear / Vercel pattern. */
-  --color-accent: #F5F4F1;        /* = paper; emphasis via brightness only */
-  --color-accent-soft: rgba(245, 244, 241, 0.08);
+
+  /* Brand accent. A precise electric blue, not purple (PromptPerfect),
+     not generic AI cyan, not Linear's exact value. Used sparingly on
+     hover states, score highlights, active nav, and one hero word. */
+  --color-accent: #5B8FED;
+  --color-accent-bright: #7DA7F4;
+  --color-accent-soft: rgba(91, 143, 237, 0.10);
+  --color-accent-glow: rgba(91, 143, 237, 0.22);
 }
 
 * {
@@ -251,6 +255,72 @@ body {
   background: var(--color-accent);
   color: var(--color-ink);
 }
+
+/* ============================================================
+   Depth + material treatments for the editorial palette.
+   These let us escape "flat dark mode" without going glassy/3D.
+   ============================================================ */
+
+/* Subtle radial accent glow behind a section. Use sparingly. */
+.editorial-spotlight {
+  position: relative;
+}
+.editorial-spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 500px at 50% 0%, var(--color-accent-soft), transparent 60%);
+  z-index: 0;
+}
+.editorial-spotlight > * { position: relative; z-index: 1; }
+
+/* Card surface, raised. Soft elevation, no harsh shadow. */
+.card-editorial {
+  background: linear-gradient(180deg, var(--color-ink-card-elevated) 0%, var(--color-ink-card) 100%);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 0 rgba(245, 244, 241, 0.04) inset,
+    0 24px 60px -30px rgba(0, 0, 0, 0.6);
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 220ms ease,
+              box-shadow 220ms ease;
+}
+.card-editorial:hover {
+  border-color: rgba(245, 244, 241, 0.28);
+  box-shadow:
+    0 1px 0 rgba(245, 244, 241, 0.06) inset,
+    0 28px 70px -28px rgba(0, 0, 0, 0.7);
+  transform: translateY(-2px);
+}
+
+/* Card with a subtle accent edge — for the "Most popular" tier etc. */
+.card-accent-edge {
+  position: relative;
+}
+.card-accent-edge::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(180deg, var(--color-accent) 0%, transparent 40%);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+          mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Inline accent text. Use on one or two words per page, max. */
+.accent { color: var(--color-accent); }
+.accent-bright { color: var(--color-accent-bright); }
 
 /* Confident easing tokens used by JS motion */
 :root {
