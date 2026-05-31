@@ -21,7 +21,6 @@ export function TrustStrip({ promptsCount }: { promptsCount: number }) {
   }
 
   items.push(
-    { icon: <Dot />, label: 'Free — no credit card' },
     { icon: <Dot />, label: 'ChatGPT, Claude, Gemini' },
     { icon: <Dot />, label: 'Chrome extension out now' },
   )
