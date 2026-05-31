@@ -344,7 +344,7 @@ function ThinkingPanel({ label }: { label: string }) {
         <span className="eyebrow">{label}</span>
       </div>
       <p className="mt-4 font-serif text-2xl md:text-3xl tracking-tight" style={{ color: 'var(--color-paper-mute)' }}>
-        Reading what you wrote, the way a senior engineer reads a ticket.
+        Reading what you wrote. Checking what's clear and what isn't.
       </p>
     </motion.div>
   )

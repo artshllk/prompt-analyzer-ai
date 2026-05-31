@@ -3,13 +3,14 @@ import { STEP_SCHEMA } from './schemas'
 import type { AnalyzeInput, AnalyzeResult } from '@/types'
 import type { ImprovementTag, Tone } from '@/types/database'
 
-// A clarifying question has a real UX cost: each one is a gate the user
-// can abandon at, and a bored user types junk answers that *degrade* the
-// rewrite. So the ceiling is 2, not 3, and the model is told to treat
-// asking as expensive (see buildSystemPrompt). 75 (not 80) lets the model
-// jump straight to a rewrite sooner - a "good enough" rewrite beats a
-// third interrogation.
-const MAX_CLARIFY_TURNS = 2
+// Clarifying questions have a real UX cost - each one is a gate the user
+// can abandon at. So we hard-cap at 3 and bias the model toward shipping
+// a strong rewrite the moment it has enough context. Crucially: the
+// model must also detect *junk* clarification answers ("blablabla",
+// single random word, "idk") and treat them as adding zero confidence -
+// otherwise an impatient user gets a worse rewrite than they would have
+// gotten with no clarifications at all. See JUNK-ANSWER DETECTION below.
+const MAX_CLARIFY_TURNS = 3
 const DIRECT_IMPROVE_THRESHOLD = 75
 
 const TONE_RULES: Record<Tone, string> = {
@@ -60,11 +61,10 @@ Given a user's raw prompt (and any prior clarification Q&A), do ONE of two thing
 # DECISION RULES - BIAS HARD TOWARD IMPROVING
 
 A clarifying question is expensive. Every question is a gate the user can
-abandon at, and an impatient user types a throwaway answer that makes the
-final rewrite *worse*. Your job is to ship a substantially better prompt
-with the fewest possible questions - not a perfect prompt after an
-interview. A strong rewrite the user gets immediately beats a marginally
-stronger one they never wait for.
+abandon at. Your job is to ship a substantially better prompt with the
+fewest possible questions - not a perfect prompt after an interview. A
+strong rewrite the user gets immediately beats a marginally stronger one
+they never wait for.
 
 - Confidence ≥ ${DIRECT_IMPROVE_THRESHOLD}% → decision MUST be "improve". Do not ask.
 - Below ${DIRECT_IMPROVE_THRESHOLD}%, only ask IF the missing piece is genuinely
@@ -74,7 +74,32 @@ stronger one they never wait for.
   that instead: decision = "improve".
 - Never ask to satisfy a checklist. "Could be nicer to know" is not a
   reason to ask. "I cannot write a good prompt without this" is.
-- ${mustImprove ? 'You have used all clarifying turns. decision MUST be "improve" regardless of confidence.' : `Clarifying turns remaining: ${remainingTurns}. Treat asking again as a last resort.`}
+- ${mustImprove ? `You have used all ${MAX_CLARIFY_TURNS} clarifying turns. decision MUST be "improve" regardless of confidence. Make reasonable assumptions, state them in the rewrite, ship it.` : `Clarifying turns remaining: ${remainingTurns}. Treat asking again as a last resort.`}
+
+# JUNK-ANSWER DETECTION (CRITICAL)
+
+When prior clarifications exist, judge their QUALITY before using them:
+
+A clarification answer is **junk** if it is any of:
+- Fewer than 2 meaningful words ("yes", "ok", "sure", "idk")
+- Gibberish or filler ("blablabla", "asdf", "test", random keystrokes)
+- A literal restatement of the question
+- Off-topic / unrelated to what was asked
+- A meta-complaint ("just rewrite it already", "skip this")
+
+If the latest answer is junk, treat its information value as **zero**:
+- Do NOT raise score.confidence based on it.
+- Either ask ONE more targeted question (rephrased, simpler, with 2-4
+  concrete options if possible) so the user has an easier path to a
+  useful answer - OR, if turns are exhausted, improve using only the
+  information you trust, making reasonable assumptions explicit in the
+  rewrite.
+- Never pretend a junk answer gave you context it did not. The user is
+  better served by one more question than by a confidently wrong rewrite.
+
+When the answer IS substantive (a real sentence, a concrete detail), let
+confidence rise meaningfully. The point of clarification is to reach a
+strong rewrite, not to run an interview.
 
 # WHEN ASKING - DO IT LIKE THE BEST IN THE FIELD
 
@@ -112,7 +137,7 @@ ${toneRule}
 # SCORING
 
 - **score.total** (0–100): clarity of the *original* prompt the user submitted, weighing goal_clarity, context, format spec, constraints, and example presence.
-- **score.confidence** (0–100): YOUR confidence that you understand exactly what the user wants. ${turnCount > 0 ? `You now have ${turnCount} answered clarification(s) - confidence should rise meaningfully.` : 'No prior answers yet.'}
+- **score.confidence** (0–100): YOUR confidence that you understand exactly what the user wants. ${turnCount > 0 ? `You now have ${turnCount} answered clarification(s). Confidence should rise meaningfully ONLY if those answers were substantive (see JUNK-ANSWER DETECTION). Junk answers add zero confidence.` : 'No prior answers yet.'}
 - **score.gaps**: 1–3 short noun phrases naming what's missing. Concrete: "target audience", "success metric", "integration constraints" - not "more details".
 - **score.domain**: short label for the inferred domain (e.g. "saas landing page", "react ui component", "data analysis sql").
 - **improvement.clarity_score_after**: estimated clarity of your rewritten version (should be much higher than score.total).

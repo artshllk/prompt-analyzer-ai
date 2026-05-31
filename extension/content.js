@@ -322,7 +322,7 @@
   function renderLoading() {
     stage.innerHTML = `<div class="rule"></div>
       <div class="dots" style="margin:18px 0"><span></span><span></span><span></span></div>
-      <p class="sub">Reading what you wrote, the way a senior engineer reads a ticket.</p>`
+      <p class="sub">Reading what you wrote. Checking what's clear and what isn't.</p>`
   }
 
   function renderError(kind) {
@@ -417,7 +417,7 @@
         if (d.tier && d.tier !== 'anon' && authState.token) {
           saveAuth(authState.token, d.tier)
         }
-        if (d.type === 'clarifying' && prior.length < 2) renderClarify(d)
+        if (d.type === 'clarifying' && prior.length < 3) renderClarify(d)
         else if (d.type === 'improved') renderDone(d)
         else renderError('server_error')
       }

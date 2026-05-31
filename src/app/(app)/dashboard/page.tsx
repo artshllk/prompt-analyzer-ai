@@ -259,7 +259,7 @@ function EmptyState() {
           The fastest way to write a better prompt is to read your last one and notice what is missing.
         </p>
         <p className="text-base md:text-lg leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
-          Paste anything &mdash; a rough idea, a one-liner, a request you have not finished writing. Deepclario scores it, asks the questions a senior engineer would ask, and rewrites until the model has no excuse to misunderstand.
+          Paste anything &mdash; a rough idea, a one-liner, a request you have not finished writing. Deepclario reads it, asks the questions a careful teammate would ask, and rewrites until the model has no excuse to misunderstand.
         </p>
 
         <div>
