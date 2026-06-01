@@ -85,8 +85,8 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
         </h1>
         <p className="mt-4 text-base md:text-lg leading-[1.55] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
           {isAnon
-            ? `${Math.max(0, effectiveLimit - anonCount)} of ${effectiveLimit} free analyses left this session.`
-            : 'Paste anything - rough idea, half-finished request, one-liner. We score it, ask what is missing, and rewrite.'}
+            ? `${Math.max(0, effectiveLimit - anonCount)} of ${effectiveLimit} free rewrites left this session.`
+            : 'Paste anything — a rough idea, a one-liner, a request you have not finished writing. We catch what is missing and rewrite for clarity.'}
         </p>
       </header>
 
