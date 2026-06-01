@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import { CinematicHero } from '@/components/marketing/CinematicHero'
+import { StaticTransform } from '@/components/marketing/StaticTransform'
 import { EditorialPricing } from '@/components/marketing/EditorialPricing'
 import { LivePromptDemo } from '@/components/marketing/LivePromptDemo'
 import { UseCases } from '@/components/marketing/UseCases'
@@ -153,10 +153,10 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* Cinematic - visual story of how the rewrite works, now below the demo */}
-        <section style={{ borderTop: '1px solid var(--color-rule)' }}>
-          <CinematicHero />
-        </section>
+        {/* Three-stage transform: the same example the old scroll-pinned
+            cinematic used, but laid out as three calm cards. No
+            scroll-jacking, identical on mobile and desktop. */}
+        <StaticTransform />
 
         {/* The thesis - long-form editorial paragraph */}
         <section id="why" className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
