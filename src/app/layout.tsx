@@ -70,8 +70,8 @@ const orgSchema = {
       logo: {
         '@type': 'ImageObject',
         url: 'https://deepclario.com/logo.png',
-        width: 512,
-        height: 512,
+        width: 1254,
+        height: 1254,
       },
       sameAs: [
         'https://twitter.com/deepclario',

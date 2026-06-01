@@ -31,7 +31,7 @@ export async function generateMetadata({
       description: entry.metaDescription,
       url: `${BASE}/prompts/${entry.slug}`,
       type: 'article',
-      images: [{ url: `${BASE}/logo.png`, width: 512, height: 512, alt: 'Deepclario' }],
+      images: [{ url: `${BASE}/logo.png`, width: 1254, height: 1254, alt: 'Deepclario' }],
     },
   }
 }

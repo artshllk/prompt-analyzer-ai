@@ -14,7 +14,7 @@ export const metadata: Metadata = {
       'Ready-to-use prompts for real tasks: cover letters, emails, summaries, code review. Copy and paste.',
     url: 'https://deepclario.com/prompts',
     type: 'website',
-    images: [{ url: 'https://deepclario.com/logo.png', width: 512, height: 512, alt: 'Deepclario' }],
+    images: [{ url: 'https://deepclario.com/logo.png', width: 1254, height: 1254, alt: 'Deepclario' }],
   },
 }
 
