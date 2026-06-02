@@ -9,6 +9,7 @@ import { Testimonials } from '@/components/marketing/Testimonials'
 import { TrustStrip } from '@/components/marketing/TrustStrip'
 import { FAQSection } from '@/components/marketing/FAQSection'
 import { HeroCenterpiece } from '@/components/marketing/HeroCenterpiece'
+import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
 import { getPromptsImprovedCount, DISPLAY_THRESHOLD } from '@/lib/stats'
 
 // Marketing page is a Server Component. We pull the real prompt count
@@ -171,6 +172,11 @@ export default async function LandingPage() {
             cinematic used, but laid out as three calm cards. No
             scroll-jacking, identical on mobile and desktop. */}
         <StaticTransform />
+
+        {/* Tabbed feature showcase: four facets of the engine, each
+            with a custom mini-demo. The "what does this thing actually
+            do" section without resorting to a wall of feature cards. */}
+        <FeatureShowcase />
 
         {/* The thesis - long-form editorial paragraph */}
         <section id="why" className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
