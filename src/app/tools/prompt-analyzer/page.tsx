@@ -54,7 +54,7 @@ export default function PromptAnalyzerPage() {
         >
           Analyze my prompt free →
         </Link>
-        <p className="text-xs text-[color:var(--color-paper-mute)] mb-16">No account needed · See results in seconds</p>
+        <div className="mb-16" />
 
         <section className="mb-16">
           <h2 className="text-2xl font-bold mb-3">What does the prompt analyzer measure?</h2>

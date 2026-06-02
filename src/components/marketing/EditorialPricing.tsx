@@ -3,119 +3,259 @@
 import { useState } from 'react'
 import Link from 'next/link'
 
+/**
+ * Pricing — two-tier card grid (Free + Pro) with a polished
+ * "Most popular" treatment on Pro. The cards use card-editorial
+ * for surface depth and card-accent-edge for the Pro accent ring.
+ *
+ * Pro features are limited to what the product actually ships today.
+ * Persona memory, multi-model compare, BYOK — all on the roadmap,
+ * intentionally not listed here.
+ */
+
+const FREE_FEATURES = [
+  '25 prompt rewrites per month',
+  'Five-dimension clarity scoring',
+  'One clarifying question when needed',
+  'Works with ChatGPT, Claude, Gemini',
+  'Chrome extension',
+  '7-day session history',
+]
+
+const PRO_FEATURES = [
+  'Unlimited prompt rewrites',
+  'Full session history',
+  'Weekly insights report',
+  'Priority model and queue',
+  'Priority support',
+  'Everything in Free',
+]
+
 export function EditorialPricing() {
   const [annual, setAnnual] = useState(false)
-  const proPrice = annual ? '7.99' : '9.99'
+  const proMonthly = annual ? '7.99' : '9.99'
 
   return (
-    <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-start">
-      {/* Left: editorial intro */}
-      <div className="md:col-span-5">
-        <p className="eyebrow mb-6">Pricing</p>
-        <h2
-          className="display text-4xl md:text-5xl mb-6"
-          style={{ color: 'var(--color-paper)' }}
-        >
-          Free until you outgrow it.
-        </h2>
-        <p className="text-base md:text-lg leading-relaxed mb-8" style={{ color: 'var(--color-paper-mute)' }}>
-          The free plan is the actual product, not a trial. Use it weekly, monthly, indefinitely.
-          Upgrade only when you find yourself reaching for it every day.
-        </p>
+    <div>
+      {/* Section header */}
+      <div className="grid md:grid-cols-12 gap-8 md:gap-16 mb-12 md:mb-16">
+        <div className="md:col-span-5">
+          <p className="eyebrow mb-6">Pricing</p>
+          <h2
+            className="display text-4xl md:text-5xl"
+            style={{ color: 'var(--color-paper)' }}
+          >
+            Free until you outgrow it.
+          </h2>
+          <p
+            className="mt-5 text-base md:text-lg leading-relaxed"
+            style={{ color: 'var(--color-paper-mute)' }}
+          >
+            The free plan is the product, not a trial. Upgrade only when you reach for Deepclario every day.
+          </p>
+        </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setAnnual(false)}
-            className={`text-sm transition-colors ${!annual ? 'underline underline-offset-4' : ''}`}
-            style={{ color: !annual ? 'var(--color-paper)' : 'var(--color-paper-mute)' }}
+        {/* Billing toggle */}
+        <div className="md:col-span-7 flex md:justify-end md:items-end">
+          <div
+            className="inline-flex p-1 rounded-full"
+            style={{
+              background: 'var(--color-ink-card)',
+              border: '1px solid var(--color-rule)',
+            }}
+            role="tablist"
+            aria-label="Billing period"
           >
-            Monthly
-          </button>
-          <span style={{ color: 'var(--color-rule-strong)' }}>·</span>
-          <button
-            onClick={() => setAnnual(true)}
-            className={`text-sm transition-colors ${annual ? 'underline underline-offset-4' : ''}`}
-            style={{ color: annual ? 'var(--color-paper)' : 'var(--color-paper-mute)' }}
-          >
-            Annual <span className="text-xs ml-1" style={{ color: 'var(--color-accent)' }}>save 20%</span>
-          </button>
+            <BillingToggle active={!annual} onClick={() => setAnnual(false)}>
+              Monthly
+            </BillingToggle>
+            <BillingToggle active={annual} onClick={() => setAnnual(true)}>
+              Yearly
+              <span
+                className="ml-2 text-[10px] tracking-wider uppercase font-semibold px-1.5 py-0.5 rounded"
+                style={{
+                  background: annual ? 'var(--color-accent-soft)' : 'transparent',
+                  color: annual ? 'var(--color-accent-bright)' : 'var(--color-paper-mute)',
+                }}
+              >
+                Save 20%
+              </span>
+            </BillingToggle>
+          </div>
         </div>
       </div>
 
-      {/* Right: two stacked tiers, editorial style - no boxes, no shadows, just hairlines */}
-      <div className="md:col-span-7 space-y-px">
+      {/* Two-tier card grid */}
+      <div className="grid md:grid-cols-2 gap-5 md:gap-6">
         {/* Free */}
-        <div className="rule-strong" />
-        <div className="grid grid-cols-12 gap-4 py-7">
-          <div className="col-span-4 md:col-span-3">
-            <p className="eyebrow mb-2">Free</p>
-            <p className="font-serif text-3xl tabular-nums" style={{ color: 'var(--color-paper)' }}>$0</p>
-            {/* <p className="text-xs mt-1" style={{ color: 'var(--color-paper-mute)' }}>forever</p> */}
-          </div>
-          <div className="col-span-8 md:col-span-7">
-            <p className="text-sm mb-3" style={{ color: 'var(--color-paper)' }}>
-              25 prompts a month. Full scoring. Full rewrites. 7-day history.
-            </p>
-            <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-              Plenty for most people. The product without a meter looking over your shoulder.
-            </p>
-          </div>
-          <div className="col-span-12 md:col-span-2 flex md:justify-end">
-            <Link
-              href="/playground"
-              className="inline-flex items-center gap-1.5 text-sm transition-all hover:gap-2 mt-2 md:mt-0"
-              style={{ color: 'var(--color-paper)' }}
+        <PricingCard tier="Free">
+          <div className="flex items-baseline gap-1.5 mb-1">
+            <span
+              className="font-serif text-6xl tabular-nums"
+              style={{ color: 'var(--color-paper)', fontWeight: 400 }}
             >
-              Start
-              <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
-                <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </Link>
+              $0
+            </span>
           </div>
-        </div>
+          <p
+            className="text-sm mb-7"
+            style={{ color: 'var(--color-paper-mute)' }}
+          >
+            Use it weekly, monthly, indefinitely.
+          </p>
+          <Link
+            href="/playground"
+            className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-outline"
+            style={{
+              border: '1px solid var(--color-rule-strong)',
+              color: 'var(--color-paper)',
+            }}
+          >
+            Start free
+          </Link>
+          <FeatureList items={FREE_FEATURES} />
+        </PricingCard>
 
-        <div className="rule" />
-        {/* Pro */}
-        <div className="grid grid-cols-12 gap-4 py-7">
-          <div className="col-span-4 md:col-span-3">
-            <p className="eyebrow mb-2" style={{ color: 'var(--color-accent)' }}>Pro</p>
-            <p className="font-serif text-3xl tabular-nums" style={{ color: 'var(--color-paper)' }}>
-              ${proPrice}
-            </p>
-            <p className="text-xs mt-1" style={{ color: 'var(--color-paper-mute)' }}>
-              {annual ? 'per month, billed yearly' : 'per month'}
-            </p>
-          </div>
-          <div className="col-span-8 md:col-span-7">
-            <p className="text-sm mb-3" style={{ color: 'var(--color-paper)' }}>
-              Unlimited rewrites. Full history. Weekly insights on what you write and how the output improves.
-            </p>
-            <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-              For people who reach for AI every day. Engineers, writers, founders, marketers. The ones who want the layer that quietly makes every prompt better.
-            </p>
-          </div>
-          <div className="col-span-12 md:col-span-2 flex md:justify-end">
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm transition-all btn-paper mt-2 md:mt-0"
-              style={{
-                background: 'var(--color-paper)',
-                color: 'var(--color-ink)',
-              }}
+        {/* Pro — most popular */}
+        <PricingCard tier="Pro" popular>
+          <div className="flex items-baseline gap-1.5 mb-1">
+            <span
+              className="font-serif text-6xl tabular-nums"
+              style={{ color: 'var(--color-paper)', fontWeight: 400 }}
             >
-              Unlock
-              <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
-                <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </Link>
+              ${proMonthly}
+            </span>
+            <span
+              className="text-sm"
+              style={{ color: 'var(--color-paper-mute)' }}
+            >
+              /month
+            </span>
           </div>
-        </div>
-        <div className="rule-strong" />
-
-        <p className="pt-4 text-xs" style={{ color: 'var(--color-paper-mute)' }}>
-          Cancel anytime. No card required to try the free plan. Payments handled securely by Paddle.
-        </p>
+          <p
+            className="text-sm mb-7"
+            style={{ color: 'var(--color-paper-mute)' }}
+          >
+            {annual ? 'Billed $95.88 yearly. Cancel anytime.' : 'Billed monthly. Cancel anytime.'}
+          </p>
+          <Link
+            href="/login"
+            className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-paper"
+            style={{
+              background: 'var(--color-paper)',
+              color: 'var(--color-ink)',
+            }}
+          >
+            Get Pro
+          </Link>
+          <FeatureList items={PRO_FEATURES} accent />
+        </PricingCard>
       </div>
+
+      <p
+        className="mt-8 text-xs text-center md:text-left"
+        style={{ color: 'var(--color-paper-mute)' }}
+      >
+        Payments by Paddle. VAT and sales tax handled automatically.
+      </p>
     </div>
+  )
+}
+
+/* ============================================================
+   Card chrome
+   ============================================================ */
+
+function PricingCard({
+  tier,
+  popular,
+  children,
+}: {
+  tier: string
+  popular?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <div className={`card-editorial p-8 md:p-9 relative ${popular ? 'card-accent-edge' : ''}`}>
+      <div className="flex items-center justify-between mb-7">
+        <span
+          className="text-sm font-medium"
+          style={{ color: popular ? 'var(--color-accent-bright)' : 'var(--color-paper)' }}
+        >
+          {tier}
+        </span>
+        {popular && (
+          <span
+            className="text-[10px] tracking-[0.14em] uppercase font-semibold px-2.5 py-1 rounded-full"
+            style={{
+              background: 'var(--color-accent-soft)',
+              color: 'var(--color-accent-bright)',
+              border: '1px solid rgba(91, 143, 237, 0.25)',
+            }}
+          >
+            Most popular
+          </span>
+        )}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function BillingToggle({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center px-4 md:px-5 py-2 rounded-full text-sm font-medium transition-colors"
+      style={{
+        background: active ? 'var(--color-paper)' : 'transparent',
+        color: active ? 'var(--color-ink)' : 'var(--color-paper-mute)',
+      }}
+      role="tab"
+      aria-selected={active}
+    >
+      {children}
+    </button>
+  )
+}
+
+function FeatureList({ items, accent }: { items: string[]; accent?: boolean }) {
+  return (
+    <ul className="mt-8 space-y-3.5">
+      {items.map(item => (
+        <li key={item} className="flex items-start gap-3 text-[14px] leading-[1.55]">
+          <span
+            className="shrink-0 mt-0.5"
+            style={{ color: accent ? 'var(--color-accent-bright)' : 'var(--color-paper)' }}
+            aria-hidden="true"
+          >
+            <Check />
+          </span>
+          <span style={{ color: 'var(--color-paper-mute)' }}>{item}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function Check() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path
+        d="M2.5 7L5.5 10L11.5 4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }

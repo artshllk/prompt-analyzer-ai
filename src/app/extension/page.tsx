@@ -99,7 +99,7 @@ export default function ExtensionPage() {
               </svg>
             </a>
             <span className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-              Free. No account. ~30&nbsp;KB.
+              Works in Chrome, Brave, Edge, Arc.
             </span>
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function ExtensionPage() {
               The same engine runs on the web.
             </p>
             <p className="text-base md:text-lg leading-[1.6] mb-8 max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
-              Paste a prompt on the playground and get the exact same rewrite. No extension, no signup, no card.
+              Paste a prompt on the playground and get the exact same rewrite.
             </p>
             <Link
               href="/playground"

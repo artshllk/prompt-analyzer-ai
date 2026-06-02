@@ -24,15 +24,15 @@ type Chip = {
   y: number
 }
 
-// Six chips. Each one tells a real product fact that's true today —
-// not aspirational. Order: clockwise from top.
+// Five product chips arranged evenly around the centerpiece.
+// Each describes a real product behaviour, not a marketing promise.
+// Order: clockwise from top.
 const CHIPS: Chip[] = [
-  { label: 'Clarity 22 → 87',       x: 50, y: 4 },
-  { label: 'Asks one smart question', x: 95, y: 24 },
-  { label: 'ChatGPT · Claude · Gemini', x: 96, y: 70 },
-  { label: '1-click Improve in-page', x: 58, y: 96 },
-  { label: 'Free · 25 rewrites/mo',  x: 4, y: 76 },
-  { label: 'CRAFT rewrite',          x: 4, y: 26 },
+  { label: 'Clarity 22 → 87',           x: 50, y: 3 },
+  { label: 'Asks one smart question',   x: 96, y: 30 },
+  { label: 'ChatGPT · Claude · Gemini', x: 88, y: 80 },
+  { label: '1-click Improve in-page',   x: 18, y: 92 },
+  { label: 'CRAFT rewrite',             x: 4,  y: 38 },
 ]
 
 export function HeroCenterpiece() {

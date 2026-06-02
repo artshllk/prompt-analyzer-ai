@@ -62,7 +62,7 @@ export default function PromptImproverPage() {
         >
           Improve my prompt free →
         </Link>
-        <p className="text-xs text-[color:var(--color-paper-mute)] mb-16">No account needed · 2 free analyses · Takes 30 seconds</p>
+        <div className="mb-16" />
 
         <section className="mb-16">
           <h2 className="text-2xl font-bold mb-6">How the prompt improver works</h2>
@@ -133,7 +133,7 @@ export default function PromptImproverPage() {
 
         <div className="rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
           <h2 className="text-2xl font-bold mb-3">Ready to improve your first prompt?</h2>
-          <p className="text-[color:var(--color-paper-mute)] mb-6">No account needed. See your clarity score in under 30 seconds.</p>
+          <p className="text-[color:var(--color-paper-mute)] mb-6">Paste any prompt and see what a careful expert would change.</p>
           <Link
             href="/playground"
             className="inline-block px-7 py-3.5 rounded-2xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] font-semibold transition-all"

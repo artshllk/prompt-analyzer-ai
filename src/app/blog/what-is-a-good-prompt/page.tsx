@@ -227,7 +227,7 @@ export default function WhatIsAGoodPromptPage() {
           <h2 className="text-lg font-bold text-[color:var(--color-paper)]">Score your own prompt</h2>
           <p className="text-sm text-[color:var(--color-paper-mute)]">
             Paste any prompt into Deepclario and see which of these 5 dimensions are missing.
-            You&apos;ll get a score, a breakdown, and a rewritten version - free, no account needed.
+            You&apos;ll get a score, a breakdown, and a rewritten version.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
