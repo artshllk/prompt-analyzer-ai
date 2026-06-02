@@ -78,7 +78,7 @@ export function UseCases() {
               className="mt-6 text-lg leading-relaxed max-w-2xl"
               style={{ color: 'var(--color-paper-mute)' }}
             >
-              Pick one. Each links to a free, ready-to-use prompt and a worked example. None of these need an account.
+              Real examples of prompts people improve. Click any one to see the full version.
             </p>
           </div>
         </div>
