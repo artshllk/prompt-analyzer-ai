@@ -8,6 +8,7 @@ import { UseCases } from '@/components/marketing/UseCases'
 import { Testimonials } from '@/components/marketing/Testimonials'
 import { TrustStrip } from '@/components/marketing/TrustStrip'
 import { FAQSection } from '@/components/marketing/FAQSection'
+import { HeroCenterpiece } from '@/components/marketing/HeroCenterpiece'
 import { getPromptsImprovedCount, DISPLAY_THRESHOLD } from '@/lib/stats'
 
 // Marketing page is a Server Component. We pull the real prompt count
@@ -128,27 +129,40 @@ export default async function LandingPage() {
           </div>
         </header>
 
-        {/* Hero - copy + live demo, above the fold. Demo is pre-populated
-            so the first action available is one click on Analyze. */}
-        <section id="try" className="pt-28 md:pt-36 pb-20 md:pb-24 px-6 md:px-10 relative">
+        {/* Hero - two-column on desktop: copy left, animated centerpiece
+            right. Centerpiece is hidden under lg so mobile gets the
+            text-only treatment. LivePromptDemo lives in its own
+            section directly below so the page reads "promise -> proof". */}
+        <section id="try" className="pt-28 md:pt-36 pb-16 md:pb-20 px-6 md:px-10 relative">
           <div className="max-w-6xl mx-auto">
-            <div className="max-w-3xl mb-12 md:mb-16">
-              <p className="eyebrow mb-6">Stop rewriting your prompts</p>
-              <h1
-                className="display text-5xl md:text-[5.5rem] leading-tight tracking-tight"
-                style={{ color: 'var(--color-paper)' }}
-              >
-                AI that actually{' '}
-                <span style={{ color: 'var(--color-accent)' }}>understands what you mean.</span>
-              </h1>
-              <p
-                className="mt-6 md:mt-8 text-lg md:text-xl leading-relaxed max-w-2xl"
-                style={{ color: 'var(--color-paper-mute)' }}
-              >
-                You type the rough idea. Deepclario fixes what is missing and asks the questions a senior teammate would ask. ChatGPT, Claude, and Gemini stop guessing. You stop editing.
-              </p>
-              <TrustStrip promptsCount={promptsCount} />
+            <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+              <div className="lg:col-span-7">
+                <p className="eyebrow mb-6">Stop rewriting your prompts</p>
+                <h1
+                  className="display text-5xl md:text-[5.25rem] leading-[1.04] tracking-tight"
+                  style={{ color: 'var(--color-paper)' }}
+                >
+                  AI that actually{' '}
+                  <span style={{ color: 'var(--color-accent)' }}>understands what you mean.</span>
+                </h1>
+                <p
+                  className="mt-6 md:mt-8 text-lg md:text-xl leading-relaxed max-w-2xl"
+                  style={{ color: 'var(--color-paper-mute)' }}
+                >
+                  You type the rough idea. Deepclario fixes what is missing and asks the questions a senior teammate would ask. ChatGPT, Claude, and Gemini stop guessing. You stop editing.
+                </p>
+                <TrustStrip promptsCount={promptsCount} />
+              </div>
+              <div className="hidden lg:flex lg:col-span-5 items-center justify-center">
+                <HeroCenterpiece />
+              </div>
             </div>
+          </div>
+        </section>
+
+        {/* Live demo - proof, immediately below the hero. */}
+        <section className="pb-20 md:pb-24 px-6 md:px-10" style={{ borderTop: '1px solid var(--color-rule)' }}>
+          <div className="max-w-6xl mx-auto pt-16 md:pt-20">
             <LivePromptDemo compact />
           </div>
         </section>
