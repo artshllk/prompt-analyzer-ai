@@ -1,11 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import { TrustStrip } from '@/components/marketing/TrustStrip'
-import { getPromptsImprovedCount, DISPLAY_THRESHOLD } from '@/lib/stats'
-
-export const revalidate = 3600
-
 export const metadata: Metadata = {
   title: 'Chrome extension - Deepclario inside ChatGPT, Claude & Gemini',
   description:
@@ -53,10 +48,7 @@ const STEPS = [
   },
 ]
 
-export default async function ExtensionPage() {
-  const rawCount = await getPromptsImprovedCount()
-  const promptsCount = rawCount >= DISPLAY_THRESHOLD ? rawCount : 0
-
+export default function ExtensionPage() {
   return (
     <div className="editorial grain min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
       {/* Nav */}
@@ -110,8 +102,6 @@ export default async function ExtensionPage() {
               Free. No account. ~30&nbsp;KB.
             </span>
           </div>
-
-          <TrustStrip promptsCount={promptsCount} />
         </div>
 
         {/* Install steps */}

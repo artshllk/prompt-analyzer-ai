@@ -6,16 +6,9 @@ import { EditorialPricing } from '@/components/marketing/EditorialPricing'
 import { LivePromptDemo } from '@/components/marketing/LivePromptDemo'
 import { UseCases } from '@/components/marketing/UseCases'
 import { Testimonials } from '@/components/marketing/Testimonials'
-import { TrustStrip } from '@/components/marketing/TrustStrip'
 import { FAQSection } from '@/components/marketing/FAQSection'
 import { HeroCenterpiece } from '@/components/marketing/HeroCenterpiece'
 import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
-import { getPromptsImprovedCount, DISPLAY_THRESHOLD } from '@/lib/stats'
-
-// Marketing page is a Server Component. We pull the real prompt count
-// once per build and revalidate hourly so the trust strip stays current
-// without hammering the DB on every visit.
-export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'Deepclario - AI that actually understands what you mean',
@@ -83,11 +76,7 @@ const structuredData = {
   ],
 }
 
-export default async function LandingPage() {
-  // Trust strip: pull lifetime count, only show if it crosses the credibility line.
-  const rawCount = await getPromptsImprovedCount()
-  const promptsCount = rawCount >= DISPLAY_THRESHOLD ? rawCount : 0
-
+export default function LandingPage() {
   return (
     <>
       <script
@@ -152,7 +141,6 @@ export default async function LandingPage() {
                 >
                   You type the rough idea. Deepclario fixes what is missing and asks the questions a senior teammate would ask. ChatGPT, Claude, and Gemini stop guessing. You stop editing.
                 </p>
-                <TrustStrip promptsCount={promptsCount} />
               </div>
               <div className="hidden lg:flex lg:col-span-5 items-center justify-center">
                 <HeroCenterpiece />
