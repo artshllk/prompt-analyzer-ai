@@ -2,17 +2,20 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { createClient } from '@/lib/supabase/client'
 import type { UsageInfo } from '@/types'
 import { useEffect, useState } from 'react'
 
+// Settings is a regular nav item — the previous footer block (Settings +
+// Sign out) read as a generic dashboard template. Sign out now lives on
+// the Settings page itself, where account actions belong.
 const NAV_ITEMS: { href: string; label: string; isPro?: boolean }[] = [
   { href: '/playground', label: 'Playground' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/history', label: 'History' },
   { href: '/insights', label: 'Insights', isPro: true },
+  { href: '/settings', label: 'Settings' },
 ]
 
 interface AppShellProps {
@@ -24,7 +27,6 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname()
-  const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   // Close mobile drawer on navigation
@@ -41,13 +43,6 @@ export function AppShell({ children }: AppShellProps) {
     }
     return () => { document.body.style.overflow = '' }
   }, [mobileOpen])
-
-  async function handleSignOut() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
-  }
 
   return (
     <div className="flex min-h-screen relative" style={{ background: 'var(--color-ink)' }}>
@@ -114,11 +109,16 @@ export function AppShell({ children }: AppShellProps) {
           borderRight: '1px solid var(--color-rule)',
         }}
       >
-        {/* Logo (desktop only - mobile uses top bar) */}
-        <div className="hidden md:block px-6 py-6" style={{ borderBottom: '1px solid var(--color-rule)' }}>
-          <Link href="/dashboard" className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="Deepclario" width={32} height={32} priority />
-            <span className="text-[15px] tracking-tight" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>
+        {/* Logo (desktop only - mobile uses top bar).
+            No bottom border: the sidebar reads as one continuous
+            surface from logo to nav, not as a stacked template. */}
+        <div className="hidden md:block px-6 pt-7 pb-8">
+          <Link href="/dashboard" className="inline-flex items-center gap-2.5 group">
+            <Image src="/logo.png" alt="Deepclario" width={30} height={30} priority />
+            <span
+              className="text-[14.5px] tracking-tight transition-colors"
+              style={{ color: 'var(--color-paper)', fontWeight: 500 }}
+            >
               Deepclario
             </span>
           </Link>
@@ -127,9 +127,11 @@ export function AppShell({ children }: AppShellProps) {
         {/* Spacer for mobile (top bar height) */}
         <div className="md:hidden h-16" />
 
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-5">
-          <ul className="space-y-px">
+        {/* Nav. Roomier vertical rhythm and an accent-blue active
+            indicator make the active item feel intentional rather
+            than the default "highlighted row" of a template. */}
+        <nav className="flex-1 px-3 pb-6">
+          <ul className="space-y-0.5">
             {NAV_ITEMS.map(item => {
               const isActive = pathname.startsWith(item.href)
               return (
@@ -148,12 +150,11 @@ export function AppShell({ children }: AppShellProps) {
                       if (!isActive) e.currentTarget.style.color = 'var(--color-paper-mute)'
                     }}
                   >
-                    {/* Active indicator: hairline bar on the left */}
                     {isActive && (
                       <span
                         aria-hidden
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5"
-                        style={{ background: 'var(--color-paper)' }}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-4 rounded-full"
+                        style={{ background: 'var(--color-accent)' }}
                       />
                     )}
                     <span>{item.label}</span>
@@ -171,26 +172,6 @@ export function AppShell({ children }: AppShellProps) {
             })}
           </ul>
         </nav>
-
-        {/* Bottom: just settings + sign out. No usage meter - limits surface contextually. */}
-        <div className="p-5" style={{ borderTop: '1px solid var(--color-rule)' }}>
-          <div className="flex items-center justify-between text-[12px]">
-            <Link
-              href="/settings"
-              className="transition-opacity hover:opacity-100"
-              style={{ color: 'var(--color-paper-mute)' }}
-            >
-              Settings
-            </Link>
-            <button
-              onClick={handleSignOut}
-              className="transition-opacity hover:opacity-100"
-              style={{ color: 'var(--color-paper-mute)' }}
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
       </aside>
 
       {/* Main content */}

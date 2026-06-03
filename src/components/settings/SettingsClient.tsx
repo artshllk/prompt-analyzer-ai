@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { createClient } from '@/lib/supabase/client'
 
 interface SettingsClientProps {
   email: string
@@ -17,6 +18,7 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
   const [confirmText, setConfirmText] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [signingOut, setSigningOut] = useState(false)
 
   const isPro = tier === 'pro'
 
@@ -24,6 +26,14 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
     const res = await fetch('/api/billing/portal', { method: 'POST' })
     const data = await res.json()
     if (data.url) window.location.href = data.url
+  }
+
+  async function handleSignOut() {
+    setSigningOut(true)
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
   }
 
   async function handleDelete() {
@@ -85,6 +95,22 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
         >
           Get connection code →
         </a>
+      </section>
+
+      {/* Session — Sign out lives here now that the sidebar footer
+          is gone. Compact section, no need for theatre. */}
+      <section className="glass rounded-2xl border border-[#1e2d4a] p-6 space-y-4">
+        <h2 className="text-sm font-semibold text-[#f0f4ff] uppercase tracking-wider">Session</h2>
+        <p className="text-sm text-[#8b9cc8]">
+          Signed in as <span className="text-[#f0f4ff]">{email}</span>.
+        </p>
+        <button
+          onClick={handleSignOut}
+          disabled={signingOut}
+          className="px-4 py-2.5 rounded-xl bg-[#0f1628] border border-[#1e2d4a] hover:border-[#2d4070] text-[#f0f4ff] text-sm font-medium transition-all disabled:opacity-50"
+        >
+          {signingOut ? 'Signing out…' : 'Sign out'}
+        </button>
       </section>
 
       {/* Billing */}
