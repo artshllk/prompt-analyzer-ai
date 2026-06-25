@@ -9,6 +9,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { UpgradeButton } from "./UpgradeButton";
+import { SidebarExtensionPromo } from "./SidebarExtensionPromo";
 
 interface AuthUser {
   email: string | null;
@@ -343,6 +344,10 @@ export function AppShell({ children }: AppShellProps) {
             })}
           </ul>
         </nav>
+
+        {/* Extension promo — persistent reminder for signed-in users.
+            Hides on /extension and after dismissal. */}
+        <SidebarExtensionPromo />
 
         <AuthProvider>
           <SidebarProfile />
