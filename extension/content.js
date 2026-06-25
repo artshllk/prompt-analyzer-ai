@@ -72,6 +72,27 @@
   document.documentElement.appendChild(host)
   const root = host.attachShadow({ mode: 'open' })
 
+  // Stop typing/paste events from leaking up to the host page's editor.
+  // Claude (ProseMirror), ChatGPT (Lexical), and Gemini (Quill) all have
+  // document-level keyboard listeners that swallow keystrokes meant for
+  // our panel's textareas — the user types "hello" in our answer field
+  // and it lands in Claude's chat input instead.
+  //
+  // Composed events cross the shadow boundary by default, so we catch
+  // them on the host element (after they have already reached their
+  // intended target inside the shadow tree) and stop propagation before
+  // they reach `document`. We never preventDefault — the textarea has
+  // already handled the event by the time it reaches the host.
+  const STOP_BUBBLE = [
+    'keydown', 'keypress', 'keyup',
+    'input', 'beforeinput',
+    'paste', 'copy', 'cut',
+    'compositionstart', 'compositionupdate', 'compositionend',
+  ]
+  for (const type of STOP_BUBBLE) {
+    host.addEventListener(type, e => e.stopPropagation())
+  }
+
   root.innerHTML = `
     <style>
       :host { all: initial; }
