@@ -8,6 +8,7 @@ import type { UsageInfo } from "@/types";
 import { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { UpgradeButton } from "./UpgradeButton";
 
 interface AuthUser {
   email: string | null;
@@ -108,15 +109,9 @@ function SidebarProfile() {
     >
       {/* 1. Upgrade button gets its own full-width row if present */}
       {isFree && (
-        <Link
-          href="/dashboard/billing"
-          className="flex items-center justify-center text-[10px] font-bold tracking-wider uppercase py-2 rounded-full border text-(--color-paper-mute) transition-all hover:bg-white hover:text-black "
-          style={{
-            borderColor: "rgba(255, 255, 255, 0.15)",
-          }}
-        >
+        <UpgradeButton className="w-full flex items-center justify-center text-[10px] font-bold tracking-wider uppercase py-2 rounded-full border border-[#FFFFFF26] text-(--color-paper-mute) transition-all hover:bg-white hover:text-black">
           Upgrade to Pro
-        </Link>
+        </UpgradeButton>
       )}
 
       {/* 2. Manage account stays pinned to the bottom left */}
@@ -329,7 +324,7 @@ export function AppShell({ children }: AppShellProps) {
                     {isActive && (
                       <span
                         aria-hidden
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-4 rounded-full"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full"
                         style={{ background: "var(--color-accent)" }}
                       />
                     )}
