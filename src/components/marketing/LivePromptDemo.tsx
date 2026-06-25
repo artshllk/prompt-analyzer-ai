@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import { useTokenCount } from '@/hooks/useTokenCount'
+import { approxTokens, countTokens } from '@/lib/tokens'
 
 /**
  * Live interactive demo on the homepage.
@@ -64,6 +66,7 @@ interface LivePromptDemoProps {
 
 export function LivePromptDemo({ defaultPrompt = '', compact = false }: LivePromptDemoProps = {}) {
   const [prompt, setPrompt] = useState(defaultPrompt)
+  const liveTokenCount = useTokenCount(prompt)
   const [state, setState] = useState<State>({ kind: 'idle' })
   // Accumulate answers across turns so the engine sees the full conversation.
   const [history, setHistory] = useState<QA[]>([])
@@ -224,7 +227,13 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
               }
             }}
           />
-          <div className="flex flex-wrap items-center justify-between gap-3 mt-5">
+          {/* Live token count — updates as the visitor types. */}
+          <div className="flex items-center gap-2 mt-3 text-xs tabular-nums">
+            <span style={{ color: 'var(--color-accent-bright)' }}>{liveTokenCount}</span>
+            <span style={{ color: 'var(--color-paper-mute)' }}>tokens</span>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
             <button
               type="submit"
               disabled={!prompt.trim() || thinking}
@@ -293,7 +302,7 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
             />
           )}
           {state.kind === 'done' && (
-            <DonePanel key="done" before={state.before} after={state.after} rewrite={state.rewrite} explanation={state.explanation} onReset={reset} />
+            <DonePanel key="done" before={state.before} after={state.after} original={prompt} rewrite={state.rewrite} explanation={state.explanation} onReset={reset} />
           )}
           {state.kind === 'error' && <ErrorPanel key="error" message={state.message} onRetry={reset} />}
         </AnimatePresence>
@@ -474,17 +483,38 @@ function AskedPanel({
 function DonePanel({
   before,
   after,
+  original,
   rewrite,
   explanation,
   onReset,
 }: {
   before: number
   after: number
+  original: string
   rewrite: string
   explanation: string
   onReset: () => void
 }) {
   const delta = after - before
+
+  // Token counts for the original vs the rewrite. Approx first so the
+  // numbers render instantly, then exact gpt-tokenizer values land.
+  const [originalTokens, setOriginalTokens] = useState(() => approxTokens(original))
+  const [rewriteTokens, setRewriteTokens] = useState(() => approxTokens(rewrite))
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([countTokens(original), countTokens(rewrite)]).then(([a, b]) => {
+      if (cancelled) return
+      setOriginalTokens(a)
+      setRewriteTokens(b)
+    })
+    return () => { cancelled = true }
+  }, [original, rewrite])
+
+  const tokenDelta = rewriteTokens - originalTokens
+  const tokensSaved = -tokenDelta
+
   return (
     <motion.div {...panelMotion}>
       <div className="rule-strong mb-6" />
@@ -497,6 +527,24 @@ function DonePanel({
           <span style={{ color: 'var(--color-paper-mute)' }}>→</span>
           <ScoreNumber value={after} />
           <span className="text-sm ml-1" style={{ color: 'var(--color-accent)' }}>+{delta}</span>
+        </div>
+      </div>
+
+      {/* Token bar — same pattern as Clarity. */}
+      <div className="flex items-baseline justify-between mb-6">
+        <p className="eyebrow">Tokens</p>
+        <div className="flex items-baseline gap-3 text-xl md:text-2xl tabular-nums">
+          <span className="font-serif" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>{originalTokens}</span>
+          <span style={{ color: 'var(--color-paper-mute)' }}>→</span>
+          <span className="font-serif" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>{rewriteTokens}</span>
+          {tokensSaved !== 0 && (
+            <span
+              className="text-sm ml-1"
+              style={{ color: tokensSaved > 0 ? 'var(--color-accent-bright)' : 'var(--color-paper-mute)' }}
+            >
+              {tokensSaved > 0 ? `−${tokensSaved} saved` : `+${Math.abs(tokensSaved)} added`}
+            </span>
+          )}
         </div>
       </div>
 

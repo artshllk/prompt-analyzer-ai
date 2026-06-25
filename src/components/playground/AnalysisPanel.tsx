@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { approxTokens, countTokens } from '@/lib/tokens'
 import type { ImprovementTag } from '@/types/database'
 
 interface AnalysisPanelProps {
@@ -31,6 +32,21 @@ export function AnalysisPanel({
   const [copied, setCopied] = useState(false)
   const [activeTab, setActiveTab] = useState<'split' | 'original' | 'improved'>('split')
 
+  // Token counts: start with the synchronous estimate so the row renders
+  // immediately, then upgrade to the exact gpt-tokenizer value.
+  const [originalTokens, setOriginalTokens] = useState(() => approxTokens(originalPrompt))
+  const [improvedTokens, setImprovedTokens] = useState(() => approxTokens(improvedPrompt))
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([countTokens(originalPrompt), countTokens(improvedPrompt)]).then(([a, b]) => {
+      if (cancelled) return
+      setOriginalTokens(a)
+      setImprovedTokens(b)
+    })
+    return () => { cancelled = true }
+  }, [originalPrompt, improvedPrompt])
+
   async function handleCopy() {
     await navigator.clipboard.writeText(improvedPrompt)
     setCopied(true)
@@ -38,6 +54,9 @@ export function AnalysisPanel({
   }
 
   const delta = clarityScoreAfter - clarityScoreBefore
+  const tokenDelta = improvedTokens - originalTokens
+  // Positive = added tokens (improved is longer). Negative = saved.
+  const tokensSaved = -tokenDelta
 
   return (
     <motion.div
@@ -72,6 +91,33 @@ export function AnalysisPanel({
             </span>
           </div>
         )}
+      </div>
+
+      {/* Token row — original vs improved, with the delta. The exact
+          gpt-tokenizer numbers replace the approximation once they land. */}
+      <div className="rule" />
+      <div className="flex flex-wrap items-baseline gap-x-8 gap-y-2 py-5">
+        <div className="flex items-baseline gap-3">
+          <span className="eyebrow">Tokens</span>
+          <span className="font-serif tabular-nums text-xl md:text-2xl" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
+            {originalTokens}
+          </span>
+          <span style={{ color: 'var(--color-paper-mute)' }}>→</span>
+          <span className="font-serif tabular-nums text-xl md:text-2xl" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
+            {improvedTokens}
+          </span>
+          {tokensSaved !== 0 && (
+            <span
+              className="text-sm ml-1 tabular-nums"
+              style={{ color: tokensSaved > 0 ? 'var(--color-accent-bright)' : 'var(--color-paper-mute)' }}
+            >
+              {tokensSaved > 0 ? `−${tokensSaved} saved` : `+${Math.abs(tokensSaved)} added for context`}
+            </span>
+          )}
+        </div>
+        <span className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>
+          GPT-4o estimate · close for Claude and Gemini
+        </span>
       </div>
       <div className="rule" />
 

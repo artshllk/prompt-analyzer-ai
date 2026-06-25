@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from 'react'
 import { ToneSelector } from './ToneSelector'
+import { useTokenCount } from '@/hooks/useTokenCount'
 import type { Tone } from '@/types/database'
 import type { SessionStage } from '@/hooks/usePromptSession'
 
@@ -45,6 +46,7 @@ export function PromptEditor({
   }
 
   const overLimit = charCount > 2000
+  const tokenCount = useTokenCount(value)
 
   return (
     <div className={isDisabled ? 'opacity-60 pointer-events-none' : ''}>
@@ -69,13 +71,16 @@ export function PromptEditor({
         />
       </div>
 
-      {/* Meta row */}
+      {/* Meta row — live token count alongside characters. */}
       <div className="flex flex-wrap items-center justify-between gap-3 mt-3">
-        <span
-          className="text-xs tabular-nums"
-          style={{ color: overLimit ? 'var(--color-accent)' : 'var(--color-paper-mute)' }}
-        >
-          {charCount} characters
+        <span className="flex items-center gap-3 text-xs tabular-nums">
+          <span style={{ color: 'var(--color-paper)' }}>
+            <span style={{ color: 'var(--color-accent-bright)' }}>{tokenCount}</span> tokens
+          </span>
+          <span style={{ color: 'var(--color-rule-strong)' }}>·</span>
+          <span style={{ color: overLimit ? 'var(--color-accent)' : 'var(--color-paper-mute)' }}>
+            {charCount} characters
+          </span>
         </span>
         <span className="hidden sm:block text-xs" style={{ color: 'var(--color-paper-mute)' }}>
           Enter to analyze · Shift + Enter for newline
