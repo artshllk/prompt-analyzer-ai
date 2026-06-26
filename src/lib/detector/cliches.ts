@@ -63,6 +63,7 @@ export const AI_CLICHE_PATTERNS: { phrase: string; weight: number }[] = [
   { phrase: 'furthermore,',              weight: 1 },
   { phrase: 'moreover,',                 weight: 1 },
   { phrase: 'additionally,',             weight: 1 },
+  //TODO: add more phrases from research and corpora analysis (e.g. AI large dash symbol "—") 
 ]
 
 export type ClicheHit = { phrase: string; weight: number; index: number }
