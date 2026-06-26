@@ -3,12 +3,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'How to Use ChatGPT for Writing — A Practical Guide',
-  description: 'How to use ChatGPT for writing without sounding like a robot. Covers blog posts, emails, stories, marketing copy, and more — with real before/after prompt examples.',
+  title: 'How to Use ChatGPT for Writing - A Practical Guide',
+  description: 'How to use ChatGPT for writing without sounding like a robot. Covers blog posts, emails, stories, marketing copy, and more - with real before/after prompt examples.',
   alternates: { canonical: 'https://deepclario.com/blog/how-to-use-chatgpt-for-writing' },
   openGraph: {
     title: 'How to Use ChatGPT for Writing',
-    description: 'Practical guide to using ChatGPT for writing — blog posts, emails, stories, and marketing copy. Real examples included.',
+    description: 'Practical guide to using ChatGPT for writing - blog posts, emails, stories, and marketing copy. Real examples included.',
     url: 'https://deepclario.com/blog/how-to-use-chatgpt-for-writing',
     type: 'article',
   },
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'How to Use ChatGPT for Writing — A Practical Guide',
+  headline: 'How to Use ChatGPT for Writing - A Practical Guide',
   description: 'How to use ChatGPT for writing without sounding like a robot.',
   author: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
@@ -34,7 +34,7 @@ const faqSchema = {
       name: 'How do I use ChatGPT for writing without it sounding like AI?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Give ChatGPT your own voice to work from. Paste in a sample of your previous writing and ask it to match that style. Specify your audience, the tone, and what to avoid. The more constraints you add, the less it defaults to generic AI prose. Always edit the output — treat it as a first draft, not a finished piece.',
+        text: 'Give ChatGPT your own voice to work from. Paste in a sample of your previous writing and ask it to match that style. Specify your audience, the tone, and what to avoid. The more constraints you add, the less it defaults to generic AI prose. Always edit the output - treat it as a first draft, not a finished piece.',
       },
     },
     {
@@ -194,7 +194,7 @@ export default function HowToUseChatGPTForWritingPage() {
                 'Ask for a specific reading level: "Write for a 10th-grade reading level" or "Write for a PhD-educated audience."',
               ].map((tip, i) => (
                 <li key={i} className="flex gap-3 text-base leading-relaxed">
-                  <span style={{ color: 'var(--color-paper)' }}>—</span>
+                  <span style={{ color: 'var(--color-paper)' }}>-</span>
                   <span>{tip}</span>
                 </li>
               ))}
@@ -205,8 +205,8 @@ export default function HowToUseChatGPTForWritingPage() {
             <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--color-paper)' }}>Use ChatGPT as a collaborator, not a vending machine</h2>
             <p className="leading-relaxed mb-4">
               The best results come from iteration. Generate a draft, identify what is off, then refine with
-              a follow-up prompt: "The second paragraph is too formal — rewrite it to sound more conversational"
-              or "This is good but too long — cut it to 300 words without losing the main argument."
+              a follow-up prompt: "The second paragraph is too formal - rewrite it to sound more conversational"
+              or "This is good but too long - cut it to 300 words without losing the main argument."
             </p>
             <p className="leading-relaxed">
               Each follow-up gives ChatGPT more signal about what you actually want. By the third iteration,

@@ -14,7 +14,7 @@ function generateToken(): string {
 }
 
 /** Issue a token for the currently-authenticated user. Returns the plaintext
- *  token exactly once — caller must show it to the user immediately, we only
+ *  token exactly once - caller must show it to the user immediately, we only
  *  store the hash. */
 export async function issueTokenForCurrentUser(label = 'Browser extension'): Promise<
   { token: string; tokenId: string } | null

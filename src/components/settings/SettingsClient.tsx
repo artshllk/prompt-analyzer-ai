@@ -97,7 +97,7 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
         </a>
       </section>
 
-      {/* Session — Sign out lives here now that the sidebar footer
+      {/* Session - Sign out lives here now that the sidebar footer
           is gone. Compact section, no need for theatre. */}
       <section className="glass rounded-2xl border border-[#1e2d4a] p-6 space-y-4">
         <h2 className="text-sm font-semibold text-[#f0f4ff] uppercase tracking-wider">Session</h2>

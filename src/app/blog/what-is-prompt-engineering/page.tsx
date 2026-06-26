@@ -42,7 +42,7 @@ const faqSchema = {
       name: 'Do I need to know coding to do prompt engineering?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'No. Prompt engineering is a writing and communication skill, not a technical one. The core techniques can be learned and applied by anyone who uses ChatGPT, Claude, or Gemini — no programming knowledge required.',
+        text: 'No. Prompt engineering is a writing and communication skill, not a technical one. The core techniques can be learned and applied by anyone who uses ChatGPT, Claude, or Gemini - no programming knowledge required.',
       },
     },
     {
@@ -50,7 +50,7 @@ const faqSchema = {
       name: 'Is prompt engineering a real job?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. Prompt engineering roles exist at AI companies, large enterprises, and agencies. However, more broadly, prompt engineering is a skill that makes any knowledge worker more effective — writers, marketers, analysts, developers, and managers all benefit from learning it.',
+        text: 'Yes. Prompt engineering roles exist at AI companies, large enterprises, and agencies. However, more broadly, prompt engineering is a skill that makes any knowledge worker more effective - writers, marketers, analysts, developers, and managers all benefit from learning it.',
       },
     },
   ],

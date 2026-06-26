@@ -93,7 +93,7 @@ export function AnalysisPanel({
         )}
       </div>
 
-      {/* Token row — original vs improved, with the delta. The exact
+      {/* Token row - original vs improved, with the delta. The exact
           gpt-tokenizer numbers replace the approximation once they land. */}
       <div className="rule" />
       <div className="flex flex-wrap items-baseline gap-x-8 gap-y-2 py-5">

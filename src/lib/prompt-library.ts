@@ -1,12 +1,12 @@
 /**
- * Prompt library — the data behind /prompts and /prompts/[slug].
+ * Prompt library - the data behind /prompts and /prompts/[slug].
  *
  * Each entry becomes one SEO landing page targeting a real Google search
  * ("chatgpt prompt for X"). Adding a new page = adding one object here.
  * No new files, no new routes.
  *
  * Quality bar for every entry:
- * - `prompt` must be genuinely good — something a prompt engineer would
+ * - `prompt` must be genuinely good - something a prompt engineer would
  *   actually use. The free value has to be real, or the page is spam.
  * - `searchTerm` is the phrase the page is built to rank for.
  * - `placeholders` use [SQUARE BRACKETS] so the reader knows what to swap.
@@ -19,9 +19,9 @@ export interface PromptEntry {
   title: string
   /** The Google search this page targets. */
   searchTerm: string
-  /** <title> tag — keep under ~60 chars. */
+  /** <title> tag - keep under ~60 chars. */
   metaTitle: string
-  /** <meta description> — keep under ~155 chars. */
+  /** <meta description> - keep under ~155 chars. */
   metaDescription: string
   /** H1 on the page. */
   heading: string

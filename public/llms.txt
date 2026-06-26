@@ -18,7 +18,7 @@ insights.
 - [Homepage](https://deepclario.com): product overview, live demo, pricing.
 - [Playground](https://deepclario.com/playground): paste a prompt and get it analyzed, free, no account needed.
 - [Prompt library](https://deepclario.com/prompts): 23 free, ready-to-use prompt templates for common tasks (cover letters, emails, code review, blog posts, marketing copy, business plans, and more).
-- [Blog](https://deepclario.com/blog): practical guides on prompt engineering, written for working professionals — not researchers.
+- [Blog](https://deepclario.com/blog): practical guides on prompt engineering, written for working professionals - not researchers.
 
 ## Free tools
 

@@ -3,12 +3,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'ChatGPT System Prompt Examples — What They Are and How to Use Them',
+  title: 'ChatGPT System Prompt Examples - What They Are and How to Use Them',
   description: 'What ChatGPT system prompts are, how they work, and real examples you can use to customize ChatGPT\'s behavior for writing, coding, analysis, and more.',
   alternates: { canonical: 'https://deepclario.com/blog/chatgpt-system-prompt-examples' },
   openGraph: {
     title: 'ChatGPT System Prompt Examples',
-    description: 'Real ChatGPT system prompt examples for writing, coding, analysis, and customer support — plus how to set them up.',
+    description: 'Real ChatGPT system prompt examples for writing, coding, analysis, and customer support - plus how to set them up.',
     url: 'https://deepclario.com/blog/chatgpt-system-prompt-examples',
     type: 'article',
   },
@@ -78,7 +78,7 @@ When helping with writing tasks:
 - Avoid corporate clichés: "synergy", "leverage", "best-in-class", "thought leader"
 - Do not use em dashes mid-sentence
 - Suggest a concrete improvement rather than just identifying a problem
-- If asked to rewrite something, produce the rewrite — do not describe what you would change
+- If asked to rewrite something, produce the rewrite - do not describe what you would change
 
 Always ask: does this serve the reader, or does it serve the writer's ego?`,
   },
@@ -93,7 +93,7 @@ When reviewing code:
 - Explain why something is a problem, not just that it is
 - Suggest the fix, not just the problem
 - If something is a matter of preference rather than quality, say so
-- If the code is genuinely good, say that — do not invent issues
+- If the code is genuinely good, say that - do not invent issues
 
 When writing code:
 - Prefer simple over clever
@@ -126,7 +126,7 @@ When I bring you a business decision or problem:
 - Offer a recommendation, not just a list of options
 - Tell me what you would do if you were in my position, and why
 - Identify the biggest risk in my plan that I may not have considered
-- Be direct. I do not need diplomatic softening — I need accurate analysis.
+- Be direct. I do not need diplomatic softening - I need accurate analysis.
 
 You are a trusted advisor, not a consultant trying to seem comprehensive.`,
   },
@@ -169,7 +169,7 @@ export default function ChatGPTSystemPromptExamplesPage() {
           Think of it as a standing brief you give the AI once, so you do not have to repeat yourself in every prompt.
         </p>
         <p className="text-lg leading-relaxed mb-12" style={{ color: 'var(--color-paper-mute)' }}>
-          Here are four system prompts you can use today — each built for a specific type of work, with an explanation of what each instruction does.
+          Here are four system prompts you can use today - each built for a specific type of work, with an explanation of what each instruction does.
         </p>
 
         <div className="space-y-14">
@@ -201,7 +201,7 @@ export default function ChatGPTSystemPromptExamplesPage() {
             If you are using the API, pass it as the first message with <code className="text-sm px-1.5 py-0.5 rounded" style={{ background: 'var(--color-ink-card)', border: '1px solid var(--color-rule)' }}>role: "system"</code> before your user messages.
           </p>
           <p className="leading-relaxed">
-            System prompts are not magic — they are just persistent instructions. The same principles that make
+            System prompts are not magic - they are just persistent instructions. The same principles that make
             a good user prompt (role, format, constraints, context) make a good system prompt. The difference
             is that a system prompt applies to every message in the session.
           </p>

@@ -296,7 +296,7 @@ body {
   transform: translateY(-2px);
 }
 
-/* Card with a subtle accent edge — for the "Most popular" tier etc. */
+/* Card with a subtle accent edge - for the "Most popular" tier etc. */
 .card-accent-edge {
   position: relative;
 }

@@ -2,7 +2,7 @@
  * Token counting for the playground + live demo.
  *
  * Uses `gpt-tokenizer` with the GPT-4o encoding (`o200k_base` cl100k
- * variant). This is a good cross-model estimate — close to Claude and
+ * variant). This is a good cross-model estimate - close to Claude and
  * Gemini for typical English prose, and exact for ChatGPT (GPT-4o /
  * GPT-4-turbo).
  *

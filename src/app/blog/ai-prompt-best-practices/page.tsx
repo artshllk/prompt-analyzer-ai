@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'AI Prompt Best Practices — What Actually Works in 2026',
+  title: 'AI Prompt Best Practices - What Actually Works in 2026',
   description: 'The most effective AI prompt best practices based on real use across ChatGPT, Claude, and Gemini. Covers structure, context, format, iteration, and common mistakes.',
   alternates: { canonical: 'https://deepclario.com/blog/ai-prompt-best-practices' },
   openGraph: {
@@ -42,7 +42,7 @@ const faqSchema = {
       name: 'How specific should an AI prompt be?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'As specific as the task requires. For a simple task, 2-3 sentences may be enough. For complex tasks, a well-structured prompt of 8-15 lines consistently outperforms a short one. There is no penalty for being precise — the model does not get confused by more information. It gets confused by missing information.',
+        text: 'As specific as the task requires. For a simple task, 2-3 sentences may be enough. For complex tasks, a well-structured prompt of 8-15 lines consistently outperforms a short one. There is no penalty for being precise - the model does not get confused by more information. It gets confused by missing information.',
       },
     },
     {
@@ -73,7 +73,7 @@ const PRACTICES = [
   },
   {
     title: 'Be explicit about output format',
-    body: 'State the format you want before asking the question. "Return a bulleted list of 5 items, each under 20 words" is not over-specifying — it is removing ambiguity that would otherwise produce an output you have to reformat. Specify: list vs. prose, headers vs. no headers, length, and structure.',
+    body: 'State the format you want before asking the question. "Return a bulleted list of 5 items, each under 20 words" is not over-specifying - it is removing ambiguity that would otherwise produce an output you have to reformat. Specify: list vs. prose, headers vs. no headers, length, and structure.',
   },
   {
     title: 'Front-load the most important information',
@@ -81,7 +81,7 @@ const PRACTICES = [
   },
   {
     title: 'Use negative constraints liberally',
-    body: '"Do not use bullet points", "Do not start with a question", "Do not hedge with phrases like it is worth noting" — these negative instructions are extremely effective. They short-circuit the model\'s most common filler patterns and force more deliberate choices.',
+    body: '"Do not use bullet points", "Do not start with a question", "Do not hedge with phrases like it is worth noting" - these negative instructions are extremely effective. They short-circuit the model\'s most common filler patterns and force more deliberate choices.',
   },
   {
     title: 'Provide the context the model cannot infer',
@@ -93,7 +93,7 @@ const PRACTICES = [
   },
   {
     title: 'Iterate rather than restart',
-    body: 'The first output is a starting point. Follow up with specific refinements: "The tone is too formal — rewrite the second paragraph", "This is 200 words too long — cut without losing the main argument", "The third point is vague — be more specific." Each iteration teaches the model more about what you need.',
+    body: 'The first output is a starting point. Follow up with specific refinements: "The tone is too formal - rewrite the second paragraph", "This is 200 words too long - cut without losing the main argument", "The third point is vague - be more specific." Each iteration teaches the model more about what you need.',
   },
   {
     title: 'Ask for alternatives, not just one answer',
@@ -135,7 +135,7 @@ export default function AIPromptBestPracticesPage() {
         </h1>
         <p className="text-lg leading-relaxed mb-12" style={{ color: 'var(--color-paper-mute)' }}>
           These are the practices that consistently produce better output across ChatGPT, Claude, and Gemini.
-          Not theory — actual techniques that change results.
+          Not theory - actual techniques that change results.
         </p>
 
         <ol className="space-y-px">
@@ -173,7 +173,7 @@ export default function AIPromptBestPracticesPage() {
           <p className="text-xs mb-3" style={{ color: 'var(--color-paper-mute)' }}>Related reading</p>
           <div className="flex flex-col gap-2">
             <Link href="/blog/what-is-a-good-prompt" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>What makes a good AI prompt? →</Link>
-            <Link href="/blog/how-to-write-better-prompts" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>How to write better AI prompts — 7 techniques →</Link>
+            <Link href="/blog/how-to-write-better-prompts" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>How to write better AI prompts - 7 techniques →</Link>
             <Link href="/blog/how-to-get-better-results-from-chatgpt" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>How to get better results from ChatGPT →</Link>
             <Link href="/prompts" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>Browse all free prompt templates →</Link>
           </div>

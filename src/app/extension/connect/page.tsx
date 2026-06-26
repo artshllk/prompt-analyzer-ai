@@ -91,7 +91,7 @@ export default async function ExtensionConnectPage() {
 
         <section className="mt-16 pt-10" style={{ borderTop: '1px solid var(--color-rule)' }}>
           <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-            The code is shown once. If you lose it, just refresh this page to generate a new one — old codes keep working until revoked.
+            The code is shown once. If you lose it, just refresh this page to generate a new one - old codes keep working until revoked.
           </p>
         </section>
       </main>

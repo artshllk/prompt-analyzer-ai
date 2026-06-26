@@ -3,11 +3,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'Claude AI Prompts — How to Write Better Prompts for Claude',
+  title: 'Claude AI Prompts - How to Write Better Prompts for Claude',
   description: 'How to write prompts specifically for Claude (Anthropic). Covers where Claude differs from ChatGPT, what Claude is uniquely good at, and ready-to-use prompt examples.',
   alternates: { canonical: 'https://deepclario.com/blog/claude-ai-prompts' },
   openGraph: {
-    title: 'Claude AI Prompts — How to Write Better Prompts for Claude',
+    title: 'Claude AI Prompts - How to Write Better Prompts for Claude',
     description: 'What makes a good Claude prompt different from a ChatGPT prompt, and how to get the best results from Anthropic\'s model.',
     url: 'https://deepclario.com/blog/claude-ai-prompts',
     type: 'article',
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'Claude AI Prompts — How to Write Better Prompts for Claude',
+  headline: 'Claude AI Prompts - How to Write Better Prompts for Claude',
   description: 'How to write better prompts for Claude (Anthropic) with real examples.',
   author: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
@@ -34,7 +34,7 @@ const faqSchema = {
       name: 'How do I write a good prompt for Claude?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Claude responds well to detailed, clearly structured prompts. It handles long context windows better than most models, so pasting in full documents or detailed instructions works well. Claude is also more likely than other models to push back or ask for clarification when a prompt is ambiguous, which is a feature rather than a bug — it means giving you more accurate output.',
+        text: 'Claude responds well to detailed, clearly structured prompts. It handles long context windows better than most models, so pasting in full documents or detailed instructions works well. Claude is also more likely than other models to push back or ask for clarification when a prompt is ambiguous, which is a feature rather than a bug - it means giving you more accurate output.',
       },
     },
     {
@@ -136,7 +136,7 @@ export default function ClaudeAIPromptsPage() {
                 { label: 'Structured reasoning', desc: 'For complex problems, Claude tends to reason through steps more systematically when asked to think carefully.' },
               ].map((item, i) => (
                 <li key={i} className="flex gap-3 leading-relaxed">
-                  <span style={{ color: 'var(--color-paper)' }}>—</span>
+                  <span style={{ color: 'var(--color-paper)' }}>-</span>
                   <span><strong style={{ color: 'var(--color-paper)' }}>{item.label}:</strong> {item.desc}</span>
                 </li>
               ))}
@@ -170,7 +170,7 @@ Write [ARTICLE TYPE] about [TOPIC] for [AUDIENCE].
 Voice: intelligent but accessible. No jargon unless explained.
 Short sentences where possible. No padding, no filler conclusions.
 Do not start with "In today's world" or any similar cliché.
-Do not use bullet points — prose only.
+Do not use bullet points - prose only.
 Length: [WORD COUNT].
 
 The piece should leave the reader with one clear, specific idea they did not have before they started reading.`}</pre>
@@ -189,7 +189,7 @@ Constraints I am working within:
 Think through this step by step. Consider the most important tradeoffs.
 Then give me your recommendation and the 2-3 strongest reasons for it.
 If there are important things I have not considered, tell me those too.
-Be direct — I want your actual recommendation, not a list of options.`}</pre>
+Be direct - I want your actual recommendation, not a list of options.`}</pre>
               </div>
             </div>
           </section>
@@ -215,7 +215,7 @@ Be direct — I want your actual recommendation, not a list of options.`}</pre>
             Improve a Claude prompt right now
           </h2>
           <p className="text-base leading-relaxed mb-6" style={{ color: 'var(--color-paper-mute)' }}>
-            Paste your prompt into Deepclario. It works with Claude, ChatGPT, and Gemini — scores it, asks what is missing, and rewrites it. Free.
+            Paste your prompt into Deepclario. It works with Claude, ChatGPT, and Gemini - scores it, asks what is missing, and rewrites it. Free.
           </p>
           <Link href="/playground" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] btn-paper transition-all" style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}>
             Try Deepclario free

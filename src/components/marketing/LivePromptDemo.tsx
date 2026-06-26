@@ -227,7 +227,7 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
               }
             }}
           />
-          {/* Live token count — updates as the visitor types. */}
+          {/* Live token count - updates as the visitor types. */}
           <div className="flex items-center gap-2 mt-3 text-xs tabular-nums">
             <span style={{ color: 'var(--color-accent-bright)' }}>{liveTokenCount}</span>
             <span style={{ color: 'var(--color-paper-mute)' }}>tokens</span>
@@ -530,7 +530,7 @@ function DonePanel({
         </div>
       </div>
 
-      {/* Token bar — same pattern as Clarity. */}
+      {/* Token bar - same pattern as Clarity. */}
       <div className="flex items-baseline justify-between mb-6">
         <p className="eyebrow">Tokens</p>
         <div className="flex items-baseline gap-3 text-xl md:text-2xl tabular-nums">

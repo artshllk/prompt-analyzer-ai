@@ -3,7 +3,7 @@ import { issueTokenForCurrentUser } from '@/lib/db/api-tokens'
 
 /**
  * Issue a new extension token for the signed-in user. The plaintext token
- * is returned exactly once — the page shows it to the user, then it's gone.
+ * is returned exactly once - the page shows it to the user, then it's gone.
  * We store only the SHA-256 hash, so even a full DB dump doesn't grant
  * extension access.
  */

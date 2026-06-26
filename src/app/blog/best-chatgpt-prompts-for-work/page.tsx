@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'Best ChatGPT Prompts for Work (2026) — Copy and Use Today',
+  title: 'Best ChatGPT Prompts for Work (2026) - Copy and Use Today',
   description: 'The best ChatGPT prompts for real work tasks: emails, reports, analysis, meeting notes, job descriptions, performance reviews, and more. All free to copy.',
   alternates: { canonical: 'https://deepclario.com/blog/best-chatgpt-prompts-for-work' },
   openGraph: {
@@ -76,7 +76,7 @@ const PROMPTS = [
 Context:
 - Original deadline: [DATE]
 - New deadline I need: [DATE]
-- Reason: [BRIEF REASON — be honest but professional]
+- Reason: [BRIEF REASON - be honest but professional]
 - What I have completed so far: [STATUS]
 
 Rules:
@@ -98,7 +98,7 @@ MEETING NOTES:
 Output format:
 1. Meeting purpose (1 sentence)
 2. Key decisions made (bullet list)
-3. Action items (format: [Owner] — [Task] — [Due date if mentioned])
+3. Action items (format: [Owner] - [Task] - [Due date if mentioned])
 4. Open questions or blockers (bullet list)
 
 Keep each item concise. If the meeting notes are unclear, note that rather than guessing.`,
@@ -146,7 +146,7 @@ AREAS FOR IMPROVEMENT:
 GOALS FOR NEXT PERIOD:
 [LIST 2-3 MEASURABLE OBJECTIVES]
 
-Write a professional performance review using this information. Tone: direct, specific, and constructive — not generic praise or vague criticism. Each point should reference real behavior or output, not personality traits. Length: 3-5 paragraphs.`,
+Write a professional performance review using this information. Tone: direct, specific, and constructive - not generic praise or vague criticism. Each point should reference real behavior or output, not personality traits. Length: 3-5 paragraphs.`,
     why: 'Anchoring feedback to specific behavior rather than traits produces reviews that are both fair and legally defensible.',
   },
   {
@@ -163,7 +163,7 @@ Format as a 2x2 table:
 | Strengths | Weaknesses |
 | Opportunities | Threats |
 
-Under each quadrant, list 3-5 specific, actionable points — not generic observations. After the table, add a 2-sentence strategic recommendation based on the most important intersection.`,
+Under each quadrant, list 3-5 specific, actionable points - not generic observations. After the table, add a 2-sentence strategic recommendation based on the most important intersection.`,
     why: 'Defining the goal of the analysis forces the output to be decision-relevant, not just a generic list.',
   },
 ]
@@ -258,7 +258,7 @@ export default function BestChatGPTPromptsForWorkPage() {
         <div className="mt-10 pt-6 border-t border-[color:var(--color-rule)]">
           <p className="text-xs mb-3" style={{ color: 'var(--color-paper-mute)' }}>Related reading</p>
           <div className="flex flex-col gap-2">
-            <Link href="/blog/how-to-write-better-prompts" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>How to write better AI prompts — 7 proven techniques →</Link>
+            <Link href="/blog/how-to-write-better-prompts" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>How to write better AI prompts - 7 proven techniques →</Link>
             <Link href="/blog/chatgpt-prompt-tips" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>10 ChatGPT prompt tips that actually work →</Link>
             <Link href="/prompts/chatgpt-email-writing" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>Free prompt: write any professional email →</Link>
             <Link href="/prompts/chatgpt-meeting-notes" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>Free prompt: turn meeting notes into action items →</Link>

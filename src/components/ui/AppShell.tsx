@@ -143,7 +143,7 @@ function SidebarProfile() {
   );
 }
 
-// Settings is a regular nav item — the previous footer block (Settings +
+// Settings is a regular nav item - the previous footer block (Settings +
 // Sign out) read as a generic dashboard template. Sign out now lives on
 // the Settings page itself, where account actions belong.
 const NAV_ITEMS: { href: string; label: string; isPro?: boolean }[] = [
@@ -345,7 +345,7 @@ export function AppShell({ children }: AppShellProps) {
           </ul>
         </nav>
 
-        {/* Extension promo — persistent reminder for signed-in users.
+        {/* Extension promo - persistent reminder for signed-in users.
             Hides on /extension and after dismissal. */}
         <SidebarExtensionPromo />
 

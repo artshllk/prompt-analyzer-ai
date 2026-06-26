@@ -33,7 +33,7 @@ const CASES: Case[] = [
     slug: 'chatgpt-code-review',
     audience: 'Engineers',
     title: 'Get a senior code review, not a polite restatement.',
-    hook: 'Security, correctness, performance, style — in that order, with specific fixes.',
+    hook: 'Security, correctness, performance, style - in that order, with specific fixes.',
   },
   {
     slug: 'chatgpt-marketing-copy',

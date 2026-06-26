@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
 
   // Per-user monthly quota for signed-in free users on the extension.
   // Pro users bypass entirely. New turns in an in-progress session (when
-  // priorAnswers is non-empty) don't recount — they're part of the same
+  // priorAnswers is non-empty) don't recount - they're part of the same
   // analysis the user already paid for.
   if (auth && auth.tier === 'free' && priorAnswers.length === 0) {
     const supabase = await createServiceClient()
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
 
   // Analytics-only log. One structured line per analyze so we can tell
   // extension/web and authed/anon usage apart in Vercel logs. No prompt
-  // text, no IP — when authed we have the user_id, otherwise a coarse bucket.
+  // text, no IP - when authed we have the user_id, otherwise a coarse bucket.
   const ip = auth ? null : getClientIp(req)
   const ipBucket = ip ? ip.split('.').slice(0, 3).join('.') + '.x' : null
   console.log(
@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Record usage for signed-in users, fire-and-forget. Only on the first
-  // turn of a session — clarification rounds belong to the same analysis.
+  // turn of a session - clarification rounds belong to the same analysis.
   if (auth && priorAnswers.length === 0) {
     const supabase = await createServiceClient()
     supabase

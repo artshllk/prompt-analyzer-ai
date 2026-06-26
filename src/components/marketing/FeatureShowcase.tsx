@@ -9,7 +9,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
  * Deepclario's editorial palette and four genuinely distinct demos
  * instead of two stacked boxes that say almost the same thing.
  *
- * Each panel is a custom mini-demo — no generic chat-bubble icons,
+ * Each panel is a custom mini-demo - no generic chat-bubble icons,
  * no glassy gradients. Just real product behaviour shown small.
  */
 
@@ -75,7 +75,7 @@ export function FeatureShowcase() {
           </div>
         </div>
 
-        {/* Tab strip — horizontally scrollable on mobile if it overflows */}
+        {/* Tab strip - horizontally scrollable on mobile if it overflows */}
         <div
           className="overflow-x-auto -mx-6 px-6 md:mx-0 md:px-0 mb-8"
           role="tablist"
@@ -172,7 +172,7 @@ const PANEL_BLURBS: Record<TabId, string> = {
   score:
     'Goal clarity, context, format, constraints, examples. Each rated on its own merits. You see exactly which dimension is weak and why.',
   clarify:
-    'Only when the rewrite would change meaningfully based on the answer. Capped at three. Junk answers do not satisfy the model — it will ask again.',
+    'Only when the rewrite would change meaningfully based on the answer. Capped at three. Junk answers do not satisfy the model - it will ask again.',
   rewrite:
     'Role assigned, audience named, format specified, constraints stated. The version a careful expert would write themselves.',
   'in-chat':
@@ -313,7 +313,7 @@ function PanelClarify() {
           className="font-serif italic text-lg"
           style={{ color: 'var(--color-paper)' }}
         >
-          Who is this post for — founders new to AI, or already using AI but getting inconsistent results?
+          Who is this post for - founders new to AI, or already using AI but getting inconsistent results?
         </p>
       </div>
 
@@ -336,7 +336,7 @@ function PanelClarify() {
         className="text-sm pt-2"
         style={{ color: 'var(--color-paper-mute)' }}
       >
-        That was enough. Confidence crossed the threshold — straight to rewrite.
+        That was enough. Confidence crossed the threshold - straight to rewrite.
       </p>
     </div>
   )

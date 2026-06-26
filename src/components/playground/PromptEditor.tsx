@@ -71,7 +71,7 @@ export function PromptEditor({
         />
       </div>
 
-      {/* Meta row — live token count alongside characters. */}
+      {/* Meta row - live token count alongside characters. */}
       <div className="flex flex-wrap items-center justify-between gap-3 mt-3">
         <span className="flex items-center gap-3 text-xs tabular-nums">
           <span style={{ color: 'var(--color-paper)' }}>

@@ -5,7 +5,7 @@ import { useState } from 'react'
 /**
  * Copy-to-clipboard button for a prompt block. Kept as its own small
  * client component so the prompt pages can stay server-rendered (better
- * for SEO) — only this button needs interactivity.
+ * for SEO) - only this button needs interactivity.
  */
 export function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
@@ -16,7 +16,7 @@ export function CopyButton({ text }: { text: string }) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // Insecure context / old browser — the prompt text is visible and
+      // Insecure context / old browser - the prompt text is visible and
       // selectable on the page, so the user can still copy it manually.
     }
   }

@@ -7,7 +7,7 @@ import { CopyButton } from '../copy-button'
 
 const BASE = 'https://deepclario.com'
 
-// Pre-render every prompt page at build time — fastest possible response,
+// Pre-render every prompt page at build time - fastest possible response,
 // best for SEO crawling.
 export function generateStaticParams() {
   return getAllPromptSlugs().map(slug => ({ slug }))
@@ -69,7 +69,7 @@ export default async function PromptPage({
     dateModified: '2026-05-01',
   }
 
-  // HowTo schema — Google can surface the prompt steps directly in search results
+  // HowTo schema - Google can surface the prompt steps directly in search results
   const howToSchema = {
     '@context': 'https://schema.org',
     '@type': 'HowTo',
@@ -94,7 +94,7 @@ export default async function PromptPage({
     ],
   }
 
-  // FAQ schema from whyItWorks — earns expanded FAQ rich result in Google
+  // FAQ schema from whyItWorks - earns expanded FAQ rich result in Google
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -246,14 +246,14 @@ export default async function PromptPage({
           <ul className="space-y-3">
             {entry.tips.map((tip, i) => (
               <li key={i} className="flex gap-3 text-base leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
-                <span style={{ color: 'var(--color-paper)' }}>—</span>
+                <span style={{ color: 'var(--color-paper)' }}>-</span>
                 <span>{tip}</span>
               </li>
             ))}
           </ul>
         </section>
 
-        {/* Product CTA — the bridge from free value to the product */}
+        {/* Product CTA - the bridge from free value to the product */}
         <section
           className="mt-16 rounded-2xl p-7 md:p-9"
           style={{ background: 'var(--color-ink-card)', border: '1px solid var(--color-rule-strong)' }}
@@ -277,7 +277,7 @@ export default async function PromptPage({
           </Link>
         </section>
 
-        {/* Related prompts — internal links help SEO and keep people on site */}
+        {/* Related prompts - internal links help SEO and keep people on site */}
         {related.length > 0 && (
           <section className="mt-16">
             <p className="eyebrow mb-4">More free prompts</p>

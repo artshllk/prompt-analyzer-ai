@@ -11,7 +11,7 @@ export function ConnectTokenView({ token }: { token: string }) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // Older browsers / insecure context — user can still select & copy manually.
+      // Older browsers / insecure context - user can still select & copy manually.
     }
   }
 
@@ -38,7 +38,7 @@ export function ConnectTokenView({ token }: { token: string }) {
         </button>
       </div>
       <p className="mt-3 text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-        Paste this into the extension panel. Treat it like a password — anyone with
+        Paste this into the extension panel. Treat it like a password - anyone with
         the code can use your Deepclario allowance.
       </p>
     </div>

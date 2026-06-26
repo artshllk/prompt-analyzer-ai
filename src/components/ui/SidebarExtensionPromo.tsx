@@ -12,7 +12,7 @@ const DISMISS_KEY = 'dc_ext_promo_dismissed_v1'
  *
  * Sits between the nav and the SidebarProfile. Hairline-bordered card
  * with an accent-blue edge so it reads as a *feature*, not just another
- * nav item. Dismissable — the user can hide it once they have installed
+ * nav item. Dismissable - the user can hide it once they have installed
  * the extension. Stored in localStorage; survives across sessions.
  *
  * Hidden automatically when the user is on /extension or /extension/connect.
@@ -58,7 +58,7 @@ export function SidebarExtensionPromo() {
               '0 1px 0 rgba(245, 244, 241, 0.04) inset, 0 20px 40px -24px rgba(0, 0, 0, 0.65)',
           }}
         >
-          {/* Soft accent glow in the top-right corner — gives the card
+          {/* Soft accent glow in the top-right corner - gives the card
               a focal point without using a literal icon. */}
           <div
             aria-hidden="true"

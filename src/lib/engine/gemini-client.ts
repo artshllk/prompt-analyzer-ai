@@ -8,7 +8,7 @@ const MODELS = [
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
 // Worst case is exactly MODELS.length attempts (no same-model retries).
 // A same-model retry of an identical prompt rarely turns a timeout into
-// a success and doubles the wall-time budget — that stacking is what
+// a success and doubles the wall-time budget - that stacking is what
 // produced the 17s+ failures. Resilience comes from the fallback MODEL.
 // 12s per call: structured-JSON generation is slower than free text,
 // so 8s false-failed valid slow responses; 12s lets them finish while
@@ -35,7 +35,7 @@ interface GeminiResponse {
 }
 
 /**
- * Result of one model attempt. `reason` is never empty — every path
+ * Result of one model attempt. `reason` is never empty - every path
  * names why it ended, so a 503 is never silent in the logs.
  */
 interface ModelResult {
@@ -86,7 +86,7 @@ async function callModel(model: string, req: GeminiRequest): Promise<ModelResult
     const data: GeminiResponse = await res.json()
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
     if (!text) {
-      // 200 OK but empty — almost always a safety block or finishReason
+      // 200 OK but empty - almost always a safety block or finishReason
       // other than STOP. Log the raw shape so we can see it.
       console.error(`[gemini] ${model} empty text in ${ms}ms: ${JSON.stringify(data).slice(0, 400)}`)
       return { text: '', transient: false, reason: `empty_response_in_${ms}ms` }
@@ -125,7 +125,7 @@ function parseJSON<T>(raw: string): T | null {
 export async function callGemini<T>(req: GeminiRequest): Promise<T | null> {
   const trail: string[] = []
 
-  // One attempt per model, in order. No same-model retry — that
+  // One attempt per model, in order. No same-model retry - that
   // stacking is what created the 17s+ failures. Resilience comes from
   // falling through to the next model. Worst case = MODELS.length calls.
   for (const model of MODELS) {

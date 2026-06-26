@@ -6,7 +6,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 /**
  * Hero centerpiece visual.
  *
- * 2D-only refresh — no three.js, no glassy 3D. Adds quiet depth via:
+ * 2D-only refresh - no three.js, no glassy 3D. Adds quiet depth via:
  *   - drifting background particles (SVG dots)
  *   - a slowly-rotating outer dashed ring
  *   - three concentric rings around the logo
@@ -60,7 +60,7 @@ export function HeroCenterpiece() {
       className="relative w-full aspect-square max-w-[560px] mx-auto"
       aria-hidden="true"
     >
-      {/* Particle field — soft drifting dots in the background.
+      {/* Particle field - soft drifting dots in the background.
           SVG so it scales crisply, low opacity so it never competes
           with the logo or chips. */}
       <svg
@@ -103,7 +103,7 @@ export function HeroCenterpiece() {
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {/* Rotating outer dashed ring — slow enough to be sensed, not seen. */}
+      {/* Rotating outer dashed ring - slow enough to be sensed, not seen. */}
       <motion.div
         className="absolute inset-[4%] rounded-full"
         style={{ border: '1px dashed var(--color-rule)' }}
@@ -117,7 +117,7 @@ export function HeroCenterpiece() {
         style={{ border: '1px solid var(--color-rule)' }}
       />
 
-      {/* Inner ring closest to the logo — slightly brighter so the
+      {/* Inner ring closest to the logo - slightly brighter so the
           eye lands at the centre. */}
       <div
         className="absolute inset-[26%] rounded-full"

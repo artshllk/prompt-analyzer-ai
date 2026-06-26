@@ -4,12 +4,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 
 /**
- * Pricing — two-tier card grid (Free + Pro) with a polished
+ * Pricing - two-tier card grid (Free + Pro) with a polished
  * "Most popular" treatment on Pro. The cards use card-editorial
  * for surface depth and card-accent-edge for the Pro accent ring.
  *
  * Pro features are limited to what the product actually ships today.
- * Persona memory, multi-model compare, BYOK — all on the roadmap,
+ * Persona memory, multi-model compare, BYOK - all on the roadmap,
  * intentionally not listed here.
  */
 
@@ -116,7 +116,7 @@ export function EditorialPricing() {
           <FeatureList items={FREE_FEATURES} />
         </PricingCard>
 
-        {/* Pro — most popular */}
+        {/* Pro - most popular */}
         <PricingCard tier="Pro" popular>
           <div className="flex items-baseline gap-1.5 mb-1">
             <span

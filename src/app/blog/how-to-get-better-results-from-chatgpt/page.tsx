@@ -3,8 +3,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'How to Get Better Results from ChatGPT — 8 Techniques',
-  description: 'Getting better results from ChatGPT is mostly about how you prompt it. These 8 techniques fix the most common reasons people get mediocre output — with real examples.',
+  title: 'How to Get Better Results from ChatGPT - 8 Techniques',
+  description: 'Getting better results from ChatGPT is mostly about how you prompt it. These 8 techniques fix the most common reasons people get mediocre output - with real examples.',
   alternates: { canonical: 'https://deepclario.com/blog/how-to-get-better-results-from-chatgpt' },
   openGraph: {
     title: 'How to Get Better Results from ChatGPT',
@@ -69,28 +69,28 @@ const breadcrumbSchema = {
 const TECHNIQUES = [
   {
     title: 'Tell it who to be',
-    body: 'Starting with "Act as a [role]" is not just a trick — it shifts the model\'s entire frame. "Act as a senior software engineer" produces different code explanations than no role. "Act as a skeptical editor" produces harsher, more useful feedback on your writing. The role sets the vocabulary, the level of detail, and the assumptions.',
+    body: 'Starting with "Act as a [role]" is not just a trick - it shifts the model\'s entire frame. "Act as a senior software engineer" produces different code explanations than no role. "Act as a skeptical editor" produces harsher, more useful feedback on your writing. The role sets the vocabulary, the level of detail, and the assumptions.',
     example: { bad: 'Review my code.', good: 'Act as a senior backend engineer doing a code review. Review the code below for security issues, performance problems, and readability. Be direct and specific about what needs to change and why.' },
   },
   {
     title: 'Specify the format before you ask',
-    body: 'If you don\'t say what format you want, ChatGPT decides for you — and its default is often prose when you need bullets, or bullets when you need prose. State the format upfront: "Give me a numbered list", "Format as a table with columns X, Y, Z", "Write 3 short paragraphs, no headers."',
+    body: 'If you don\'t say what format you want, ChatGPT decides for you - and its default is often prose when you need bullets, or bullets when you need prose. State the format upfront: "Give me a numbered list", "Format as a table with columns X, Y, Z", "Write 3 short paragraphs, no headers."',
     example: { bad: 'What are the pros and cons of remote work?', good: 'List the top 5 pros and top 5 cons of remote work in a markdown table. Each cell should be one sentence. Target audience: a CEO deciding whether to go fully remote.' },
   },
   {
     title: 'Give it the context it cannot guess',
     body: 'ChatGPT knows nothing about your situation unless you tell it. Who is the audience? What has already been tried? What decision will this output inform? What constraints exist? Every piece of context you add removes a guess it has to make, and guesses are where generic output comes from.',
-    example: { bad: 'Write a product description for my app.', good: 'Write a product description for Deepclario — an AI prompt analyzer. Target audience: marketing professionals who use ChatGPT daily but are frustrated with inconsistent results. Key differentiator: it asks clarifying questions before rewriting, so the output is tailored, not generic. Tone: confident and direct. Length: 80 words max.' },
+    example: { bad: 'Write a product description for my app.', good: 'Write a product description for Deepclario - an AI prompt analyzer. Target audience: marketing professionals who use ChatGPT daily but are frustrated with inconsistent results. Key differentiator: it asks clarifying questions before rewriting, so the output is tailored, not generic. Tone: confident and direct. Length: 80 words max.' },
   },
   {
     title: 'Add negative constraints',
     body: 'Telling ChatGPT what NOT to do is as powerful as telling it what to do. Common useful negatives: "No bullet points", "Don\'t use corporate jargon", "Don\'t hedge with phrases like \'it\'s worth noting\'", "Don\'t repeat the question back to me", "No more than 200 words."',
-    example: { bad: 'Write an executive summary.', good: 'Write an executive summary of the report below. Max 150 words. No bullet points — prose only. Do not start with "This report..." Start with the most important finding.' },
+    example: { bad: 'Write an executive summary.', good: 'Write an executive summary of the report below. Max 150 words. No bullet points - prose only. Do not start with "This report..." Start with the most important finding.' },
   },
   {
     title: 'Ask for multiple variations',
-    body: 'Instead of asking for one version and editing it to death, ask for 3-5 variations upfront. "Give me 5 subject line options for this email" or "Write 3 versions of this headline — one formal, one casual, one provocative." You will almost always find one that is close to what you want, or combine the best parts.',
-    example: { bad: 'Write a subject line for my cold email.', good: 'Write 5 subject line options for a cold email selling a B2B SaaS tool to heads of marketing. The tool saves 3 hours per week on reporting. Vary the angle: curiosity, benefit, social proof, question, and directness — one of each.' },
+    body: 'Instead of asking for one version and editing it to death, ask for 3-5 variations upfront. "Give me 5 subject line options for this email" or "Write 3 versions of this headline - one formal, one casual, one provocative." You will almost always find one that is close to what you want, or combine the best parts.',
+    example: { bad: 'Write a subject line for my cold email.', good: 'Write 5 subject line options for a cold email selling a B2B SaaS tool to heads of marketing. The tool saves 3 hours per week on reporting. Vary the angle: curiosity, benefit, social proof, question, and directness - one of each.' },
   },
   {
     title: 'Use chain-of-thought for hard problems',
@@ -99,12 +99,12 @@ const TECHNIQUES = [
   },
   {
     title: 'Iterate instead of starting over',
-    body: 'The first output is a draft, not a failure. Follow up with specific refinements: "The third paragraph is too long — cut it in half", "The tone is too formal — rewrite in a more conversational voice", "This is good but I need it to be more specific about X." Each follow-up teaches ChatGPT more about what you want.',
+    body: 'The first output is a draft, not a failure. Follow up with specific refinements: "The third paragraph is too long - cut it in half", "The tone is too formal - rewrite in a more conversational voice", "This is good but I need it to be more specific about X." Each follow-up teaches ChatGPT more about what you want.',
     example: { bad: '[starts a new chat and tries again]', good: '"This is good but the opening is too generic. Rewrite just the first paragraph to start with a specific, surprising fact about the problem instead."' },
   },
   {
     title: 'Show an example of what good looks like',
-    body: 'If you have an example of output you like — a previous email, a competitor\'s copy, a paragraph you wrote — paste it in. "Write something like this:" followed by your example is one of the most powerful prompt techniques. The model will match the structure, rhythm, and tone far more accurately than any description.',
+    body: 'If you have an example of output you like - a previous email, a competitor\'s copy, a paragraph you wrote - paste it in. "Write something like this:" followed by your example is one of the most powerful prompt techniques. The model will match the structure, rhythm, and tone far more accurately than any description.',
     example: { bad: 'Write a bio for my LinkedIn.', good: 'Write a LinkedIn bio for me in the style of this example: [paste in a bio you admire]. My details: [your actual details]. Match the tone and structure but make it specific to my background.' },
   },
 ]

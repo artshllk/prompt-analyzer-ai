@@ -3,12 +3,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'Zero-Shot vs Few-Shot Prompting — What the Difference Means in Practice',
+  title: 'Zero-Shot vs Few-Shot Prompting - What the Difference Means in Practice',
   description: 'Zero-shot vs few-shot prompting explained clearly. What each technique is, when to use which, and real examples showing how few-shot examples change AI output quality.',
   alternates: { canonical: 'https://deepclario.com/blog/zero-shot-vs-few-shot-prompting' },
   openGraph: {
     title: 'Zero-Shot vs Few-Shot Prompting',
-    description: 'Zero-shot vs few-shot prompting — what each one is and when to use which, with real examples.',
+    description: 'Zero-shot vs few-shot prompting - what each one is and when to use which, with real examples.',
     url: 'https://deepclario.com/blog/zero-shot-vs-few-shot-prompting',
     type: 'article',
   },
@@ -118,7 +118,7 @@ export default function ZeroShotVsFewShotPage() {
               </p>
             </div>
             <p className="leading-relaxed">
-              Works fine here — sentiment classification is a standard task with a clear expected output.
+              Works fine here - sentiment classification is a standard task with a clear expected output.
               The AI has seen thousands of similar examples in training.
             </p>
           </section>
@@ -154,7 +154,7 @@ Now classify this review:
             </div>
             <p className="leading-relaxed">
               The few-shot version does more: it produces a structured, consistent output with both sentiment
-              and a key issue — which is more useful for downstream processing than a single label.
+              and a key issue - which is more useful for downstream processing than a single label.
             </p>
           </section>
 
@@ -171,7 +171,7 @@ Now classify this review:
                     'You are exploring what the model can do',
                   ].map((item, i) => (
                     <li key={i} className="flex gap-2">
-                      <span style={{ color: 'var(--color-paper)' }}>—</span>
+                      <span style={{ color: 'var(--color-paper)' }}>-</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -187,7 +187,7 @@ Now classify this review:
                     'Zero-shot keeps missing the mark',
                   ].map((item, i) => (
                     <li key={i} className="flex gap-2">
-                      <span style={{ color: 'var(--color-paper)' }}>—</span>
+                      <span style={{ color: 'var(--color-paper)' }}>-</span>
                       <span>{item}</span>
                     </li>
                   ))}
