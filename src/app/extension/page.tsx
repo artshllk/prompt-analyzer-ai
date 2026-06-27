@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
+import { MarketingNav } from '@/components/marketing/MarketingNav'
 export const metadata: Metadata = {
   title: 'Chrome extension - Deepclario inside ChatGPT, Claude & Gemini',
   description:
@@ -46,32 +46,21 @@ const STEPS = [
     t: 'Use it',
     d: 'Open chatgpt.com, claude.ai, or gemini.google.com. A “✦ Improve prompt” button appears bottom-right.',
   },
+  {
+    n: '07',
+    t: 'Connect your account (optional)',
+    d: 'If you have a Deepclario account, open the extension panel, click “Connect account”, and paste the code from deepclario.com/extension/connect. The extension then uses your plan instead of the public free quota.',
+  },
 ]
+
+const EXTENSION_VERSION = 'v0.4.0'
 
 export default function ExtensionPage() {
   return (
     <div className="editorial grain min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
-      {/* Nav */}
-      <header
-        className="border-b px-6 md:px-10 py-4 flex items-center justify-between"
-        style={{ borderColor: 'var(--color-rule)' }}
-      >
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/logo.png" alt="Deepclario" width={28} height={28} priority />
-          <span className="text-[15px] tracking-tight" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>
-            Deepclario
-          </span>
-        </Link>
-        <Link
-          href="/playground"
-          className="px-4 py-2 rounded-full text-sm transition-all btn-paper"
-          style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
-        >
-          Open the playground
-        </Link>
-      </header>
+      <MarketingNav current="extension" />
 
-      <main className="max-w-5xl mx-auto px-6 md:px-10 py-16 md:py-24">
+      <main className="max-w-5xl mx-auto px-6 md:px-10 pt-28 md:pt-36 pb-16 md:pb-24">
         {/* Hero */}
         <div className="max-w-3xl">
           <p className="eyebrow mb-6">Browser extension · Chrome · Brave · Edge · Arc</p>
@@ -100,6 +89,15 @@ export default function ExtensionPage() {
             </a>
             <span className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
               Works in Chrome, Brave, Edge, Arc.
+            </span>
+            <span
+              className="text-[11px] font-medium tracking-[0.16em] uppercase px-2.5 py-1 rounded-full"
+              style={{
+                color: 'var(--color-paper-mute)',
+                border: '1px solid var(--color-rule-strong)',
+              }}
+            >
+              {EXTENSION_VERSION}
             </span>
           </div>
         </div>
@@ -134,6 +132,67 @@ export default function ExtensionPage() {
                   <div className="rule" />
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Test it now - removes the "ok now what" dead-end after the
+            install steps. Sends the visitor straight to ChatGPT to try
+            the freshly installed Improve button on a real prompt. */}
+        <section className="mt-16 md:mt-20 grid md:grid-cols-12 gap-8 md:gap-16">
+          <div className="md:col-span-3">
+            <p className="eyebrow">Now try it</p>
+          </div>
+          <div className="md:col-span-9">
+            <p
+              className="font-serif text-2xl md:text-3xl leading-tight mb-5"
+              style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+            >
+              Open a chat and look for the Improve button.
+            </p>
+            <p
+              className="text-base md:text-lg leading-[1.6] max-w-xl mb-7"
+              style={{ color: 'var(--color-paper-mute)' }}
+            >
+              Pick whichever you already use. Paste a prompt. Click Improve.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <a
+                href="https://chatgpt.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all btn-outline"
+                style={{
+                  border: '1px solid var(--color-rule-strong)',
+                  color: 'var(--color-paper)',
+                }}
+              >
+                Open ChatGPT →
+              </a>
+              <a
+                href="https://claude.ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all btn-outline"
+                style={{
+                  border: '1px solid var(--color-rule-strong)',
+                  color: 'var(--color-paper)',
+                }}
+              >
+                Open Claude →
+              </a>
+              <a
+                href="https://gemini.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all btn-outline"
+                style={{
+                  border: '1px solid var(--color-rule-strong)',
+                  color: 'var(--color-paper)',
+                }}
+              >
+                Open Gemini →
+              </a>
             </div>
           </div>
         </section>
