@@ -109,12 +109,12 @@ export default function LandingPage() {
                     Sits between H1 and explanatory subhead as a one-line
                     band. Italic serif so it reads as a quote / position
                     statement, not body copy. */}
-                <p
+                {/* <p
                   className="font-serif italic mt-5 md:mt-6 text-xl md:text-2xl leading-snug"
                   style={{ color: 'var(--color-paper)', fontWeight: 400 }}
                 >
                   The model is fine. The brief was vague.
-                </p>
+                </p> */}
                 <p
                   className="mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-2xl"
                   style={{ color: 'var(--color-paper-mute)' }}
@@ -154,7 +154,7 @@ export default function LandingPage() {
                   ~50% of its previous footprint via max-w-[280px] so it
                   never competes with the CTA for attention. */}
               <div className="hidden lg:flex lg:col-span-4 items-center justify-center">
-                <div className="w-full max-w-70">
+                <div className="w-full max-w-96 min-w-96">
                   <HeroCenterpiece />
                 </div>
               </div>
