@@ -5,6 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { useTokenCount } from '@/hooks/useTokenCount'
 import { approxTokens, countTokens } from '@/lib/tokens'
+import { DemoSignupGate } from './DemoSignupGate'
+
+/* Demo gating constants. The base free allowance is 2 fresh prompt
+   submissions; an email capture grants 3 more. Counts persist in
+   localStorage so a refresh does not reset them. */
+const DEMO_LIMIT = 2
+const RUNS_KEY = 'pc_demo_runs'
+const EXTRA_KEY = 'pc_demo_extra'
 
 /**
  * Live interactive demo on the homepage.
@@ -73,6 +81,42 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
   const answerRef = useRef<HTMLTextAreaElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
 
+  /* Localised free-run gate. `runs` counts successful submissions from
+     this browser; `extraRuns` is the unlock granted by email capture.
+     `hydrated` guards against SSR/CSR mismatch since both come from
+     localStorage. */
+  const [runs, setRuns] = useState(0)
+  const [extraRuns, setExtraRuns] = useState(0)
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const r = parseInt(window.localStorage.getItem(RUNS_KEY) ?? '0', 10)
+    const x = parseInt(window.localStorage.getItem(EXTRA_KEY) ?? '0', 10)
+    setRuns(Number.isFinite(r) ? r : 0)
+    setExtraRuns(Number.isFinite(x) ? x : 0)
+    setHydrated(true)
+  }, [])
+
+  const effectiveLimit = DEMO_LIMIT + extraRuns
+  const gated = hydrated && runs >= effectiveLimit && state.kind === 'idle'
+
+  function bumpRuns() {
+    setRuns(prev => {
+      const next = prev + 1
+      try { window.localStorage.setItem(RUNS_KEY, String(next)) } catch {}
+      return next
+    })
+  }
+
+  function handleEmailCaptured(extra: number) {
+    setExtraRuns(prev => {
+      const next = prev + extra
+      try { window.localStorage.setItem(EXTRA_KEY, String(next)) } catch {}
+      return next
+    })
+  }
+
   // Focus the answer textarea + scroll into view ONLY when we transition
   // into a stage - never on every keystroke.
   useEffect(() => {
@@ -114,6 +158,11 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
       }
 
       const data = (await res.json()) as AnalyzeResponse
+
+      /* Count one demo run per fresh prompt (not per clarifying turn).
+         The increment fires after a successful response so failed
+         requests do not punish the visitor. */
+      if (qaHistory.length === 0) bumpRuns()
 
       if (data.type === 'clarifying') {
         // Defensive cap: if the engine somehow keeps asking past MAX_TURNS,
@@ -172,6 +221,19 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
 
   const thinking = state.kind === 'thinking' || state.kind === 'rewriting'
   const showInputForm = state.kind === 'idle' || state.kind === 'thinking' || state.kind === 'error'
+
+  /* Gate takes over the demo surface once the visitor has used their
+     free allowance. State is preserved so they can resume immediately
+     after dropping their email or creating an account. */
+  if (gated) {
+    return (
+      <DemoSignupGate
+        used={runs}
+        limit={effectiveLimit}
+        onEmailCaptured={handleEmailCaptured}
+      />
+    )
+  }
 
   return (
     <div className="grid md:grid-cols-12 gap-8 md:gap-16">
