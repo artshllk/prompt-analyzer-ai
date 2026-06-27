@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
+import { MarketingNav } from '@/components/marketing/MarketingNav'
 
 export const metadata: Metadata = {
   title: 'What Makes a Good AI Prompt? 5 Things Every Strong Prompt Has',
@@ -127,15 +127,7 @@ export default function WhatIsAGoodPromptPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
       {/* Nav */}
-      <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 border-b border-[color:var(--color-rule)]">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/logo.png" alt="Deepclario" width={28} height={28} className="rounded-md" />
-          <span className="font-bold text-[color:var(--color-paper)] tracking-tight">Deepclario</span>
-        </Link>
-        <Link href="/playground" className="px-4 py-2 rounded-xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] text-sm font-semibold transition-all">
-          Try free
-        </Link>
-      </header>
+      <MarketingNav current="blog" />
 
       <main className="max-w-2xl mx-auto px-6 pt-28 pb-20">
         <div className="mb-10">

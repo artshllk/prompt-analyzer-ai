@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
+import { MarketingNav } from '@/components/marketing/MarketingNav'
 
 export const metadata: Metadata = {
   title: 'What is Prompt Engineering? A Complete Guide for Beginners',
@@ -73,17 +73,9 @@ export default function WhatIsPromptEngineeringPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <div className="editorial grain min-h-screen">
-        <header className="border-b border-[color:var(--color-rule)] px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="Deepclario" width={24} height={24} className="rounded" />
-            <span className="font-bold text-sm">Deepclario</span>
-          </Link>
-          <Link href="/playground" className="px-4 py-2 rounded-xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] text-sm font-semibold transition-all">
-            Try free →
-          </Link>
-        </header>
+        <MarketingNav current="blog" />
 
-        <main className="max-w-2xl mx-auto px-6 py-16">
+        <main className="max-w-2xl mx-auto px-6 pt-28 md:pt-36 pb-16">
           <div className="mb-6">
             <Link href="/" className="text-xs text-[color:var(--color-paper-mute)] hover:text-[color:var(--color-paper-mute)] transition-colors">← Back to Deepclario</Link>
           </div>
