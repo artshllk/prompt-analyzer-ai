@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
 import { PROMPT_LIBRARY, type PromptEntry } from '@/lib/prompt-library'
+import { MarketingNav } from '@/components/marketing/MarketingNav'
 
 export const metadata: Metadata = {
   title: 'Free ChatGPT Prompt Library - Copy-Paste Prompts That Work',
@@ -36,27 +36,9 @@ export default function PromptsIndexPage() {
       className="editorial grain min-h-screen"
       style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}
     >
-      {/* Nav */}
-      <header
-        className="border-b px-6 md:px-10 py-4 flex items-center justify-between"
-        style={{ borderColor: 'var(--color-rule)' }}
-      >
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/logo.png" alt="Deepclario" width={28} height={28} priority />
-          <span className="text-[15px] tracking-tight" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>
-            Deepclario
-          </span>
-        </Link>
-        <Link
-          href="/playground"
-          className="px-4 py-2 rounded-full text-sm transition-all btn-paper"
-          style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
-        >
-          Improve a prompt free
-        </Link>
-      </header>
+      <MarketingNav current="prompts" />
 
-      <main className="max-w-4xl mx-auto px-6 md:px-10 py-16 md:py-24">
+      <main className="max-w-4xl mx-auto px-6 md:px-10 pt-28 md:pt-36 pb-16 md:pb-24">
         {/* Hero */}
         <div className="max-w-2xl">
           <p className="eyebrow mb-6">Free prompt library</p>

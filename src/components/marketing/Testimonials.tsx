@@ -51,7 +51,7 @@ export function Testimonials() {
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-12 gap-8 md:gap-16 mb-14 md:mb-20">
           <div className="md:col-span-3">
-            <p className="eyebrow">What people say</p>
+            <p className="eyebrow">The moment it clicks</p>
           </div>
           <div className="md:col-span-9">
             <h2

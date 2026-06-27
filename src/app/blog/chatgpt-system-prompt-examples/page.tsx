@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
+import { MarketingNav } from '@/components/marketing/MarketingNav'
 
 export const metadata: Metadata = {
   title: 'ChatGPT System Prompt Examples - What They Are and How to Use Them',
@@ -139,17 +139,9 @@ export default function ChatGPTSystemPromptExamplesPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
-      <header className="border-b border-[color:var(--color-rule)] px-6 md:px-10 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/logo.png" alt="Deepclario" width={28} height={28} priority />
-          <span className="text-[15px] tracking-tight font-medium" style={{ color: 'var(--color-paper)' }}>Deepclario</span>
-        </Link>
-        <Link href="/playground" className="px-4 py-2 rounded-full text-sm btn-paper font-medium transition-all" style={{ background: 'var(--color-paper)', color: 'var(--color-ink)' }}>
-          Improve a prompt free
-        </Link>
-      </header>
+      <MarketingNav current="blog" />
 
-      <main className="max-w-2xl mx-auto px-6 py-16">
+      <main className="max-w-2xl mx-auto px-6 pt-28 md:pt-36 pb-16">
         <nav className="mb-8 text-sm" style={{ color: 'var(--color-paper-mute)' }}>
           <Link href="/blog" className="underline underline-offset-4" style={{ color: 'var(--color-paper)' }}>Blog</Link>
           <span className="mx-2">/</span>

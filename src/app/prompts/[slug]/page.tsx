@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { PROMPT_LIBRARY, getPromptEntry, getAllPromptSlugs } from '@/lib/prompt-library'
 import { CopyButton } from '../copy-button'
+import { MarketingNav } from '@/components/marketing/MarketingNav'
 
 const BASE = 'https://deepclario.com'
 
@@ -151,27 +151,9 @@ export default async function PromptPage({
         />
       ))}
 
-      {/* Nav */}
-      <header
-        className="border-b px-6 md:px-10 py-4 flex items-center justify-between"
-        style={{ borderColor: 'var(--color-rule)' }}
-      >
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/logo.png" alt="Deepclario" width={28} height={28} priority />
-          <span className="text-[15px] tracking-tight" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>
-            Deepclario
-          </span>
-        </Link>
-        <Link
-          href="/playground"
-          className="px-4 py-2 rounded-full text-sm transition-all btn-paper"
-          style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
-        >
-          Improve a prompt free
-        </Link>
-      </header>
+      <MarketingNav current="prompts" />
 
-      <main className="max-w-3xl mx-auto px-6 md:px-10 py-14 md:py-20">
+      <main className="max-w-3xl mx-auto px-6 md:px-10 pt-28 md:pt-36 pb-14 md:pb-20">
         {/* Breadcrumb */}
         <nav className="mb-8 text-sm" style={{ color: 'var(--color-paper-mute)' }}>
           <Link href="/prompts" className="underline underline-offset-4" style={{ color: 'var(--color-paper)' }}>

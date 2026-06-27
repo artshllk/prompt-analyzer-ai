@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: 'Why not just ask ChatGPT to improve my prompt?',
-    a: 'You can, but you have to know your prompt was the problem in the first place. ChatGPT will not tell you. It will just produce something generic and leave you guessing. Deepclario catches the gap before you send and does the rewrite for you, so you skip the back-and-forth.',
+    a: 'You can, but you have to know your prompt was the problem in the first place. ChatGPT will not tell you. It will just produce something generic and leave you guessing. Deepclario catches the gap before you send. It asks one quick question if it has to, then hands you the fixed prompt. No rewrite spiral, no second guessing, no five-prompt session to land on the answer you wanted in the first place. One layer between you and every AI model. Same model. Better output. Less of your time.',
   },
   {
     q: 'What is prompt engineering?',
