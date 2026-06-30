@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
+import { StreamOut } from '@/components/shared/StreamOut'
 
 /**
  * Chat-style demo shown inside the hero modal (HeroDemoModal owns the
@@ -286,7 +287,11 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
 
             {response?.kind === 'improved' && (
               <motion.div key="improved" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <StreamOut text={response.text} />
+                <StreamOut
+                  text={response.text}
+                  className="font-serif text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
+                  style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+                />
               </motion.div>
             )}
 
@@ -488,61 +493,6 @@ function Writing() {
         Writing…
       </span>
     </div>
-  )
-}
-
-/* Streams the rewrite at reading pace, the way ChatGPT / Claude / Gemini
-   reveal text. Advances ONE character per fixed time-step so growth is
-   steady (no bursts) and frame-rate independent. ~14ms/char ≈ 70 chars/s,
-   a comfortable, premium reading cadence. Respects prefers-reduced-motion. */
-function StreamOut({ text }: { text: string }) {
-  const [count, setCount] = useState(0)
-
-  useEffect(() => {
-    setCount(0)
-    if (!text) return
-
-    const reduce =
-      typeof window !== 'undefined' &&
-      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    if (reduce) {
-      setCount(text.length)
-      return
-    }
-
-    const CPS = 70 // characters per second
-    let raf = 0
-    const start = performance.now()
-
-    const tick = (now: number) => {
-      const target = Math.min(text.length, Math.floor(((now - start) / 1000) * CPS))
-      setCount(target)
-      if (target < text.length) raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [text])
-
-  const done = count >= text.length
-  const shown = text.slice(0, count)
-
-  return (
-    <p
-      className="font-serif text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
-      style={{ color: 'var(--color-paper)', fontWeight: 400 }}
-      aria-live="polite"
-    >
-      {shown}
-      {!done && (
-        <motion.span
-          className="inline-block w-0.5 h-[1.05em] align-text-bottom ml-0.5"
-          style={{ background: 'var(--color-accent-bright)' }}
-          animate={{ opacity: [1, 0] }}
-          transition={{ duration: 0.6, repeat: Infinity }}
-          aria-hidden
-        />
-      )}
-    </p>
   )
 }
 
