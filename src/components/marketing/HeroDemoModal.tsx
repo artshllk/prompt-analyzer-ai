@@ -52,10 +52,15 @@ export function HeroDemoModal() {
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
-    const first = panelRef.current?.querySelector<HTMLElement>(
-      'textarea, button, [href], input, [tabindex]:not([tabindex="-1"])',
-    )
-    first?.focus()
+    // Focus the composer textarea on open so the user can type
+    // immediately. rAF lets the panel finish mounting (Framer enter
+    // animation) before we query for the field. Falls back to the panel
+    // itself if there's no textarea (e.g. the account-gate state).
+    const raf = requestAnimationFrame(() => {
+      const field = panelRef.current?.querySelector<HTMLTextAreaElement>('textarea')
+      if (field) field.focus()
+      else panelRef.current?.focus()
+    })
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -81,6 +86,7 @@ export function HeroDemoModal() {
 
     window.addEventListener('keydown', onKey)
     return () => {
+      cancelAnimationFrame(raf)
       document.body.style.overflow = prevOverflow
       window.removeEventListener('keydown', onKey)
       triggerRef.current?.focus()
@@ -129,11 +135,12 @@ export function HeroDemoModal() {
           >
             <motion.div
               ref={panelRef}
+              tabIndex={-1}
               initial={{ opacity: 0, y: 24, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 24, scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-              className="relative w-full flex flex-col rounded-t-3xl sm:rounded-3xl"
+              className="relative w-full flex flex-col rounded-t-3xl sm:rounded-3xl focus:outline-none focus-visible:outline-none"
               style={{
                 background: 'var(--color-ink)',
                 border: '1px solid var(--color-rule-strong)',

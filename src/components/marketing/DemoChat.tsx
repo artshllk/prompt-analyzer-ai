@@ -327,8 +327,8 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
                   placeholder="Type your answer…"
                   rows={1}
                   maxLength={1000}
-                  className="flex-1 bg-transparent resize-none py-2 px-2 text-[15px] sm:text-base focus:outline-none focus-visible:outline-none"
-                  style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.55 }}
+                  className="flex-1 bg-transparent resize-none overflow-y-hidden py-2 px-2 text-[15px] sm:text-base outline-none"
+                  style={{ color: 'var(--color-paper)', caretColor: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.55 }}
                   onKeyDown={e => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault()
@@ -409,9 +409,8 @@ function Intro({
             placeholder="Message Deepclario…"
             rows={1}
             maxLength={4000}
-            autoFocus
-            className="flex-1 bg-transparent resize-none py-2.5 px-2 text-[15px] sm:text-base focus:outline-none focus-visible:outline-none"
-            style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.55 }}
+            className="flex-1 bg-transparent resize-none overflow-y-hidden py-2.5 px-2 text-[15px] sm:text-base focus:outline-none focus-visible:outline-none"
+            style={{ color: 'var(--color-paper)', caretColor: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.55 }}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
