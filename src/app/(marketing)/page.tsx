@@ -1,83 +1,87 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import Image from 'next/image'
+import type { Metadata } from "next";
+import Link from "next/link";
+import Image from "next/image";
 // { /* CUT - redundant with demo + steps */ }
 // import { StaticTransform } from '@/components/marketing/StaticTransform'
-import { EditorialPricing } from '@/components/marketing/EditorialPricing'
-import { LivePromptDemo } from '@/components/marketing/LivePromptDemo'
-import { UseCases } from '@/components/marketing/UseCases'
-import { Testimonials } from '@/components/marketing/Testimonials'
-import { FAQSection } from '@/components/marketing/FAQSection'
-import { HeroCenterpiece } from '@/components/marketing/HeroCenterpiece'
-import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { EditorialPricing } from "@/components/marketing/EditorialPricing";
+import { LivePromptDemo } from "@/components/marketing/LivePromptDemo";
+import { UseCases } from "@/components/marketing/UseCases";
+import { Testimonials } from "@/components/marketing/Testimonials";
+import { FAQSection } from "@/components/marketing/FAQSection";
+import { HeroCenterpiece } from "@/components/marketing/HeroCenterpiece";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
 // { /* CUT - redundant with demo + steps */ }
 // import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
 
 export const metadata: Metadata = {
-  title: 'Deepclario - AI that actually understands what you mean',
-  description: 'Stop rewriting your prompts. Deepclario fixes what is missing and asks the questions a senior teammate would ask. ChatGPT, Claude, and Gemini stop guessing. You stop editing.',
-  alternates: { canonical: 'https://deepclario.com' },
+  title: "Deepclario - AI that actually understands what you mean",
+  description:
+    "Stop rewriting your prompts. Deepclario fixes what is missing and asks the questions a senior teammate would ask. ChatGPT, Claude, and Gemini stop guessing. You stop editing.",
+  alternates: { canonical: "https://deepclario.com" },
   openGraph: {
-    title: 'Deepclario - AI that actually understands what you mean',
-    description: 'Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.',
-    url: 'https://deepclario.com',
-    type: 'website',
+    title: "Deepclario - AI that actually understands what you mean",
+    description:
+      "Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.",
+    url: "https://deepclario.com",
+    type: "website",
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Deepclario - AI that actually understands what you mean',
-    description: 'Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.',
+    card: "summary_large_image",
+    title: "Deepclario - AI that actually understands what you mean",
+    description:
+      "Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.",
   },
-}
+};
 
 const structuredData = {
-  '@context': 'https://schema.org',
-  '@graph': [
+  "@context": "https://schema.org",
+  "@graph": [
     {
-      '@type': 'SoftwareApplication',
-      name: 'Deepclario',
-      applicationCategory: 'ProductivityApplication',
-      operatingSystem: 'Web',
-      url: 'https://deepclario.com',
-      description: 'Type the rough idea. Deepclario fixes what is missing in your prompt and asks the questions a senior teammate would ask, so ChatGPT, Claude, and Gemini return the answer you wanted on the first try.',
+      "@type": "SoftwareApplication",
+      name: "Deepclario",
+      applicationCategory: "ProductivityApplication",
+      operatingSystem: "Web",
+      url: "https://deepclario.com",
+      description:
+        "Type the rough idea. Deepclario fixes what is missing in your prompt and asks the questions a senior teammate would ask, so ChatGPT, Claude, and Gemini return the answer you wanted on the first try.",
       offers: {
-        '@type': 'Offer',
-        price: '0',
-        priceCurrency: 'USD',
-        description: 'Free plan with 25 prompt rewrites per month',
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+        description: "Free plan with 25 prompt rewrites per month",
       },
     },
     {
-      '@type': 'FAQPage',
+      "@type": "FAQPage",
       mainEntity: [
         {
-          '@type': 'Question',
-          name: 'What is prompt engineering?',
+          "@type": "Question",
+          name: "What is prompt engineering?",
           acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Prompt engineering is the practice of writing inputs for AI models that are specific enough to produce useful outputs. A good prompt names the role, the audience, the format, and the constraints. A bad prompt forces the model to guess.',
+            "@type": "Answer",
+            text: "Prompt engineering is the practice of writing inputs for AI models that are specific enough to produce useful outputs. A good prompt names the role, the audience, the format, and the constraints. A bad prompt forces the model to guess.",
           },
         },
         {
-          '@type': 'Question',
-          name: 'How does Deepclario improve my prompts?',
+          "@type": "Question",
+          name: "How does Deepclario improve my prompts?",
           acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'You paste a rough prompt. Deepclario spots the gaps a fresh-eyes reviewer would catch, asks one quick question if it has to, and rewrites the prompt so ChatGPT, Claude, or Gemini can return the right output on the first try.',
+            "@type": "Answer",
+            text: "You paste a rough prompt. Deepclario spots the gaps a fresh-eyes reviewer would catch, asks one quick question if it has to, and rewrites the prompt so ChatGPT, Claude, or Gemini can return the right output on the first try.",
           },
         },
         {
-          '@type': 'Question',
-          name: 'Is Deepclario free?',
+          "@type": "Question",
+          name: "Is Deepclario free?",
           acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Yes. The free plan gives you 25 prompt rewrites every month. Pro is $9.99 a month and removes the limit, adds full history, persona memory, and weekly insights.',
+            "@type": "Answer",
+            text: "Yes. The free plan gives you 25 prompt rewrites every month. Pro is $9.99 a month and removes the limit, adds full history, persona memory, and weekly insights.",
           },
         },
       ],
     },
   ],
-}
+};
 
 export default function LandingPage() {
   return (
@@ -86,24 +90,32 @@ export default function LandingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <div className="editorial grain min-h-screen relative" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
+      <div
+        className="editorial grain min-h-screen relative"
+        style={{ background: "var(--color-ink)", color: "var(--color-paper)" }}
+      >
         <MarketingNav current="home" />
 
         {/* Hero - two-column on desktop: copy left, animated centerpiece
             right. Centerpiece is hidden under lg so mobile gets the
             text-only treatment. LivePromptDemo lives in its own
             section directly below so the page reads "promise -> proof". */}
-        <section id="try" className="pt-28 md:pt-36 pb-16 md:pb-20 px-6 md:px-10 relative">
+        <section
+          id="try"
+          className="pt-28 md:pt-36 pb-16 md:pb-20 px-6 md:px-10 relative"
+        >
           <div className="max-w-6xl mx-auto">
             <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
               <div className="lg:col-span-8">
                 <p className="eyebrow mb-6">Stop rewriting your prompts</p>
                 <h1
                   className="display text-5xl md:text-[5.25rem] leading-[1.04] tracking-tight"
-                  style={{ color: 'var(--color-paper)' }}
+                  style={{ color: "var(--color-paper)" }}
                 >
-                  AI that actually{' '}
-                  <span style={{ color: 'var(--color-accent)' }}>understands what you mean.</span>
+                  AI that actually{" "}
+                  <span style={{ color: "var(--color-accent)" }}>
+                    understands what you mean.
+                  </span>
                 </h1>
                 {/* Thesis line, lifted from the old long-form section.
                     Sits between H1 and explanatory subhead as a one-line
@@ -117,9 +129,11 @@ export default function LandingPage() {
                 </p> */}
                 <p
                   className="mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-2xl"
-                  style={{ color: 'var(--color-paper-mute)' }}
+                  style={{ color: "var(--color-paper-mute)" }}
                 >
-                  You type the rough idea. Deepclario fixes what is missing and asks the questions a senior teammate would ask. ChatGPT, Claude, and Gemini stop guessing. You stop editing.
+                  You type the rough idea. Deepclario fixes what is missing and
+                  asks the questions a senior teammate would ask. ChatGPT,
+                  Claude, and Gemini stop guessing. You stop editing.
                 </p>
 
                 {/* Primary CTA. Anchors to #demo which lives in the next
@@ -130,20 +144,26 @@ export default function LandingPage() {
                     href="#demo"
                     className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-[15px] transition-all btn-paper"
                     style={{
-                      background: 'var(--color-paper)',
-                      color: 'var(--color-ink)',
+                      background: "var(--color-paper)",
+                      color: "var(--color-ink)",
                       fontWeight: 500,
                     }}
                   >
                     Try with your prompt
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <path d="M7 2V12M7 12L2 7M7 12L12 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="M7 2V12M7 12L2 7M7 12L12 7"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </Link>
                   <Link
-                    href="#pricing"
+                    href="/pricing"
                     className="text-sm transition-opacity hover:opacity-100 opacity-80"
-                    style={{ color: 'var(--color-paper)' }}
+                    style={{ color: "var(--color-paper)" }}
                   >
                     See pricing
                   </Link>
@@ -164,7 +184,11 @@ export default function LandingPage() {
 
         {/* Live demo - proof, immediately below the hero.
             id="demo" is the anchor target for the hero CTA. */}
-        <section id="demo" className="pb-20 md:pb-24 px-6 md:px-10 scroll-mt-24" style={{ borderTop: '1px solid var(--color-rule)' }}>
+        <section
+          id="demo"
+          className="pb-20 md:pb-24 px-6 md:px-10 scroll-mt-24"
+          style={{ borderTop: "1px solid var(--color-rule)" }}
+        >
           <div className="max-w-6xl mx-auto pt-16 md:pt-20">
             <p className="eyebrow mb-6">Try it yourself</p>
             <LivePromptDemo compact />
@@ -234,7 +258,10 @@ export default function LandingPage() {
         {/* Extension - promoted above UseCases. The inline-in-ChatGPT
             angle is the most distinctive distribution surface, so it
             earns upper-half placement now. */}
-        <section className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
+        <section
+          className="px-6 md:px-10 py-24 md:py-32"
+          style={{ borderTop: "1px solid var(--color-rule)" }}
+        >
           <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
             <div className="md:col-span-3">
               <p className="eyebrow">Works where you already work</p>
@@ -242,28 +269,49 @@ export default function LandingPage() {
             <div className="md:col-span-9">
               <h2
                 className="font-serif text-3xl md:text-5xl leading-tight tracking-tight mb-6"
-                style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+                style={{ color: "var(--color-paper)", fontWeight: 400 }}
               >
                 One click inside ChatGPT, Claude, and Gemini.
               </h2>
-              <p className="text-base md:text-lg leading-[1.6] max-w-xl mb-4" style={{ color: 'var(--color-paper-mute)' }}>
-                Install the extension and an Improve button shows up in the chat box. Click it. Your prompt gets rewritten in place.
+              <p
+                className="text-base md:text-lg leading-[1.6] max-w-xl mb-4"
+                style={{ color: "var(--color-paper-mute)" }}
+              >
+                Install the extension and an Improve button shows up in the chat
+                box. Click it. Your prompt gets rewritten in place.
               </p>
-              <p className="text-base md:text-lg leading-[1.6] max-w-xl mb-8" style={{ color: 'var(--color-paper-mute)' }}>
-                No copy-paste. No new tab. No panel to dig into. Just better output, with one keystroke.
+              <p
+                className="text-base md:text-lg leading-[1.6] max-w-xl mb-8"
+                style={{ color: "var(--color-paper-mute)" }}
+              >
+                No copy-paste. No new tab. No panel to dig into. Just better
+                output, with one keystroke.
               </p>
               <div className="flex flex-wrap items-center gap-6">
                 <Link
                   href="/extension"
                   className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] transition-all btn-paper"
-                  style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+                  style={{
+                    background: "var(--color-paper)",
+                    color: "var(--color-ink)",
+                    fontWeight: 500,
+                  }}
                 >
                   Install the extension
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path
+                      d="M2 7H12M12 7L7 2M12 7L7 12"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </Link>
-                <span className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
+                <span
+                  className="text-sm"
+                  style={{ color: "var(--color-paper-mute)" }}
+                >
                   Chrome and Brave. Free, no account.
                 </span>
               </div>
@@ -317,7 +365,11 @@ export default function LandingPage() {
         <Testimonials />
 
         {/* Pricing */}
-        <section id="pricing" className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
+        <section
+          id="pricing"
+          className="px-6 md:px-10 py-24 md:py-32"
+          style={{ borderTop: "1px solid var(--color-rule)" }}
+        >
           <div className="max-w-6xl mx-auto">
             <EditorialPricing />
           </div>
@@ -327,12 +379,16 @@ export default function LandingPage() {
             FAQ handles last objections; the CTA below it asks for the
             commit without a separator that would make this feel like
             two closes stacked. */}
-        <section id="faq" className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
+        <section
+          id="faq"
+          className="px-6 md:px-10 py-24 md:py-32"
+          style={{ borderTop: "1px solid var(--color-rule)" }}
+        >
           <div className="max-w-3xl mx-auto">
             <p className="eyebrow mb-6">Questions</p>
             <h2
               className="display text-4xl md:text-5xl mb-12"
-              style={{ color: 'var(--color-paper)' }}
+              style={{ color: "var(--color-paper)" }}
             >
               Asked and answered.
             </h2>
@@ -341,10 +397,13 @@ export default function LandingPage() {
             {/* Final CTA - merged into the same block. One close, not
                 two. Anchors back to the in-page demo so the visitor's
                 commit happens here, not on a redirect. */}
-            <div className="mt-20 md:mt-24 pt-12 md:pt-16 text-center" style={{ borderTop: '1px solid var(--color-rule)' }}>
+            <div
+              className="mt-20 md:mt-24 pt-12 md:pt-16 text-center"
+              style={{ borderTop: "1px solid var(--color-rule)" }}
+            >
               <h3
                 className="display text-4xl md:text-6xl mb-8"
-                style={{ color: 'var(--color-paper)' }}
+                style={{ color: "var(--color-paper)" }}
               >
                 Bring your worst prompt.
               </h3>
@@ -352,14 +411,20 @@ export default function LandingPage() {
                 href="#demo"
                 className="inline-flex items-center gap-2 px-7 py-4 rounded-full text-[15px] transition-all hover:gap-3 btn-paper"
                 style={{
-                  background: 'var(--color-paper)',
-                  color: 'var(--color-ink)',
+                  background: "var(--color-paper)",
+                  color: "var(--color-ink)",
                   fontWeight: 500,
                 }}
               >
                 Try with your prompt
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M7 2V12M7 12L2 7M7 12L12 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="M7 2V12M7 12L2 7M7 12L12 7"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </Link>
             </div>
@@ -367,44 +432,88 @@ export default function LandingPage() {
         </section>
 
         {/* Footer */}
-        <footer className="px-6 md:px-10 py-16" style={{ borderTop: '1px solid var(--color-rule)' }}>
+        <footer
+          className="px-6 md:px-10 py-16"
+          style={{ borderTop: "1px solid var(--color-rule)" }}
+        >
           <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
             <div className="md:col-span-5">
               <div className="flex items-center gap-2 mb-4">
-                <Image src="/logo.png" alt="Deepclario" width={24} height={24} />
-                <span className="text-sm" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>Deepclario</span>
+                <Image
+                  src="/logo.png"
+                  alt="Deepclario"
+                  width={24}
+                  height={24}
+                />
+                <span
+                  className="text-sm"
+                  style={{ color: "var(--color-paper)", fontWeight: 500 }}
+                >
+                  Deepclario
+                </span>
               </div>
-              <p className="text-sm leading-[1.7] max-w-sm" style={{ color: 'var(--color-paper-mute)' }}>
-                One layer between you and ChatGPT, Claude, and Gemini, so the model finally understands what you mean.
+              <p
+                className="text-sm leading-[1.7] max-w-sm"
+                style={{ color: "var(--color-paper-mute)" }}
+              >
+                One layer between you and ChatGPT, Claude, and Gemini, so the
+                model finally understands what you mean.
               </p>
             </div>
-            <FooterCol title="Product" links={[
-              { href: '/playground', label: 'Playground' },
-              { href: '/prompts', label: 'Prompt library' },
-              { href: '/extension', label: 'Browser extension' },
-              { href: '/tools/prompt-improver', label: 'Prompt Improver' },
-              { href: '/tools/prompt-analyzer', label: 'Prompt Analyzer' },
-              { href: '#pricing', label: 'Pricing' },
-            ]} />
-            <FooterCol title="Reading" links={[
-              { href: '/blog/what-is-prompt-engineering', label: 'What is prompt engineering' },
-              { href: '/blog/how-to-write-better-prompts', label: 'How to write better prompts' },
-              { href: '/blog/what-is-a-good-prompt', label: 'What makes a good prompt' },
-              { href: '/blog/prompt-engineering-examples', label: 'Examples' },
-            ]} />
-            <FooterCol title="Legal" links={[
-              { href: '/privacy', label: 'Privacy' },
-              { href: '/terms', label: 'Terms' },
-              { href: '/refund', label: 'Refund' },
-            ]} />
+            <FooterCol
+              title="Product"
+              links={[
+                { href: "/playground", label: "Playground" },
+                { href: "/prompts", label: "Prompt library" },
+                { href: "/extension", label: "Browser extension" },
+                { href: "/tools/prompt-improver", label: "Prompt Improver" },
+                { href: "/tools/prompt-analyzer", label: "Prompt Analyzer" },
+                { href: "/pricing", label: "Pricing" },
+              ]}
+            />
+            <FooterCol
+              title="Reading"
+              links={[
+                {
+                  href: "/blog/what-is-prompt-engineering",
+                  label: "What is prompt engineering",
+                },
+                {
+                  href: "/blog/how-to-write-better-prompts",
+                  label: "How to write better prompts",
+                },
+                {
+                  href: "/blog/what-is-a-good-prompt",
+                  label: "What makes a good prompt",
+                },
+                {
+                  href: "/blog/prompt-engineering-examples",
+                  label: "Examples",
+                },
+              ]}
+            />
+            <FooterCol
+              title="Legal"
+              links={[
+                { href: "/privacy", label: "Privacy" },
+                { href: "/terms", label: "Terms" },
+                { href: "/refund", label: "Refund" },
+              ]}
+            />
           </div>
-          <div className="max-w-6xl mx-auto mt-16 pt-6 text-xs" style={{ borderTop: '1px solid var(--color-rule)', color: 'var(--color-paper-mute)' }}>
+          <div
+            className="max-w-6xl mx-auto mt-16 pt-6 text-xs"
+            style={{
+              borderTop: "1px solid var(--color-rule)",
+              color: "var(--color-paper-mute)",
+            }}
+          >
             © 2026 Deepclario
           </div>
         </footer>
       </div>
     </>
-  )
+  );
 }
 
 /* ===== Sub-components ===== */
@@ -443,17 +552,23 @@ function Step({ index, title, description }: { index: number; title: string; des
 }
 */
 
-function FooterCol({ title, links }: { title: string; links: { href: string; label: string }[] }) {
+function FooterCol({
+  title,
+  links,
+}: {
+  title: string;
+  links: { href: string; label: string }[];
+}) {
   return (
     <div className="md:col-span-2">
       <p className="eyebrow mb-4">{title}</p>
       <ul className="space-y-2.5">
-        {links.map(l => (
+        {links.map((l) => (
           <li key={l.href}>
             <Link
               href={l.href}
               className="text-sm transition-opacity hover:opacity-100 opacity-80"
-              style={{ color: 'var(--color-paper)' }}
+              style={{ color: "var(--color-paper)" }}
             >
               {l.label}
             </Link>
@@ -461,5 +576,5 @@ function FooterCol({ title, links }: { title: string; links: { href: string; lab
         ))}
       </ul>
     </div>
-  )
+  );
 }
