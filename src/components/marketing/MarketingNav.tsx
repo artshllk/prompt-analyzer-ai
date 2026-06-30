@@ -69,11 +69,15 @@ export function MarketingNav({ current }: MarketingNavProps = {}) {
             )
           })}
         </nav>
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-2">
           <Link
             href="/login"
-            className="text-sm hover:opacity-100 transition-opacity opacity-80"
-            style={{ color: 'var(--color-paper)' }}
+            className="btn-outline inline-flex items-center px-4 py-2 rounded-full text-sm"
+            style={{
+              color: 'var(--color-paper)',
+              border: '1px solid var(--color-rule-strong)',
+              fontWeight: 500,
+            }}
           >
             Sign in
           </Link>
