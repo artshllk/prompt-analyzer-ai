@@ -96,7 +96,7 @@ export default function LandingPage() {
               <Link href="#use-cases" className="hover:opacity-100 transition-opacity opacity-80">Use cases</Link>
               <Link href="/prompts" className="hover:opacity-100 transition-opacity opacity-80">Prompts</Link>
               <Link href="/extension" className="hover:opacity-100 transition-opacity opacity-80">Extension</Link>
-              <Link href="#pricing" className="hover:opacity-100 transition-opacity opacity-80">Pricing</Link>
+              <Link href="/pricing" className="hover:opacity-100 transition-opacity opacity-80">Pricing</Link>
               <Link href="#faq" className="hover:opacity-100 transition-opacity opacity-80">FAQ</Link>
               <Link href="/blog" className="hover:opacity-100 transition-opacity opacity-80">Blog</Link>
             </nav>
@@ -373,7 +373,7 @@ export default function LandingPage() {
               { href: '/extension', label: 'Browser extension' },
               { href: '/tools/prompt-improver', label: 'Prompt Improver' },
               { href: '/tools/prompt-analyzer', label: 'Prompt Analyzer' },
-              { href: '#pricing', label: 'Pricing' },
+              { href: '/pricing', label: 'Pricing' },
             ]} />
             <FooterCol title="Reading" links={[
               { href: '/blog/what-is-prompt-engineering', label: 'What is prompt engineering' },

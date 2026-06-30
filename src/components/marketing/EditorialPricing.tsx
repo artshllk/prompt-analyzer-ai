@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
+import { useState } from "react";
+import Link from "next/link";
 
 /**
  * Pricing - two-tier card grid (Free + Pro) with a polished
@@ -14,26 +14,27 @@ import Link from 'next/link'
  */
 
 const FREE_FEATURES = [
-  '25 prompt rewrites per month',
-  'Five-dimension clarity scoring',
-  'One clarifying question when needed',
-  'Works with ChatGPT, Claude, Gemini',
-  'Chrome extension',
-  '7-day session history',
-]
+  "1 prompt rewrite",
+  "AI detector (1 essay)",
+  "Chrome extension",
+  "7-day session history",
+  "Five-dimension clarity scoring",
+  "Works with ChatGPT, Claude, Gemini",
+];
 
 const PRO_FEATURES = [
-  'Unlimited prompt rewrites',
-  'Full session history',
-  'Weekly insights report',
-  'Priority model and queue',
-  'Priority support',
-  'Everything in Free',
-]
+  "Everything in Free ",
+  "Unlimited prompt rewrites",
+  "AI detector (unlimited essays)",
+  "Full session history",
+  "Weekly insights report",
+  "Priority model and queue",
+  "Priority support",
+];
 
 export function EditorialPricing() {
-  const [annual, setAnnual] = useState(false)
-  const proMonthly = annual ? '7.99' : '9.99'
+  const [annual, setAnnual] = useState(false);
+  const proMonthly = annual ? "7.99" : "9.99";
 
   return (
     <div>
@@ -43,15 +44,16 @@ export function EditorialPricing() {
           <p className="eyebrow mb-6">Pricing</p>
           <h2
             className="display text-4xl md:text-5xl"
-            style={{ color: 'var(--color-paper)' }}
+            style={{ color: "var(--color-paper)" }}
           >
             Free until you outgrow it.
           </h2>
           <p
             className="mt-5 text-base md:text-lg leading-relaxed"
-            style={{ color: 'var(--color-paper-mute)' }}
+            style={{ color: "var(--color-paper-mute)" }}
           >
-            The free plan is the product, not a trial. Upgrade only when you reach for Deepclario every day.
+            The free plan is the product, not a trial. Upgrade only when you
+            reach for Deepclario every day.
           </p>
         </div>
 
@@ -60,8 +62,8 @@ export function EditorialPricing() {
           <div
             className="inline-flex p-1 rounded-full"
             style={{
-              background: 'var(--color-ink-card)',
-              border: '1px solid var(--color-rule)',
+              background: "var(--color-ink-card)",
+              border: "1px solid var(--color-rule)",
             }}
             role="tablist"
             aria-label="Billing period"
@@ -74,8 +76,12 @@ export function EditorialPricing() {
               <span
                 className="ml-2 text-[10px] tracking-wider uppercase font-semibold px-1.5 py-0.5 rounded"
                 style={{
-                  background: annual ? 'var(--color-accent-soft)' : 'transparent',
-                  color: annual ? 'var(--color-accent-bright)' : 'var(--color-paper-mute)',
+                  background: annual
+                    ? "var(--color-accent-soft)"
+                    : "transparent",
+                  color: annual
+                    ? "var(--color-accent-bright)"
+                    : "var(--color-paper-mute)",
                 }}
               >
                 Save 20%
@@ -92,14 +98,14 @@ export function EditorialPricing() {
           <div className="flex items-baseline gap-1.5 mb-1">
             <span
               className="font-serif text-6xl tabular-nums"
-              style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+              style={{ color: "var(--color-paper)", fontWeight: 400 }}
             >
               $0
             </span>
           </div>
           <p
             className="text-sm mb-7"
-            style={{ color: 'var(--color-paper-mute)' }}
+            style={{ color: "var(--color-paper-mute)" }}
           >
             Use it weekly, monthly, indefinitely.
           </p>
@@ -107,8 +113,8 @@ export function EditorialPricing() {
             href="/playground"
             className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-outline"
             style={{
-              border: '1px solid var(--color-rule-strong)',
-              color: 'var(--color-paper)',
+              border: "1px solid var(--color-rule-strong)",
+              color: "var(--color-paper)",
             }}
           >
             Start free
@@ -121,29 +127,31 @@ export function EditorialPricing() {
           <div className="flex items-baseline gap-1.5 mb-1">
             <span
               className="font-serif text-6xl tabular-nums"
-              style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+              style={{ color: "var(--color-paper)", fontWeight: 400 }}
             >
               ${proMonthly}
             </span>
             <span
               className="text-sm"
-              style={{ color: 'var(--color-paper-mute)' }}
+              style={{ color: "var(--color-paper-mute)" }}
             >
               /month
             </span>
           </div>
           <p
             className="text-sm mb-7"
-            style={{ color: 'var(--color-paper-mute)' }}
+            style={{ color: "var(--color-paper-mute)" }}
           >
-            {annual ? 'Billed $95.88 yearly. Cancel anytime.' : 'Billed monthly. Cancel anytime.'}
+            {annual
+              ? "Billed $95.88 yearly. Cancel anytime."
+              : "Billed monthly. Cancel anytime."}
           </p>
           <Link
             href="/login"
             className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-paper"
             style={{
-              background: 'var(--color-paper)',
-              color: 'var(--color-ink)',
+              background: "var(--color-paper)",
+              color: "var(--color-ink)",
             }}
           >
             Get Pro
@@ -154,12 +162,12 @@ export function EditorialPricing() {
 
       <p
         className="mt-8 text-xs text-center md:text-left"
-        style={{ color: 'var(--color-paper-mute)' }}
+        style={{ color: "var(--color-paper-mute)" }}
       >
         Payments by Paddle. VAT and sales tax handled automatically.
       </p>
     </div>
-  )
+  );
 }
 
 /* ============================================================
@@ -171,16 +179,22 @@ function PricingCard({
   popular,
   children,
 }: {
-  tier: string
-  popular?: boolean
-  children: React.ReactNode
+  tier: string;
+  popular?: boolean;
+  children: React.ReactNode;
 }) {
   return (
-    <div className={`card-editorial p-8 md:p-9 relative ${popular ? 'card-accent-edge' : ''}`}>
+    <div
+      className={`card-editorial p-8 md:p-9 relative ${popular ? "card-accent-edge" : ""}`}
+    >
       <div className="flex items-center justify-between mb-7">
         <span
           className="text-sm font-medium"
-          style={{ color: popular ? 'var(--color-accent-bright)' : 'var(--color-paper)' }}
+          style={{
+            color: popular
+              ? "var(--color-accent-bright)"
+              : "var(--color-paper)",
+          }}
         >
           {tier}
         </span>
@@ -188,9 +202,9 @@ function PricingCard({
           <span
             className="text-[10px] tracking-[0.14em] uppercase font-semibold px-2.5 py-1 rounded-full"
             style={{
-              background: 'var(--color-accent-soft)',
-              color: 'var(--color-accent-bright)',
-              border: '1px solid rgba(91, 143, 237, 0.25)',
+              background: "var(--color-accent-soft)",
+              color: "var(--color-accent-bright)",
+              border: "1px solid rgba(91, 143, 237, 0.25)",
             }}
           >
             Most popular
@@ -199,7 +213,7 @@ function PricingCard({
       </div>
       {children}
     </div>
-  )
+  );
 }
 
 function BillingToggle({
@@ -207,43 +221,50 @@ function BillingToggle({
   onClick,
   children,
 }: {
-  active: boolean
-  onClick: () => void
-  children: React.ReactNode
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
 }) {
   return (
     <button
       onClick={onClick}
       className="inline-flex items-center px-4 md:px-5 py-2 rounded-full text-sm font-medium transition-colors"
       style={{
-        background: active ? 'var(--color-paper)' : 'transparent',
-        color: active ? 'var(--color-ink)' : 'var(--color-paper-mute)',
+        background: active ? "var(--color-paper)" : "transparent",
+        color: active ? "var(--color-ink)" : "var(--color-paper-mute)",
       }}
       role="tab"
       aria-selected={active}
     >
       {children}
     </button>
-  )
+  );
 }
 
 function FeatureList({ items, accent }: { items: string[]; accent?: boolean }) {
   return (
     <ul className="mt-8 space-y-3.5">
-      {items.map(item => (
-        <li key={item} className="flex items-start gap-3 text-[14px] leading-[1.55]">
+      {items.map((item) => (
+        <li
+          key={item}
+          className="flex items-start gap-3 text-[14px] leading-[1.55]"
+        >
           <span
             className="shrink-0 mt-0.5"
-            style={{ color: accent ? 'var(--color-accent-bright)' : 'var(--color-paper)' }}
+            style={{
+              color: accent
+                ? "var(--color-accent-bright)"
+                : "var(--color-paper)",
+            }}
             aria-hidden="true"
           >
             <Check />
           </span>
-          <span style={{ color: 'var(--color-paper-mute)' }}>{item}</span>
+          <span style={{ color: "var(--color-paper-mute)" }}>{item}</span>
         </li>
       ))}
     </ul>
-  )
+  );
 }
 
 function Check() {
@@ -257,5 +278,5 @@ function Check() {
         strokeLinejoin="round"
       />
     </svg>
-  )
+  );
 }
