@@ -4,7 +4,7 @@ import Image from "next/image";
 // { /* CUT - redundant with demo + steps */ }
 // import { StaticTransform } from '@/components/marketing/StaticTransform'
 import { EditorialPricing } from "@/components/marketing/EditorialPricing";
-import { LivePromptDemo } from "@/components/marketing/LivePromptDemo";
+import { HeroDemoModal } from "@/components/marketing/HeroDemoModal";
 import { UseCases } from "@/components/marketing/UseCases";
 import { Testimonials } from "@/components/marketing/Testimonials";
 import { FAQSection } from "@/components/marketing/FAQSection";
@@ -107,7 +107,7 @@ export default function LandingPage() {
           <div className="max-w-6xl mx-auto">
             <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
               <div className="lg:col-span-8">
-                <p className="eyebrow mb-6">Stop rewriting your prompts</p>
+                <p className="eyebrow mb-6">For ChatGPT, Claude &amp; Gemini users</p>
                 <h1
                   className="display text-5xl md:text-[5.25rem] leading-[1.04] tracking-tight"
                   style={{ color: "var(--color-paper)" }}
@@ -136,30 +136,11 @@ export default function LandingPage() {
                   Claude, and Gemini stop guessing. You stop editing.
                 </p>
 
-                {/* Primary CTA. Anchors to #demo which lives in the next
-                    section. The page has scroll-behavior: smooth set
-                    globally so this scrolls without any JS. */}
+                {/* Primary CTA. Opens the live demo in a modal so a cold
+                    visitor goes straight from promise to "their own
+                    prompt, improved" without leaving the page. */}
                 <div className="mt-8 md:mt-10 flex flex-wrap items-center gap-5">
-                  <Link
-                    href="#demo"
-                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-[15px] transition-all btn-paper"
-                    style={{
-                      background: "var(--color-paper)",
-                      color: "var(--color-ink)",
-                      fontWeight: 500,
-                    }}
-                  >
-                    Try with your prompt
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <path
-                        d="M7 2V12M7 12L2 7M7 12L12 7"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </Link>
+                  <HeroDemoModal />
                   <Link
                     href="/pricing"
                     className="text-sm transition-opacity hover:opacity-100 opacity-80"
@@ -182,8 +163,10 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Live demo - proof, immediately below the hero.
-            id="demo" is the anchor target for the hero CTA. */}
+        {/* CUT - the inline "Try it yourself" section moved into a modal
+            launched by the hero CTA (HeroDemoModal). Restore by
+            uncommenting if the modal flow underperforms the inline one. */}
+        {/*
         <section
           id="demo"
           className="pb-20 md:pb-24 px-6 md:px-10 scroll-mt-24"
@@ -194,6 +177,7 @@ export default function LandingPage() {
             <LivePromptDemo compact />
           </div>
         </section>
+        */}
 
         {/* CUT - redundant with demo + steps */}
         {/* <StaticTransform /> */}
@@ -407,26 +391,9 @@ export default function LandingPage() {
               >
                 Bring your worst prompt.
               </h3>
-              <Link
-                href="#demo"
-                className="inline-flex items-center gap-2 px-7 py-4 rounded-full text-[15px] transition-all hover:gap-3 btn-paper"
-                style={{
-                  background: "var(--color-paper)",
-                  color: "var(--color-ink)",
-                  fontWeight: 500,
-                }}
-              >
-                Try with your prompt
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path
-                    d="M7 2V12M7 12L2 7M7 12L12 7"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Link>
+              <div className="flex justify-center">
+                <HeroDemoModal />
+              </div>
             </div>
           </div>
         </section>
