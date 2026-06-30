@@ -5,14 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { useTokenCount } from '@/hooks/useTokenCount'
 import { approxTokens, countTokens } from '@/lib/tokens'
-import { DemoSignupGate } from './DemoSignupGate'
+import { AccountGateModal } from '@/components/ui/AccountGateModal'
 
-/* Demo gating constants. The base free allowance is 2 fresh prompt
-   submissions; an email capture grants 3 more. Counts persist in
-   localStorage so a refresh does not reset them. */
-const DEMO_LIMIT = 2
+/* Demo gating constants. Anonymous visitors get one free run; after that
+   the hard account gate takes over. Counts persist in localStorage so a
+   refresh does not reset them. */
+const DEMO_LIMIT = 1
 const RUNS_KEY = 'pc_demo_runs'
-const EXTRA_KEY = 'pc_demo_extra'
+// const EXTRA_KEY = 'pc_demo_extra' // email-capture unlock, removed with DemoSignupGate
 
 /**
  * Live interactive demo on the homepage.
@@ -82,37 +82,31 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
   const resultsRef = useRef<HTMLDivElement>(null)
 
   /* Localised free-run gate. `runs` counts successful submissions from
-     this browser; `extraRuns` is the unlock granted by email capture.
-     `hydrated` guards against SSR/CSR mismatch since both come from
-     localStorage. */
+     this browser. `hydrated` guards against SSR/CSR mismatch since the
+     count comes from localStorage. Once the visitor exhausts their free
+     run, the hard account gate takes over. */
   const [runs, setRuns] = useState(0)
-  const [extraRuns, setExtraRuns] = useState(0)
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     const r = parseInt(window.localStorage.getItem(RUNS_KEY) ?? '0', 10)
-    const x = parseInt(window.localStorage.getItem(EXTRA_KEY) ?? '0', 10)
     setRuns(Number.isFinite(r) ? r : 0)
-    setExtraRuns(Number.isFinite(x) ? x : 0)
     setHydrated(true)
   }, [])
 
-  const effectiveLimit = DEMO_LIMIT + extraRuns
-  const gated = hydrated && runs >= effectiveLimit && state.kind === 'idle'
+  /* Gate once the free run is spent AND the visitor is back at an input
+     state. They keep their completed rewrite on screen (state 'done');
+     the gate only fires when they try to start another run. */
+  const gated =
+    hydrated &&
+    runs >= DEMO_LIMIT &&
+    (state.kind === 'idle' || state.kind === 'error')
 
   function bumpRuns() {
     setRuns(prev => {
       const next = prev + 1
       try { window.localStorage.setItem(RUNS_KEY, String(next)) } catch {}
-      return next
-    })
-  }
-
-  function handleEmailCaptured(extra: number) {
-    setExtraRuns(prev => {
-      const next = prev + extra
-      try { window.localStorage.setItem(EXTRA_KEY, String(next)) } catch {}
       return next
     })
   }
@@ -222,21 +216,12 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
   const thinking = state.kind === 'thinking' || state.kind === 'rewriting'
   const showInputForm = state.kind === 'idle' || state.kind === 'thinking' || state.kind === 'error'
 
-  /* Gate takes over the demo surface once the visitor has used their
-     free allowance. State is preserved so they can resume immediately
-     after dropping their email or creating an account. */
-  if (gated) {
-    return (
-      <DemoSignupGate
-        used={runs}
-        limit={effectiveLimit}
-        onEmailCaptured={handleEmailCaptured}
-      />
-    )
-  }
-
   return (
     <div className="grid md:grid-cols-12 gap-8 md:gap-16">
+      {/* Hard account gate. Renders as a full-viewport overlay once the
+          free run is spent, so the visitor keeps their result on screen
+          underneath while the gate asks them to create an account. */}
+      <AccountGateModal open={gated} />
       {/* Left: input column (asymmetric - narrower on desktop) */}
       <div className="md:col-span-5">
         {!compact && (
