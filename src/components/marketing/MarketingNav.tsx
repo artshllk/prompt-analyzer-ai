@@ -77,6 +77,9 @@ export function MarketingNav({ current }: MarketingNavProps = {}) {
           >
             Sign in
           </Link>
+          {/* CUT - "Try free" removed. The hero CTA (HeroDemoModal) is now
+              the single trial entry point; the nav button was a competing
+              second one. Restore by uncommenting if needed.
           <Link
             href="/playground"
             className="px-4 py-2 rounded-full text-sm transition-all btn-paper"
@@ -88,6 +91,7 @@ export function MarketingNav({ current }: MarketingNavProps = {}) {
           >
             Try free
           </Link>
+          */}
         </div>
       </div>
     </header>
