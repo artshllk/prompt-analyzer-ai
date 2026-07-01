@@ -121,8 +121,8 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 py-3 mb-6" style={{ borderTop: '1px solid var(--color-rule-strong)', borderBottom: '1px solid var(--color-rule-strong)' }}>
           <p className="text-sm" style={{ color: usage.isAtLimit ? '#C25E5E' : 'var(--color-accent)' }}>
             {usage.isAtLimit
-              ? `You've used all ${usage.limit} free analyses this month.`
-              : `${usage.limit - usage.used} of ${usage.limit} free analyses left this month.`}
+              ? `You've used all ${usage.limit} free rewrites for now (resets within 48h).`
+              : `${usage.limit - usage.used} of ${usage.limit} free rewrites left (48h window).`}
           </p>
           <button onClick={() => setPaywallOpen(true)} className="text-sm underline-offset-4 hover:underline transition-all" style={{ color: 'var(--color-paper)' }}>
             Upgrade to Pro →

@@ -14,8 +14,8 @@ import Link from "next/link";
  */
 
 const FREE_FEATURES = [
-  "1 prompt rewrite",
-  "AI detector (1 essay)",
+  "5 prompt rewrites / 48h",
+  "AI detector · 5 texts / 24h",
   "Chrome extension",
   "7-day session history",
   "Five-dimension clarity scoring",

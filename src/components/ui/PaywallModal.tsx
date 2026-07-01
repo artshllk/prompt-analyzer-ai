@@ -89,8 +89,8 @@ export function PaywallModal({ open, onClose }: PaywallModalProps) {
               </div>
               <h2 className="text-2xl font-bold text-[#f0f4ff] mb-2">You&apos;ve hit your limit</h2>
               <p className="text-[#8b9cc8] text-sm leading-relaxed">
-                You&apos;ve used all 25 free analyses this month.
-                Upgrade to keep going.
+                You&apos;ve used all your free rewrites for now.
+                Upgrade for unlimited, or wait for the 48-hour window to reset.
               </p>
             </div>
 

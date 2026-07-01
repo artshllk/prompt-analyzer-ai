@@ -3,6 +3,7 @@ import { analyzePrompt } from '@/lib/engine'
 import { take, getClientIp, ANON_LIMIT } from '@/lib/rate-limit'
 import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
 import { createServiceClient } from '@/lib/supabase/server'
+import { REWRITE_FREE_LIMIT, REWRITE_WINDOW_HOURS, windowStart } from '@/lib/limits'
 import type { Tone } from '@/types/database'
 import type { QAPair } from '@/types'
 
@@ -37,7 +38,7 @@ export function OPTIONS() {
  * browser extension. Optional Bearer-token auth turns it into the Pro
  * path:
  *   - No token  → per-IP rate limit (ANON_LIMIT), no DB write
- *   - Token + free tier → per-user monthly quota (25), DB usage write
+ *   - Token + free tier → rolling quota (5 / 48h), DB usage write
  *   - Token + pro tier  → unlimited, DB usage write (for analytics)
  */
 export async function POST(req: NextRequest) {
@@ -73,27 +74,23 @@ export async function POST(req: NextRequest) {
     return withCors(NextResponse.json({ error: 'prompt_too_long' }, { status: 400 }))
   }
 
-  // Per-user monthly quota for signed-in free users on the extension.
-  // Pro users bypass entirely. New turns in an in-progress session (when
-  // priorAnswers is non-empty) don't recount - they're part of the same
-  // analysis the user already paid for.
+  // Rolling-window quota for signed-in free users on the extension:
+  // 5 rewrites per 48h. Pro users bypass entirely. New turns in an
+  // in-progress session (priorAnswers non-empty) don't recount - they're
+  // part of the same analysis the user already spent a credit on.
   if (auth && auth.tier === 'free' && priorAnswers.length === 0) {
     const supabase = await createServiceClient()
-    const startOfMonth = new Date()
-    startOfMonth.setDate(1)
-    startOfMonth.setHours(0, 0, 0, 0)
 
     const { count } = await supabase
       .from('usage_events')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', auth.userId)
       .eq('event_type', 'prompt_analyzed')
-      .gte('created_at', startOfMonth.toISOString())
+      .gte('created_at', windowStart(REWRITE_WINDOW_HOURS))
 
-    const FREE_MONTHLY = 25
-    if ((count ?? 0) >= FREE_MONTHLY) {
+    if ((count ?? 0) >= REWRITE_FREE_LIMIT) {
       return withCors(NextResponse.json(
-        { error: 'monthly_limit', used: count, limit: FREE_MONTHLY },
+        { error: 'rate_limited_quota', used: count, limit: REWRITE_FREE_LIMIT, windowHours: REWRITE_WINDOW_HOURS },
         { status: 402 }
       ))
     }

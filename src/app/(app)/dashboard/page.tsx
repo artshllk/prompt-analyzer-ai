@@ -86,7 +86,7 @@ export default async function DashboardPage({
         <section>
           <div className="rule-strong" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-6 py-8">
-            <Stat label="Used this month" value={String(usage.used)} sub={usage.limit ? `of ${usage.limit}` : 'of unlimited'} />
+            <Stat label="Used (48h)" value={String(usage.used)} sub={usage.limit ? `of ${usage.limit}` : 'of unlimited'} />
             <Stat label="Average clarity" value={avgScoreAfter ? String(avgScoreAfter) : '-'} sub="after rewriting" />
             <Stat label="Average lift" value={avgLift ? `+${avgLift}` : '-'} sub="points per prompt" accent={avgLift !== null && avgLift > 0} />
             <Stat label="Sessions" value={String(sessions.length)} sub="all time" />
