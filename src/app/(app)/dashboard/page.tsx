@@ -5,6 +5,7 @@ import { getUserSessions } from '@/lib/db/sessions'
 import { getUsageInfo } from '@/lib/db/usage'
 import { UpgradeButton } from '@/components/ui/UpgradeButton'
 import { Reveal } from '@/components/ui/Reveal'
+import type { SessionWithDetails } from '@/types'
 
 export default async function DashboardPage({
   searchParams,
@@ -17,9 +18,9 @@ export default async function DashboardPage({
 
   const params = await searchParams
 
-  const [{ data: profile }, { sessions }, usage] = await Promise.all([
+  const [{ data: profile }, { sessions, total }, usage] = await Promise.all([
     supabase.from('profiles').select('full_name, tier').eq('id', user.id).single(),
-    getUserSessions(user.id, 5, 0),
+    getUserSessions(user.id, 12, 0),
     getUsageInfo(user.id),
   ])
 
@@ -33,7 +34,25 @@ export default async function DashboardPage({
     ? Math.round(completed.reduce((acc, s) => acc + (s.clarityScoreAfter! - s.clarityScoreBefore!), 0) / completed.length)
     : null
 
-  const isNew = sessions.length === 0
+  // The most recent session that actually produced a rewrite - the star
+  // of the spotlight below.
+  const latest = sessions.find(s => s.improvement) ?? null
+
+  // "What you most often add" - aggregate the improvement tags across
+  // recent sessions into a top-3, a genuine insight the history list
+  // doesn't surface.
+  const tagCounts = new Map<string, number>()
+  for (const s of sessions) {
+    for (const t of s.improvement?.improvementTags ?? []) {
+      tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1)
+    }
+  }
+  const topTags = [...tagCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([t]) => t)
+
+  const isNew = total === 0
   const isPro = profile?.tier === 'pro'
 
   return (
@@ -93,7 +112,7 @@ export default async function DashboardPage({
               <UsageStat usage={usage} />
               <Stat label="Average clarity" value={avgScoreAfter ? String(avgScoreAfter) : '—'} sub="after rewriting" />
               <Stat label="Average lift" value={avgLift ? `+${avgLift}` : '—'} sub="points per prompt" accent={avgLift !== null && avgLift > 0} />
-              <Stat label="Sessions" value={String(sessions.length)} sub="all time" />
+              <Stat label="Sessions" value={String(total)} sub="all time" />
             </div>
             <div className="rule-strong" />
           </section>
@@ -107,64 +126,62 @@ export default async function DashboardPage({
         </Reveal>
       )}
 
-      {/* Recent sessions */}
+      {/* Latest improvement - a spotlight on the actual before → after
+          transformation, not a re-run of the history list. */}
       {!isNew && (
         <Reveal delay={0.12}>
           <section>
             <div className="flex items-baseline justify-between mb-5">
-              <p className="eyebrow">Recent sessions</p>
+              <p className="eyebrow">Latest improvement</p>
               <Link
                 href="/history"
-                className="text-sm transition-opacity hover:opacity-100 opacity-70"
+                className="inline-flex items-center gap-1.5 text-sm transition-opacity hover:opacity-100 opacity-70"
                 style={{ color: 'var(--color-paper-mute)' }}
               >
-                View all &rarr;
+                View full history
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                  <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </Link>
             </div>
-            <div>
-              <div className="rule-strong" />
-              {sessions.map(s => {
-                const score = s.clarityScoreAfter ?? s.clarityScoreBefore ?? 0
-                return (
-                  <div key={s.id}>
-                    <Link
-                      href="/history"
-                      className="grid grid-cols-12 gap-3 md:gap-6 py-4 items-center px-3 -mx-3 rounded-lg row-hover"
-                    >
-                      <div className="col-span-2 md:col-span-1">
-                        <ScoreInline score={score} />
-                      </div>
-                      <div className="col-span-10 md:col-span-7 min-w-0">
-                        <p
-                          className="text-sm md:text-base truncate"
-                          style={{ color: 'var(--color-paper)' }}
-                        >
-                          {s.originalPrompt.length > 120 ? s.originalPrompt.slice(0, 120) + '…' : s.originalPrompt}
-                        </p>
-                        <p className="text-xs mt-1.5" style={{ color: 'var(--color-paper-mute)' }}>
-                          <span className="capitalize">{s.tone}</span>
-                          {s.clarifyTurns > 0 && <> &middot; {s.clarifyTurns} clarification{s.clarifyTurns !== 1 ? 's' : ''}</>}
-                        </p>
-                      </div>
-                      <div className="col-span-7 md:col-span-2 text-xs md:text-right" style={{ color: 'var(--color-paper-mute)' }}>
-                        {new Date(s.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                      </div>
-                      <div className="col-span-5 md:col-span-2 text-right">
-                        {s.clarityScoreBefore && s.clarityScoreAfter ? (
-                          <span className="text-xs md:text-sm tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
-                            {s.clarityScoreBefore} <span>&rarr;</span>{' '}
-                            <span style={{ color: 'var(--color-paper)' }}>{s.clarityScoreAfter}</span>
-                          </span>
-                        ) : (
-                          <span className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>in progress</span>
-                        )}
-                      </div>
-                    </Link>
-                    <div className="rule" />
-                  </div>
-                )
-              })}
-            </div>
+
+            {latest && latest.improvement ? (
+              <SpotlightCard session={latest} />
+            ) : (
+              <Link
+                href="/history"
+                className="block rounded-2xl p-6 md:p-7 row-hover transition-colors"
+                style={{ border: '1px solid var(--color-rule-strong)', background: 'var(--color-ink-card)' }}
+              >
+                <p className="text-base" style={{ color: 'var(--color-paper)' }}>
+                  Your recent sessions are still in progress.
+                </p>
+                <p className="text-sm mt-1.5" style={{ color: 'var(--color-paper-mute)' }}>
+                  Open history to review them &rarr;
+                </p>
+              </Link>
+            )}
+
+            {topTags.length > 0 && (
+              <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
+                <span className="eyebrow" style={{ color: 'var(--color-paper-mute)' }}>
+                  You most often add
+                </span>
+                {topTags.map(t => (
+                  <span
+                    key={t}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-xs capitalize"
+                    style={{
+                      background: 'var(--color-ink-card-elevated)',
+                      border: '1px solid var(--color-rule-strong)',
+                      color: 'var(--color-paper)',
+                    }}
+                  >
+                    {t.replace(/_/g, ' ')}
+                  </span>
+                ))}
+              </div>
+            )}
           </section>
         </Reveal>
       )}
@@ -257,12 +274,101 @@ function UsageStat({ usage }: { usage: { used: number; limit: number | null } })
   )
 }
 
-function ScoreInline({ score }: { score: number }) {
-  const color = score < 30 ? '#C25E5E' : score < 60 ? 'var(--color-paper-mute)' : 'var(--color-paper)'
+function scoreColor(score: number): string {
+  if (score < 30) return '#C25E5E'
+  if (score < 60) return 'var(--color-paper-mute)'
+  return 'var(--color-paper)'
+}
+
+function ClarityBadge({ score, accent }: { score: number | null; accent?: boolean }) {
+  if (score == null) return null
   return (
-    <span className="font-serif text-2xl tabular-nums" style={{ color, fontWeight: 400 }}>
+    <span
+      className="inline-flex items-center gap-1.5 text-xs tabular-nums px-2.5 py-1 rounded-full shrink-0"
+      style={{
+        border: '1px solid var(--color-rule-strong)',
+        color: accent ? 'var(--color-accent)' : scoreColor(score),
+      }}
+    >
+      <span className="text-[10px] uppercase tracking-[0.14em]" style={{ color: 'var(--color-paper-mute)' }}>
+        clarity
+      </span>
       {score}
     </span>
+  )
+}
+
+/** Before → after spotlight for the most recent rewrite. The whole card
+ *  links into history, where the full detail (clarifications, explanation)
+ *  lives. */
+function SpotlightCard({ session }: { session: SessionWithDetails }) {
+  const before = session.clarityScoreBefore
+  const after = session.clarityScoreAfter
+  const lift = before != null && after != null ? after - before : null
+  const improved = session.improvement!.improvedPrompt
+  const date = new Date(session.createdAt).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+
+  return (
+    <Link
+      href="/history"
+      className="group block rounded-2xl overflow-hidden transition-colors"
+      style={{ border: '1px solid var(--color-rule-strong)', background: 'var(--color-ink-card)' }}
+    >
+      {/* Original → Rewrite, side by side on desktop */}
+      <div className="grid md:grid-cols-2">
+        <div className="p-6 md:p-7 md:border-r" style={{ borderColor: 'var(--color-rule)' }}>
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <p className="eyebrow" style={{ color: 'var(--color-paper-mute)' }}>Your prompt</p>
+            <ClarityBadge score={before} />
+          </div>
+          <p className="text-sm md:text-[15px] leading-[1.6] line-clamp-5" style={{ color: 'var(--color-paper-mute)' }}>
+            {session.originalPrompt}
+          </p>
+        </div>
+        <div className="p-6 md:p-7 border-t md:border-t-0" style={{ borderColor: 'var(--color-rule)' }}>
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <p className="eyebrow" style={{ color: 'var(--color-accent)' }}>Rewrite</p>
+            <ClarityBadge score={after} accent />
+          </div>
+          <p
+            className="font-serif text-sm md:text-[15px] leading-[1.6] line-clamp-5"
+            style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+          >
+            {improved}
+          </p>
+        </div>
+      </div>
+
+      {/* Footer strip: lift + meta */}
+      <div
+        className="flex items-center justify-between gap-4 px-6 md:px-7 py-3.5"
+        style={{ borderTop: '1px solid var(--color-rule)' }}
+      >
+        <div className="flex items-center gap-2 text-sm tabular-nums">
+          {before != null && after != null ? (
+            <>
+              <span style={{ color: scoreColor(before) }}>{before}</span>
+              <span style={{ color: 'var(--color-paper-mute)' }}>→</span>
+              <span style={{ color: scoreColor(after) }}>{after}</span>
+              {lift != null && lift > 0 && (
+                <span className="ml-1" style={{ color: 'var(--color-accent)' }}>+{lift} clarity</span>
+              )}
+            </>
+          ) : (
+            <span style={{ color: 'var(--color-paper-mute)' }}>in progress</span>
+          )}
+        </div>
+        <span className="text-xs inline-flex items-center gap-2" style={{ color: 'var(--color-paper-mute)' }}>
+          <span className="capitalize">{session.tone}</span>
+          <span>·</span>
+          <span>{date}</span>
+        </span>
+      </div>
+    </Link>
   )
 }
 
