@@ -73,12 +73,14 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
     setHydrated(true)
   }, [])
 
-  // Auto-grow the idle composer.
+  // Auto-grow the idle composer (scroll past the cap, don't clip).
   useEffect(() => {
     const ta = inputRef.current
     if (!ta) return
+    const MAX = 200
     ta.style.height = 'auto'
-    ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`
+    ta.style.height = `${Math.min(ta.scrollHeight, MAX)}px`
+    ta.style.overflowY = ta.scrollHeight > MAX ? 'auto' : 'hidden'
   }, [input])
 
   // Auto-grow + focus the answer field when a question appears.
@@ -90,8 +92,10 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
   useEffect(() => {
     const ta = answerRef.current
     if (!ta) return
+    const MAX = 160
     ta.style.height = 'auto'
-    ta.style.height = `${Math.min(ta.scrollHeight, 160)}px`
+    ta.style.height = `${Math.min(ta.scrollHeight, MAX)}px`
+    ta.style.overflowY = ta.scrollHeight > MAX ? 'auto' : 'hidden'
   }, [answer])
 
   const started = phase !== 'idle'
@@ -332,7 +336,7 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
                   placeholder="Type your answer…"
                   rows={1}
                   maxLength={1000}
-                  className="flex-1 bg-transparent resize-none overflow-y-hidden py-2 px-2 text-[15px] sm:text-base outline-none"
+                  className="flex-1 bg-transparent resize-none py-2 px-2 text-[15px] sm:text-base outline-none"
                   style={{ color: 'var(--color-paper)', caretColor: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.55 }}
                   onKeyDown={e => {
                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -414,7 +418,7 @@ function Intro({
             placeholder="Message Deepclario…"
             rows={1}
             maxLength={4000}
-            className="flex-1 bg-transparent resize-none overflow-y-hidden py-2.5 px-2 text-[15px] sm:text-base focus:outline-none focus-visible:outline-none"
+            className="flex-1 bg-transparent resize-none py-2.5 px-2 text-[15px] sm:text-base focus:outline-none focus-visible:outline-none"
             style={{ color: 'var(--color-paper)', caretColor: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.55 }}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {

@@ -52,8 +52,10 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
   useEffect(() => {
     const ta = inputRef.current
     if (!ta) return
+    const MAX = 320
     ta.style.height = 'auto'
-    ta.style.height = `${Math.min(ta.scrollHeight, 320)}px`
+    ta.style.height = `${Math.min(ta.scrollHeight, MAX)}px`
+    ta.style.overflowY = ta.scrollHeight > MAX ? 'auto' : 'hidden'
   }, [prompt])
 
   useEffect(() => {
@@ -64,8 +66,12 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
   useEffect(() => {
     const ta = answerRef.current
     if (!ta) return
+    const MAX = 200
     ta.style.height = 'auto'
-    ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`
+    // Grow to fit, capped at MAX. Past the cap, let it scroll instead of
+    // clipping - pasting a long answer must stay readable.
+    ta.style.height = `${Math.min(ta.scrollHeight, MAX)}px`
+    ta.style.overflowY = ta.scrollHeight > MAX ? 'auto' : 'hidden'
   }, [answer])
 
   // On mobile, bring the response into view when work begins.
@@ -149,7 +155,7 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
                 placeholder="A rough idea, a one-liner, or a request you haven't finished writing…"
                 rows={5}
                 maxLength={4000}
-                className="w-full bg-transparent resize-none overflow-y-hidden p-3 text-[15px] sm:text-base outline-none disabled:opacity-60"
+                className="w-full bg-transparent resize-none p-3 text-[15px] sm:text-base outline-none disabled:opacity-60"
                 style={{ color: 'var(--color-paper)', caretColor: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.6 }}
                 onKeyDown={e => {
                   if (e.key === 'Enter' && !e.shiftKey && !started) {
@@ -280,7 +286,7 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
                       placeholder="Type your answer…"
                       rows={1}
                       maxLength={1000}
-                      className="flex-1 bg-transparent resize-none overflow-y-hidden py-2 px-2 text-[15px] sm:text-base outline-none"
+                      className="flex-1 bg-transparent resize-none py-2 px-2 text-[15px] sm:text-base outline-none"
                       style={{ color: 'var(--color-paper)', caretColor: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.55 }}
                       onKeyDown={e => {
                         if (e.key === 'Enter' && !e.shiftKey) {
