@@ -19,7 +19,7 @@ const LINKS: { key: NavKey; href: string; label: string }[] = [
   { key: 'detector', href: '/detector', label: 'Detector' },
   { key: 'prompts', href: '/prompts', label: 'Prompts' },
   { key: 'extension', href: '/extension', label: 'Extension' },
-  { key: 'pricing', href: '/#pricing', label: 'Pricing' },
+  { key: 'pricing', href: '/pricing', label: 'Pricing' },
   { key: 'faq', href: '/faq', label: 'FAQ' },
   { key: 'blog', href: '/blog', label: 'Blog' },
 ]
