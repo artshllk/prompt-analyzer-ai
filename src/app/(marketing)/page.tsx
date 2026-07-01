@@ -8,7 +8,7 @@ import { HeroDemoModal } from "@/components/marketing/HeroDemoModal";
 import { UseCases } from "@/components/marketing/UseCases";
 import { Testimonials } from "@/components/marketing/Testimonials";
 import { FAQSection } from "@/components/marketing/FAQSection";
-import { HeroCenterpiece } from "@/components/marketing/HeroCenterpiece";
+import { HeroRefinement } from "@/components/marketing/refinement/HeroRefinement";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 // { /* CUT - redundant with demo + steps */ }
 // import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
@@ -156,7 +156,7 @@ export default function LandingPage() {
                   never competes with the CTA for attention. */}
               <div className="hidden lg:flex lg:col-span-4 items-center justify-center">
                 <div className="w-full max-w-96 min-w-96">
-                  <HeroCenterpiece />
+                  <HeroRefinement />
                 </div>
               </div>
             </div>
