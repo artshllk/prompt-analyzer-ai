@@ -1,7 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { createClient } from '@/lib/supabase/client'
 import { DemoChat } from './DemoChat'
 
 /**
@@ -21,10 +23,19 @@ import { DemoChat } from './DemoChat'
  *   - Focus trapped while open; focus returns to the trigger on close.
  */
 export function HeroDemoModal() {
+  const router = useRouter()
+  const [isSignedIn, setIsSignedIn] = useState(false)
   const [open, setOpen] = useState(false)
   const [wide, setWide] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [nudge, setNudge] = useState(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsSignedIn(!!user)
+    })
+  }, [])
 
   const triggerRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -106,7 +117,7 @@ export function HeroDemoModal() {
     <>
       <button
         ref={triggerRef}
-        onClick={() => setOpen(true)}
+        onClick={() => isSignedIn ? router.push('/playground') : setOpen(true)}
         className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-[15px] transition-all btn-paper"
         style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
       >
