@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { CHROME_STORE_URL } from '@/lib/constants'
 export const metadata: Metadata = {
   title: 'Chrome extension - Deepclario inside ChatGPT, Claude & Gemini',
   description:
@@ -18,36 +19,16 @@ export const metadata: Metadata = {
 const STEPS = [
   {
     n: '01',
-    t: 'Download',
-    d: 'Get the extension folder. It is a small zip - no installer, no account.',
+    t: 'Add to Chrome',
+    d: 'Open the Chrome Web Store listing and click “Add to Chrome”. One click - no zip, no developer mode. Works in Chrome, Brave, Edge, and Arc.',
   },
   {
     n: '02',
-    t: 'Unzip it',
-    d: 'Double-click the downloaded file. You will get a folder called “extension”.',
-  },
-  {
-    n: '03',
-    t: 'Open your extensions page',
-    d: 'In Chrome, Edge, Brave or Arc, go to the address bar and visit chrome://extensions (edge://extensions on Edge).',
-  },
-  {
-    n: '04',
-    t: 'Turn on Developer mode',
-    d: 'Toggle “Developer mode” on - it is the switch in the top-right corner of that page.',
-  },
-  {
-    n: '05',
-    t: 'Load it',
-    d: 'Click “Load unpacked”, then select the unzipped “extension” folder. That is it.',
-  },
-  {
-    n: '06',
     t: 'Use it',
     d: 'Open chatgpt.com, claude.ai, or gemini.google.com. A “✦ Improve prompt” button appears bottom-right.',
   },
   {
-    n: '07',
+    n: '03',
     t: 'Connect your account (optional)',
     d: 'If you have a Deepclario account, open the extension panel, click “Connect account”, and paste the code from deepclario.com/extension/connect. The extension then uses your plan instead of the public free quota.',
   },
@@ -77,18 +58,19 @@ export default function ExtensionPage() {
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <a
-              href="/deepclario-extension.zip"
-              download
+              href={CHROME_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] transition-all btn-paper"
               style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
             >
-              Download the extension
+              Add to Chrome
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M7 1V10M7 10L3 6M7 10L11 6M2 13H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </a>
             <span className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-              Works in Chrome, Brave, Edge, Arc.
+              Free · Works in Chrome, Brave, Edge, Arc.
             </span>
             <span
               className="text-[11px] font-medium tracking-[0.16em] uppercase px-2.5 py-1 rounded-full"
