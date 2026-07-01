@@ -19,6 +19,64 @@ const HOW_IT_WORKS = [
   { step: '3', title: 'Receive the improved version', desc: 'A rewritten prompt using the CRAFT framework, ready to paste into any AI tool.' },
 ]
 
+// Structured data: marks this up as a free tool with a step-by-step how-to
+// and an FAQ, making it eligible for rich results on "prompt improver".
+const improverSchema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: 'Deepclario AI Prompt Improver',
+      url: 'https://deepclario.com/tools/prompt-improver',
+      applicationCategory: 'UtilityApplication',
+      operatingSystem: 'Web',
+      description:
+        'A free AI prompt improver that scores any prompt across five dimensions and rewrites it with the CRAFT framework for ChatGPT, Claude, and Gemini.',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      publisher: { '@id': 'https://deepclario.com/#organization' },
+    },
+    {
+      '@type': 'HowTo',
+      name: 'How to improve an AI prompt with Deepclario',
+      step: HOW_IT_WORKS.map(s => ({
+        '@type': 'HowToStep',
+        position: Number(s.step),
+        name: s.title,
+        text: s.desc,
+      })),
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is an AI prompt improver?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'An AI prompt improver takes a rough or vague prompt and rewrites it into a clear, specific instruction an AI model can act on. Deepclario scores your prompt across five dimensions and rewrites it with the CRAFT framework.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Is the prompt improver free?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. You can improve prompts for free, no account required to start. A free account and Pro plan raise the limits.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Which AI tools does the improved prompt work with?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'The improved prompt works with any model - ChatGPT, Claude, Gemini, Grok, Microsoft Copilot, or any other LLM. Deepclario improves the input you paste in.',
+          },
+        },
+      ],
+    },
+  ],
+}
+
 const DIMENSIONS = [
   { name: 'Goal clarity', desc: 'Is the desired output unambiguous?' },
   { name: 'Context', desc: 'Does it provide enough background for the AI?' },
@@ -30,6 +88,10 @@ const DIMENSIONS = [
 export default function PromptImproverPage() {
   return (
     <div className="editorial grain min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(improverSchema) }}
+      />
       <header className="border-b border-[color:var(--color-rule)] px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.png" alt="Deepclario" width={24} height={24} className="rounded" />
