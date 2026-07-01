@@ -18,15 +18,12 @@ export default async function InsightsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 md:px-10 py-12 md:py-16 space-y-12">
-      {/* Heading */}
+      {/* Heading - short, scan-first. The cards below carry the detail. */}
       <header>
         <p className="eyebrow mb-4">Insights</p>
         <h1 className="display text-4xl md:text-6xl" style={{ color: 'var(--color-paper)' }}>
-          Patterns over weeks, <span style={{ color: 'var(--color-paper-mute)' }}>not days.</span>
+          Your week, <span style={{ color: 'var(--color-paper-mute)' }}>at a glance.</span>
         </h1>
-        <p className="mt-5 text-base md:text-lg leading-[1.55] max-w-2xl" style={{ color: 'var(--color-paper-mute)' }}>
-          The quiet trends in how you ask AI - the gaps you keep leaving, the dimensions that lift your scores fastest, the weeks you got measurably better.
-        </p>
       </header>
 
       {isPro ? (
