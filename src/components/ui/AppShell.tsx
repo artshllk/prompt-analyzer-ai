@@ -151,6 +151,8 @@ const NAV_ITEMS: { href: string; label: string; isPro?: boolean }[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/history", label: "History" },
   { href: "/insights", label: "Insights", isPro: true },
+  { href: "/detector", label: "Detector" },
+  { href: "/extension", label: "Extension" },
 ];
 
 interface AppShellProps {
