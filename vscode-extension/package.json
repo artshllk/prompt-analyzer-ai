@@ -1,0 +1,101 @@
+{
+  "name": "deepclario",
+  "displayName": "Deepclario — Improve your AI prompts",
+  "description": "Score and rewrite the prompt you're about to send to an AI — right inside your editor. Select text, run Improve, get a clearer version back.",
+  "version": "0.1.0",
+  "publisher": "deepclario",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Other"
+  ],
+  "keywords": [
+    "prompt",
+    "ai",
+    "chatgpt",
+    "claude",
+    "gemini",
+    "prompt engineering",
+    "copilot"
+  ],
+  "icon": "icon.png",
+  "homepage": "https://deepclario.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artshllk/prompt-analyzer-ai"
+  },
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "deepclario.improvePrompt",
+        "title": "Improve Prompt",
+        "category": "Deepclario"
+      },
+      {
+        "command": "deepclario.connectAccount",
+        "title": "Connect Account",
+        "category": "Deepclario"
+      },
+      {
+        "command": "deepclario.disconnectAccount",
+        "title": "Disconnect Account",
+        "category": "Deepclario"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "deepclario.improvePrompt",
+          "when": "editorHasSelection",
+          "group": "1_modification@100"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "deepclario.improvePrompt",
+        "key": "ctrl+alt+i",
+        "mac": "cmd+alt+i",
+        "when": "editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "Deepclario",
+      "properties": {
+        "deepclario.tone": {
+          "type": "string",
+          "default": "professional",
+          "enum": [
+            "professional",
+            "friendly",
+            "persuasive",
+            "concise",
+            "creative"
+          ],
+          "description": "Tone the rewrite aims for."
+        },
+        "deepclario.apiBaseUrl": {
+          "type": "string",
+          "default": "https://deepclario.com",
+          "description": "Base URL of the Deepclario API. Override only for local development or a self-hosted instance."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --target=node18",
+    "watch": "npm run build -- --sourcemap --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.4.0"
+  }
+}
