@@ -6,7 +6,6 @@ import { getUsageInfo } from '@/lib/db/usage'
 import { UpgradeButton } from '@/components/ui/UpgradeButton'
 import { Reveal } from '@/components/ui/Reveal'
 import { CountUp } from '@/components/ui/CountUp'
-import { statusOf } from '@/lib/session-status'
 import { REWRITE_WINDOW_HOURS } from '@/lib/limits'
 import type { SessionWithDetails, UsageInfo } from '@/types'
 
@@ -39,10 +38,6 @@ export default async function DashboardPage({
 
   // The most recent session that actually produced a rewrite.
   const latest = sessions.find(s => s.improvement) ?? null
-
-  // Sessions with an unanswered question that are still recent enough to
-  // resume - the honest, actionable "needs-answer" state.
-  const needsAnswer = sessions.filter(s => statusOf(s) === 'needs-answer')
 
   const tagCounts = new Map<string, number>()
   for (const s of sessions) {
@@ -119,13 +114,6 @@ export default async function DashboardPage({
               <MetricCard label="Sessions" value={total} sub="all time" />
             </section>
           </Reveal>
-
-          {/* Needs-your-answer nudge - only when there's something to resume. */}
-          {needsAnswer.length > 0 && (
-            <Reveal delay={0.1}>
-              <NeedsAnswer sessions={needsAnswer} />
-            </Reveal>
-          )}
 
           {/* Latest improvement spotlight. */}
           <Reveal delay={0.14}>
@@ -290,43 +278,6 @@ function UsageCard({ usage, isPro }: { usage: UsageInfo; isPro: boolean }) {
         </p>
       </div>
     </div>
-  )
-}
-
-/* ===== Needs-your-answer nudge ===== */
-
-function NeedsAnswer({ sessions }: { sessions: SessionWithDetails[] }) {
-  const n = sessions.length
-  return (
-    <section
-      className="rounded-2xl p-5 md:p-6"
-      style={{
-        background: 'rgba(224,178,60,0.06)',
-        border: '1px solid rgba(224,178,60,0.28)',
-        borderLeft: '3px solid #E0B23C',
-      }}
-    >
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="eyebrow mb-1.5" style={{ color: '#E0B23C' }}>Waiting on you</p>
-          <p className="text-base" style={{ color: 'var(--color-paper)' }}>
-            {n === 1
-              ? 'One prompt is waiting for your answer to finish improving.'
-              : `${n} prompts are waiting for your answer to finish improving.`}
-          </p>
-        </div>
-        <Link
-          href="/history"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all hover:gap-3 btn-outline shrink-0"
-          style={{ border: '1px solid var(--color-rule-strong)', color: 'var(--color-paper)' }}
-        >
-          Resume
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-            <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </Link>
-      </div>
-    </section>
   )
 }
 
