@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { NavAuthButton } from './NavAuthButton'
 
 /**
  * Shared marketing nav used across every public-facing surface
@@ -70,32 +71,7 @@ export function MarketingNav({ current }: MarketingNavProps = {}) {
           })}
         </nav>
         <div className="flex items-center gap-2">
-          <Link
-            href="/login"
-            className="btn-outline inline-flex items-center px-4 py-2 rounded-full text-sm"
-            style={{
-              color: 'var(--color-paper)',
-              border: '1px solid var(--color-rule-strong)',
-              fontWeight: 500,
-            }}
-          >
-            Sign in
-          </Link>
-          {/* CUT - "Try free" removed. The hero CTA (HeroDemoModal) is now
-              the single trial entry point; the nav button was a competing
-              second one. Restore by uncommenting if needed.
-          <Link
-            href="/playground"
-            className="px-4 py-2 rounded-full text-sm transition-all btn-paper"
-            style={{
-              background: 'var(--color-paper)',
-              color: 'var(--color-ink)',
-              fontWeight: 500,
-            }}
-          >
-            Try free
-          </Link>
-          */}
+          <NavAuthButton />
         </div>
       </div>
     </header>
