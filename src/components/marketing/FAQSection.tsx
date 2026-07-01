@@ -9,7 +9,7 @@ const FAQS = [
   },
   {
     q: 'Is Deepclario free to use?',
-    a: 'Yes. The free plan gives you 25 prompt rewrites per month with full clarity scoring and the full rewrite. No credit card needed. Pro is $9.99 a month and removes the limit, adds full history, persona memory, and weekly insights.',
+    a: 'Yes. The free plan gives you 25 prompt rewrites per month with full clarity scoring and the full rewrite. No credit card needed. Pro is $4.99 a month right now (a launch discount from $9.99) and removes the limit, adds full history, persona memory, and weekly insights.',
   },
   {
     q: 'Do I have to learn prompt engineering to use this?',

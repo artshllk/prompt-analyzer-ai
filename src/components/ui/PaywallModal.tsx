@@ -107,9 +107,9 @@ export function PaywallModal({ open, onClose }: PaywallModalProps) {
                   }`}
                 >
                   {p === 'pro_monthly' ? (
-                    <span>Monthly <span className="font-bold">$9.99</span></span>
+                    <span>Monthly <span className="text-[#4a5a80] line-through mr-1">$9.99</span><span className="font-bold">$4.99</span></span>
                   ) : (
-                    <span>Annual <span className="font-bold">$95.88</span> <span className="text-emerald-400 text-xs">Save 20%</span></span>
+                    <span>Annual <span className="text-[#4a5a80] line-through mr-1">$95.88</span><span className="font-bold">$47.88</span> <span className="text-emerald-400 text-xs">50% off</span></span>
                   )}
                 </button>
               ))}
