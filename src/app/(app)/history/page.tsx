@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getUserSessions } from '@/lib/db/sessions'
+import { SessionStatusChip } from '@/components/ui/SessionStatusChip'
 
 function ScoreTrend({ sessions }: { sessions: Array<{ clarityScoreAfter?: number | null; clarityScoreBefore?: number | null }> }) {
   const points = sessions
@@ -217,16 +218,8 @@ export default async function HistoryPage({
                     {new Date(session.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                   </p>
                 </div>
-                <div className="col-span-10 md:col-span-3 text-right">
-                  {session.clarityScoreBefore != null && session.clarityScoreAfter != null ? (
-                    <span className="text-sm tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
-                      {session.clarityScoreBefore} <span style={{ color: 'var(--color-paper-mute)' }}>→</span>{' '}
-                      <span style={{ color: 'var(--color-paper)' }}>{session.clarityScoreAfter}</span>
-                      <span className="ml-2" style={{ color: 'var(--color-accent)' }}>+{session.clarityScoreAfter - session.clarityScoreBefore}</span>
-                    </span>
-                  ) : (
-                    <span className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>in progress</span>
-                  )}
+                <div className="col-span-10 md:col-span-3 flex justify-end">
+                  <SessionStatusChip session={session} />
                 </div>
                 <div className="col-span-2 md:col-span-1 flex justify-end">
                   <svg width="13" height="13" viewBox="0 0 14 14" fill="none"
