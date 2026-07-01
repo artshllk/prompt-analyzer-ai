@@ -32,9 +32,30 @@ const PRO_FEATURES = [
   "Priority support",
 ];
 
+/**
+ * Launch pricing. Single source of truth for the promotional discount so
+ * the strike-through anchor, the sale price, and the badge never drift.
+ *
+ * IMPORTANT: this is display only. The actual charge is set by the Paddle
+ * price the checkout uses - to genuinely bill the launch price, update the
+ * price in the Paddle dashboard too. To end the promo, set active: false.
+ */
+const LAUNCH = {
+  active: true,
+  /** Headline percent off, shown in the badge and saving chip. */
+  percentOff: 50,
+  /** Monthly list price -> launch price. */
+  monthly: { list: "9.99", now: "4.99" },
+  /** Yearly per-month list price -> launch price, plus the billed total. */
+  yearly: { list: "7.99", now: "3.99", billedTotal: "47.88" },
+};
+
 export function EditorialPricing() {
   const [annual, setAnnual] = useState(false);
-  const proMonthly = annual ? "7.99" : "9.99";
+
+  const period = annual ? LAUNCH.yearly : LAUNCH.monthly;
+  const listPrice = period.list;
+  const nowPrice = LAUNCH.active ? period.now : period.list;
 
   return (
     <div>
@@ -124,12 +145,35 @@ export function EditorialPricing() {
 
         {/* Pro - most popular */}
         <PricingCard tier="Pro" popular>
+          {/* Anchor row: struck list price + saving chip, sitting above
+              the big current price so the discount reads at a glance. */}
+          {LAUNCH.active && (
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <span
+                className="font-serif text-xl tabular-nums line-through"
+                style={{ color: "var(--color-paper-mute)", fontWeight: 400 }}
+                aria-label={`Was $${listPrice} per month`}
+              >
+                ${listPrice}
+              </span>
+              <span
+                className="inline-flex items-center text-[11px] tracking-[0.08em] uppercase font-semibold px-2 py-0.5 rounded-full"
+                style={{
+                  background: "rgba(74, 176, 118, 0.12)",
+                  color: "#5FBE8C",
+                  border: "1px solid rgba(74, 176, 118, 0.28)",
+                }}
+              >
+                Save {LAUNCH.percentOff}%
+              </span>
+            </div>
+          )}
           <div className="flex items-baseline gap-1.5 mb-1">
             <span
               className="font-serif text-6xl tabular-nums"
               style={{ color: "var(--color-paper)", fontWeight: 400 }}
             >
-              ${proMonthly}
+              ${nowPrice}
             </span>
             <span
               className="text-sm"
@@ -139,13 +183,22 @@ export function EditorialPricing() {
             </span>
           </div>
           <p
-            className="text-sm mb-7"
+            className="text-sm"
             style={{ color: "var(--color-paper-mute)" }}
           >
             {annual
-              ? "Billed $95.88 yearly. Cancel anytime."
+              ? `Billed $${LAUNCH.active ? LAUNCH.yearly.billedTotal : "95.88"} yearly. Cancel anytime.`
               : "Billed monthly. Cancel anytime."}
           </p>
+          {LAUNCH.active && (
+            <p
+              className="mt-1.5 mb-7 text-sm"
+              style={{ color: "var(--color-accent-bright)" }}
+            >
+              Launch pricing &mdash; locked in for early adopters.
+            </p>
+          )}
+          {!LAUNCH.active && <div className="mb-7" />}
           <Link
             href="/login"
             className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-paper"

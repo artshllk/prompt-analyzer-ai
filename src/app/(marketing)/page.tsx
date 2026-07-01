@@ -75,7 +75,7 @@ const structuredData = {
           name: "Is Deepclario free?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes. The free plan gives you 25 prompt rewrites every month. Pro is $9.99 a month and removes the limit, adds full history, persona memory, and weekly insights.",
+            text: "Yes. The free plan gives you 25 prompt rewrites every month. Pro is $4.99 a month right now (a launch discount from $9.99) and removes the limit, adds full history, persona memory, and weekly insights.",
           },
         },
       ],

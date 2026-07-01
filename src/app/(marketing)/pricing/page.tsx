@@ -5,8 +5,19 @@ import { EditorialPricing } from '@/components/marketing/EditorialPricing'
 
 export const metadata: Metadata = {
   title: 'Pricing – Deepclario',
-  description: 'Free until you outgrow it. One prompt rewrite and AI detector essay on the free plan. Upgrade to Pro for unlimited everything.',
+  description: 'Free until you outgrow it. Pro is $4.99/month right now — a launch discount from $9.99 — for unlimited rewrites, unlimited AI detection, full history, and weekly insights.',
   alternates: { canonical: 'https://deepclario.com/pricing' },
+  openGraph: {
+    title: 'Deepclario Pricing — Pro at $4.99/month (launch offer)',
+    description: 'Launch pricing: Pro is $4.99/month, down from $9.99. Unlimited prompt rewrites, unlimited AI detection, full history, and weekly insights. The free plan stays free.',
+    url: 'https://deepclario.com/pricing',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Deepclario Pricing — Pro at $4.99/month (launch offer)',
+    description: 'Launch pricing: Pro is $4.99/month, down from $9.99. Unlimited everything for people who reach for Deepclario daily.',
+  },
 }
 
 export default function PricingPage() {
