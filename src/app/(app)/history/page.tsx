@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getUserSessions } from '@/lib/db/sessions'
+import { SessionStatusChip } from '@/components/ui/SessionStatusChip'
 
 function ScoreTrend({ sessions }: { sessions: Array<{ clarityScoreAfter?: number | null; clarityScoreBefore?: number | null }> }) {
   const points = sessions
@@ -217,16 +218,8 @@ export default async function HistoryPage({
                     {new Date(session.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                   </p>
                 </div>
-                <div className="col-span-10 md:col-span-3 text-right">
-                  {session.clarityScoreBefore != null && session.clarityScoreAfter != null ? (
-                    <span className="text-sm tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
-                      {session.clarityScoreBefore} <span style={{ color: 'var(--color-paper-mute)' }}>→</span>{' '}
-                      <span style={{ color: 'var(--color-paper)' }}>{session.clarityScoreAfter}</span>
-                      <span className="ml-2" style={{ color: 'var(--color-accent)' }}>+{session.clarityScoreAfter - session.clarityScoreBefore}</span>
-                    </span>
-                  ) : (
-                    <span className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>in progress</span>
-                  )}
+                <div className="col-span-10 md:col-span-3 flex justify-end">
+                  <SessionStatusChip session={session} />
                 </div>
                 <div className="col-span-2 md:col-span-1 flex justify-end">
                   <svg width="13" height="13" viewBox="0 0 14 14" fill="none"
@@ -243,8 +236,8 @@ export default async function HistoryPage({
                   <div>
                     <p className="eyebrow mb-3" style={{ color: 'var(--color-paper-mute)' }}>Original</p>
                     <p
-                      className="font-serif tracking-tight text-base md:text-lg leading-[1.55] whitespace-pre-wrap"
-                      style={{ color: 'var(--color-paper-mute)' }}
+                      className="text-base md:text-lg leading-[1.6] whitespace-pre-wrap"
+                      style={{ color: 'var(--color-paper-mute)', fontFamily: 'var(--font-inter)' }}
                     >
                       {session.originalPrompt}
                     </p>
@@ -257,8 +250,8 @@ export default async function HistoryPage({
                         {session.exchanges.map(e => (
                           <li key={e.turn} className="pl-5" style={{ borderLeft: '1px solid var(--color-rule-strong)' }}>
                             <p
-                              className="font-serif text-base md:text-lg mb-1"
-                              style={{ color: 'var(--color-paper)', fontStyle: 'italic', fontWeight: 400 }}
+                              className="text-base md:text-lg mb-1"
+                              style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)', fontWeight: 500 }}
                             >
                               {e.question}
                             </p>
@@ -277,8 +270,8 @@ export default async function HistoryPage({
                     <div>
                       <p className="eyebrow mb-3" style={{ color: 'var(--color-paper)' }}>Rewrite</p>
                       <p
-                        className="font-serif text-base md:text-lg leading-[1.55] whitespace-pre-wrap mb-4"
-                        style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+                        className="text-base md:text-lg leading-[1.6] whitespace-pre-wrap mb-4"
+                        style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)' }}
                       >
                         {session.improvement.improvedPrompt}
                       </p>

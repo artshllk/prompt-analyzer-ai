@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import Image from 'next/image'
-import { motion, useReducedMotion } from 'framer-motion'
+import Image from "next/image";
+import { motion, useReducedMotion } from "framer-motion";
 
 /**
  * Hero centerpiece visual.
@@ -18,42 +18,48 @@ import { motion, useReducedMotion } from 'framer-motion'
  */
 
 type Chip = {
-  label: string
+  label: string;
   // Position as percent of the container, anchored to its centre.
-  x: number
-  y: number
-}
+  x: number;
+  y: number;
+};
 
-// Six product chips, clockwise from top.
+// Six product chips laid out on a TRUE circle (radius 46 from centre, at
+// 60° steps) so they sit cleanly on the outer orbit ring instead of the
+// old hand-picked coordinates that drifted off it. Clockwise from top.
+// The two widest labels take the top/bottom slots (x = 50), where centred
+// text reads symmetrically; the shorter labels take the four diagonals.
 const CHIPS: Chip[] = [
-  { label: 'Clarity 22 → 87',           x: 50, y: 3 },
-  { label: 'Tokens 412 → 268',          x: 94, y: 22 },
-  { label: 'ChatGPT · Claude · Gemini', x: 88, y: 78 },
-  { label: '1-click Improve in-page',   x: 50, y: 97 },
-  { label: 'Asks one smart question',   x: 10, y: 78 },
-  { label: 'CRAFT rewrite',             x: 6,  y: 22 },
-]
+  { label: "ChatGPT · Claude · Gemini", x: 50, y: 4 }, // top
+  { label: "Clarity 22 → 87", x: 78, y: 27 }, // top-right
+  { label: "Prompt improvement", x: 80, y: 60 }, // bottom-right
+  { label: "Improve prompts right in your browser", x: 50, y: 90 }, // bottom
+  { label: "Tokens 412 → 268", x: 6, y: 78 }, // bottom-left
+  { label: "Asks one smart question", x: 0, y: 12 },
+  { label: "Ai detector", x: 0, y: 50 }, // top-left
+  // top-left
+];
 
 // Drifting background particles. Hand-picked positions so the
 // distribution feels intentional, not random. Each value is a
 // percent of the container.
 const PARTICLES = [
-  { x: 8,  y: 12, size: 1.5, dur: 9,  delay: 0 },
-  { x: 92, y: 8,  size: 2,   dur: 11, delay: 1.2 },
-  { x: 70, y: 4,  size: 1,   dur: 8,  delay: 2.4 },
-  { x: 22, y: 6,  size: 1,   dur: 10, delay: 0.8 },
+  { x: 8, y: 12, size: 1.5, dur: 9, delay: 0 },
+  { x: 92, y: 8, size: 2, dur: 11, delay: 1.2 },
+  { x: 70, y: 4, size: 1, dur: 8, delay: 2.4 },
+  { x: 22, y: 6, size: 1, dur: 10, delay: 0.8 },
   { x: 96, y: 55, size: 1.5, dur: 12, delay: 1.6 },
-  { x: 4,  y: 60, size: 1,   dur: 9.5, delay: 0.4 },
+  { x: 4, y: 60, size: 1, dur: 9.5, delay: 0.4 },
   { x: 12, y: 92, size: 1.5, dur: 11, delay: 2 },
-  { x: 88, y: 95, size: 1,   dur: 10, delay: 0.6 },
-  { x: 60, y: 90, size: 1,   dur: 8.5, delay: 1.4 },
+  { x: 88, y: 95, size: 1, dur: 10, delay: 0.6 },
+  { x: 60, y: 90, size: 1, dur: 8.5, delay: 1.4 },
   { x: 36, y: 96, size: 1.5, dur: 12, delay: 2.2 },
-  { x: 80, y: 35, size: 1,   dur: 9.2, delay: 0.2 },
-  { x: 20, y: 40, size: 1,   dur: 10.5, delay: 1.8 },
-]
+  { x: 80, y: 35, size: 1, dur: 9.2, delay: 0.2 },
+  { x: 20, y: 40, size: 1, dur: 10.5, delay: 1.8 },
+];
 
 export function HeroCenterpiece() {
-  const reduce = useReducedMotion()
+  const reduce = useReducedMotion();
 
   return (
     <div
@@ -77,15 +83,16 @@ export function HeroCenterpiece() {
             fill="var(--color-accent)"
             fillOpacity={0.32}
             initial={reduce ? false : { y: 0, opacity: 0 }}
-            animate={reduce
-              ? { opacity: 0.32 }
-              : { y: [-1, 1, -1], opacity: [0.2, 0.5, 0.2] }
+            animate={
+              reduce
+                ? { opacity: 0.32 }
+                : { y: [-1, 1, -1], opacity: [0.2, 0.5, 0.2] }
             }
             transition={{
               duration: p.dur,
               delay: p.delay,
               repeat: Infinity,
-              ease: 'easeInOut',
+              ease: "easeInOut",
             }}
           />
         ))}
@@ -96,49 +103,49 @@ export function HeroCenterpiece() {
         className="absolute inset-[12%]"
         style={{
           background:
-            'radial-gradient(circle at center, var(--color-accent-glow), transparent 65%)',
-          filter: 'blur(20px)',
+            "radial-gradient(circle at center, var(--color-accent-glow), transparent 65%)",
+          filter: "blur(20px)",
         }}
         animate={reduce ? undefined : { opacity: [0.55, 0.85, 0.55] }}
-        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />
 
       {/* Rotating outer dashed ring - slow enough to be sensed, not seen. */}
       <motion.div
         className="absolute inset-[4%] rounded-full"
-        style={{ border: '1px dashed var(--color-rule)' }}
+        style={{ border: "1px dashed var(--color-rule)" }}
         animate={reduce ? undefined : { rotate: 360 }}
-        transition={{ duration: 80, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
       />
 
       {/* Middle solid ring */}
       <div
         className="absolute inset-[15%] rounded-full"
-        style={{ border: '1px solid var(--color-rule)' }}
+        style={{ border: "1px solid var(--color-rule)" }}
       />
 
       {/* Inner ring closest to the logo - slightly brighter so the
           eye lands at the centre. */}
       <div
         className="absolute inset-[26%] rounded-full"
-        style={{ border: '1px solid var(--color-rule-strong)' }}
+        style={{ border: "1px solid var(--color-rule-strong)" }}
       />
 
       {/* Logo centrepiece with a gentle breathe animation. */}
       <motion.div
         className="absolute inset-0 flex items-center justify-center"
         animate={reduce ? undefined : { scale: [1, 1.025, 1] }}
-        transition={{ duration: 5.2, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }}
       >
         <div
           className="relative flex items-center justify-center overflow-hidden"
           style={{
-            width: '36%',
-            aspectRatio: '1 / 1',
-            background: 'var(--color-paper)',
-            borderRadius: '28%',
+            width: "36%",
+            aspectRatio: "1 / 1",
+            background: "var(--color-paper)",
+            borderRadius: "28%",
             boxShadow:
-              '0 30px 70px -22px rgba(0,0,0,0.75), 0 0 0 1px rgba(245,244,241,0.06), 0 0 60px -10px var(--color-accent-glow)',
+              "0 30px 70px -22px rgba(0,0,0,0.75), 0 0 0 1px rgba(245,244,241,0.06), 0 0 60px -10px var(--color-accent-glow)",
           }}
         >
           {/* Very subtle inner sheen so the card has dimension without
@@ -147,8 +154,8 @@ export function HeroCenterpiece() {
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.55), transparent 55%)',
-              mixBlendMode: 'overlay',
+                "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.55), transparent 55%)",
+              mixBlendMode: "overlay",
             }}
           />
           <Image
@@ -169,8 +176,8 @@ export function HeroCenterpiece() {
         // Drift values chosen per-chip so adjacent chips never move
         // together. The pattern alternates slight horizontal vs
         // vertical lead so it reads as orbit, not bobbing.
-        const xRange = i % 2 === 0 ? [0, 2, 0] : [0, -2, 0]
-        const yRange = i % 2 === 0 ? [0, -3, 0] : [0, 3, 0]
+        const xRange = i % 2 === 0 ? [0, 2, 0] : [0, -2, 0];
+        const yRange = i % 2 === 0 ? [0, -3, 0] : [0, 3, 0];
 
         return (
           <motion.div
@@ -179,7 +186,7 @@ export function HeroCenterpiece() {
             style={{
               left: `${chip.x}%`,
               top: `${chip.y}%`,
-              transform: 'translate(-50%, -50%)',
+              transform: "translate(-50%, -50%)",
             }}
             initial={reduce ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -194,37 +201,37 @@ export function HeroCenterpiece() {
               transition={{
                 duration: 6 + i * 0.45,
                 repeat: Infinity,
-                ease: 'easeInOut',
+                ease: "easeInOut",
                 delay: i * 0.35,
               }}
               className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-[12px] font-medium whitespace-nowrap"
               style={{
-                background: 'var(--color-ink-card-elevated)',
-                border: '1px solid var(--color-rule-strong)',
-                color: 'var(--color-paper)',
+                background: "var(--color-ink-card-elevated)",
+                border: "1px solid var(--color-rule-strong)",
+                color: "var(--color-paper)",
                 boxShadow:
-                  '0 14px 32px -14px rgba(0,0,0,0.75), 0 1px 0 rgba(245,244,241,0.05) inset',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
+                  "0 14px 32px -14px rgba(0,0,0,0.75), 0 1px 0 rgba(245,244,241,0.05) inset",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
               }}
             >
               <motion.span
                 className="inline-block w-1.5 h-1.5 rounded-full"
-                style={{ background: 'var(--color-accent)' }}
+                style={{ background: "var(--color-accent)" }}
                 aria-hidden="true"
                 animate={reduce ? undefined : { opacity: [0.6, 1, 0.6] }}
                 transition={{
                   duration: 2.4 + i * 0.2,
                   repeat: Infinity,
-                  ease: 'easeInOut',
+                  ease: "easeInOut",
                   delay: i * 0.15,
                 }}
               />
               {chip.label}
             </motion.div>
           </motion.div>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

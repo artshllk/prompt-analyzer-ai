@@ -73,12 +73,14 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
     setHydrated(true)
   }, [])
 
-  // Auto-grow the idle composer.
+  // Auto-grow the idle composer (scroll past the cap, don't clip).
   useEffect(() => {
     const ta = inputRef.current
     if (!ta) return
+    const MAX = 200
     ta.style.height = 'auto'
-    ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`
+    ta.style.height = `${Math.min(ta.scrollHeight, MAX)}px`
+    ta.style.overflowY = ta.scrollHeight > MAX ? 'auto' : 'hidden'
   }, [input])
 
   // Auto-grow + focus the answer field when a question appears.
@@ -90,8 +92,10 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
   useEffect(() => {
     const ta = answerRef.current
     if (!ta) return
+    const MAX = 160
     ta.style.height = 'auto'
-    ta.style.height = `${Math.min(ta.scrollHeight, 160)}px`
+    ta.style.height = `${Math.min(ta.scrollHeight, MAX)}px`
+    ta.style.overflowY = ta.scrollHeight > MAX ? 'auto' : 'hidden'
   }, [answer])
 
   const started = phase !== 'idle'
@@ -278,8 +282,8 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="font-serif text-lg sm:text-xl leading-[1.4] tracking-tight"
-                style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+                className="text-lg sm:text-xl leading-[1.45]"
+                style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)', fontWeight: 500 }}
               >
                 {response.text}
               </motion.p>
@@ -289,8 +293,8 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
               <motion.div key="improved" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <StreamOut
                   text={response.text}
-                  className="font-serif text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
-                  style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+                  className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
+                  style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)' }}
                 />
               </motion.div>
             )}
@@ -332,7 +336,7 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
                   placeholder="Type your answer…"
                   rows={1}
                   maxLength={1000}
-                  className="flex-1 bg-transparent resize-none overflow-y-hidden py-2 px-2 text-[15px] sm:text-base outline-none"
+                  className="flex-1 bg-transparent resize-none py-2 px-2 text-[15px] sm:text-base outline-none"
                   style={{ color: 'var(--color-paper)', caretColor: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.55 }}
                   onKeyDown={e => {
                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -414,7 +418,7 @@ function Intro({
             placeholder="Message Deepclario…"
             rows={1}
             maxLength={4000}
-            className="flex-1 bg-transparent resize-none overflow-y-hidden py-2.5 px-2 text-[15px] sm:text-base focus:outline-none focus-visible:outline-none"
+            className="flex-1 bg-transparent resize-none py-2.5 px-2 text-[15px] sm:text-base focus:outline-none focus-visible:outline-none"
             style={{ color: 'var(--color-paper)', caretColor: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.55 }}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {

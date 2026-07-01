@@ -4,6 +4,10 @@ import { createClient } from '@/lib/supabase/server'
 import { getUserSessions } from '@/lib/db/sessions'
 import { getUsageInfo } from '@/lib/db/usage'
 import { UpgradeButton } from '@/components/ui/UpgradeButton'
+import { Reveal } from '@/components/ui/Reveal'
+import { CountUp } from '@/components/ui/CountUp'
+import { REWRITE_WINDOW_HOURS } from '@/lib/limits'
+import type { SessionWithDetails, UsageInfo } from '@/types'
 
 export default async function DashboardPage({
   searchParams,
@@ -16,9 +20,9 @@ export default async function DashboardPage({
 
   const params = await searchParams
 
-  const [{ data: profile }, { sessions }, usage] = await Promise.all([
+  const [{ data: profile }, { sessions, total }, usage] = await Promise.all([
     supabase.from('profiles').select('full_name, tier').eq('id', user.id).single(),
-    getUserSessions(user.id, 5, 0),
+    getUserSessions(user.id, 12, 0),
     getUsageInfo(user.id),
   ])
 
@@ -32,212 +36,328 @@ export default async function DashboardPage({
     ? Math.round(completed.reduce((acc, s) => acc + (s.clarityScoreAfter! - s.clarityScoreBefore!), 0) / completed.length)
     : null
 
-  const isNew = sessions.length === 0
+  // The most recent session that actually produced a rewrite.
+  const latest = sessions.find(s => s.improvement) ?? null
+
+  const tagCounts = new Map<string, number>()
+  for (const s of sessions) {
+    for (const t of s.improvement?.improvementTags ?? []) {
+      tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1)
+    }
+  }
+  const topTags = [...tagCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([t]) => t)
+
+  const isNew = total === 0
   const isPro = profile?.tier === 'pro'
 
   return (
-    <div className="max-w-5xl mx-auto px-6 md:px-10 py-12 md:py-16 space-y-16">
-      {/* Heading row */}
-      <header className="grid md:grid-cols-12 gap-6 md:gap-12 items-end">
-        <div className="md:col-span-9">
-          <p className="eyebrow mb-4">
-            {params.upgraded ? 'Pro is on' : 'Dashboard'}
-          </p>
-          <h1
-            className="display text-4xl md:text-6xl"
-            style={{ color: 'var(--color-paper)' }}
-          >
-            {params.upgraded ? (
-              <>Welcome to Pro.</>
-            ) : firstName ? (
-              <>Hello, <span style={{ color: 'var(--color-paper-mute)' }}>{firstName}.</span></>
-            ) : (
-              <>Hello.</>
-            )}
-          </h1>
-          <p className="mt-5 text-base md:text-lg leading-[1.55] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
-            {params.upgraded
-              ? 'Unlimited analyses, full history, and weekly insights are now available.'
-              : isNew
-              ? 'Paste your first prompt and see how it scores. The number is rarely flattering. The improvement always is.'
-              : 'Pick up where you left off, or run something new.'}
-          </p>
-        </div>
-        <div className="md:col-span-3 flex md:justify-end">
-          <Link
-            href="/playground"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
-            style={{
-              background: 'var(--color-paper)',
-              color: 'var(--color-ink)',
-              fontWeight: 500,
-            }}
-          >
-            New analysis
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-              <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Link>
-        </div>
-      </header>
-
-      {/* Stats - single horizontal data row, hairline above and below */}
-      {!isNew && (
-        <section>
-          <div className="rule-strong" />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-6 py-8">
-            <Stat label="Used (48h)" value={String(usage.used)} sub={usage.limit ? `of ${usage.limit}` : 'of unlimited'} />
-            <Stat label="Average clarity" value={avgScoreAfter ? String(avgScoreAfter) : '-'} sub="after rewriting" />
-            <Stat label="Average lift" value={avgLift ? `+${avgLift}` : '-'} sub="points per prompt" accent={avgLift !== null && avgLift > 0} />
-            <Stat label="Sessions" value={String(sessions.length)} sub="all time" />
-          </div>
-          <div className="rule-strong" />
-        </section>
-      )}
-
-      {/* Empty state - editorial prose, no emojis, no decoration */}
-      {isNew && <EmptyState />}
-
-      {/* Recent sessions */}
-      {!isNew && (
-        <section>
-          <div className="flex items-baseline justify-between mb-5">
-            <p className="eyebrow">Recent sessions</p>
-            <Link
-              href="/history"
-              className="text-sm transition-opacity hover:opacity-100"
-              style={{ color: 'var(--color-paper-mute)' }}
-            >
-              View all &rarr;
-            </Link>
-          </div>
-          <div className="space-y-px">
-            <div className="rule-strong" />
-            {sessions.map(s => {
-              const score = s.clarityScoreAfter ?? s.clarityScoreBefore ?? 0
-              return (
-                <div key={s.id}>
-                  <div className="grid grid-cols-12 gap-3 md:gap-6 py-5 items-center">
-                    <div className="col-span-2 md:col-span-1">
-                      <ScoreInline score={score} />
-                    </div>
-                    <div className="col-span-10 md:col-span-7 min-w-0">
-                      <p
-                        className="text-sm md:text-base truncate"
-                        style={{ color: 'var(--color-paper)' }}
-                      >
-                        {s.originalPrompt.length > 120 ? s.originalPrompt.slice(0, 120) + '…' : s.originalPrompt}
-                      </p>
-                      <p className="text-xs mt-1.5" style={{ color: 'var(--color-paper-mute)' }}>
-                        <span className="capitalize">{s.tone}</span>
-                        {s.clarifyTurns > 0 && <> &middot; {s.clarifyTurns} clarification{s.clarifyTurns !== 1 ? 's' : ''}</>}
-                      </p>
-                    </div>
-                    <div className="col-span-7 md:col-span-2 text-xs md:text-right" style={{ color: 'var(--color-paper-mute)' }}>
-                      {new Date(s.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                    </div>
-                    <div className="col-span-5 md:col-span-2 text-right">
-                      {s.clarityScoreBefore && s.clarityScoreAfter ? (
-                        <span className="text-xs md:text-sm tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
-                          {s.clarityScoreBefore} <span style={{ color: 'var(--color-paper-mute)' }}>&rarr;</span>{' '}
-                          <span style={{ color: 'var(--color-paper)' }}>{s.clarityScoreAfter}</span>
-                        </span>
-                      ) : (
-                        <span className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>in progress</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="rule" />
-                </div>
-              )
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Browser extension - quiet entry point so signed-in users can find
-          the connection-code page without typing the URL. */}
-      <section className="grid md:grid-cols-12 gap-6 md:gap-12 pt-8" style={{ borderTop: '1px solid var(--color-rule)' }}>
-        <div className="md:col-span-7">
-          <p className="eyebrow mb-4">Browser extension</p>
-          <h2 className="display text-2xl md:text-3xl mb-3" style={{ color: 'var(--color-paper)' }}>
-            Improve prompts <span style={{ color: 'var(--color-paper-mute)' }}>inside ChatGPT, Claude, Gemini.</span>
-          </h2>
-          <p className="text-base leading-[1.6] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
-            Connect the extension so it uses your {isPro ? 'unlimited' : '25 / month'} allowance instead of the public free quota.
-          </p>
-        </div>
-        <div className="md:col-span-5 md:flex md:items-end md:justify-end gap-3 flex-wrap">
-          <Link
-            href="/extension/connect"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
-            style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
-          >
-            Get connection code
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-              <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Link>
-        </div>
-      </section>
-
-      {/* Pro upsell - editorial, no gradient, no glow */}
-      {!isPro && !isNew && (
-        <section className="grid md:grid-cols-12 gap-6 md:gap-12 pt-8" style={{ borderTop: '1px solid var(--color-rule)' }}>
-          <div className="md:col-span-7">
-            <p className="eyebrow mb-4" style={{ color: 'var(--color-accent)' }}>Pro</p>
-            <h2 className="display text-3xl md:text-4xl mb-4" style={{ color: 'var(--color-paper)' }}>
-              See your patterns over weeks, <span style={{ color: 'var(--color-paper-mute)' }}>not days.</span>
-            </h2>
-            <p className="text-base leading-[1.6] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
-              Unlimited analyses, full history, and a weekly report on the categories of fixes you reach for most often. The way to actually get better at this.
+    <div className="max-w-5xl mx-auto px-6 md:px-10 py-12 md:py-16 space-y-12 md:space-y-14">
+      {/* Heading */}
+      <Reveal>
+        <header className="grid md:grid-cols-12 gap-6 md:gap-12 items-end">
+          <div className="md:col-span-9">
+            <p className="eyebrow mb-4">
+              {params.upgraded ? 'Pro is on' : 'Dashboard'}
             </p>
+            <h1 className="display text-4xl md:text-6xl" style={{ color: 'var(--color-paper)' }}>
+              {params.upgraded ? (
+                <>Welcome to Pro.</>
+              ) : firstName ? (
+                <>Hello, <span style={{ color: 'var(--color-paper-mute)' }}>{firstName}.</span></>
+              ) : (
+                <>Hello.</>
+              )}
+            </h1>
           </div>
-          <div className="md:col-span-5 md:flex md:items-end md:justify-end">
-            <UpgradeButton
-              plan="pro_monthly"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper cursor-pointer"
+          <div className="md:col-span-3 flex md:justify-end">
+            <Link
+              href="/playground"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
+              style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
             >
-              <span>Upgrade - <span className="line-through opacity-60">$9.99</span> $4.99/mo</span>
+              New analysis
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
                 <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            </UpgradeButton>
+            </Link>
           </div>
-        </section>
+        </header>
+      </Reveal>
+
+      {isNew ? (
+        <Reveal delay={0.06}>
+          <EmptyState />
+        </Reveal>
+      ) : (
+        <>
+          {/* Metric cards - premium, animated, tier-aware. */}
+          <Reveal delay={0.06}>
+            <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+              <UsageCard usage={usage} isPro={isPro} />
+              <MetricCard
+                label="Average clarity"
+                value={avgScoreAfter ?? 0}
+                empty={avgScoreAfter === null}
+                sub="after rewriting"
+              />
+              <MetricCard
+                label="Average lift"
+                value={avgLift ?? 0}
+                empty={avgLift === null}
+                prefix="+"
+                accent
+                sub="points per prompt"
+              />
+              <MetricCard label="Sessions" value={total} sub="all time" />
+            </section>
+          </Reveal>
+
+          {/* Latest improvement spotlight. */}
+          <Reveal delay={0.14}>
+            <section>
+              <div className="flex items-baseline justify-between mb-5">
+                <p className="eyebrow">Latest improvement</p>
+                <Link
+                  href="/history"
+                  className="inline-flex items-center gap-1.5 text-sm transition-opacity hover:opacity-100 opacity-70"
+                  style={{ color: 'var(--color-paper-mute)' }}
+                >
+                  View full history
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                    <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+              </div>
+
+              {latest && latest.improvement ? (
+                <SpotlightCard session={latest} />
+              ) : (
+                <Link
+                  href="/playground"
+                  className="block rounded-2xl p-6 md:p-7 row-hover transition-colors"
+                  style={{ border: '1px solid var(--color-rule-strong)', background: 'var(--color-ink-card)' }}
+                >
+                  <p className="text-base" style={{ color: 'var(--color-paper)' }}>
+                    No rewrites yet.
+                  </p>
+                  <p className="text-sm mt-1.5" style={{ color: 'var(--color-paper-mute)' }}>
+                    Improve a prompt to see your first before → after here &rarr;
+                  </p>
+                </Link>
+              )}
+
+              {topTags.length > 0 && (
+                <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <span className="eyebrow" style={{ color: 'var(--color-paper-mute)' }}>
+                    You most often add
+                  </span>
+                  {topTags.map(t => (
+                    <span
+                      key={t}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs capitalize"
+                      style={{
+                        background: 'var(--color-ink-card-elevated)',
+                        border: '1px solid var(--color-rule-strong)',
+                        color: 'var(--color-paper)',
+                      }}
+                    >
+                      {t.replace(/_/g, ' ')}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </section>
+          </Reveal>
+
+          {/* Pro upsell. */}
+          {!isPro && (
+            <Reveal delay={0.2}>
+              <section
+                className="rounded-2xl p-7 md:p-9 grid md:grid-cols-12 gap-6 md:gap-10 items-center"
+                style={{ border: '1px solid var(--color-rule-strong)', background: 'var(--color-ink-card)' }}
+              >
+                <div className="md:col-span-8">
+                  <p className="eyebrow mb-4" style={{ color: 'var(--color-accent)' }}>Pro</p>
+                  <h2 className="display text-3xl md:text-4xl mb-4" style={{ color: 'var(--color-paper)' }}>
+                    See your patterns over weeks, <span style={{ color: 'var(--color-paper-mute)' }}>not days.</span>
+                  </h2>
+                  <p className="text-base leading-[1.6] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
+                    Unlimited rewrites, full history, and a weekly report on the fixes you reach for most.
+                  </p>
+                </div>
+                <div className="md:col-span-4 md:flex md:items-center md:justify-end">
+                  <UpgradeButton
+                    plan="pro_monthly"
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper cursor-pointer"
+                  >
+                    <span>Upgrade — <span className="line-through opacity-60">$9.99</span> $4.99/mo</span>
+                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                      <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </UpgradeButton>
+                </div>
+              </section>
+            </Reveal>
+          )}
+        </>
       )}
     </div>
   )
 }
 
-/* ===== Sub-components ===== */
+/* ===== Metric cards ===== */
 
-function Stat({ label, value, sub, accent }: { label: string; value: string; sub: string; accent?: boolean }) {
+function MetricCard({
+  label,
+  value,
+  sub,
+  prefix = '',
+  accent,
+  empty,
+}: {
+  label: string
+  value: number
+  sub: string
+  prefix?: string
+  accent?: boolean
+  empty?: boolean
+}) {
   return (
-    <div>
-      <p className="eyebrow mb-3">{label}</p>
+    <div className="rounded-2xl p-5 md:p-6" style={{ background: 'var(--color-ink-card)', border: '1px solid var(--color-rule-strong)' }}>
+      <p className="text-xs mb-3" style={{ color: 'var(--color-paper-mute)' }}>{label}</p>
       <p
-        className="font-serif text-3xl md:text-4xl tabular-nums"
-        style={{
-          color: accent ? 'var(--color-accent)' : 'var(--color-paper)',
-          fontWeight: 400,
-        }}
+        className="font-serif text-4xl md:text-5xl leading-none"
+        style={{ color: accent ? 'var(--color-accent-bright)' : 'var(--color-paper)', fontWeight: 400 }}
       >
-        {value}
+        {empty ? '—' : <CountUp value={value} prefix={prefix} />}
       </p>
-      <p className="text-xs mt-1.5" style={{ color: 'var(--color-paper-mute)' }}>{sub}</p>
+      <p className="text-xs mt-2" style={{ color: 'var(--color-paper-mute)' }}>{sub}</p>
     </div>
   )
 }
 
-function ScoreInline({ score }: { score: number }) {
-  const color = score < 30 ? '#C25E5E' : score < 60 ? 'var(--color-paper-mute)' : 'var(--color-paper)'
+/** Tier-aware usage card. Pro: "Unlimited", no window (the 48h limit does
+ *  not apply to Pro). Free: used-of-limit with a meter and the reset
+ *  window spelled out. */
+function UsageCard({ usage, isPro }: { usage: UsageInfo; isPro: boolean }) {
+  if (isPro || usage.limit === null) {
+    return (
+      <div className="rounded-2xl p-5 md:p-6" style={{ background: 'var(--color-ink-card)', border: '1px solid var(--color-rule-strong)' }}>
+        <p className="text-xs mb-3" style={{ color: 'var(--color-paper-mute)' }}>Rewrites</p>
+        <p className="font-serif text-3xl md:text-4xl leading-none" style={{ color: 'var(--color-accent-bright)', fontWeight: 400 }}>
+          Unlimited
+        </p>
+        <p className="text-xs mt-2" style={{ color: 'var(--color-paper-mute)' }}>Pro plan</p>
+      </div>
+    )
+  }
+
+  const limit = usage.limit
+  const pct = Math.min((usage.used / limit) * 100, 100)
+  const atLimit = usage.used >= limit
+  const left = Math.max(0, limit - usage.used)
+
   return (
-    <span className="font-serif text-2xl tabular-nums" style={{ color, fontWeight: 400 }}>
+    <div className="rounded-2xl p-5 md:p-6" style={{ background: 'var(--color-ink-card)', border: '1px solid var(--color-rule-strong)' }}>
+      <p className="text-xs mb-3" style={{ color: 'var(--color-paper-mute)' }}>Rewrites left</p>
+      <p
+        className="font-serif text-4xl md:text-5xl leading-none"
+        style={{ color: atLimit ? '#C25E5E' : 'var(--color-paper)', fontWeight: 400 }}
+      >
+        <CountUp value={left} />
+      </p>
+      <div className="mt-3">
+        <div className="h-1 w-full rounded-full overflow-hidden" style={{ background: 'var(--color-rule-strong)' }}>
+          <div className="h-1 rounded-full" style={{ width: `${pct}%`, background: atLimit ? '#C25E5E' : 'var(--color-paper)' }} />
+        </div>
+        <p className="text-xs mt-2" style={{ color: 'var(--color-paper-mute)' }}>
+          of {limit} · resets within {REWRITE_WINDOW_HOURS}h
+        </p>
+      </div>
+    </div>
+  )
+}
+
+/* ===== Spotlight ===== */
+
+function scoreColor(score: number): string {
+  if (score < 30) return '#C25E5E'
+  if (score < 60) return 'var(--color-paper-mute)'
+  return 'var(--color-paper)'
+}
+
+function ClarityBadge({ score, accent }: { score: number | null; accent?: boolean }) {
+  if (score == null) return null
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 text-xs tabular-nums px-2.5 py-1 rounded-full shrink-0"
+      style={{ border: '1px solid var(--color-rule-strong)', color: accent ? 'var(--color-accent)' : scoreColor(score) }}
+    >
+      <span className="text-[10px] uppercase tracking-[0.14em]" style={{ color: 'var(--color-paper-mute)' }}>clarity</span>
       {score}
     </span>
   )
 }
+
+function SpotlightCard({ session }: { session: SessionWithDetails }) {
+  const before = session.clarityScoreBefore
+  const after = session.clarityScoreAfter
+  const lift = before != null && after != null ? after - before : null
+  const improved = session.improvement!.improvedPrompt
+  const date = new Date(session.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+
+  return (
+    <Link
+      href="/history"
+      className="group block rounded-2xl overflow-hidden transition-colors"
+      style={{ border: '1px solid var(--color-rule-strong)', background: 'var(--color-ink-card)' }}
+    >
+      <div className="grid md:grid-cols-2">
+        <div className="p-6 md:p-7 md:border-r" style={{ borderColor: 'var(--color-rule)' }}>
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <p className="eyebrow" style={{ color: 'var(--color-paper-mute)' }}>Your prompt</p>
+            <ClarityBadge score={before} />
+          </div>
+          <p className="text-sm md:text-[15px] leading-[1.6] line-clamp-5" style={{ color: 'var(--color-paper-mute)' }}>
+            {session.originalPrompt}
+          </p>
+        </div>
+        <div className="p-6 md:p-7 border-t md:border-t-0" style={{ borderColor: 'var(--color-rule)' }}>
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <p className="eyebrow" style={{ color: 'var(--color-accent)' }}>Rewrite</p>
+            <ClarityBadge score={after} accent />
+          </div>
+          <p className="text-sm md:text-[15px] leading-[1.6] line-clamp-5" style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)' }}>
+            {improved}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-4 px-6 md:px-7 py-3.5" style={{ borderTop: '1px solid var(--color-rule)' }}>
+        <div className="flex items-center gap-2 text-sm tabular-nums">
+          {before != null && after != null && (
+            <>
+              <span style={{ color: scoreColor(before) }}>{before}</span>
+              <span style={{ color: 'var(--color-paper-mute)' }}>→</span>
+              <span style={{ color: scoreColor(after) }}>{after}</span>
+              {lift != null && lift > 0 && <span className="ml-1" style={{ color: '#5FBE8C' }}>+{lift} clarity</span>}
+            </>
+          )}
+        </div>
+        <span className="text-xs inline-flex items-center gap-2" style={{ color: 'var(--color-paper-mute)' }}>
+          <span className="capitalize">{session.tone}</span>
+          <span>·</span>
+          <span>{date}</span>
+        </span>
+      </div>
+    </Link>
+  )
+}
+
+/* ===== Empty state ===== */
 
 const SAMPLES = [
   'Write a landing page hero for my SaaS',
@@ -252,14 +372,8 @@ function EmptyState() {
         <p className="eyebrow mb-4">Start here</p>
       </div>
       <div className="md:col-span-8 space-y-8">
-        <p
-          className="font-serif text-2xl md:text-[2rem] leading-tight tracking-tight"
-          style={{ color: 'var(--color-paper)', fontWeight: 400 }}
-        >
-          The fastest way to write a better prompt is to read your last one and notice what is missing.
-        </p>
-        <p className="text-base md:text-lg leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
-          Paste anything - a rough idea, a one-liner, a request you have not finished writing. Deepclario reads it, asks the questions a careful teammate would ask, and rewrites until the model has no excuse to misunderstand.
+        <p className="font-serif text-2xl md:text-[2rem] leading-tight tracking-tight" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
+          Paste a rough prompt. Watch it get sharper.
         </p>
 
         <div>
@@ -284,11 +398,7 @@ function EmptyState() {
         <Link
           href="/playground"
           className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
-          style={{
-            background: 'var(--color-paper)',
-            color: 'var(--color-ink)',
-            fontWeight: 500,
-          }}
+          style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
         >
           Use my own prompt
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
