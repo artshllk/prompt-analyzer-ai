@@ -82,7 +82,7 @@ const orgSchema = {
       '@id': 'https://deepclario.com/#website',
       url: 'https://deepclario.com',
       name: 'Deepclario',
-      description: 'Prompt analyzer for ChatGPT, Claude, and Gemini.',
+      description: 'Deepclario is an AI prompt improver and AI text detector for ChatGPT, Claude, and Gemini.',
       publisher: { '@id': 'https://deepclario.com/#organization' },
       potentialAction: {
         '@type': 'SearchAction',
