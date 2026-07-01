@@ -15,6 +15,7 @@
 
 import { callGemini } from '@/lib/engine/gemini-client'
 import { computeSignals, computeLeans, verdictFromLeans, type Signals, type VerdictBand } from './signals'
+import { getModelLean } from './model-score'
 
 export interface DetectorResult {
   band: VerdictBand
@@ -110,7 +111,12 @@ export async function analyzeText(text: string): Promise<DetectorResult | null> 
   }
 
   const leans = computeLeans(signals)
-  const { band, intensity } = verdictFromLeans(leans, signals)
+
+  // Phase 4: optional model-based lean, blended into the verdict at 30%.
+  // Returns null (no effect) unless DETECTOR_MODEL_SCORE=1 is set.
+  const modelLean = await getModelLean(text)
+
+  const { band, intensity } = verdictFromLeans(leans, signals, modelLean)
 
   const confidenceLabel: 'low' | 'moderate' | 'high' =
     intensity >= 0.55 ? 'high' : intensity >= 0.30 ? 'moderate' : 'low'

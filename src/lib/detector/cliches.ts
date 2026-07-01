@@ -63,7 +63,29 @@ export const AI_CLICHE_PATTERNS: { phrase: string; weight: number }[] = [
   { phrase: 'furthermore,',              weight: 1 },
   { phrase: 'moreover,',                 weight: 1 },
   { phrase: 'additionally,',             weight: 1 },
-  //TODO: add more phrases from research and corpora analysis (e.g. AI large dash symbol "—") 
+  // Modern (2025–26) tells - frontier-model favourites. Weights kept
+  // modest because several appear in ordinary human writing too; it's
+  // the density that matters, not any single hit.
+  { phrase: 'when it comes to',          weight: 1 },
+  { phrase: 'a wide range of',           weight: 1 },
+  { phrase: 'plays a significant role',  weight: 3 },
+  { phrase: 'plays a vital role',        weight: 3 },
+  { phrase: 'plays a crucial role',      weight: 3 },
+  { phrase: 'at the heart of',           weight: 2 },
+  { phrase: 'in the ever-evolving',      weight: 4 },
+  { phrase: 'underscores',               weight: 2 },
+  { phrase: 'underscoring',              weight: 2 },
+  { phrase: 'showcasing',                weight: 1 },
+  { phrase: 'seamlessly',                weight: 2 },
+  { phrase: 'seamless',                  weight: 1 },
+  { phrase: 'robust',                    weight: 1 },
+  { phrase: 'delve deeper',              weight: 3 },
+  { phrase: 'it\'s not just about',      weight: 2 },
+  { phrase: 'not only',                  weight: 1 },
+  { phrase: 'serves as a',               weight: 1 },
+  { phrase: 'stands as a',               weight: 2 },
+  { phrase: 'the key to',                weight: 1 },
+  { phrase: 'the power of',              weight: 1 },
 ]
 
 export type ClicheHit = { phrase: string; weight: number; index: number }

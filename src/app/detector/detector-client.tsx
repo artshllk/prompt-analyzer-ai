@@ -93,7 +93,6 @@ export function DetectorClient() {
 
   const wordCount = text.trim() ? text.trim().split(/\s+/).filter(Boolean).length : 0
   const tooShort = wordCount > 0 && wordCount < 30
-  const charCount = text.length
 
   return (
     <div>
@@ -112,7 +111,7 @@ export function DetectorClient() {
               onChange={e => setText(e.target.value)}
               disabled={loading}
               placeholder="Paste text - an article, an email, a paragraph from anywhere. At least 30 words for a useful read."
-              rows={10}
+              rows={9}
               maxLength={20000}
               className="w-full resize-none px-5 py-4 text-base focus:outline-none rounded-2xl"
               style={{
@@ -124,23 +123,17 @@ export function DetectorClient() {
             />
           </div>
 
-          {/* Meta row */}
-          <div className="flex flex-wrap items-center justify-between gap-3 mt-3 text-xs tabular-nums">
-            <span style={{ color: 'var(--color-paper-mute)' }}>
-              <span style={{ color: 'var(--color-paper)' }}>{wordCount}</span>{' '}
-              words ·{' '}
-              <span style={{ color: 'var(--color-paper)' }}>{charCount}</span>{' '}
-              characters
+          {/* Meta + action on one row */}
+          <div className="flex items-center justify-between gap-4 mt-3">
+            <span className="text-xs tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
+              {tooShort ? (
+                'Aim for at least 30 words.'
+              ) : (
+                <>
+                  <span style={{ color: 'var(--color-paper)' }}>{wordCount}</span> words
+                </>
+              )}
             </span>
-            {tooShort && (
-              <span style={{ color: 'var(--color-paper-mute)' }}>
-                Aim for at least 30 words.
-              </span>
-            )}
-          </div>
-
-          {/* Action */}
-          <div className="mt-6 flex items-center gap-4">
             <button
               onClick={handleAnalyze}
               disabled={loading || !text.trim()}
@@ -164,13 +157,10 @@ export function DetectorClient() {
                 </svg>
               )}
             </button>
-            {/* <span className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>
-              Free. No account.
-            </span> */}
           </div>
 
           {error && (
-            <p className="mt-5 text-sm" style={{ color: '#E89A6B' }}>
+            <p className="mt-4 text-sm" style={{ color: '#E89A6B' }}>
               {error}
             </p>
           )}
@@ -186,7 +176,7 @@ export function DetectorClient() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
-            <VerdictPanel result={result} onReset={handleReset} />
+            <VerdictPanel result={result} submittedText={text.trim()} onReset={handleReset} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -194,189 +184,197 @@ export function DetectorClient() {
   )
 }
 
-function VerdictPanel({ result, onReset }: { result: Result; onReset: () => void }) {
+function VerdictPanel({
+  result,
+  submittedText,
+  onReset,
+}: {
+  result: Result
+  submittedText: string
+  onReset: () => void
+}) {
+  const s = result.signals
+  const [showSignals, setShowSignals] = useState(false)
+
   return (
     <div>
-      {/* Verdict band */}
-      <div className="rule-strong" />
-      <div className="py-7 md:py-8">
-        <p className="eyebrow mb-3">Verdict</p>
-        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+      {/* Verdict + analyzed text, side by side on desktop */}
+      <div className="grid md:grid-cols-5 gap-3 md:gap-4">
+        {/* Verdict */}
+        <div
+          className="md:col-span-3 rounded-2xl p-6 md:p-7 flex flex-col"
+          style={{
+            background: 'var(--color-ink-card-elevated)',
+            border: '1px solid var(--color-rule-strong)',
+          }}
+        >
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <p className="eyebrow">Verdict</p>
+            <span
+              className="text-[11px] font-medium tracking-[0.12em] uppercase px-2.5 py-1 rounded-full whitespace-nowrap"
+              style={{ color: 'var(--color-paper-mute)', border: '1px solid var(--color-rule-strong)' }}
+            >
+              {CONFIDENCE_LABEL[result.confidenceLabel]}
+            </span>
+          </div>
           <span
-            className="font-serif text-4xl md:text-[3.25rem] leading-none tracking-tight"
+            className="font-serif text-4xl md:text-[3rem] leading-none tracking-tight"
             style={{ color: BAND_COLOR[result.band], fontWeight: 400 }}
           >
             {BAND_LABEL[result.band]}
           </span>
-          <span
-            className="text-sm"
+          <p
+            className="mt-4 text-base leading-[1.7]"
+            style={{ color: 'var(--color-paper)' }}
+          >
+            {result.reasoning}
+          </p>
+        </div>
+
+        {/* Analyzed text */}
+        <div
+          className="md:col-span-2 rounded-2xl p-5 flex flex-col min-h-0"
+          style={{
+            background: 'var(--color-ink-card)',
+            border: '1px solid var(--color-rule)',
+          }}
+        >
+          <p
+            className="text-[11px] font-medium tracking-[0.14em] uppercase mb-3 shrink-0"
             style={{ color: 'var(--color-paper-mute)' }}
           >
-            {CONFIDENCE_LABEL[result.confidenceLabel]}
-          </span>
-        </div>
-        <p
-          className="mt-5 text-base md:text-lg leading-[1.7] max-w-2xl"
-          style={{ color: 'var(--color-paper)' }}
-        >
-          {result.reasoning}
-        </p>
-      </div>
-
-      {/* Signals breakdown */}
-      <div className="rule" />
-      <div className="py-7 md:py-8">
-        <p className="eyebrow mb-5">Signals we measured</p>
-        <ul className="space-y-0">
-          <SignalRow
-            label="Burstiness"
-            value={result.signals.burstiness.toFixed(3)}
-            sub="Sentence-length variance ÷ mean. Higher leans human."
-            note={result.signalNotes.burstiness}
-          />
-          <SignalRow
-            label="Vocabulary diversity"
-            value={result.signals.typeTokenRatio.toFixed(3)}
-            sub="Unique words ÷ total. Higher leans human."
-            note={result.signalNotes.vocabulary}
-          />
-          <SignalRow
-            label="Em-dash density"
-            value={`${result.signals.emDashDensity.toFixed(2)} / 100w`}
-            sub="Em-dashes per 100 words. Heavy use leans AI."
-            note={result.signalNotes.emDashes}
-          />
-          <SignalRow
-            label="Transition word density"
-            value={`${result.signals.transitionDensity.toFixed(2)} / 100w`}
-            sub="however, moreover, furthermore, etc. Heavy use leans AI."
-            note={result.signalNotes.transitions}
-          />
-          <SignalRow
-            label="AI-cliché matches"
-            value={`${result.signals.clicheHits.length}`}
-            sub={
-              result.signals.clicheHits.length > 0
-                ? result.signals.clicheHits
-                    .slice(0, 5)
-                    .map(h => `"${h.phrase}"`)
-                    .join(' · ')
-                : 'No matches'
-            }
-            note={result.signalNotes.cliches}
-          />
-          {result.signals.llmLeadInCount > 0 && (
-            <SignalRow
-              label="LLM-style lead-ins"
-              value={`${result.signals.llmLeadInCount}`}
-              sub='Phrases like "Certainly!", "Of course!", "As an AI" at sentence start.'
-            />
-          )}
-        </ul>
-      </div>
-
-      {/* Raw stats - small, secondary */}
-      <div className="rule" />
-      <div className="py-6">
-        <p className="eyebrow mb-3">Raw stats</p>
-        <div
-          className="flex flex-wrap gap-x-6 gap-y-1 text-sm tabular-nums"
-          style={{ color: 'var(--color-paper-mute)' }}
-        >
-          <span>
-            {result.signals.wordCount} words
-          </span>
-          <span>
-            {result.signals.sentenceCount} sentences
-          </span>
-          <span>
-            mean {result.signals.meanSentenceLength} words/sentence
-          </span>
-          <span>
-            σ {result.signals.sentenceLengthStdDev.toFixed(1)}
-          </span>
+            Your text · {s.wordCount} words
+          </p>
+          <div
+            className="flex-1 max-h-40 md:max-h-56 overflow-y-auto overscroll-contain text-sm leading-[1.65] whitespace-pre-wrap pr-1"
+            style={{ color: 'var(--color-paper-mute)' }}
+          >
+            {submittedText}
+          </div>
         </div>
       </div>
 
-      {/* Disclaimer */}
-      <div className="rule" />
-      <div className="py-6">
-        <p
-          className="text-sm leading-relaxed"
-          style={{ color: 'var(--color-paper-mute)' }}
-        >
-          {result.disclaimer}
-        </p>
-      </div>
-
-      {/* Action */}
-      <div
-        className="pt-6 flex items-center gap-3"
-        style={{ borderTop: '1px solid var(--color-rule)' }}
-      >
+      {/* Action bar */}
+      <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
         <button
           onClick={onReset}
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all btn-outline"
-          style={{
-            border: '1px solid var(--color-rule-strong)',
-            color: 'var(--color-paper)',
-          }}
+          style={{ border: '1px solid var(--color-rule-strong)', color: 'var(--color-paper)' }}
         >
-          Analyze another text
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+            <path d="M12 7H2M2 7L7 2M2 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Analyze another
+        </button>
+
+        <button
+          onClick={() => setShowSignals(v => !v)}
+          className="inline-flex items-center gap-1.5 text-sm transition-colors"
+          style={{ color: 'var(--color-paper-mute)' }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-paper)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-paper-mute)')}
+        >
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 10 10"
+            fill="none"
+            style={{ transform: showSignals ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}
+            aria-hidden
+          >
+            <path d="M3 2L7 5L3 8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          {showSignals ? 'Hide the signals' : 'Show the signals we measured'}
         </button>
       </div>
+
+      {/* Signals - optional, grid */}
+      <AnimatePresence initial={false}>
+        {showSignals && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="grid sm:grid-cols-2 gap-3 mt-4">
+              <StatCard
+                label="Burstiness"
+                value={s.burstiness.toFixed(3)}
+                hint="Sentence-length variation. Higher leans human."
+              />
+              <StatCard
+                label="Vocabulary diversity"
+                value={s.typeTokenRatio.toFixed(3)}
+                hint="Unique words ÷ total. Higher leans human."
+              />
+              <StatCard
+                label="Em-dash density"
+                value={`${s.emDashDensity.toFixed(2)} / 100w`}
+                hint="Real em/en-dashes. Heavy use leans AI."
+              />
+              <StatCard
+                label="Transition words"
+                value={`${s.transitionDensity.toFixed(2)} / 100w`}
+                hint="however, moreover, furthermore… Heavy use leans AI."
+              />
+              <StatCard
+                label="AI-cliché matches"
+                value={`${s.clicheHits.length}`}
+                hint={
+                  s.clicheHits.length > 0
+                    ? s.clicheHits.slice(0, 4).map(h => `"${h.phrase}"`).join(' · ')
+                    : 'No common LLM clichés found.'
+                }
+                className="sm:col-span-2"
+              />
+            </div>
+
+            <p className="mt-4 text-xs leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
+              {result.disclaimer}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
 
-function SignalRow({
+/** A single measured signal, shown as a compact stat card. */
+function StatCard({
   label,
   value,
-  sub,
-  note,
+  hint,
+  className = '',
 }: {
   label: string
   value: string
-  sub: string
-  note?: string
+  hint: string
+  className?: string
 }) {
   return (
-    <li>
-      <div className="rule" />
-      <div className="grid grid-cols-12 gap-3 md:gap-6 py-4">
-        <div className="col-span-12 md:col-span-4">
-          <p
-            className="text-sm md:text-[15px]"
-            style={{ color: 'var(--color-paper)', fontWeight: 500 }}
-          >
-            {label}
-          </p>
-          <p
-            className="text-xs mt-0.5"
-            style={{ color: 'var(--color-paper-mute)' }}
-          >
-            {sub}
-          </p>
-        </div>
-        <div className="col-span-4 md:col-span-2">
-          <p
-            className="font-serif text-xl tabular-nums"
-            style={{ color: 'var(--color-paper)', fontWeight: 400 }}
-          >
-            {value}
-          </p>
-        </div>
-        <div className="col-span-8 md:col-span-6">
-          {note && (
-            <p
-              className="text-sm leading-snug"
-              style={{ color: 'var(--color-paper-mute)' }}
-            >
-              {note}
-            </p>
-          )}
-        </div>
+    <div
+      className={`rounded-xl px-4 py-3.5 ${className}`}
+      style={{ background: 'var(--color-ink-card)', border: '1px solid var(--color-rule)' }}
+    >
+      <div className="flex items-baseline justify-between gap-3">
+        <p
+          className="text-[11px] font-medium tracking-[0.12em] uppercase"
+          style={{ color: 'var(--color-paper-mute)' }}
+        >
+          {label}
+        </p>
+        <p
+          className="font-serif text-xl tabular-nums shrink-0"
+          style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+        >
+          {value}
+        </p>
       </div>
-    </li>
+      <p className="text-xs mt-1.5 leading-snug" style={{ color: 'var(--color-paper-mute)' }}>
+        {hint}
+      </p>
+    </div>
   )
 }
