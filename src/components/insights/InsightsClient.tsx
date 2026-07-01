@@ -365,7 +365,7 @@ function EmptyState() {
           Insights start once you have run a few prompts.
         </p>
         <p className="text-base md:text-lg leading-[1.6] mb-8 max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
-          Analyze a few prompts and Deepclario will start spotting patterns &mdash; what you skip most often, which fixes lift your scores fastest, and how you trend week over week.
+          Analyze a few prompts and Deepclario will start spotting patterns - what you skip most often, which fixes lift your scores fastest, and how you trend week over week.
         </p>
         <Link
           href="/playground"

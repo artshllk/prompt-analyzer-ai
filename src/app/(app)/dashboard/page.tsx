@@ -198,7 +198,7 @@ export default async function DashboardPage({
               plan="pro_monthly"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper cursor-pointer"
             >
-              <span>Upgrade &mdash; <span className="line-through opacity-60">$9.99</span> $4.99/mo</span>
+              <span>Upgrade - <span className="line-through opacity-60">$9.99</span> $4.99/mo</span>
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
                 <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -259,7 +259,7 @@ function EmptyState() {
           The fastest way to write a better prompt is to read your last one and notice what is missing.
         </p>
         <p className="text-base md:text-lg leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
-          Paste anything &mdash; a rough idea, a one-liner, a request you have not finished writing. Deepclario reads it, asks the questions a careful teammate would ask, and rewrites until the model has no excuse to misunderstand.
+          Paste anything - a rough idea, a one-liner, a request you have not finished writing. Deepclario reads it, asks the questions a careful teammate would ask, and rewrites until the model has no excuse to misunderstand.
         </p>
 
         <div>

@@ -195,7 +195,7 @@ export function EditorialPricing() {
               className="mt-1.5 mb-7 text-sm"
               style={{ color: "var(--color-accent-bright)" }}
             >
-              Launch pricing &mdash; locked in for early adopters.
+              Launch pricing - locked in for early adopters.
             </p>
           )}
           {!LAUNCH.active && <div className="mb-7" />}
