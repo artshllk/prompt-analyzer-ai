@@ -330,7 +330,7 @@ function SpotlightCard({ session }: { session: SessionWithDetails }) {
             <p className="eyebrow" style={{ color: 'var(--color-accent)' }}>Rewrite</p>
             <ClarityBadge score={after} accent />
           </div>
-          <p className="font-serif text-sm md:text-[15px] leading-[1.6] line-clamp-5" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
+          <p className="text-sm md:text-[15px] leading-[1.6] line-clamp-5" style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)' }}>
             {improved}
           </p>
         </div>

@@ -236,8 +236,8 @@ export default async function HistoryPage({
                   <div>
                     <p className="eyebrow mb-3" style={{ color: 'var(--color-paper-mute)' }}>Original</p>
                     <p
-                      className="font-serif tracking-tight text-base md:text-lg leading-[1.55] whitespace-pre-wrap"
-                      style={{ color: 'var(--color-paper-mute)' }}
+                      className="text-base md:text-lg leading-[1.6] whitespace-pre-wrap"
+                      style={{ color: 'var(--color-paper-mute)', fontFamily: 'var(--font-inter)' }}
                     >
                       {session.originalPrompt}
                     </p>
@@ -250,8 +250,8 @@ export default async function HistoryPage({
                         {session.exchanges.map(e => (
                           <li key={e.turn} className="pl-5" style={{ borderLeft: '1px solid var(--color-rule-strong)' }}>
                             <p
-                              className="font-serif text-base md:text-lg mb-1"
-                              style={{ color: 'var(--color-paper)', fontStyle: 'italic', fontWeight: 400 }}
+                              className="text-base md:text-lg mb-1"
+                              style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)', fontWeight: 500 }}
                             >
                               {e.question}
                             </p>
@@ -270,8 +270,8 @@ export default async function HistoryPage({
                     <div>
                       <p className="eyebrow mb-3" style={{ color: 'var(--color-paper)' }}>Rewrite</p>
                       <p
-                        className="font-serif text-base md:text-lg leading-[1.55] whitespace-pre-wrap mb-4"
-                        style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+                        className="text-base md:text-lg leading-[1.6] whitespace-pre-wrap mb-4"
+                        style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)' }}
                       >
                         {session.improvement.improvedPrompt}
                       </p>

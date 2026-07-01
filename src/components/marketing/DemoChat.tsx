@@ -278,8 +278,8 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="font-serif text-lg sm:text-xl leading-[1.4] tracking-tight"
-                style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+                className="text-lg sm:text-xl leading-[1.45]"
+                style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)', fontWeight: 500 }}
               >
                 {response.text}
               </motion.p>
@@ -289,8 +289,8 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
               <motion.div key="improved" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <StreamOut
                   text={response.text}
-                  className="font-serif text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
-                  style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+                  className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
+                  style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)' }}
                 />
               </motion.div>
             )}

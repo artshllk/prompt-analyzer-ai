@@ -232,7 +232,7 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
 
                 {session.stage === 'clarifying' && session.clarifying && (
                   <motion.div key={`q-${session.clarifying.turn}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                    <p className="font-serif text-lg sm:text-xl leading-[1.4] tracking-tight" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
+                    <p className="text-lg sm:text-xl leading-[1.45]" style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)', fontWeight: 500 }}>
                       {session.clarifying.question}
                     </p>
                     {session.clarifying.targetsGap && (
@@ -247,8 +247,8 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
                   <motion.div key="done" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <StreamOut
                       text={session.improved.improvedPrompt}
-                      className="font-serif text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
-                      style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+                      className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
+                      style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)' }}
                     />
                   </motion.div>
                 )}
