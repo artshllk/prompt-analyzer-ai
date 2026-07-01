@@ -23,6 +23,19 @@ export default async function DetectorPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Which quota rules apply to this visitor. 'anon' gets one free
+  // detection then a sign-in gate; 'free' is server-limited (5 / 24h);
+  // 'pro' is unlimited.
+  let plan: 'anon' | 'free' | 'pro' = 'anon'
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('tier')
+      .eq('id', user.id)
+      .single()
+    plan = profile?.tier === 'pro' ? 'pro' : 'free'
+  }
+
   const header = user ? (
     // Signed-in: compact, app-like header (lives inside the sidebar shell).
     <div>
@@ -54,7 +67,7 @@ export default async function DetectorPage() {
         {header}
 
         <div className={user ? 'mt-6 md:mt-8' : 'mt-10 md:mt-12'}>
-          <DetectorClient />
+          <DetectorClient plan={plan} />
         </div>
 
         {/* Slim honesty note - narrow footer, not a section. */}

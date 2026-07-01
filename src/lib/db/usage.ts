@@ -1,22 +1,36 @@
 import { createClient } from '@/lib/supabase/server'
 import type { UsageInfo } from '@/types'
+import {
+  REWRITE_FREE_LIMIT,
+  REWRITE_WINDOW_HOURS,
+  DETECT_FREE_LIMIT,
+  DETECT_WINDOW_HOURS,
+  windowStart,
+} from '@/lib/limits'
 
-const FREE_LIMIT = 25
+const REWRITE_EVENT = 'prompt_analyzed'
+const DETECT_EVENT = 'text_detected'
 
-export async function getUsageInfo(userId: string): Promise<UsageInfo> {
+/**
+ * Count a user's events of one type inside a rolling window, and read
+ * their tier, in a single round-trip pair. Shared by both metered
+ * features so the quota logic stays identical.
+ */
+async function getUsage(
+  userId: string,
+  eventType: string,
+  windowHours: number,
+  freeLimit: number,
+): Promise<UsageInfo> {
   const supabase = await createClient()
-
-  const startOfMonth = new Date()
-  startOfMonth.setDate(1)
-  startOfMonth.setHours(0, 0, 0, 0)
 
   const [usageResult, profileResult] = await Promise.all([
     supabase
       .from('usage_events')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .eq('event_type', 'prompt_analyzed')
-      .gte('created_at', startOfMonth.toISOString()),
+      .eq('event_type', eventType)
+      .gte('created_at', windowStart(windowHours)),
 
     supabase
       .from('profiles')
@@ -27,7 +41,7 @@ export async function getUsageInfo(userId: string): Promise<UsageInfo> {
 
   const tier = profileResult.data?.tier ?? 'free'
   const used = usageResult.count ?? 0
-  const limit = tier === 'pro' ? null : FREE_LIMIT
+  const limit = tier === 'pro' ? null : freeLimit
 
   return {
     used,
@@ -37,7 +51,25 @@ export async function getUsageInfo(userId: string): Promise<UsageInfo> {
   }
 }
 
-export async function recordUsage(userId: string): Promise<void> {
+async function record(userId: string, eventType: string): Promise<void> {
   const supabase = await createClient()
-  await supabase.from('usage_events').insert({ user_id: userId, event_type: 'prompt_analyzed' })
+  await supabase.from('usage_events').insert({ user_id: userId, event_type: eventType })
+}
+
+/** Rewrites: 5 per rolling 48h for free, unlimited for pro. */
+export function getUsageInfo(userId: string): Promise<UsageInfo> {
+  return getUsage(userId, REWRITE_EVENT, REWRITE_WINDOW_HOURS, REWRITE_FREE_LIMIT)
+}
+
+export function recordUsage(userId: string): Promise<void> {
+  return record(userId, REWRITE_EVENT)
+}
+
+/** AI detection: 5 per rolling 24h for free, unlimited for pro. */
+export function getDetectorUsage(userId: string): Promise<UsageInfo> {
+  return getUsage(userId, DETECT_EVENT, DETECT_WINDOW_HOURS, DETECT_FREE_LIMIT)
+}
+
+export function recordDetectorUsage(userId: string): Promise<void> {
+  return record(userId, DETECT_EVENT)
 }

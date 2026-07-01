@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { analyzeText } from '@/lib/detector'
 import { take, getClientIp, ANON_LIMIT } from '@/lib/rate-limit'
+import { createClient } from '@/lib/supabase/server'
+import { getDetectorUsage, recordDetectorUsage } from '@/lib/db/usage'
 
 interface DetectorBody {
   text: string
@@ -22,26 +24,44 @@ export function OPTIONS() {
 }
 
 /**
- * Public AI-detection endpoint. Anonymous + IP-rate-limited for now.
- * Signed-in user history will land in a follow-up phase.
+ * AI-detection endpoint. Tiered:
+ *   - Anonymous → loose per-IP abuse throttle. The "1 free detection"
+ *     rule is enforced client-side (localStorage) with a sign-in gate,
+ *     mirroring the homepage rewrite demo; the IP throttle here is just
+ *     abuse protection.
+ *   - Signed-in free → 5 detections per rolling 24h (402 when spent).
+ *   - Signed-in pro  → unlimited.
  */
 export async function POST(req: NextRequest) {
-  // Per-IP throttle. The detector is heavier than the prompt analyzer
-  // (longer Gemini calls) so we share the same anon limit budget.
-  const ip = getClientIp(req)
-  const limit = take(`detect:${ip}`, ANON_LIMIT)
-  if (!limit.allowed) {
-    return withCors(
-      NextResponse.json(
-        { error: 'rate_limited', retryAfterMs: limit.retryAfterMs },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': String(Math.ceil(limit.retryAfterMs / 1000)),
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    // Per-IP throttle. The detector is heavier than the prompt analyzer
+    // (longer Gemini calls) so we share the same anon limit budget.
+    const ip = getClientIp(req)
+    const limit = take(`detect:${ip}`, ANON_LIMIT)
+    if (!limit.allowed) {
+      return withCors(
+        NextResponse.json(
+          { error: 'rate_limited', retryAfterMs: limit.retryAfterMs },
+          {
+            status: 429,
+            headers: {
+              'Retry-After': String(Math.ceil(limit.retryAfterMs / 1000)),
+            },
           },
-        },
-      ),
-    )
+        ),
+      )
+    }
+  } else {
+    // Signed-in: enforce the rolling free quota (pro is unlimited).
+    const usage = await getDetectorUsage(user.id)
+    if (usage.isAtLimit) {
+      return withCors(
+        NextResponse.json({ error: 'detect_limit', usage }, { status: 402 }),
+      )
+    }
   }
 
   let body: DetectorBody
@@ -69,6 +89,13 @@ export async function POST(req: NextRequest) {
     return withCors(
       NextResponse.json({ error: 'engine_failed' }, { status: 502 }),
     )
+  }
+
+  // Record a detection for signed-in users so the rolling quota is
+  // accurate. Awaited (not fire-and-forget) so the count is durable on
+  // serverless before the response returns.
+  if (user) {
+    await recordDetectorUsage(user.id).catch(() => {})
   }
 
   return withCors(NextResponse.json(result))
