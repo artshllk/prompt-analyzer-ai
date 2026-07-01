@@ -166,6 +166,12 @@
         border-radius: 12px; padding: 16px; font-size: 14px; line-height: 1.6;
         white-space: pre-wrap;
       }
+      .result-box.streaming::after {
+        content: ''; display: inline-block; width: 2px; height: 1.05em;
+        margin-left: 2px; vertical-align: text-bottom; background: #7DA7F4;
+        animation: caret .6s steps(1) infinite;
+      }
+      @keyframes caret { 0%,100%{opacity:1} 50%{opacity:0} }
       .label { font-size: 11px; letter-spacing:.14em; text-transform:uppercase; color:#A8A6A0; margin: 18px 0 8px; }
       .dots span {
         display:inline-block; width:5px;height:5px;border-radius:50%;
@@ -209,7 +215,7 @@
             <button class="x" id="close" aria-label="Close">×</button>
           </div>
           <h2>Improve your prompt</h2>
-          <p class="sub">We score it, ask what is missing, and rewrite it - before you send it.</p>
+          <p class="sub">Type in the chat, click Improve, and we rewrite it right there - before you send.</p>
 
           <div id="stage"></div>
         </div>
@@ -258,16 +264,47 @@
     const d = document.createElement('div'); d.innerText = s || ''; return d.innerHTML
   }
 
+  // Reveal text at reading pace (~70 chars/s), time-based so it stays
+  // smooth. Respects prefers-reduced-motion. Sets textContent (not
+  // innerHTML) so the rewrite can never inject markup.
+  function streamInto(el, text) {
+    if (!el) return
+    const reduce = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce || !text) { el.textContent = text || ''; return }
+    const cps = 70
+    const start = performance.now()
+    el.classList.add('streaming')
+    function tick(now) {
+      const n = Math.min(text.length, Math.floor(((now - start) / 1000) * cps))
+      el.textContent = text.slice(0, n)
+      if (n < text.length) {
+        requestAnimationFrame(tick)
+      } else {
+        el.classList.remove('streaming')
+      }
+    }
+    requestAnimationFrame(tick)
+  }
+
   async function openPanel() {
     await loadAuth()
     lastPrompt = readPrompt()
     history = []
-    renderInput(lastPrompt)
     overlay.classList.add('open')
+    // In-place first: if the visitor already typed a prompt in the chat
+    // box, analyze it straight away and take them to the rewrite - no
+    // redundant "paste it again" textarea. Only fall back to the input
+    // form when the chat box is empty.
+    if (lastPrompt) {
+      analyze(lastPrompt, [])
+    } else {
+      renderInput('', true)
+    }
   }
   function closePanel() { overlay.classList.remove('open') }
 
-  function renderInput(text) {
+  function renderInput(text, showEmptyHint) {
     const badge = authState.tier === 'pro'
       ? `<span class="badge pro">Pro</span>`
       : authState.tier === 'free'
@@ -277,10 +314,14 @@
       ? `<button class="link" id="disconnect">Disconnect</button>`
       : `<button class="link" id="connect">Connect account</button>`
 
+    const hint = (showEmptyHint && !text)
+      ? `<p class="sub" style="margin:0 0 12px">Your chat box was empty, so write a prompt here and we'll improve it.</p>`
+      : ''
     stage.innerHTML = `
       <div class="account-row">${badge}${accountAction}</div>
+      ${hint}
       <div class="label">Your prompt</div>
-      <textarea id="ta">${esc(text)}</textarea>
+      <textarea id="ta" placeholder="e.g. write me a blog post about AI">${esc(text)}</textarea>
       <div class="actions">
         <button class="btn" id="go">Improve</button>
       </div>
@@ -405,23 +446,34 @@
         <span class="score ${scoreClass(a)}">${a}</span>
       </div>
       <div class="label">Improved prompt</div>
-      <div class="result-box" id="rw">${esc(d.improvedPrompt)}</div>
+      <div class="result-box" id="rw"></div>
       ${d.explanation ? `<div class="label">Why it is better</div><p class="sub" style="margin:0">${esc(d.explanation)}</p>` : ''}
       <div class="actions">
-        <button class="btn" id="copy">Copy</button>
-        <button class="btn ghost" id="replace">Replace in chat</button>
+        <button class="btn" id="replace">✦ Replace in chat</button>
+        <button class="btn ghost" id="copy">Copy</button>
         <button class="btn ghost" id="again">New prompt</button>
       </div>
     `
+    // Stream the rewrite in at reading pace so it feels generated, not
+    // dumped - matches the web playground.
+    streamInto($('#rw'), d.improvedPrompt)
+
+    // Replace in chat is the hero action: write in place, confirm, close.
+    $('#replace').addEventListener('click', e => {
+      const ok = writePrompt(d.improvedPrompt)
+      if (ok) {
+        e.target.textContent = '✓ Replaced'
+        setTimeout(closePanel, 750)
+      } else {
+        // Writing failed (unknown editor) - fall back to copy.
+        navigator.clipboard.writeText(d.improvedPrompt)
+        e.target.textContent = 'Copied instead'
+      }
+    })
     $('#copy').addEventListener('click', e => {
       navigator.clipboard.writeText(d.improvedPrompt)
       e.target.textContent = 'Copied'
       setTimeout(() => { e.target.textContent = 'Copy' }, 1600)
-    })
-    $('#replace').addEventListener('click', e => {
-      const ok = writePrompt(d.improvedPrompt)
-      e.target.textContent = ok ? 'Replaced' : 'Copy instead →'
-      if (ok) setTimeout(closePanel, 700)
     })
     $('#again').addEventListener('click', () => { history = []; renderInput('') })
   }
