@@ -61,11 +61,13 @@ The default Supabase SMTP works for testing but emails frequently land in spam, 
    - Password: `<your Resend API key>`
    - Sender email: `hello@yourdomain.com` (must be on the verified domain)
    - Sender name: `Deepclario`
-5. **Save** and send yourself a test magic link from `/login`.
+5. **Save** and send yourself a test sign-in link from `/login`.
 
 ### Email template
 
-**Dashboard → Authentication → Email Templates → Magic Link** → paste contents of `supabase/templates/magic-link.html`.
+**Dashboard → Authentication → Email Templates → Magic Link** → paste contents of `supabase/templates/sign-in-link.html`.
+Set the Subject field to `Your Deepclario sign-in link` (not the default "Your Magic Link").
+(Supabase's dashboard labels this template "Magic Link" internally; that label is not user-facing.)
 The template is table-based so it renders correctly in Gmail (which strips most modern CSS).
 
 ### Verify deliverability

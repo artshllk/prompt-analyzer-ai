@@ -1,11 +1,12 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useCallback, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
+import GoogleSignIn from './GoogleSignIn'
 
 export default function LoginPage() {
   return (
@@ -15,16 +16,28 @@ export default function LoginPage() {
   )
 }
 
+// Inlined at build time. Google sign-in is a progressive enhancement: it only
+// appears when a client ID is configured, and the page is fully polished
+// without it because email sign-in links are the guaranteed path.
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? ''
+
 function LoginInner() {
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirectTo') ?? '/dashboard'
   const errorFromUrl = searchParams.get('error')
 
   const [email, setEmail] = useState('')
+  const [emailFocused, setEmailFocused] = useState(false)
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(errorFromUrl ?? '')
-  const [showEmail, setShowEmail] = useState(false)
+  const [googleAvailable, setGoogleAvailable] = useState(Boolean(GOOGLE_CLIENT_ID))
+  const [showEmail, setShowEmail] = useState(!GOOGLE_CLIENT_ID)
+
+  const handleGoogleUnavailable = useCallback(() => {
+    setGoogleAvailable(false)
+    setShowEmail(true)
+  }, [])
 
   const supabase = createClient()
 
@@ -54,20 +67,17 @@ function LoginInner() {
       if (msg.includes('rate') || msg.includes('limit')) {
         setError('Too many attempts. Wait a minute and try again.')
       } else if (msg.includes('email')) {
-        setError("We couldn't send the link. Try Google instead.")
+        setError(
+          googleAvailable
+            ? "We couldn't send the link. Try Google instead."
+            : "We couldn't send the link. Check the address and try again."
+        )
       } else {
         setError('Something went sideways on our end. Try again.')
       }
     } else {
       setSent(true)
     }
-  }
-
-  async function handleGoogle() {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: callbackUrl() },
-    })
   }
 
   return (
@@ -90,7 +100,11 @@ function LoginInner() {
         className="w-full max-w-sm"
       >
         {sent ? (
-          <SentState email={email} onChange={() => { setSent(false); setEmail(''); setShowEmail(false) }} />
+          <SentState
+            email={email}
+            hasGoogle={googleAvailable}
+            onChange={() => { setSent(false); setEmail(''); setShowEmail(!googleAvailable) }}
+          />
         ) : (
           <>
             <p className="eyebrow mb-4">Sign in</p>
@@ -104,25 +118,26 @@ function LoginInner() {
               New here? An account is created the first time you sign in. No setup, no password.
             </p>
 
-            {/* Google button - paper-on-ink, calm */}
-            <button
-              onClick={handleGoogle}
-              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-full text-[15px] transition-all btn-paper"
-              style={{
-                background: 'var(--color-paper)',
-                color: 'var(--color-ink)',
-                fontWeight: 500,
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-                <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-                <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
-                <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-                <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-              </svg>
-              Continue with Google
-            </button>
-            <p className="mt-2 text-sm text-center text-slate-400">Secure authentication powered by Google</p>
+            {/* Google Identity Services renders its own button (talks to our own
+                Google client + Supabase directly, so no supabase.co redirect).
+                Only offered when a client ID is configured; hidden silently if
+                the script cannot load. */}
+            {googleAvailable && (
+              <>
+                <GoogleSignIn
+                  clientId={GOOGLE_CLIENT_ID}
+                  redirectTo={redirectTo}
+                  onError={setError}
+                  onUnavailable={handleGoogleUnavailable}
+                />
+                <p className="mt-3 text-sm text-center" style={{ color: 'var(--color-paper-mute)' }}>
+                  We only use your name and email. Deepclario never sees your Google password.
+                </p>
+              </>
+            )}
+            {error && !showEmail && (
+              <p className="mt-2 text-xs text-center" style={{ color: '#C25E5E' }}>{error}</p>
+            )}
 
             {/* Email path */}
             {!showEmail ? (
@@ -134,48 +149,86 @@ function LoginInner() {
                 Or use email instead
               </button>
             ) : (
-              <div className="mt-8">
-                <div className="flex items-center gap-3 mb-5">
-                  <span className="flex-1 h-px" style={{ background: 'var(--color-rule)' }} />
-                  <span className="eyebrow">Email</span>
-                  <span className="flex-1 h-px" style={{ background: 'var(--color-rule)' }} />
-                </div>
-                <form onSubmit={handleEmailSubmit} className="space-y-4">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    required
-                    autoFocus
-                    className="w-full px-0 py-3 text-base focus:outline-none transition-colors"
-                    style={{
-                      background: 'transparent',
-                      color: 'var(--color-paper)',
-                      borderTop: 'none',
-                      borderLeft: 'none',
-                      borderRight: 'none',
-                      borderBottom: '1px solid var(--color-rule-strong)',
-                      borderRadius: 0,
-                      fontFamily: 'var(--font-inter)',
-                    }}
-                  />
+              <div className={googleAvailable ? 'mt-8' : ''}>
+                {googleAvailable && (
+                  <div className="flex items-center gap-3 mb-5">
+                    <span className="flex-1 h-px" style={{ background: 'var(--color-rule)' }} />
+                    <span className="eyebrow">Email</span>
+                    <span className="flex-1 h-px" style={{ background: 'var(--color-rule)' }} />
+                  </div>
+                )}
+                <form onSubmit={handleEmailSubmit} className="space-y-5">
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block mb-2 text-[11px] uppercase tracking-[0.14em]"
+                      style={{ color: 'var(--color-paper-mute)' }}
+                    >
+                      Email address
+                    </label>
+                    <div
+                      className="flex items-center gap-3 rounded-xl px-4 transition-all"
+                      style={{
+                        background: 'var(--color-ink-card)',
+                        border: `1px solid ${emailFocused ? 'var(--color-accent)' : 'var(--color-rule-strong)'}`,
+                        boxShadow: emailFocused ? '0 0 0 3px var(--color-accent-soft)' : 'none',
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0, opacity: 0.55 }}>
+                        <path d="M2.5 5.833 10 10.833l7.5-5M3.333 15.833h13.334c.92 0 1.666-.746 1.666-1.666V5.833c0-.92-.746-1.666-1.666-1.666H3.333c-.92 0-1.666.746-1.666 1.666v8.334c0 .92.746 1.666 1.666 1.666Z" stroke="var(--color-paper)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        onFocus={() => setEmailFocused(true)}
+                        onBlur={() => setEmailFocused(false)}
+                        placeholder="you@company.com"
+                        required
+                        autoFocus
+                        autoComplete="email"
+                        className="w-full py-3.5 text-base focus:outline-none bg-transparent"
+                        style={{
+                          color: 'var(--color-paper)',
+                          fontFamily: 'var(--font-inter)',
+                        }}
+                      />
+                    </div>
+                  </div>
                   {error && (
                     <p className="text-xs" style={{ color: '#C25E5E' }}>{error}</p>
                   )}
                   <button
                     type="submit"
                     disabled={loading || !email.trim()}
-                    className="w-full py-3 rounded-full text-[14px] transition-all btn-outline disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{
-                      background: 'transparent',
-                      color: 'var(--color-paper)',
-                      border: '1px solid var(--color-rule-strong)',
-                      fontWeight: 500,
+                      background: 'var(--color-paper)',
+                      color: 'var(--color-ink)',
+                      fontWeight: 600,
                     }}
                   >
-                    {loading ? 'Sending link…' : 'Send sign-in link'}
+                    {loading ? (
+                      <>
+                        <span
+                          className="h-4 w-4 rounded-full animate-spin"
+                          style={{ border: '2px solid rgba(14,14,16,0.25)', borderTopColor: 'var(--color-ink)' }}
+                        />
+                        Sending link
+                      </>
+                    ) : (
+                      <>
+                        Send sign-in link
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                          <path d="M4.167 10h11.666m0 0-5-5m5 5-5 5" stroke="var(--color-ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </>
+                    )}
                   </button>
+                  <p className="text-center text-xs" style={{ color: 'var(--color-paper-mute)' }}>
+                    No password needed. We email you a secure one-time link.
+                  </p>
                 </form>
               </div>
             )}
@@ -192,27 +245,66 @@ function LoginInner() {
   )
 }
 
-function SentState({ email, onChange }: { email: string; onChange: () => void }) {
+function SentState({ email, hasGoogle, onChange }: { email: string; hasGoogle: boolean; onChange: () => void }) {
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="text-center"
+    >
+      {/* Envelope badge */}
+      <div
+        className="mx-auto mb-7 flex items-center justify-center rounded-2xl"
+        style={{
+          width: 60,
+          height: 60,
+          background: 'var(--color-accent-soft)',
+          border: '1px solid var(--color-accent-glow)',
+        }}
+      >
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M3 7.5 12 13.5 21 7.5M4 19h16c.552 0 1-.448 1-1V6c0-.552-.448-1-1-1H4c-.552 0-1 .448-1 1v12c0 .552.448 1 1 1Z" stroke="var(--color-accent-bright)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+
       <p className="eyebrow mb-4" style={{ color: 'var(--color-accent)' }}>Link sent</p>
       <h1 className="display text-4xl mb-4" style={{ color: 'var(--color-paper)' }}>
         Check your inbox.
       </h1>
-      <p className="text-base leading-[1.55] mb-2" style={{ color: 'var(--color-paper-mute)' }}>
-        We sent a sign-in link to{' '}
-        <span style={{ color: 'var(--color-paper)' }}>{email}</span>.
+      <p className="text-base leading-[1.55] mb-1" style={{ color: 'var(--color-paper-mute)' }}>
+        We sent a sign-in link to
+      </p>
+      <p
+        className="text-base leading-[1.55] mb-6 inline-block px-3 py-1 rounded-lg"
+        style={{ color: 'var(--color-paper)', background: 'var(--color-ink-card)', fontWeight: 500 }}
+      >
+        {email}
       </p>
       <p className="text-sm leading-[1.55] mb-8" style={{ color: 'var(--color-paper-mute)' }}>
-        Click it to continue. The link works once and expires in an hour.
+        Open it on this device to continue. The link works once and expires in an hour.
       </p>
+
+      <a
+        href="https://mail.google.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] transition-all mb-3"
+        style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 600 }}
+      >
+        Open email app
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
+          <path d="M7.5 4.167h8.333V12.5M15.833 4.167 4.167 15.833" stroke="var(--color-ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </a>
+
       <button
         onClick={onChange}
-        className="text-sm underline-offset-4 hover:underline transition-all"
-        style={{ color: 'var(--color-paper)' }}
+        className="mt-2 text-sm underline-offset-4 hover:underline transition-all"
+        style={{ color: 'var(--color-paper-mute)' }}
       >
-        Use a different method
+        {hasGoogle ? 'Use a different method' : 'Use a different email'}
       </button>
-    </div>
+    </motion.div>
   )
 }
