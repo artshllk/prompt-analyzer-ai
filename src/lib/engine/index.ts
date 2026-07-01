@@ -1,4 +1,4 @@
-import { callGemini } from './gemini-client'
+import { callLLM } from './openai-client'
 import { STEP_SCHEMA } from './schemas'
 import type { AnalyzeInput, AnalyzeResult } from '@/types'
 import type { ImprovementTag, Tone } from '@/types/database'
@@ -173,7 +173,7 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
   const turnCount = input.priorAnswers.length
   const mustImprove = turnCount >= MAX_CLARIFY_TURNS
 
-  const result = await callGemini<StepResponse>({
+  const result = await callLLM<StepResponse>({
     systemPrompt: buildSystemPrompt(input),
     userMessage: buildUserMessage(input),
     temperature: 0.4,
@@ -185,10 +185,10 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
   })
 
   if (!result || !result.score) {
-    // callGemini already logged the failure trail; this distinguishes
-    // "Gemini failed entirely" from "returned JSON but missing score".
+    // callLLM already logged the failure detail; this distinguishes
+    // "provider failed entirely" from "returned JSON but missing score".
     console.error(
-      `[engine] null result: ${!result ? 'gemini_failed' : 'response_missing_score'}`
+      `[engine] null result: ${!result ? 'llm_failed' : 'response_missing_score'}`
     )
     return null
   }
