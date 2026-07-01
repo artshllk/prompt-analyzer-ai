@@ -122,7 +122,7 @@ export function ExtensionHeroVisual() {
               className="mt-4 text-center text-[11px] py-1.5 rounded-full font-medium"
               style={{ background: 'var(--color-paper)', color: 'var(--color-ink)' }}
             >
-              Use rewrite
+              Improve
             </div>
           </div>
         </div>

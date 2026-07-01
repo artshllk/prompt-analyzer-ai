@@ -113,7 +113,7 @@ export default function ExtensionPage() {
         </section>
 
         {/* TRUST - chip row instead of a paragraph. */}
-        <section className="mt-24 md:mt-32 text-center">
+        {/* <section className="mt-24 md:mt-32 text-center">
           <p className="eyebrow mb-6">Private by design</p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <TrustChip>No account to start</TrustChip>
@@ -127,7 +127,7 @@ export default function ExtensionPage() {
               Privacy policy
             </Link>
           </p>
-        </section>
+        </section> */}
 
         {/* FALLBACK - one line + outline button. */}
         <section
