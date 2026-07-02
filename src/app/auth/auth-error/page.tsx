@@ -1,4 +1,50 @@
 import Link from 'next/link'
+import Image from 'next/image'
+
+/**
+ * Landing page for any failed sign-in. Supabase's raw error strings are
+ * developer-speak ("PKCE code verifier not found in storage...") and used
+ * to be shown verbatim - the single most confusing screen in the funnel.
+ * Each known failure is translated into plain language plus the one
+ * action that actually fixes it.
+ */
+
+interface ErrorCopy {
+  title: string
+  body: string
+  cta: string
+}
+
+function copyFor(reason: string | undefined): ErrorCopy {
+  const r = (reason ?? '').toLowerCase()
+
+  if (r.includes('code verifier') || r.includes('different browser')) {
+    return {
+      title: 'Open the link where you asked for it.',
+      body: 'For your security, a sign-in link only works in the same browser it was requested from. This one was opened somewhere else - a different browser, device, or your email app’s built-in viewer. Go back to the browser where you typed your email, or request a fresh link here.',
+      cta: 'Request a new link',
+    }
+  }
+  if (r.includes('expired') || r.includes('invalid')) {
+    return {
+      title: 'That link has expired.',
+      body: 'Sign-in links work once and expire after an hour. No harm done - request a fresh one and you’re in.',
+      cta: 'Request a new link',
+    }
+  }
+  if (r.includes('security purposes') || r.includes('rate')) {
+    return {
+      title: 'One moment.',
+      body: 'We just sent you a link, so a new one can’t be requested for about a minute. Check your inbox first - the link that’s already there still works.',
+      cta: 'Back to sign in',
+    }
+  }
+  return {
+    title: 'Sign-in didn’t go through.',
+    body: 'Something interrupted the sign-in. It’s safe to try again - nothing about your account was changed.',
+    cta: 'Try again',
+  }
+}
 
 export default async function AuthErrorPage({
   searchParams,
@@ -6,30 +52,44 @@ export default async function AuthErrorPage({
   searchParams: Promise<{ reason?: string }>
 }) {
   const { reason } = await searchParams
-  const message = reason ?? 'Your sign-in link is invalid or has expired.'
+  const { title, body, cta } = copyFor(reason)
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0e1a] px-4">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-rose-600/8 blur-3xl" />
-      </div>
+    <div
+      className="editorial grain min-h-screen flex flex-col items-center justify-center px-6 py-12"
+      style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}
+    >
+      <Link
+        href="/"
+        className="flex items-center gap-2.5 mb-12 transition-opacity hover:opacity-80"
+      >
+        <Image src="/logo.png" alt="Deepclario" width={32} height={32} priority />
+        <span
+          className="text-[15px] tracking-tight"
+          style={{ color: 'var(--color-paper)', fontWeight: 500 }}
+        >
+          Deepclario
+        </span>
+      </Link>
 
-      <div className="relative w-full max-w-sm">
-        <div className="glass rounded-2xl p-7 border border-[#1e2d4a] text-center">
-          <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mx-auto mb-4">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 6V11M10 14H10.01M2 10C2 5.58172 5.58172 2 10 2C14.4183 2 18 5.58172 18 10C18 14.4183 14.4183 18 10 18C5.58172 18 2 14.4183 2 10Z" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <h1 className="text-lg font-bold text-[#f0f4ff] mb-2">Sign-in failed</h1>
-          <p className="text-sm text-[#8b9cc8] mb-6 break-words">{message}</p>
-          <Link
-            href="/login"
-            className="inline-block w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all"
-          >
-            Try again
-          </Link>
-        </div>
+      <div className="w-full max-w-sm text-center">
+        <p className="eyebrow mb-4">Sign in</p>
+        <h1 className="display text-4xl mb-4" style={{ color: 'var(--color-paper)' }}>
+          {title}
+        </h1>
+        <p
+          className="text-base leading-[1.6] mb-8"
+          style={{ color: 'var(--color-paper-mute)' }}
+        >
+          {body}
+        </p>
+        <Link
+          href="/login"
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] transition-all btn-paper"
+          style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 600 }}
+        >
+          {cta}
+        </Link>
       </div>
     </div>
   )
