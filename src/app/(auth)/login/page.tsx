@@ -23,7 +23,11 @@ const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? ''
 
 function LoginInner() {
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirectTo') ?? '/dashboard'
+  // Accept both param names: marketing surfaces link with ?redirectTo=,
+  // while server redirects (extension connect) use ?next=. Reading only
+  // one silently dropped the user's destination after sign-in.
+  const redirectTo =
+    searchParams.get('redirectTo') ?? searchParams.get('next') ?? '/dashboard'
   const errorFromUrl = searchParams.get('error')
 
   const [email, setEmail] = useState('')

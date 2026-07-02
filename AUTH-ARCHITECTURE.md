@@ -1,8 +1,63 @@
 # Authentication Architecture & Decision Record
 
 **Status:** Recommendation — keep Supabase Auth, fix the OAuth branding.
-**Date:** 2026-07-02
+**Date:** 2026-07-02 (session-persistence investigation appended 2026-07-03)
 **Owner:** Deepclario
+
+---
+
+## 0. Session-persistence investigation (2026-07-03)
+
+Symptom: users forced to re-authenticate repeatedly, worst in local dev.
+Verdict after full audit: **the architecture is sound.** Cookie-based
+`@supabase/ssr` auth is the standard pattern; every re-auth had one of four
+concrete causes:
+
+1. **Proxy dropped rotated refresh-token cookies on redirects** (code, fixed
+   in PR #29). Every session died ~1h after login and was unrecoverable.
+   Browsers that signed in before the fix still hold revoked tokens — those
+   users (including you on localhost) must sign in once more; after that it
+   sticks. Clearing `sb-*` cookies for the site has the same effect.
+2. **Magic links opened outside the requesting browser fail PKCE.** The
+   emailed link carries a `?code=` that only exchanges against a
+   `code_verifier` cookie stored where the link was requested. Email apps
+   with built-in viewers, or requesting on localhost and Supabase
+   redirecting to the production Site URL (see 3), hit "PKCE code verifier
+   not found". Fix is config: switch the magic-link email template to the
+   `token_hash` form (below) — the callback already supports it and it works
+   in ANY browser, eliminating this failure class entirely.
+3. **Local dev callback not allow-listed.** If
+   `http://localhost:3000/auth/callback` is missing from Supabase's
+   Redirect URLs, links requested on localhost bounce to the production
+   Site URL where no verifier cookie exists → PKCE error → retry → email
+   rate limit. This chain reproduces every reported symptom in local dev.
+4. **Raw Supabase errors + lost destinations amplified the pain** (code,
+   fixed): the auth-error page now shows human copy per failure mode, and
+   the login page honors `?next=` (extension connect flow) in addition to
+   `?redirectTo=`.
+
+Extension ruled out: it holds only `storage` permission, runs on chat sites,
+never touches deepclario.com cookies, and its API tokens never expire (only
+explicit revocation). Connection codes fail only when the web session does.
+
+### Dashboard checklist (only you can do these)
+
+- **Supabase → Authentication → Email Templates → Magic Link:** replace the
+  `{{ .ConfirmationURL }}` link with
+  `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink&next=/dashboard`.
+  This makes links work in any browser/device (kills cause 2). The callback
+  route already handles `token_hash` + `type`.
+- **Supabase → Authentication → URL Configuration → Redirect URLs:** add
+  `http://localhost:3000/auth/callback` alongside
+  `https://deepclario.com/auth/callback` (kills cause 3).
+- **Google Cloud → Credentials → OAuth client → Authorized JavaScript
+  origins:** ensure `http://localhost:3000` is present so Google sign-in
+  (GIS + One Tap) works in dev.
+- Optional, dev quality-of-life: in `.env.local` set
+  `NEXT_PUBLIC_APP_URL=http://localhost:3000` (currently the production
+  URL). Auth is unaffected (the callback prefers `x-forwarded-host`,
+  verified), but Paddle checkout/portal redirects currently send you to
+  production from a dev session.
 
 ---
 
