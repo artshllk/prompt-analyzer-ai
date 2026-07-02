@@ -5,6 +5,7 @@ import { getUserSessions } from '@/lib/db/sessions'
 import { getUsageInfo } from '@/lib/db/usage'
 import { UpgradeButton } from '@/components/ui/UpgradeButton'
 import { Reveal } from '@/components/ui/Reveal'
+import { WelcomeMoment } from '@/components/ui/WelcomeMoment'
 import { CountUp } from '@/components/ui/CountUp'
 import { REWRITE_WINDOW_HOURS } from '@/lib/limits'
 import type { SessionWithDetails, UsageInfo } from '@/types'
@@ -55,6 +56,10 @@ export default async function DashboardPage({
 
   return (
     <div className="max-w-5xl mx-auto px-6 md:px-10 py-12 md:py-16 space-y-12 md:space-y-14">
+      {/* Once-ever branded bridge for brand-new accounts. Skippable,
+          auto-dismissing; see WelcomeMoment for the guardrails. */}
+      <WelcomeMoment firstName={firstName} userId={user.id} enabled={isNew} />
+
       {/* Heading */}
       <Reveal>
         <header className="grid md:grid-cols-12 gap-6 md:gap-12 items-end">

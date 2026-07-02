@@ -10,6 +10,7 @@ import { Testimonials } from "@/components/marketing/Testimonials";
 import { FAQSection } from "@/components/marketing/FAQSection";
 import { HeroRefinement } from "@/components/marketing/refinement/HeroRefinement";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { Reveal } from "@/components/ui/Reveal";
 // { /* CUT - redundant with demo + steps */ }
 // import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
 
@@ -107,16 +108,26 @@ export default function LandingPage() {
           <div className="max-w-6xl mx-auto">
             <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
               <div className="lg:col-span-8">
-                <p className="eyebrow mb-6">For ChatGPT, Claude &amp; Gemini users</p>
-                <h1
-                  className="display text-5xl md:text-[5.25rem] leading-[1.04] tracking-tight"
-                  style={{ color: "var(--color-paper)" }}
-                >
-                  AI that actually{" "}
-                  <span style={{ color: "var(--color-accent)" }}>
-                    understands what you mean.
-                  </span>
-                </h1>
+                {/* Entrance choreography: eyebrow -> headline -> subhead ->
+                    CTA -> centerpiece, staggered so the hero assembles in
+                    under a second. The page paints and stays interactive
+                    throughout - this is a reveal, never a gate. Only the
+                    headline gets the blur resolve; everything else is the
+                    plain fade + rise. */}
+                <Reveal>
+                  <p className="eyebrow mb-6">For ChatGPT, Claude &amp; Gemini users</p>
+                </Reveal>
+                <Reveal delay={0.08} blur>
+                  <h1
+                    className="display text-5xl md:text-[5.25rem] leading-[1.04] tracking-tight"
+                    style={{ color: "var(--color-paper)" }}
+                  >
+                    AI that actually{" "}
+                    <span style={{ color: "var(--color-accent)" }}>
+                      understands what you mean.
+                    </span>
+                  </h1>
+                </Reveal>
                 {/* Thesis line, lifted from the old long-form section.
                     Sits between H1 and explanatory subhead as a one-line
                     band. Italic serif so it reads as a quote / position
@@ -127,37 +138,41 @@ export default function LandingPage() {
                 >
                   The model is fine. The brief was vague.
                 </p> */}
-                <p
-                  className="mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-2xl"
-                  style={{ color: "var(--color-paper-mute)" }}
-                >
-                  You type the rough idea. Deepclario fixes what is missing and
-                  asks the questions a senior teammate would ask. ChatGPT,
-                  Claude, and Gemini stop guessing. You stop editing.
-                </p>
+                <Reveal delay={0.22}>
+                  <p
+                    className="mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-2xl"
+                    style={{ color: "var(--color-paper-mute)" }}
+                  >
+                    You type the rough idea. Deepclario fixes what is missing and
+                    asks the questions a senior teammate would ask. ChatGPT,
+                    Claude, and Gemini stop guessing. You stop editing.
+                  </p>
+                </Reveal>
 
                 {/* Primary CTA. Opens the live demo in a modal so a cold
                     visitor goes straight from promise to "their own
                     prompt, improved" without leaving the page. */}
-                <div className="mt-8 md:mt-10 flex flex-wrap items-center gap-5">
-                  <HeroDemoModal />
-                  <Link
-                    href="/pricing"
-                    className="text-sm transition-opacity hover:opacity-100 opacity-80"
-                    style={{ color: "var(--color-paper)" }}
-                  >
-                    See pricing
-                  </Link>
-                </div>
+                <Reveal delay={0.34}>
+                  <div className="mt-8 md:mt-10 flex flex-wrap items-center gap-5">
+                    <HeroDemoModal />
+                    <Link
+                      href="/pricing"
+                      className="text-sm transition-opacity hover:opacity-100 opacity-80"
+                      style={{ color: "var(--color-paper)" }}
+                    >
+                      See pricing
+                    </Link>
+                  </div>
+                </Reveal>
               </div>
               {/* Centerpiece is now a supporting visual, not a co-headline.
                   Reduced from col-span-5 to col-span-4 and capped at
                   ~50% of its previous footprint via max-w-[280px] so it
                   never competes with the CTA for attention. */}
               <div className="hidden lg:flex lg:col-span-4 items-center justify-center">
-                <div className="w-full max-w-96 min-w-96">
+                <Reveal delay={0.45} className="w-full max-w-96 min-w-96">
                   <HeroRefinement />
-                </div>
+                </Reveal>
               </div>
             </div>
           </div>
