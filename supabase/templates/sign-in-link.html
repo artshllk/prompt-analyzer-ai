@@ -1,16 +1,3 @@
-<!--
-  Paste this into: Supabase Dashboard → Authentication → Email Templates → Magic Link
-  Subject suggestion: "Your Deepclario sign-in link"
-  (Supabase labels this template "Magic Link" internally, but no user-facing copy
-   uses that term. Make sure the dashboard Subject field reads "Your Deepclario
-   sign-in link", not the default "Your Magic Link".)
-
-  Available variables:
-    {{ .ConfirmationURL }}  - the sign-in link target (this hits /auth/callback)
-    {{ .Token }}            - 6-digit OTP fallback
-    {{ .Email }}            - recipient email
-    {{ .SiteURL }}          - your configured Site URL
--->
 <!DOCTYPE html>
 <html lang="en">
   <head>
