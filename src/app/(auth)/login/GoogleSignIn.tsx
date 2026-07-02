@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { rememberSignIn, wasExplicitlySignedOut } from '@/lib/auth/local-hints'
 
 /**
  * Sign in with Google using Google Identity Services (GIS) directly, then hand
@@ -115,7 +116,7 @@ export default function GoogleSignIn({
 
   const handleCredential = useCallback(
     async (response: CredentialResponse) => {
-      const { error } = await supabase.auth.signInWithIdToken({
+      const { data, error } = await supabase.auth.signInWithIdToken({
         provider: 'google',
         token: response.credential,
         nonce: rawNonceRef.current,
@@ -124,6 +125,7 @@ export default function GoogleSignIn({
         onError('Could not complete Google sign-in. Please try again or use email.')
         return
       }
+      rememberSignIn('google', data.user?.email ?? null)
       // Full navigation so the server picks up the fresh session cookie.
       window.location.assign(redirectTo)
     },
@@ -146,7 +148,10 @@ export default function GoogleSignIn({
           // Returning users who already granted consent get signed back
           // in with one tap (or automatically, if exactly one Google
           // session is active) instead of re-walking the button flow.
-          auto_select: true,
+          // After an explicit sign-out, auto-select stays off so we
+          // never silently un-do the user's decision; the One Tap chip
+          // still offers a deliberate single-tap return.
+          auto_select: !wasExplicitlySignedOut(),
         })
         window.google.accounts.id.renderButton(buttonRef.current, {
           type: 'standard',

@@ -46,7 +46,12 @@ explicit revocation). Connection codes fail only when the web session does.
   `{{ .ConfirmationURL }}` link with
   `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink&next=/dashboard`.
   This makes links work in any browser/device (kills cause 2). The callback
-  route already handles `token_hash` + `type`.
+  route already handles `token_hash` + `type`. **Also add the 6-digit code
+  `{{ .Token }}` to the template body** (e.g. "Your sign-in code: {{ .Token }}") —
+  the login page's sent screen now has a code field that signs the user in
+  on the spot via `verifyOtp`, no inbox link-click needed. Until the
+  template includes `{{ .Token }}`, the code field has nothing to match and
+  users should use the link.
 - **Supabase → Authentication → URL Configuration → Redirect URLs:** add
   `http://localhost:3000/auth/callback` alongside
   `https://deepclario.com/auth/callback` (kills cause 3).

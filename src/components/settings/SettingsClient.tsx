@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
+import { markSignedOut } from '@/lib/auth/local-hints'
 
 interface SettingsClientProps {
   email: string
@@ -30,6 +31,8 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
 
   async function handleSignOut() {
     setSigningOut(true)
+    // Explicit sign-out: One Tap must not auto-select them back in.
+    markSignedOut()
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/')
