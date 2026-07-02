@@ -20,8 +20,19 @@ export type ProfileRow = {
   subscription_status: SubscriptionStatus | null
   subscription_period_end: string | null
   onboarding_completed: boolean
+  email_weekly: boolean
+  email_tips: boolean
+  email_unsubscribed: boolean
   created_at: string
   updated_at: string
+}
+
+export type EmailSentRow = {
+  id: string
+  user_id: string
+  email_type: string
+  dedupe_key: string
+  sent_at: string
 }
 
 export type PromptSessionRow = {
@@ -93,8 +104,18 @@ export type Database = {
     Tables: {
       profiles: {
         Row: ProfileRow
-        Insert: Omit<ProfileRow, 'created_at' | 'updated_at'>
+        Insert: Omit<ProfileRow, 'created_at' | 'updated_at' | 'email_weekly' | 'email_tips' | 'email_unsubscribed'> & {
+          email_weekly?: boolean
+          email_tips?: boolean
+          email_unsubscribed?: boolean
+        }
         Update: Partial<Omit<ProfileRow, 'id' | 'created_at' | 'updated_at'>>
+        Relationships: []
+      }
+      emails_sent: {
+        Row: EmailSentRow
+        Insert: Omit<EmailSentRow, 'id' | 'sent_at'> & { id?: string; sent_at?: string }
+        Update: Partial<Omit<EmailSentRow, 'id' | 'sent_at'>>
         Relationships: []
       }
       prompt_sessions: {

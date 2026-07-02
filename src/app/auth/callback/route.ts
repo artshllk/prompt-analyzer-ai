@@ -1,5 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { createEmailAdminClient } from '@/lib/email/admin'
+import { emailConfigured } from '@/lib/email/send'
+import { claimAndSend } from '@/lib/email/log'
+import { welcomeEmail } from '@/lib/email/templates'
+
+/**
+ * Welcome email for brand-new users, sent after the redirect is
+ * flushed so sign-in latency is untouched. The one-hour window keeps
+ * existing users from getting welcomed on a routine login; the dedupe
+ * key in claimAndSend guarantees once-ever even if the daily cron
+ * sweep races this.
+ */
+function sendWelcomeIfNew(userId: string) {
+  after(async () => {
+    if (!emailConfigured()) return
+    const db = createEmailAdminClient()
+    const { data: profile } = await db
+      .from('profiles')
+      .select('id, email, full_name, created_at, email_unsubscribed')
+      .eq('id', userId)
+      .single()
+    if (!profile || profile.email_unsubscribed) return
+    if (Date.now() - new Date(profile.created_at).getTime() > 60 * 60 * 1000) return
+    await claimAndSend(db, {
+      userId: profile.id,
+      email: profile.email,
+      emailType: 'welcome',
+      dedupeKey: `welcome:${profile.id}`,
+      content: welcomeEmail(profile.id, profile.full_name),
+    })
+  })
+}
 
 function getOrigin(req: NextRequest): string {
   const forwardedHost = req.headers.get('x-forwarded-host')
@@ -52,17 +84,18 @@ export async function GET(req: NextRequest) {
   )
 
   if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (error) {
       const url = new URL(`${origin}/auth/auth-error`)
       url.searchParams.set('reason', error.message)
       return NextResponse.redirect(url)
     }
+    if (data.user) sendWelcomeIfNew(data.user.id)
     return response
   }
 
   if (tokenHash && type) {
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       type: type as 'magiclink' | 'signup' | 'recovery' | 'email_change' | 'email',
       token_hash: tokenHash,
     })
@@ -71,6 +104,7 @@ export async function GET(req: NextRequest) {
       url.searchParams.set('reason', error.message)
       return NextResponse.redirect(url)
     }
+    if (data.user) sendWelcomeIfNew(data.user.id)
     return response
   }
 
