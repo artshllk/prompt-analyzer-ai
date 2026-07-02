@@ -7,6 +7,7 @@ import { SignupGate } from '@/components/playground/SignupGate'
 import { PaywallModal } from '@/components/ui/PaywallModal'
 import { StreamOut } from '@/components/shared/StreamOut'
 import { usePromptSession } from '@/hooks/usePromptSession'
+import { useTokenCount } from '@/hooks/useTokenCount'
 import type { Tone } from '@/types/database'
 import type { UsageInfo } from '@/types'
 
@@ -211,10 +212,13 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
             <div className="flex items-baseline justify-between mb-3">
               <p className="eyebrow" style={{ color: 'var(--color-accent-bright)' }}>Deepclario</p>
               {session.stage === 'done' && session.improved && (
-                <span className="text-xs tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
-                  clarity <span style={{ color: 'var(--color-paper)' }}>{session.improved.scoreBeforeImprovement}</span>
-                  <span className="mx-1">→</span>
-                  <span style={{ color: 'var(--color-accent-bright)' }}>{session.improved.clarityScoreAfter}</span>
+                <span className="flex flex-wrap justify-end gap-x-3 gap-y-1 text-xs tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
+                  <span>
+                    clarity <span style={{ color: 'var(--color-paper)' }}>{session.improved.scoreBeforeImprovement}</span>
+                    <span className="mx-1">→</span>
+                    <span style={{ color: 'var(--color-accent-bright)' }}>{session.improved.clarityScoreAfter}</span>
+                  </span>
+                  <TokenDelta original={prompt} improved={session.improved.improvedPrompt} />
                 </span>
               )}
             </div>
@@ -225,9 +229,30 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
             >
               <AnimatePresence mode="wait">
                 {session.stage === 'idle' && (
-                  <motion.p key="idle" initial={{ opacity: 0 }} animate={{ opacity: 0.7 }} exit={{ opacity: 0 }} className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-                    Your rewrite appears here.
-                  </motion.p>
+                  <motion.ol
+                    key="idle"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="space-y-3.5 text-sm"
+                    style={{ color: 'var(--color-paper-mute)' }}
+                  >
+                    {[
+                      'We read your prompt.',
+                      'If something is missing, we ask one question.',
+                      'You get a rewrite ready for ChatGPT, Claude, or Gemini.',
+                    ].map((step, i) => (
+                      <li key={step} className="flex items-baseline gap-3">
+                        <span
+                          className="shrink-0 tabular-nums text-xs"
+                          style={{ color: 'var(--color-accent)' }}
+                        >
+                          {i + 1}
+                        </span>
+                        {step}
+                      </li>
+                    ))}
+                  </motion.ol>
                 )}
 
                 {thinking && (
@@ -251,11 +276,51 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
 
                 {session.stage === 'done' && session.improved && (
                   <motion.div key="done" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    {/* What it asked and what you said - the proof the
+                        rewrite is grounded in your answers, not guessed. */}
+                    {session.priorAnswers.length > 0 && (
+                      <ul className="mb-5 space-y-4">
+                        {session.priorAnswers.map(qa => (
+                          <li key={qa.turn} className="pl-4" style={{ borderLeft: '1px solid var(--color-rule-strong)' }}>
+                            <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
+                              {qa.question}
+                            </p>
+                            <p className="text-sm mt-1" style={{ color: 'var(--color-paper)' }}>
+                              {qa.answer}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
                     <StreamOut
                       text={session.improved.improvedPrompt}
                       className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
                       style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)' }}
                     />
+
+                    {/* Why the rewrite is better - the reasoning, not
+                        just the result. */}
+                    {(session.improved.explanation || session.improved.improvementTags.length > 0) && (
+                      <div className="mt-5 pt-4" style={{ borderTop: '1px solid var(--color-rule)' }}>
+                        {session.improved.explanation && (
+                          <p className="text-sm leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
+                            {session.improved.explanation}
+                          </p>
+                        )}
+                        {session.improved.improvementTags.length > 0 && (
+                          <p className="mt-2.5 text-xs" style={{ color: 'var(--color-paper-mute)' }}>
+                            <span className="eyebrow mr-2">Added</span>
+                            {session.improved.improvementTags.map((t, i) => (
+                              <span key={t}>
+                                {i > 0 && ', '}
+                                <span className="capitalize" style={{ color: 'var(--color-paper)' }}>{t.replace(/_/g, ' ')}</span>
+                              </span>
+                            ))}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
@@ -331,6 +396,22 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
 
       <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} />
     </div>
+  )
+}
+
+/** Honest token before/after: shown in both directions. A vague
+ *  one-liner usually gains tokens (specificity costs words); a rambling
+ *  prompt loses them. Only a genuine reduction gets the accent color. */
+function TokenDelta({ original, improved }: { original: string; improved: string }) {
+  const before = useTokenCount(original)
+  const after = useTokenCount(improved)
+  if (!before || !after) return null
+  return (
+    <span>
+      tokens <span style={{ color: 'var(--color-paper)' }}>{before}</span>
+      <span className="mx-1">→</span>
+      <span style={{ color: after < before ? 'var(--color-accent-bright)' : 'var(--color-paper)' }}>{after}</span>
+    </span>
   )
 }
 
