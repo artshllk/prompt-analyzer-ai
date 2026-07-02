@@ -28,6 +28,7 @@ interface GoogleAccountsId {
     callback: (response: CredentialResponse) => void
     nonce?: string
     use_fedcm_for_prompt?: boolean
+    auto_select?: boolean
   }): void
   renderButton(
     parent: HTMLElement,
@@ -142,6 +143,10 @@ export default function GoogleSignIn({
           callback: handleCredential,
           nonce: hashed,
           use_fedcm_for_prompt: true,
+          // Returning users who already granted consent get signed back
+          // in with one tap (or automatically, if exactly one Google
+          // session is active) instead of re-walking the button flow.
+          auto_select: true,
         })
         window.google.accounts.id.renderButton(buttonRef.current, {
           type: 'standard',
@@ -153,6 +158,12 @@ export default function GoogleSignIn({
           width: 360,
         })
         setReady(true)
+        // One Tap prompt alongside the button. Failure modes are all
+        // benign (dismissed, cooldown, no Google session) - the button
+        // remains the fallback, so errors here are ignored.
+        try {
+          window.google.accounts.id.prompt()
+        } catch {}
       } catch {
         if (!cancelled) onUnavailable()
       }

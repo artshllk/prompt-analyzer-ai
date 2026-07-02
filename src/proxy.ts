@@ -34,17 +34,31 @@ export async function proxy(request: NextRequest) {
   const isProtected = PROTECTED_PATHS.some(p => pathname.startsWith(p))
   const isAuthPath = AUTH_PATHS.some(p => pathname.startsWith(p))
 
+  // Any redirect MUST carry over the cookies Supabase wrote during
+  // getUser(). Refreshing an expired access token rotates the refresh
+  // token; if the rotated cookies are dropped here, the browser keeps
+  // the consumed refresh token and the next refresh attempt trips
+  // Supabase's reuse detection, revoking the session and silently
+  // signing the user out.
+  const redirectWithCookies = (url: URL) => {
+    const redirect = NextResponse.redirect(url)
+    supabaseResponse.cookies.getAll().forEach(cookie =>
+      redirect.cookies.set(cookie)
+    )
+    return redirect
+  }
+
   if (isProtected && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirectTo', pathname)
-    return NextResponse.redirect(url)
+    return redirectWithCookies(url)
   }
 
   if (isAuthPath && user) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+    return redirectWithCookies(url)
   }
 
   return supabaseResponse

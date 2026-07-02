@@ -64,7 +64,18 @@ function LoginInner() {
     setLoading(false)
     if (error) {
       const msg = error.message.toLowerCase()
-      if (msg.includes('rate') || msg.includes('limit')) {
+      // Supabase enforces a cooldown between sign-in emails to the same
+      // address. Its message ("For security purposes, you can only
+      // request this after N seconds.") names neither "rate" nor
+      // "limit", so match on the error code and surface the actual wait.
+      if (error.code === 'over_email_send_rate_limit') {
+        const seconds = error.message.match(/(\d+) second/)?.[1]
+        setError(
+          seconds
+            ? `A link was sent recently. You can request another in ${seconds} seconds.`
+            : 'A link was sent recently. Wait a minute, then try again.'
+        )
+      } else if (msg.includes('rate') || msg.includes('limit')) {
         setError('Too many attempts. Wait a minute and try again.')
       } else if (msg.includes('email')) {
         setError(
