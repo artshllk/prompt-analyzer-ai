@@ -33,6 +33,10 @@ function LoginInner() {
   const [email, setEmail] = useState('')
   const [emailFocused, setEmailFocused] = useState(false)
   const [sent, setSent] = useState(false)
+  // True when the request hit the cooldown because a link already went
+  // out moments ago. That link is still valid, so we show the same
+  // "check your inbox" state instead of an error.
+  const [alreadySent, setAlreadySent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(errorFromUrl ?? '')
   const [googleAvailable, setGoogleAvailable] = useState(Boolean(GOOGLE_CLIENT_ID))
@@ -69,16 +73,12 @@ function LoginInner() {
     if (error) {
       const msg = error.message.toLowerCase()
       // Supabase enforces a cooldown between sign-in emails to the same
-      // address. Its message ("For security purposes, you can only
-      // request this after N seconds.") names neither "rate" nor
-      // "limit", so match on the error code and surface the actual wait.
+      // address. The link it already sent is still valid, so this is not
+      // a failure from the user's point of view - land them on the same
+      // "check your inbox" state the success path uses.
       if (error.code === 'over_email_send_rate_limit') {
-        const seconds = error.message.match(/(\d+) second/)?.[1]
-        setError(
-          seconds
-            ? `A link was sent recently. You can request another in ${seconds} seconds.`
-            : 'A link was sent recently. Wait a minute, then try again.'
-        )
+        setAlreadySent(true)
+        setSent(true)
       } else if (msg.includes('rate') || msg.includes('limit')) {
         setError('Too many attempts. Wait a minute and try again.')
       } else if (msg.includes('email')) {
@@ -117,8 +117,14 @@ function LoginInner() {
         {sent ? (
           <SentState
             email={email}
+            alreadySent={alreadySent}
             hasGoogle={googleAvailable}
-            onChange={() => { setSent(false); setEmail(''); setShowEmail(!googleAvailable) }}
+            onChange={() => {
+              setSent(false)
+              setAlreadySent(false)
+              setEmail('')
+              setShowEmail(!googleAvailable)
+            }}
           />
         ) : (
           <>
@@ -260,7 +266,17 @@ function LoginInner() {
   )
 }
 
-function SentState({ email, hasGoogle, onChange }: { email: string; hasGoogle: boolean; onChange: () => void }) {
+function SentState({
+  email,
+  alreadySent,
+  hasGoogle,
+  onChange,
+}: {
+  email: string
+  alreadySent: boolean
+  hasGoogle: boolean
+  onChange: () => void
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
@@ -283,12 +299,16 @@ function SentState({ email, hasGoogle, onChange }: { email: string; hasGoogle: b
         </svg>
       </div>
 
-      <p className="eyebrow mb-4" style={{ color: 'var(--color-accent)' }}>Link sent</p>
+      <p className="eyebrow mb-4" style={{ color: 'var(--color-accent)' }}>
+        {alreadySent ? 'Link already sent' : 'Link sent'}
+      </p>
       <h1 className="display text-4xl mb-4" style={{ color: 'var(--color-paper)' }}>
         Check your inbox.
       </h1>
       <p className="text-base leading-[1.55] mb-1" style={{ color: 'var(--color-paper-mute)' }}>
-        We sent a sign-in link to
+        {alreadySent
+          ? 'A sign-in link went out moments ago to'
+          : 'We sent a sign-in link to'}
       </p>
       <p
         className="text-base leading-[1.55] mb-6 inline-block px-3 py-1 rounded-lg"
