@@ -1,12 +1,18 @@
 'use client'
 
-import { Suspense, useCallback, useState } from 'react'
+import { Suspense, useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
 import GoogleSignIn from './GoogleSignIn'
+import {
+  parseLastSignIn,
+  readLastSignInRaw,
+  rememberSignIn,
+  subscribeToStorage,
+} from '@/lib/auth/local-hints'
 
 export default function LoginPage() {
   return (
@@ -31,16 +37,34 @@ function LoginInner() {
   const errorFromUrl = searchParams.get('error')
 
   const [email, setEmail] = useState('')
+  // Until the user edits the field, it is prefilled from the last
+  // account that signed in on this browser (localStorage hint).
+  const [emailEdited, setEmailEdited] = useState(false)
   const [emailFocused, setEmailFocused] = useState(false)
   const [sent, setSent] = useState(false)
+  // True when the request hit the cooldown because a link already went
+  // out moments ago. That link is still valid, so we show the same
+  // "check your inbox" state instead of an error.
+  const [alreadySent, setAlreadySent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(errorFromUrl ?? '')
   const [googleAvailable, setGoogleAvailable] = useState(Boolean(GOOGLE_CLIENT_ID))
-  const [showEmail, setShowEmail] = useState(!GOOGLE_CLIENT_ID)
+  // null = "no explicit choice yet"; the default then follows what the
+  // returning user did last time (email users land on the email form).
+  const [showEmailOverride, setShowEmailOverride] = useState<boolean | null>(null)
+
+  // Last completed sign-in on this browser. Server snapshot is null, so
+  // SSR and hydration render the anonymous page; the hint applies on the
+  // first client render without a flash of wrong content.
+  const lastRaw = useSyncExternalStore(subscribeToStorage, readLastSignInRaw, () => null)
+  const last = useMemo(() => parseLastSignIn(lastRaw), [lastRaw])
+
+  const effectiveEmail = emailEdited ? email : (email || last?.email || '')
+  const showEmail = showEmailOverride ?? (!googleAvailable || last?.method === 'email')
 
   const handleGoogleUnavailable = useCallback(() => {
     setGoogleAvailable(false)
-    setShowEmail(true)
+    setShowEmailOverride(true)
   }, [])
 
   const supabase = createClient()
@@ -51,14 +75,14 @@ function LoginInner() {
     return url.toString()
   }
 
-  async function handleEmailSubmit(e: React.FormEvent) {
+  async function handleEmailSubmit(e: React.SubmitEvent) {
     e.preventDefault()
-    if (!email.trim()) return
+    if (!effectiveEmail.trim()) return
     setLoading(true)
     setError('')
 
     const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
+      email: effectiveEmail.trim(),
       options: {
         emailRedirectTo: callbackUrl(),
         shouldCreateUser: true,
@@ -69,16 +93,12 @@ function LoginInner() {
     if (error) {
       const msg = error.message.toLowerCase()
       // Supabase enforces a cooldown between sign-in emails to the same
-      // address. Its message ("For security purposes, you can only
-      // request this after N seconds.") names neither "rate" nor
-      // "limit", so match on the error code and surface the actual wait.
+      // address. The link it already sent is still valid, so this is not
+      // a failure from the user's point of view - land them on the same
+      // "check your inbox" state the success path uses.
       if (error.code === 'over_email_send_rate_limit') {
-        const seconds = error.message.match(/(\d+) second/)?.[1]
-        setError(
-          seconds
-            ? `A link was sent recently. You can request another in ${seconds} seconds.`
-            : 'A link was sent recently. Wait a minute, then try again.'
-        )
+        setAlreadySent(true)
+        setSent(true)
       } else if (msg.includes('rate') || msg.includes('limit')) {
         setError('Too many attempts. Wait a minute and try again.')
       } else if (msg.includes('email')) {
@@ -93,6 +113,29 @@ function LoginInner() {
     } else {
       setSent(true)
     }
+  }
+
+  /** Verify the 6-digit code from the sign-in email. Returns an error
+   *  message for the sent screen to show, or null on success (which
+   *  navigates away). Same-page alternative to clicking the link, so it
+   *  also works when the email is read on another device. */
+  async function handleVerifyCode(code: string): Promise<string | null> {
+    const address = effectiveEmail.trim()
+    const { error } = await supabase.auth.verifyOtp({
+      email: address,
+      token: code,
+      type: 'email',
+    })
+    if (error) {
+      if (error.code === 'otp_expired') {
+        return 'That code has expired. Request a new link below.'
+      }
+      return 'That code didn’t match. Check the newest email and try again.'
+    }
+    rememberSignIn('email', address)
+    // Full navigation so the server picks up the fresh session cookie.
+    window.location.assign(redirectTo)
+    return null
   }
 
   return (
@@ -116,9 +159,17 @@ function LoginInner() {
       >
         {sent ? (
           <SentState
-            email={email}
+            email={effectiveEmail}
+            alreadySent={alreadySent}
             hasGoogle={googleAvailable}
-            onChange={() => { setSent(false); setEmail(''); setShowEmail(!googleAvailable) }}
+            onVerifyCode={handleVerifyCode}
+            onChange={() => {
+              setSent(false)
+              setAlreadySent(false)
+              setEmail('')
+              setEmailEdited(true)
+              setShowEmailOverride(!googleAvailable)
+            }}
           />
         ) : (
           <>
@@ -130,7 +181,9 @@ function LoginInner() {
               Welcome back.
             </h1>
             <p className="text-base leading-[1.55] mb-8" style={{ color: 'var(--color-paper-mute)' }}>
-              New here? An account is created the first time you sign in. No setup, no password.
+              {last?.email
+                ? `Sign in as ${last.email} to pick up where you left off, or use another account.`
+                : 'New here? An account is created the first time you sign in. No setup, no password.'}
             </p>
 
             {/* Google Identity Services renders its own button (talks to our own
@@ -157,7 +210,7 @@ function LoginInner() {
             {/* Email path */}
             {!showEmail ? (
               <button
-                onClick={() => setShowEmail(true)}
+                onClick={() => setShowEmailOverride(true)}
                 className="block mx-auto mt-5 text-sm underline-offset-4 hover:underline transition-all"
                 style={{ color: 'var(--color-paper-mute)' }}
               >
@@ -195,8 +248,11 @@ function LoginInner() {
                       <input
                         id="email"
                         type="email"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
+                        value={effectiveEmail}
+                        onChange={e => {
+                          setEmail(e.target.value)
+                          setEmailEdited(true)
+                        }}
                         onFocus={() => setEmailFocused(true)}
                         onBlur={() => setEmailFocused(false)}
                         placeholder="you@company.com"
@@ -216,7 +272,7 @@ function LoginInner() {
                   )}
                   <button
                     type="submit"
-                    disabled={loading || !email.trim()}
+                    disabled={loading || !effectiveEmail.trim()}
                     className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{
                       background: 'var(--color-paper)',
@@ -260,7 +316,38 @@ function LoginInner() {
   )
 }
 
-function SentState({ email, hasGoogle, onChange }: { email: string; hasGoogle: boolean; onChange: () => void }) {
+function SentState({
+  email,
+  alreadySent,
+  hasGoogle,
+  onVerifyCode,
+  onChange,
+}: {
+  email: string
+  alreadySent: boolean
+  hasGoogle: boolean
+  /** Resolves to an error message, or null on success (navigates away). */
+  onVerifyCode: (code: string) => Promise<string | null>
+  onChange: () => void
+}) {
+  const [code, setCode] = useState('')
+  const [verifying, setVerifying] = useState(false)
+  const [codeError, setCodeError] = useState('')
+
+  async function handleCodeSubmit(e: React.SubmitEvent) {
+    e.preventDefault()
+    if (code.length !== 6 || verifying) return
+    setVerifying(true)
+    setCodeError('')
+    const errorMessage = await onVerifyCode(code)
+    if (errorMessage) {
+      setVerifying(false)
+      setCodeError(errorMessage)
+      setCode('')
+    }
+    // On success the page navigates; keep the spinner until it does.
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
@@ -283,12 +370,16 @@ function SentState({ email, hasGoogle, onChange }: { email: string; hasGoogle: b
         </svg>
       </div>
 
-      <p className="eyebrow mb-4" style={{ color: 'var(--color-accent)' }}>Link sent</p>
+      <p className="eyebrow mb-4" style={{ color: 'var(--color-accent)' }}>
+        {alreadySent ? 'Link already sent' : 'Link sent'}
+      </p>
       <h1 className="display text-4xl mb-4" style={{ color: 'var(--color-paper)' }}>
         Check your inbox.
       </h1>
       <p className="text-base leading-[1.55] mb-1" style={{ color: 'var(--color-paper-mute)' }}>
-        We sent a sign-in link to
+        {alreadySent
+          ? 'A sign-in link went out moments ago to'
+          : 'We sent a sign-in link to'}
       </p>
       <p
         className="text-base leading-[1.55] mb-6 inline-block px-3 py-1 rounded-lg"
@@ -297,19 +388,71 @@ function SentState({ email, hasGoogle, onChange }: { email: string; hasGoogle: b
         {email}
       </p>
       <p className="text-sm leading-[1.55] mb-8" style={{ color: 'var(--color-paper-mute)' }}>
-        Open it on this device to continue. The link works once and expires in an hour.
+        Enter the 6-digit code from the email, or click the link inside it.
+        Both work once and expire in an hour.
       </p>
+
+      {/* Code entry - the primary path. Typing the code finishes sign-in
+          right here, on any device, with no tab switch or redirect. */}
+      <form onSubmit={handleCodeSubmit} className="mb-3">
+        <label htmlFor="otp-code" className="sr-only">
+          6-digit sign-in code
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="otp-code"
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern="[0-9]{6}"
+            maxLength={6}
+            value={code}
+            onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
+            placeholder="000000"
+            autoFocus
+            className="flex-1 min-w-0 py-3.5 px-4 rounded-xl text-center text-lg tracking-[0.4em] focus:outline-none"
+            style={{
+              background: 'var(--color-ink-card)',
+              border: '1px solid var(--color-rule-strong)',
+              color: 'var(--color-paper)',
+              fontFamily: 'var(--font-mono), monospace',
+            }}
+          />
+          <button
+            type="submit"
+            disabled={code.length !== 6 || verifying}
+            className="px-5 py-3.5 rounded-xl text-[15px] transition-all btn-paper disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 600 }}
+          >
+            {verifying ? (
+              <span
+                className="block h-4 w-4 rounded-full animate-spin"
+                style={{ border: '2px solid rgba(14,14,16,0.25)', borderTopColor: 'var(--color-ink)' }}
+              />
+            ) : (
+              'Verify'
+            )}
+          </button>
+        </div>
+        {codeError && (
+          <p className="mt-2 text-xs text-left" style={{ color: '#C25E5E' }}>{codeError}</p>
+        )}
+      </form>
 
       <a
         href="https://mail.google.com"
         target="_blank"
         rel="noopener noreferrer"
-        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] transition-all mb-3"
-        style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 600 }}
+        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] transition-all mb-3 btn-outline"
+        style={{
+          border: '1px solid var(--color-rule-strong)',
+          color: 'var(--color-paper)',
+          fontWeight: 500,
+        }}
       >
         Open email app
         <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
-          <path d="M7.5 4.167h8.333V12.5M15.833 4.167 4.167 15.833" stroke="var(--color-ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M7.5 4.167h8.333V12.5M15.833 4.167 4.167 15.833" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </a>
 

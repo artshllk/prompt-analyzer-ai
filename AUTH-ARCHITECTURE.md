@@ -46,13 +46,25 @@ explicit revocation). Connection codes fail only when the web session does.
   `{{ .ConfirmationURL }}` link with
   `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink&next=/dashboard`.
   This makes links work in any browser/device (kills cause 2). The callback
-  route already handles `token_hash` + `type`.
+  route already handles `token_hash` + `type`. **Also add the 6-digit code
+  `{{ .Token }}` to the template body** (e.g. "Your sign-in code: {{ .Token }}") —
+  the login page's sent screen now has a code field that signs the user in
+  on the spot via `verifyOtp`, no inbox link-click needed. Until the
+  template includes `{{ .Token }}`, the code field has nothing to match and
+  users should use the link.
 - **Supabase → Authentication → URL Configuration → Redirect URLs:** add
   `http://localhost:3000/auth/callback` alongside
   `https://deepclario.com/auth/callback` (kills cause 3).
 - **Google Cloud → Credentials → OAuth client → Authorized JavaScript
   origins:** ensure `http://localhost:3000` is present so Google sign-in
   (GIS + One Tap) works in dev.
+- **Supabase → Project Settings → Auth → SMTP (optional):** auth emails
+  currently go through Supabase's built-in sender, which is capped at a
+  handful of emails per hour and enforces the ~60s per-address cooldown.
+  Pointing it at Resend (already used for product email) lifts the hourly
+  cap and makes the cooldown configurable under Auth → Rate Limits. The
+  login page now treats the cooldown as "link already sent - check your
+  inbox" rather than an error, so this is optional polish, not a fix.
 - Optional, dev quality-of-life: in `.env.local` set
   `NEXT_PUBLIC_APP_URL=http://localhost:3000` (currently the production
   URL). Auth is unaffected (the callback prefers `x-forwarded-host`,
