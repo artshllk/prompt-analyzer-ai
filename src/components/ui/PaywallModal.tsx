@@ -19,11 +19,11 @@ interface PaywallModalProps {
  * the modal stays scannable.
  */
 const PRO_FEATURES = [
-  "Unlimited prompt rewrites",
-  "AI detector · unlimited texts",
-  "Full session history",
+  "Deep Rewrite on our strongest model",
+  "Unlimited rewrites and AI detection",
   "Weekly insights report",
-  "Priority model & support",
+  "Full history, kept forever",
+  "Priority processing and support",
 ];
 
 /**
@@ -168,8 +168,9 @@ export function PaywallModal({ open, onClose }: PaywallModalProps) {
               style={{ color: "var(--color-paper-mute)" }}
             >
               You&apos;ve used all {REWRITE_FREE_LIMIT} free rewrites for now.
-              Go Pro for unlimited or wait for your {REWRITE_WINDOW_HOURS}-hour
-              window to reset.
+              Go Pro for unlimited rewrites, plus Deep Rewrite on our strongest
+              model, or wait for your {REWRITE_WINDOW_HOURS}-hour window to
+              reset.
             </p>
 
             {/* Billing toggle */}

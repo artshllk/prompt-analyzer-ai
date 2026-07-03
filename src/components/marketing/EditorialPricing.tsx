@@ -10,7 +10,9 @@ import Link from "next/link";
  *
  * Pro features are limited to what the product actually ships today.
  * Persona memory, multi-model compare, BYOK - all on the roadmap,
- * intentionally not listed here.
+ * intentionally not listed here. Bullets lead with outcomes (Deep
+ * Rewrite, insights, history) rather than raw usage limits - keep this
+ * list in sync with PaywallModal's PRO_FEATURES.
  */
 
 const FREE_FEATURES = [
@@ -23,12 +25,11 @@ const FREE_FEATURES = [
 ];
 
 const PRO_FEATURES = [
-  "Everything in Free ",
-  "Unlimited prompt rewrites",
-  "AI detector (unlimited essays)",
-  "Full session history",
-  "Weekly insights report",
-  "Priority model and queue",
+  "Deep Rewrite: multi-pass rewrites on our strongest model",
+  "Unlimited prompt rewrites and AI detection",
+  "Weekly insights report: see exactly where your prompts improve",
+  "Full history, kept forever (Free keeps 7 days)",
+  "Priority processing on every request",
   "Priority support",
 ];
 
@@ -128,7 +129,7 @@ export function EditorialPricing() {
             className="text-sm mb-7"
             style={{ color: "var(--color-paper-mute)" }}
           >
-            Use it weekly, monthly, indefinitely.
+            Enough to try everything.
           </p>
           <Link
             href="/playground"
@@ -145,6 +146,13 @@ export function EditorialPricing() {
 
         {/* Pro - most popular */}
         <PricingCard tier="Pro" popular>
+          {/* Identity line: who Pro is for, before any number. */}
+          <p
+            className="text-sm mb-4"
+            style={{ color: "var(--color-paper-mute)" }}
+          >
+            For people who prompt every day.
+          </p>
           {/* Anchor row: struck list price + saving chip, sitting above
               the big current price so the discount reads at a glance. */}
           {LAUNCH.active && (
