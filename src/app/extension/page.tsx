@@ -12,6 +12,7 @@ import {
   IconOneClick,
   IconPrivate,
 } from '@/components/extension/ExtensionBits'
+import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
   title: 'Chrome extension - Deepclario inside ChatGPT, Claude & Gemini',
@@ -24,6 +25,9 @@ export const metadata: Metadata = {
       'An Improve button right in your ChatGPT, Claude, and Gemini chat box. One click, in place, no tab switching.',
     url: 'https://deepclario.com/extension',
     type: 'website',
+    // Pages with their own openGraph object need an explicit image - see
+    // defaultOGImage() for why the file-convention fallback doesn't apply.
+    images: defaultOGImage('Deepclario - Chrome extension'),
   },
 }
 
@@ -145,7 +149,7 @@ export default async function ExtensionPage() {
   // nav/footer). Signed out: marketing nav + footer.
   if (user) {
     return (
-      <div className="editorial grain min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
+      <div className="editorial grain no-page-transition min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
         <AppShell>{mainContent}</AppShell>
       </div>
     )

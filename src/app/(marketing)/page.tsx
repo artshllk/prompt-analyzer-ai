@@ -11,6 +11,7 @@ import { FAQSection } from "@/components/marketing/FAQSection";
 import { HeroRefinement } from "@/components/marketing/refinement/HeroRefinement";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { Reveal } from "@/components/ui/Reveal";
+import { defaultOGImage } from "@/lib/og-image";
 // { /* CUT - redundant with demo + steps */ }
 // import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
 
@@ -25,12 +26,17 @@ export const metadata: Metadata = {
       "Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.",
     url: "https://deepclario.com",
     type: "website",
+    // This page defines its own openGraph object, which replaces (does not
+    // merge with) the root layout's openGraph - including its image. See
+    // defaultOGImage() for the full explanation.
+    images: defaultOGImage("Deepclario - AI that actually understands what you mean"),
   },
   twitter: {
     card: "summary_large_image",
     title: "Deepclario - AI that actually understands what you mean",
     description:
       "Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.",
+    images: ["/opengraph-image"],
   },
 };
 

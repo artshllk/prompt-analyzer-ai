@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
+import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
   title: 'AI Prompt Analyzer - Score and Improve Your Prompts',
@@ -10,6 +11,9 @@ export const metadata: Metadata = {
     title: 'Free AI Prompt Analyzer',
     description: 'Score any prompt across 5 dimensions. Identify exactly what\'s weak and why.',
     url: 'https://deepclario.com/tools/prompt-analyzer',
+    // Pages with their own openGraph object need an explicit image - see
+    // defaultOGImage() for why the file-convention fallback doesn't apply.
+    images: defaultOGImage('Free AI Prompt Analyzer - Deepclario'),
   },
 }
 

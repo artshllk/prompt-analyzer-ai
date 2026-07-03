@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FAQSection } from '@/components/marketing/FAQSection'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
   title: 'FAQ - Deepclario',
@@ -14,6 +15,9 @@ export const metadata: Metadata = {
       'Common questions about Deepclario. Free plan, Pro plan, the Chrome extension, and how the engine works.',
     url: 'https://deepclario.com/faq',
     type: 'website',
+    // Pages with their own openGraph object need an explicit image - see
+    // defaultOGImage() for why the file-convention fallback doesn't apply.
+    images: defaultOGImage('FAQ - Deepclario'),
   },
 }
 

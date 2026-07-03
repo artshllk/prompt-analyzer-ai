@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { analyzePrompt } from '@/lib/engine'
 import { getUsageInfo, recordUsage } from '@/lib/db/usage'
 import { createSession, updateSessionStatus, addClarificationExchange, saveImprovement } from '@/lib/db/sessions'
-import { take, USER_LIMIT } from '@/lib/rate-limit'
+import { take, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import type { Tone } from '@/types/database'
 import type { QAPair } from '@/types'
 
@@ -12,6 +12,7 @@ interface AnalyzeBody {
   tone: Tone
   sessionId?: string
   priorAnswers?: QAPair[]
+  deep?: boolean
 }
 
 export async function POST(req: NextRequest) {
@@ -22,7 +23,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
-  const burst = take(`user:${user.id}`, USER_LIMIT)
+  // Tier decides the burst allowance (Pro priority processing), whether
+  // Deep Rewrite is allowed, and the quota gate below.
+  const usage = await getUsageInfo(user.id)
+  const isProUser = usage.tier === 'pro'
+
+  const burst = take(`user:${user.id}`, isProUser ? PRO_USER_LIMIT : USER_LIMIT)
   if (!burst.allowed) {
     return NextResponse.json(
       { error: 'rate_limited', retryAfterMs: burst.retryAfterMs },
@@ -37,20 +43,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'prompt is required' }, { status: 400 })
   }
 
+  if (body.deep && !isProUser) {
+    return NextResponse.json({ error: 'pro_required' }, { status: 402 })
+  }
+  const deep = body.deep === true && isProUser
+
   // Charge usage once per logical analysis: first call (no sessionId, no priorAnswers).
   // Continuation calls (sessionId set, OR priorAnswers passed for fallback) don't re-charge.
   const isFreshAnalysis = !sessionId && priorAnswers.length === 0
-  if (isFreshAnalysis) {
-    const usage = await getUsageInfo(user.id)
-    if (usage.isAtLimit) {
-      return NextResponse.json({
-        error: 'usage_limit',
-        usage,
-      }, { status: 402 })
-    }
+  if (isFreshAnalysis && usage.isAtLimit) {
+    return NextResponse.json({
+      error: 'usage_limit',
+      usage,
+    }, { status: 402 })
   }
 
-  const result = await analyzePrompt({ prompt, tone, priorAnswers })
+  const result = await analyzePrompt({ prompt, tone, priorAnswers, deep })
 
   if (!result) {
     return NextResponse.json({ error: 'ai_unavailable' }, { status: 503 })

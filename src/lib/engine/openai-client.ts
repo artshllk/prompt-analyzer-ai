@@ -30,6 +30,8 @@ interface LLMRequest {
    * Outputs (strict:false). Optional - falls back to plain json_object.
    */
   responseSchema?: Record<string, unknown>
+  /** Override the default model (Pro Deep Rewrite uses a stronger one). */
+  model?: string
 }
 
 interface OpenAIResponse {
@@ -57,6 +59,8 @@ export async function callLLM<T>(req: LLMRequest): Promise<T | null> {
     return null
   }
 
+  const model = req.model ?? MODEL
+
   const controller = new AbortController()
   const started = Date.now()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
@@ -81,7 +85,7 @@ export async function callLLM<T>(req: LLMRequest): Promise<T | null> {
       },
       signal: controller.signal,
       body: JSON.stringify({
-        model: MODEL,
+        model,
         temperature: req.temperature ?? 0.3,
         max_tokens: req.maxOutputTokens ?? 1024,
         response_format,
@@ -96,22 +100,22 @@ export async function callLLM<T>(req: LLMRequest): Promise<T | null> {
 
     if (!res.ok) {
       const detail = await res.text().catch(() => '')
-      console.error(`[openai] ${MODEL} error ${res.status} in ${ms}ms: ${detail.slice(0, 300)}`)
+      console.error(`[openai] ${model} error ${res.status} in ${ms}ms: ${detail.slice(0, 300)}`)
       const { captureError } = await import('../observability')
-      captureError(new Error(`OpenAI ${MODEL} ${res.status}`), { detail: detail.slice(0, 500) })
+      captureError(new Error(`OpenAI ${model} ${res.status}`), { detail: detail.slice(0, 500) })
       return null
     }
 
     const data: OpenAIResponse = await res.json()
     const text = data.choices?.[0]?.message?.content ?? ''
     if (!text) {
-      console.error(`[openai] ${MODEL} empty content in ${ms}ms: ${JSON.stringify(data).slice(0, 400)}`)
+      console.error(`[openai] ${model} empty content in ${ms}ms: ${JSON.stringify(data).slice(0, 400)}`)
       return null
     }
 
     const parsed = parseJSON<T>(text)
     if (parsed === null) {
-      console.error(`[openai] ${MODEL} unparseable JSON in ${ms}ms: ${text.slice(0, 300)}`)
+      console.error(`[openai] ${model} unparseable JSON in ${ms}ms: ${text.slice(0, 300)}`)
       return null
     }
     return parsed
@@ -119,7 +123,7 @@ export async function callLLM<T>(req: LLMRequest): Promise<T | null> {
     const ms = Date.now() - started
     const isAbort = (err as Error).name === 'AbortError'
     console.error(
-      `[openai] ${MODEL} ${isAbort ? `timeout_after_${ms}ms` : `fetch_error:${(err as Error).message}`}`,
+      `[openai] ${model} ${isAbort ? `timeout_after_${ms}ms` : `fetch_error:${(err as Error).message}`}`,
     )
     return null
   } finally {

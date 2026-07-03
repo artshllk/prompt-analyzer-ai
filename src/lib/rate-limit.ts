@@ -58,6 +58,10 @@ export const ANON_LIMIT: LimitConfig = { capacity: 6, refillPerSecond: 6 / 3600 
 /** Per-user cap layered on top of monthly quota - burst protection. */
 export const USER_LIMIT: LimitConfig = { capacity: 10, refillPerSecond: 10 / 60 } // 10/minute
 
+/** Pro users get triple the burst headroom - the "priority processing"
+ *  the pricing page promises. Still capped for infra protection. */
+export const PRO_USER_LIMIT: LimitConfig = { capacity: 30, refillPerSecond: 30 / 60 } // 30/minute
+
 export function getClientIp(req: Request): string {
   const forwarded = req.headers.get('x-forwarded-for')
   if (forwarded) return forwarded.split(',')[0]!.trim()

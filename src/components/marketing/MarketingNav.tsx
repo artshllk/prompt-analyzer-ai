@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { NavAuthButton } from './NavAuthButton'
+import { MarketingMobileMenu } from './MarketingMobileMenu'
 
 /**
  * Shared marketing nav used across every public-facing surface
@@ -70,9 +71,14 @@ export function MarketingNav({ current }: MarketingNavProps = {}) {
             )
           })}
         </nav>
-        <div className="flex items-center gap-2">
+        {/* Desktop auth CTA lives inline; the mobile menu carries its own
+            copy of the CTA inside the sheet. */}
+        <div className="hidden md:flex items-center gap-2">
           <NavAuthButton />
         </div>
+
+        {/* Mobile: hamburger → full-screen sheet with the same link set. */}
+        <MarketingMobileMenu links={LINKS} current={current} />
       </div>
     </header>
   )

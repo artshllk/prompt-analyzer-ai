@@ -13,6 +13,12 @@ import type { ImprovementTag, Tone } from '@/types/database'
 const MAX_CLARIFY_TURNS = 3
 const DIRECT_IMPROVE_THRESHOLD = 75
 
+// Pro-only Deep Rewrite: a stronger model plus an explicit
+// draft -> critique -> refine pass before the model answers. Costs more
+// per call and runs a little slower - that's the paid quality tier.
+const DEEP_MODEL = 'gpt-4.1-mini'
+const DEEP_MAX_OUTPUT_TOKENS = 1400
+
 const TONE_RULES: Record<Tone, string> = {
   friendly: 'Conversational. Use "you". Avoid jargon. Warm but precise.',
   professional: 'Formal, exact, third-person. No filler.',
@@ -142,7 +148,25 @@ ${toneRule}
 - **score.domain**: short label for the inferred domain (e.g. "saas landing page", "react ui component", "data analysis sql").
 - **improvement.clarity_score_after**: estimated clarity of your rewritten version (should be much higher than score.total).
 
-# OUTPUT
+${input.deep ? `# DEEP REWRITE MODE (PRO)
+
+This user is on the paid quality tier. When improving, do NOT settle for
+your first draft. Before emitting the JSON, silently run three passes:
+
+1. **Draft**: write the full improved prompt as usual.
+2. **Critique**: attack your draft the way a hostile senior reviewer
+   would. Where is it still generic? Which CRAFT element is weakest?
+   What would the target model most likely get wrong when given this
+   prompt? Is any sentence filler?
+3. **Refine**: rewrite the draft resolving every critique. Sharpen the
+   role, tighten constraints, and add one concrete example or acceptance
+   criterion if the domain benefits from it.
+
+Only the refined version goes in \`improvement.improved_prompt\`. The
+explanation should mention the single deepest improvement the refine
+pass made. Length may extend to 350 words when the domain warrants it.
+
+` : ''}# OUTPUT
 
 Return JSON matching the schema. Include EITHER \`question\` OR \`improvement\` based on decision - never both, never neither.`
 }
@@ -179,9 +203,11 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
     temperature: 0.4,
     // Improved prompts are spec'd at 80-250 words plus a short
     // explanation and score JSON. ~900 tokens is comfortable headroom;
-    // the extra 500 only added generation latency.
-    maxOutputTokens: 900,
+    // the extra 500 only added generation latency. Deep mode allows
+    // longer rewrites, so it gets more room.
+    maxOutputTokens: input.deep ? DEEP_MAX_OUTPUT_TOKENS : 900,
     responseSchema: STEP_SCHEMA as unknown as Record<string, unknown>,
+    ...(input.deep && { model: DEEP_MODEL }),
   })
 
   if (!result || !result.score) {

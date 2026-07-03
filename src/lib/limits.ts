@@ -26,6 +26,9 @@ export const DETECT_WINDOW_HOURS = 24
 export const ANON_REWRITE_LIMIT = 1
 export const ANON_DETECT_LIMIT = 1
 
+/** Session history retention for free users, in days. Pro keeps everything. */
+export const HISTORY_FREE_DAYS = 7
+
 /** ISO timestamp for the start of a rolling window `hours` ago. */
 export function windowStart(hours: number): string {
   return new Date(Date.now() - hours * 3_600_000).toISOString()

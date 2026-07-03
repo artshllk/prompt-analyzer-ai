@@ -4,6 +4,7 @@ import { DetectorClient } from './detector-client'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { AppShell } from '@/components/ui/AppShell'
 import { createClient } from '@/lib/supabase/server'
+import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
   title: 'AI Text Detector - Honest, transparent AI-content detection',
@@ -16,6 +17,9 @@ export const metadata: Metadata = {
       'Honest, transparent AI-content detection. Burstiness, vocabulary diversity, AI-cliché density, and more - every signal shown openly.',
     url: 'https://deepclario.com/detector',
     type: 'website',
+    // Pages with their own openGraph object need an explicit image - see
+    // defaultOGImage() for why the file-convention fallback doesn't apply.
+    images: defaultOGImage('AI Text Detector - Deepclario'),
   },
 }
 
@@ -130,7 +134,7 @@ export default async function DetectorPage() {
 
   if (user) {
     return (
-      <div className="editorial grain min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
+      <div className="editorial grain no-page-transition min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
         <AppShell>{mainContent}</AppShell>
       </div>
     )
