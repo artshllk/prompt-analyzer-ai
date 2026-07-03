@@ -205,6 +205,36 @@ body {
   font-feature-settings: 'ss01', 'cv01';
 }
 
+/* Marketing page-enter transition. MOBILE ONLY. Each client navigation
+   remounts the page's `.editorial` root, so this fade + slight rise replays
+   on every marketing route change - a soft transition instead of a hard
+   swap. Gated below the `md` breakpoint (<768px) so desktop navigation
+   stays static, instant, and flicker-free - desktop shares no transition
+   logic with the mobile drawer. The signed-in app opts out via
+   `.no-page-transition` on its shell. */
+@keyframes editorial-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .editorial:not(.no-page-transition) {
+    animation: editorial-page-enter 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .editorial:not(.no-page-transition) {
+      animation: none;
+    }
+  }
+}
+
 .font-serif {
   font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
   font-optical-sizing: auto;
