@@ -6,6 +6,18 @@ import { ImageResponse } from 'next/og'
 
 export const OG_SIZE = { width: 1200, height: 630 } as const
 
+/**
+ * Default og:image metadata entry. Any page that sets its own
+ * `openGraph` object replaces the root layout's openGraph entirely
+ * (Next does not deep-merge it), so pages without a sibling
+ * opengraph-image.tsx file must spread this into their `images` field
+ * or they silently ship with no image (confirmed via LinkedIn Post
+ * Inspector reporting "No image found" on the homepage and pricing).
+ */
+export function defaultOGImage(alt: string) {
+  return [{ url: '/opengraph-image', ...OG_SIZE, alt }]
+}
+
 export function renderOGImage({
   eyebrow,
   title,
