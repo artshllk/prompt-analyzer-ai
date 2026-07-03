@@ -35,10 +35,7 @@ export function HeroRefinement() {
   const [hovered, setHovered] = useState(false);
   const [hoveredModel, setHoveredModel] = useState<string | null>(null);
 
-  const { phase, scenario, advance } = useLoopPhase(
-    !reduce && inView,
-    hovered,
-  );
+  const { phase, scenario, advance } = useLoopPhase(!reduce && inView, hovered);
 
   // Cursor parallax: spring-damped, a few px of translate and ~1.5deg
   // of tilt. Cheap and instantly dimensional.
@@ -190,8 +187,16 @@ export function HeroRefinement() {
                 hoveredModel ? `Optimized for ${hoveredModel}` : null
               }
             />
-            <QuestionCard phase={phase} scenario={scenario} staticFinal={reduce} />
-            <ClarityMeter phase={phase} scenario={scenario} staticFinal={reduce} />
+            <QuestionCard
+              phase={phase}
+              scenario={scenario}
+              staticFinal={reduce}
+            />
+            <ClarityMeter
+              phase={phase}
+              scenario={scenario}
+              staticFinal={reduce}
+            />
             <ModelChips
               phase={phase}
               staticFinal={reduce}
@@ -214,7 +219,7 @@ export function HeroRefinement() {
               <Annotation className="-top-6 left-1">
                 Rewritten as you watch
               </Annotation>
-              <Annotation className="top-[38%] -right-2">
+              <Annotation className="top-[34.7%] -right-2">
                 One smart question
               </Annotation>
               <Annotation className="-bottom-6 left-1">
