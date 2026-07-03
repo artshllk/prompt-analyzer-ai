@@ -218,6 +218,16 @@ export function EditorialPricing() {
             Get Pro
           </Link>
           <FeatureList items={PRO_FEATURES} accent />
+          <p className="mt-6 text-xs" style={{ color: "var(--color-paper-mute)" }}>
+            New to Deep Rewrite?{" "}
+            <Link
+              href="/blog/what-is-deep-rewrite"
+              className="underline underline-offset-4 hover:opacity-80 transition-opacity"
+              style={{ color: "var(--color-paper)" }}
+            >
+              Read how it works →
+            </Link>
+          </p>
         </PricingCard>
       </div>
 
