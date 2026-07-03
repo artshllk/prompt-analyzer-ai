@@ -5,7 +5,7 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
-  title: 'FAQ - Deepclario',
+  title: 'FAQ - Common Questions',
   description:
     'Common questions about Deepclario. What it does, who it is for, how the free plan works, what data we store, and how the Chrome extension fits in.',
   alternates: { canonical: 'https://deepclario.com/faq' },

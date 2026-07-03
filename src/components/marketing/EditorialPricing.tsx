@@ -51,8 +51,14 @@ const LAUNCH = {
   yearly: { list: "7.99", now: "3.99", billedTotal: "47.88" },
 };
 
-export function EditorialPricing() {
+export function EditorialPricing({
+  headingLevel = "h2",
+}: {
+  /** "h1" on the standalone /pricing page (its top-level heading); "h2" when embedded as a section. */
+  headingLevel?: "h1" | "h2";
+}) {
   const [annual, setAnnual] = useState(false);
+  const Heading = headingLevel;
 
   const period = annual ? LAUNCH.yearly : LAUNCH.monthly;
   const listPrice = period.list;
@@ -64,12 +70,12 @@ export function EditorialPricing() {
       <div className="grid md:grid-cols-12 gap-8 md:gap-16 mb-12 md:mb-16">
         <div className="md:col-span-5">
           <p className="eyebrow mb-6">Pricing</p>
-          <h2
+          <Heading
             className="display text-4xl md:text-5xl"
             style={{ color: "var(--color-paper)" }}
           >
             Free until you outgrow it.
-          </h2>
+          </Heading>
           <p
             className="mt-5 text-base md:text-lg leading-relaxed"
             style={{ color: "var(--color-paper-mute)" }}

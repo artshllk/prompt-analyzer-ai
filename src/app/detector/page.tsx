@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
-  title: 'AI Text Detector - Honest, transparent AI-content detection',
+  title: 'Free AI Text Detector - Shows Its Work',
   description:
     'Paste any text and see whether it leans human or AI-generated. We show every signal we measured, explain what each one means, and never invent a percentage we cannot defend.',
   alternates: { canonical: 'https://deepclario.com/detector' },

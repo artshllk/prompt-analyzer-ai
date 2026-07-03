@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 
@@ -13,6 +14,8 @@ export const metadata: Metadata = {
   },
 }
 
+const post = getBlogPost('what-is-deep-rewrite')
+
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'Article',
@@ -20,8 +23,8 @@ const structuredData = {
   description: 'Deep Rewrite runs your prompt through a stronger model with a three-pass process: draft, critique, refine.',
   author: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
-  datePublished: '2026-07-03',
-  dateModified: '2026-07-03',
+  datePublished: post.datePublished,
+  dateModified: post.dateModified,
   mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://deepclario.com/blog/what-is-deep-rewrite' },
 }
 

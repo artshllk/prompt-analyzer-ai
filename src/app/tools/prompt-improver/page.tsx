@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
-  title: 'AI Prompt Improver - Rewrite Any Prompt for Better Results',
+  title: 'Free AI Prompt Improver - Rewrite Any Prompt',
   description: 'Paste any AI prompt and get an improved version in seconds. Deepclario scores it across 5 dimensions and rewrites it using the CRAFT framework. Works with ChatGPT, Claude, and Gemini.',
   alternates: { canonical: 'https://deepclario.com/tools/prompt-improver' },
   openGraph: {
@@ -76,6 +76,13 @@ const improverSchema = {
             text: 'The improved prompt works with any model - ChatGPT, Claude, Gemini, Grok, Microsoft Copilot, or any other LLM. Deepclario improves the input you paste in.',
           },
         },
+      ],
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://deepclario.com' },
+        { '@type': 'ListItem', position: 2, name: 'AI Prompt Improver', item: 'https://deepclario.com/tools/prompt-improver' },
       ],
     },
   ],

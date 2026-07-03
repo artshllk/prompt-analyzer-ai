@@ -15,7 +15,7 @@ import {
 import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
-  title: 'Chrome extension - Deepclario inside ChatGPT, Claude & Gemini',
+  title: 'Chrome Extension - Improve Prompts inside ChatGPT',
   description:
     'Install the Deepclario extension and an Improve button appears in your ChatGPT, Claude, or Gemini chat box. One click. Your prompt gets rewritten in place. No copy-paste, no new tab.',
   alternates: { canonical: 'https://deepclario.com/extension' },
