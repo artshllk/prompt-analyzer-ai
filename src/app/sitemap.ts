@@ -36,6 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/blog/ai-prompt-best-practices`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/blog/chatgpt-system-prompt-examples`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/blog/zero-shot-vs-few-shot-prompting`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${base}/blog/what-is-deep-rewrite`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/blog`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${base}/login`, lastModified: now, changeFrequency: 'yearly', priority: 0.5 },
     { url: `${base}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },

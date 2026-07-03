@@ -25,6 +25,13 @@ const breadcrumbSchema = {
 
 const POSTS = [
   {
+    slug: 'what-is-deep-rewrite',
+    title: 'What is Deep Rewrite? How the Pro Rewrite Mode Works',
+    description: 'Deep Rewrite makes a stronger model draft your improved prompt, critique its own draft, then refine it before you see it. Here is exactly what you get compared to the normal rewrite.',
+    readTime: '5 min read',
+    tag: 'Product',
+  },
+  {
     slug: 'what-is-prompt-engineering',
     title: 'What is Prompt Engineering? A Complete Guide for Beginners',
     description: 'Prompt engineering is the practice of writing structured instructions for AI models to get better, more reliable results. Learn the fundamentals and key techniques.',

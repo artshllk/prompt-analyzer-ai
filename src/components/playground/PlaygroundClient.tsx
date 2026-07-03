@@ -174,32 +174,13 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
                       so the upgrade is felt inside the product. Hidden for
                       anonymous visitors (they get the sign-in gate first). */}
                   {isSignedIn && (
-                    <button
-                      type="button"
+                    <DeepRewriteToggle
+                      isPro={isPro}
+                      active={deepMode}
                       disabled={started}
-                      aria-pressed={isPro ? deepMode : false}
-                      title={isPro ? 'Multi-pass rewrite on our strongest model' : 'Deep Rewrite is a Pro feature'}
-                      onClick={() => (isPro ? setDeepMode(d => !d) : setPaywallOpen(true))}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] transition-colors chip-hover disabled:opacity-50 disabled:cursor-not-allowed"
-                      style={{
-                        border: `1px solid ${isPro && deepMode ? 'var(--color-accent-bright)' : 'var(--color-rule-strong)'}`,
-                        color: isPro && deepMode ? 'var(--color-accent-bright)' : 'var(--color-paper-mute)',
-                        background: isPro && deepMode ? 'var(--color-accent-soft)' : 'transparent',
-                      }}
-                    >
-                      {!isPro && (
-                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden>
-                          <rect x="2.5" y="5" width="7" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
-                          <path d="M4 5V3.5a2 2 0 0 1 4 0V5" stroke="currentColor" strokeWidth="1.2" />
-                        </svg>
-                      )}
-                      Deep Rewrite
-                      {!isPro && (
-                        <span className="text-[10px] tracking-wider uppercase font-semibold" style={{ color: 'var(--color-accent-bright)' }}>
-                          Pro
-                        </span>
-                      )}
-                    </button>
+                      onToggle={() => setDeepMode(d => !d)}
+                      onUpgrade={() => setPaywallOpen(true)}
+                    />
                   )}
                 </div>
                 {!started ? (
@@ -436,6 +417,107 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
       )}
 
       <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} />
+    </div>
+  )
+}
+
+/**
+ * Deep Rewrite chip with a real tooltip (the native `title` attr is
+ * invisible on touch and can't hold a link). The tooltip explains the
+ * value differently per tier:
+ *  - Pro: what the mode actually does, so the toggle feels meaningful.
+ *  - Free: what they're missing + the price, and the click opens checkout.
+ * It opens on hover and keyboard focus, and stays open while the pointer
+ * is over the tooltip itself so the "How it works" link is clickable.
+ */
+function DeepRewriteToggle({
+  isPro,
+  active,
+  disabled,
+  onToggle,
+  onUpgrade,
+}: {
+  isPro: boolean
+  active: boolean
+  disabled: boolean
+  onToggle: () => void
+  onUpgrade: () => void
+}) {
+  const [tipOpen, setTipOpen] = useState(false)
+  const on = isPro && active
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setTipOpen(true)}
+      onMouseLeave={() => setTipOpen(false)}
+    >
+      <button
+        type="button"
+        disabled={disabled}
+        aria-pressed={isPro ? active : false}
+        aria-describedby="deep-rewrite-tip"
+        onFocus={() => setTipOpen(true)}
+        onBlur={() => setTipOpen(false)}
+        onClick={() => (isPro ? onToggle() : onUpgrade())}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] transition-colors chip-hover disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{
+          border: `1px solid ${on ? 'var(--color-accent-bright)' : 'var(--color-rule-strong)'}`,
+          color: on ? 'var(--color-accent-bright)' : 'var(--color-paper-mute)',
+          background: on ? 'var(--color-accent-soft)' : 'transparent',
+        }}
+      >
+        {!isPro && (
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden>
+            <rect x="2.5" y="5" width="7" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
+            <path d="M4 5V3.5a2 2 0 0 1 4 0V5" stroke="currentColor" strokeWidth="1.2" />
+          </svg>
+        )}
+        Deep Rewrite
+        {isPro ? (
+          <span
+            className="text-[10px] tracking-wider uppercase font-semibold"
+            style={{ color: on ? 'var(--color-accent-bright)' : 'var(--color-paper-mute)' }}
+          >
+            {on ? 'On' : 'Off'}
+          </span>
+        ) : (
+          <span className="text-[10px] tracking-wider uppercase font-semibold" style={{ color: 'var(--color-accent-bright)' }}>
+            Pro
+          </span>
+        )}
+      </button>
+
+      <AnimatePresence>
+        {tipOpen && (
+          <motion.div
+            id="deep-rewrite-tip"
+            role="tooltip"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-0 bottom-full mb-2 w-64 rounded-xl p-3.5 z-30"
+            style={{
+              background: 'var(--color-ink-card-elevated, var(--color-ink-card))',
+              border: '1px solid var(--color-rule-strong)',
+              boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
+            }}
+          >
+            <p className="text-[13px] leading-normal" style={{ color: 'var(--color-paper)' }}>
+              Your prompt gets drafted, critiqued, and refined on our
+              strongest model.
+            </p>
+            <a
+              href="/blog/what-is-deep-rewrite"
+              className="inline-block mt-2 text-xs hover:opacity-80 transition-opacity"
+              style={{ color: 'var(--color-accent-bright)' }}
+            >
+              How it works →
+            </a>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
