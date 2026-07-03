@@ -4,7 +4,7 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
-  title: 'Pricing – Deepclario',
+  title: 'Pricing - Free Plan and Pro at $4.99/month',
   description: 'Free until you outgrow it. Pro is $4.99/month right now - a launch discount from $9.99 - for Deep Rewrite on our strongest model, unlimited rewrites and AI detection, full history, and weekly insights.',
   alternates: { canonical: 'https://deepclario.com/pricing' },
   openGraph: {
@@ -23,14 +23,54 @@ export const metadata: Metadata = {
   },
 }
 
+// Structured data: both plans as offers so the page is eligible for price
+// rich results. Prices must match LAUNCH in EditorialPricing.tsx.
+const pricingSchema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'SoftwareApplication',
+      name: 'Deepclario',
+      url: 'https://deepclario.com',
+      applicationCategory: 'UtilityApplication',
+      operatingSystem: 'Web',
+      publisher: { '@id': 'https://deepclario.com/#organization' },
+      offers: [
+        {
+          '@type': 'Offer',
+          name: 'Free',
+          price: '0',
+          priceCurrency: 'USD',
+          description: '25 prompt rewrites per month, no card required.',
+        },
+        {
+          '@type': 'Offer',
+          name: 'Pro',
+          price: '4.99',
+          priceCurrency: 'USD',
+          description: 'Deep Rewrite, unlimited rewrites and AI detection, full history, weekly insights. Launch price, down from $9.99/month.',
+        },
+      ],
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://deepclario.com' },
+        { '@type': 'ListItem', position: 2, name: 'Pricing', item: 'https://deepclario.com/pricing' },
+      ],
+    },
+  ],
+}
+
 export default function PricingPage() {
   return (
     <div className="editorial grain min-h-screen relative" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingSchema) }} />
       <MarketingNav current="pricing" />
 
       <section className="pt-28 md:pt-36 pb-20 md:pb-28 px-6 md:px-10">
         <div className="max-w-6xl mx-auto">
-          <EditorialPricing />
+          <EditorialPricing headingLevel="h1" />
         </div>
       </section>
     </div>

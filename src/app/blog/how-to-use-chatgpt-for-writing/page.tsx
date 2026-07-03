@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 
@@ -14,6 +15,8 @@ export const metadata: Metadata = {
   },
 }
 
+const post = getBlogPost('how-to-use-chatgpt-for-writing')
+
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
@@ -21,8 +24,8 @@ const articleSchema = {
   description: 'How to use ChatGPT for writing without sounding like a robot.',
   author: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
-  datePublished: '2026-05-01',
-  dateModified: '2026-05-25',
+  datePublished: post.datePublished,
+  dateModified: post.dateModified,
 }
 
 const faqSchema = {

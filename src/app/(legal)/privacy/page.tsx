@@ -1,4 +1,4 @@
-export const metadata = { title: 'Privacy Policy - Deepclario' }
+export const metadata = { title: 'Privacy Policy' }
 
 export default function PrivacyPage() {
   return (

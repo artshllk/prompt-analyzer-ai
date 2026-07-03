@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 
@@ -13,6 +14,8 @@ export const metadata: Metadata = {
   },
 }
 
+const post = getBlogPost('prompt-engineering-examples')
+
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'Article',
@@ -20,8 +23,8 @@ const structuredData = {
   description: 'Real prompt engineering examples with before and after comparisons across multiple use cases.',
   author: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
-  datePublished: '2026-04-01',
-  dateModified: '2026-04-29',
+  datePublished: post.datePublished,
+  dateModified: post.dateModified,
   mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://deepclario.com/blog/prompt-engineering-examples' },
 }
 

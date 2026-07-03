@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { PROMPT_LIBRARY } from '@/lib/prompt-library'
+import { BLOG_POSTS } from '@/lib/blog-posts'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = 'https://deepclario.com'
@@ -13,6 +14,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }))
 
+  // Generated from the shared blog registry; lastModified reflects the real
+  // edit date so search engines get an honest freshness signal.
+  const blogPages: MetadataRoute.Sitemap = BLOG_POSTS.map(post => ({
+    url: `${base}/blog/${post.slug}`,
+    lastModified: new Date(post.dateModified),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }))
+
   return [
     { url: base, lastModified: now, changeFrequency: 'weekly', priority: 1 },
     { url: `${base}/playground`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
@@ -24,21 +34,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/tools/prompt-analyzer`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${base}/pricing`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${base}/faq`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${base}/blog/what-is-prompt-engineering`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/blog/how-to-write-better-prompts`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/blog/chatgpt-prompt-tips`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/blog/prompt-engineering-examples`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/blog/what-is-a-good-prompt`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/blog/best-chatgpt-prompts-for-work`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/blog/how-to-use-chatgpt-for-writing`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/blog/how-to-get-better-results-from-chatgpt`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/blog/claude-ai-prompts`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/blog/ai-prompt-best-practices`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/blog/chatgpt-system-prompt-examples`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/blog/zero-shot-vs-few-shot-prompting`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/blog/what-is-deep-rewrite`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+    ...blogPages,
     { url: `${base}/blog`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${base}/login`, lastModified: now, changeFrequency: 'yearly', priority: 0.5 },
     { url: `${base}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
     { url: `${base}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
   ]

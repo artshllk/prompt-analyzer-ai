@@ -16,7 +16,9 @@ import { defaultOGImage } from "@/lib/og-image";
 // import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
 
 export const metadata: Metadata = {
-  title: "Deepclario - AI that actually understands what you mean",
+  // The layout template appends "| Deepclario", so the brand stays out of
+  // this string. Primary keyword ("ai prompt improver") leads the SERP title.
+  title: "AI Prompt Improver for ChatGPT, Claude & Gemini",
   description:
     "Stop rewriting your prompts. Deepclario fixes what is missing and asks the questions a senior teammate would ask. ChatGPT, Claude, and Gemini stop guessing. You stop editing.",
   alternates: { canonical: "https://deepclario.com" },
@@ -453,6 +455,7 @@ export default function LandingPage() {
               links={[
                 { href: "/playground", label: "Playground" },
                 { href: "/prompts", label: "Prompt library" },
+                { href: "/detector", label: "AI text detector" },
                 { href: "/extension", label: "Browser extension" },
                 { href: "/tools/prompt-improver", label: "Prompt Improver" },
                 { href: "/tools/prompt-analyzer", label: "Prompt Analyzer" },
@@ -478,6 +481,8 @@ export default function LandingPage() {
                   href: "/blog/prompt-engineering-examples",
                   label: "Examples",
                 },
+                { href: "/blog", label: "All guides" },
+                { href: "/faq", label: "FAQ" },
               ]}
             />
             <FooterCol

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 
@@ -14,6 +15,8 @@ export const metadata: Metadata = {
   },
 }
 
+const post = getBlogPost('how-to-write-better-prompts')
+
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
@@ -21,8 +24,8 @@ const articleSchema = {
   description: '7 practical, proven techniques to write better prompts for ChatGPT, Claude, and Gemini.',
   author: { '@type': 'Organization', name: 'Deepclario' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
-  datePublished: '2026-04-01',
-  dateModified: '2026-04-28',
+  datePublished: post.datePublished,
+  dateModified: post.dateModified,
 }
 
 const faqSchema = {

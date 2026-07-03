@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
-  title: 'AI Prompt Analyzer - Score and Improve Your Prompts',
+  title: 'Free AI Prompt Analyzer - Score Your Prompt 0-100',
   description: 'Analyze any AI prompt and get a detailed clarity score across 5 dimensions. See exactly what is weak and why - then get a rewritten version that performs better.',
   alternates: { canonical: 'https://deepclario.com/tools/prompt-analyzer' },
   openGraph: {
@@ -17,6 +17,32 @@ export const metadata: Metadata = {
   },
 }
 
+// Structured data: free web tool plus breadcrumbs, mirroring the
+// prompt-improver page so both tools are eligible for rich results.
+const analyzerSchema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: 'Deepclario AI Prompt Analyzer',
+      url: 'https://deepclario.com/tools/prompt-analyzer',
+      applicationCategory: 'UtilityApplication',
+      operatingSystem: 'Web',
+      description:
+        'A free AI prompt analyzer that scores any prompt from 0 to 100 across five dimensions: goal clarity, context, format, constraints, and examples.',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      publisher: { '@id': 'https://deepclario.com/#organization' },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://deepclario.com' },
+        { '@type': 'ListItem', position: 2, name: 'AI Prompt Analyzer', item: 'https://deepclario.com/tools/prompt-analyzer' },
+      ],
+    },
+  ],
+}
+
 const SCORE_RANGES = [
   { range: '0–30', label: 'Weak', color: 'text-[#C25E5E]', bg: 'bg-red-500/10 border-[color:var(--color-rule-strong)]', desc: 'Missing most critical elements. AI will guess and produce generic output.' },
   { range: '31–60', label: 'Moderate', color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', desc: 'Some elements present, but key gaps remain. Results will be inconsistent.' },
@@ -27,6 +53,7 @@ const SCORE_RANGES = [
 export default function PromptAnalyzerPage() {
   return (
     <div className="editorial grain min-h-screen">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(analyzerSchema) }} />
       <header className="border-b border-[color:var(--color-rule)] px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.png" alt="Deepclario" width={24} height={24} className="rounded" />

@@ -1,4 +1,6 @@
+/* eslint-disable react/no-unescaped-entities */
 import type { Metadata } from 'next'
+import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 
@@ -14,6 +16,8 @@ export const metadata: Metadata = {
   },
 }
 
+const post = getBlogPost('chatgpt-system-prompt-examples')
+
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
@@ -21,8 +25,8 @@ const articleSchema = {
   description: 'What system prompts are, how they work, and real examples for common use cases.',
   author: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
-  datePublished: '2026-05-01',
-  dateModified: '2026-05-25',
+  datePublished: post.datePublished,
+  dateModified: post.dateModified,
 }
 
 const faqSchema = {
