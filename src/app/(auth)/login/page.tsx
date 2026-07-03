@@ -119,7 +119,8 @@ function LoginInner() {
     }
   }
 
-  /** Verify the 6-digit code from the sign-in email. Returns an error
+  /** Verify the one-time code from the sign-in email (project setting
+   *  controls its length; ours is 8 digits, so accept 6-10). Returns an error
    *  message for the sent screen to show, or null on success (which
    *  navigates away). Same-page alternative to clicking the link, so it
    *  also works when the email is read on another device. */
@@ -339,7 +340,7 @@ function SentState({
 
   async function handleCodeSubmit(e: React.SubmitEvent) {
     e.preventDefault()
-    if (code.length !== 6 || verifying) return
+    if (code.length < 6 || verifying) return
     setVerifying(true)
     setCodeError('')
     const errorMessage = await onVerifyCode(code)
@@ -391,7 +392,7 @@ function SentState({
         {email}
       </p>
       <p className="text-sm leading-[1.55] mb-8" style={{ color: 'var(--color-paper-mute)' }}>
-        Enter the 6-digit code from the email, or click the link inside it.
+        Enter the code from the email, or click the link inside it.
         Both work once and expire in an hour.
       </p>
 
@@ -399,7 +400,7 @@ function SentState({
           right here, on any device, with no tab switch or redirect. */}
       <form onSubmit={handleCodeSubmit} className="mb-3">
         <label htmlFor="otp-code" className="sr-only">
-          6-digit sign-in code
+          One-time sign-in code
         </label>
         <div className="flex gap-2">
           <input
@@ -407,13 +408,13 @@ function SentState({
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
-            pattern="[0-9]{6}"
-            maxLength={6}
+            pattern="[0-9]{6,10}"
+            maxLength={10}
             value={code}
             onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
-            placeholder="000000"
+            placeholder="00000000"
             autoFocus
-            className="flex-1 min-w-0 py-3.5 px-4 rounded-xl text-center text-lg tracking-[0.4em] focus:outline-none"
+            className="flex-1 min-w-0 py-3.5 px-4 rounded-xl text-center text-lg tracking-[0.25em] focus:outline-none"
             style={{
               background: 'var(--color-ink-card)',
               border: '1px solid var(--color-rule-strong)',
@@ -423,7 +424,7 @@ function SentState({
           />
           <button
             type="submit"
-            disabled={code.length !== 6 || verifying}
+            disabled={code.length < 6 || verifying}
             className="px-5 py-3.5 rounded-xl text-[15px] transition-all btn-paper disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 600 }}
           >
