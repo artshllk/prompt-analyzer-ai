@@ -259,7 +259,7 @@ function LoginInner() {
                         }}
                         onFocus={() => setEmailFocused(true)}
                         onBlur={() => setEmailFocused(false)}
-                        placeholder="you@company.com"
+                        placeholder="you@example.com"
                         required
                         autoFocus
                         autoComplete="email"
