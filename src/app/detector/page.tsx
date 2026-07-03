@@ -130,7 +130,7 @@ export default async function DetectorPage() {
 
   if (user) {
     return (
-      <div className="editorial grain min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
+      <div className="editorial grain no-page-transition min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
         <AppShell>{mainContent}</AppShell>
       </div>
     )
