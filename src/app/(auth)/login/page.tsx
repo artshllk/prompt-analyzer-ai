@@ -4,7 +4,7 @@ import { Suspense, useCallback, useMemo, useState, useSyncExternalStore } from '
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { createOtpClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
 import GoogleSignIn from './GoogleSignIn'
 import {
@@ -67,7 +67,11 @@ function LoginInner() {
     setShowEmailOverride(true)
   }, [])
 
-  const supabase = createClient()
+  // Implicit-flow client: the email path is request-code / verify-code,
+  // where PKCE only adds a same-browser constraint and breaks typed-code
+  // verification. See createOtpClient for details. Memoized because it is
+  // not the shared singleton.
+  const supabase = useMemo(() => createOtpClient(), [])
 
   function callbackUrl() {
     const url = new URL('/auth/callback', window.location.origin)
@@ -127,10 +131,9 @@ function LoginInner() {
       type: 'email',
     })
     if (error) {
-      if (error.code === 'otp_expired') {
-        return 'That code has expired. Request a new link below.'
-      }
-      return 'That code didn’t match. Check the newest email and try again.'
+      // Supabase answers otp_expired for wrong AND stale codes alike, so
+      // one honest message covers both.
+      return 'That code didn’t match or has expired. Use the code from the newest email, or request a fresh one.'
     }
     rememberSignIn('email', address)
     // Full navigation so the server picks up the fresh session cookie.
