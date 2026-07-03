@@ -6,6 +6,8 @@ import { addClarificationExchange, updateSessionStatus, saveImprovement, getSess
 interface AnswerBody {
   answer: string
   turn: number
+  /** Carried through from the client so a Deep Rewrite session stays deep. */
+  deep?: boolean
 }
 
 export async function POST(
@@ -25,6 +27,17 @@ export async function POST(
 
   if (!answer?.trim()) {
     return NextResponse.json({ error: 'answer is required' }, { status: 400 })
+  }
+
+  // Deep Rewrite is Pro-only; re-check the tier rather than trusting the client.
+  let deep = false
+  if (body.deep) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('tier')
+      .eq('id', user.id)
+      .single()
+    deep = profile?.tier === 'pro'
   }
 
   const session = await getSessionWithDetails(sessionId, user.id)
@@ -62,6 +75,7 @@ export async function POST(
     prompt: session.originalPrompt,
     tone: session.tone,
     priorAnswers,
+    deep,
   })
 
   if (!result) {

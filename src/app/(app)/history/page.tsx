@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getUserSessions } from '@/lib/db/sessions'
 import { SessionStatusChip } from '@/components/ui/SessionStatusChip'
+import { HISTORY_FREE_DAYS, windowStart } from '@/lib/limits'
 
 function ScoreTrend({ sessions }: { sessions: Array<{ clarityScoreAfter?: number | null; clarityScoreBefore?: number | null }> }) {
   const points = sessions
@@ -55,9 +56,19 @@ export default async function HistoryPage({
   const limit = 15
   const offset = (page - 1) * limit
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tier')
+    .eq('id', user.id)
+    .single()
+  const isPro = profile?.tier === 'pro'
+
+  // Free users see the advertised 7-day window; Pro keeps everything.
+  const since = isPro ? undefined : windowStart(HISTORY_FREE_DAYS * 24)
+
   const [{ sessions, total }, allForStats] = await Promise.all([
-    getUserSessions(user.id, limit, offset),
-    getUserSessions(user.id, 100, 0),
+    getUserSessions(user.id, limit, offset, since),
+    getUserSessions(user.id, 100, 0, since),
   ])
 
   const totalPages = Math.ceil(total / limit)
@@ -102,6 +113,25 @@ export default async function HistoryPage({
           </Link>
         </div>
       </header>
+
+      {/* Free-tier retention note - Pro keeps everything. */}
+      {!isPro && (
+        <div
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 py-3"
+          style={{ borderTop: '1px solid var(--color-rule-strong)', borderBottom: '1px solid var(--color-rule-strong)' }}
+        >
+          <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
+            Showing your last {HISTORY_FREE_DAYS} days. Pro keeps your full history, forever.
+          </p>
+          <Link
+            href="/pricing"
+            className="text-sm underline-offset-4 hover:underline transition-all"
+            style={{ color: 'var(--color-paper)' }}
+          >
+            Upgrade to Pro →
+          </Link>
+        </div>
+      )}
 
       {/* Summary stats - single horizontal data row */}
       {completed.length >= 2 && (

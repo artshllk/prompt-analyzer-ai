@@ -32,9 +32,11 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
   const [paywallOpen, setPaywallOpen] = useState(false)
   const [anonCount, setAnonCount] = useState(0)
   const [hydrated, setHydrated] = useState(false)
+  const [deepMode, setDeepMode] = useState(false)
 
   const session = usePromptSession({ anonymous: !isSignedIn })
   const isAnon = !isSignedIn
+  const isPro = usage?.tier === 'pro'
 
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const answerRef = useRef<HTMLTextAreaElement>(null)
@@ -90,7 +92,7 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
 
   async function handleAnalyze() {
     if (!prompt.trim() || thinking) return
-    const result = await session.analyze(prompt, tone)
+    const result = await session.analyze(prompt, tone, deepMode && isPro)
     if (isAnon) {
       const next = anonCount + 1
       setAnonCount(next)
@@ -166,7 +168,40 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
                 }}
               />
               <div className="flex items-center justify-between gap-3 p-1.5 pt-2">
-                <ToneDropdown value={tone} onChange={setTone} disabled={started} />
+                <div className="flex items-center gap-2 min-w-0">
+                  <ToneDropdown value={tone} onChange={setTone} disabled={started} />
+                  {/* Deep Rewrite - Pro toggles it; free users see it locked
+                      so the upgrade is felt inside the product. Hidden for
+                      anonymous visitors (they get the sign-in gate first). */}
+                  {isSignedIn && (
+                    <button
+                      type="button"
+                      disabled={started}
+                      aria-pressed={isPro ? deepMode : false}
+                      title={isPro ? 'Multi-pass rewrite on our strongest model' : 'Deep Rewrite is a Pro feature'}
+                      onClick={() => (isPro ? setDeepMode(d => !d) : setPaywallOpen(true))}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] transition-colors chip-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{
+                        border: `1px solid ${isPro && deepMode ? 'var(--color-accent-bright)' : 'var(--color-rule-strong)'}`,
+                        color: isPro && deepMode ? 'var(--color-accent-bright)' : 'var(--color-paper-mute)',
+                        background: isPro && deepMode ? 'var(--color-accent-soft)' : 'transparent',
+                      }}
+                    >
+                      {!isPro && (
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden>
+                          <rect x="2.5" y="5" width="7" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
+                          <path d="M4 5V3.5a2 2 0 0 1 4 0V5" stroke="currentColor" strokeWidth="1.2" />
+                        </svg>
+                      )}
+                      Deep Rewrite
+                      {!isPro && (
+                        <span className="text-[10px] tracking-wider uppercase font-semibold" style={{ color: 'var(--color-accent-bright)' }}>
+                          Pro
+                        </span>
+                      )}
+                    </button>
+                  )}
+                </div>
                 {!started ? (
                   <button
                     onClick={handleAnalyze}
@@ -257,7 +292,13 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
 
                 {thinking && (
                   <motion.div key="thinking" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    <Writing label={session.stage === 'improving' ? 'Rewriting…' : 'Reading your prompt…'} />
+                    <Writing
+                      label={
+                        session.stage === 'improving'
+                          ? deepMode && isPro ? 'Deep rewriting: draft, critique, refine…' : 'Rewriting…'
+                          : 'Reading your prompt…'
+                      }
+                    />
                   </motion.div>
                 )}
 

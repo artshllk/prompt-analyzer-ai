@@ -39,6 +39,8 @@ export interface AnalyzeInput {
   tone: import('./database').Tone
   priorAnswers: QAPair[]
   currentConfidence?: number
+  /** Pro-only Deep Rewrite: stronger model, draft-critique-refine pass. */
+  deep?: boolean
 }
 
 export type AnalyzeResult =

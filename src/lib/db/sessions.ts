@@ -136,26 +136,35 @@ export async function getSessionWithDetails(
 export async function getUserSessions(
   userId: string,
   limit = 20,
-  offset = 0
+  offset = 0,
+  /** ISO timestamp - only sessions created at or after this moment (free-tier history cap). */
+  since?: string
 ): Promise<{ sessions: SessionWithDetails[]; total: number }> {
   const supabase = await createClient()
 
+  let listQuery = supabase
+    .from('prompt_sessions')
+    .select(`
+      *,
+      clarification_exchanges(turn, ai_question, user_answer),
+      prompt_improvements(improved_prompt, explanation, improvement_tags)
+    `)
+    .eq('user_id', userId)
+  let countQuery = supabase
+    .from('prompt_sessions')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+
+  if (since) {
+    listQuery = listQuery.gte('created_at', since)
+    countQuery = countQuery.gte('created_at', since)
+  }
+
   const [sessionsResult, countResult] = await Promise.all([
-    supabase
-      .from('prompt_sessions')
-      .select(`
-        *,
-        clarification_exchanges(turn, ai_question, user_answer),
-        prompt_improvements(improved_prompt, explanation, improvement_tags)
-      `)
-      .eq('user_id', userId)
+    listQuery
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1),
-
-    supabase
-      .from('prompt_sessions')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId),
+    countQuery,
   ])
 
   const sessions = (sessionsResult.data ?? []).map(session => {

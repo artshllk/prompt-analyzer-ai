@@ -4,11 +4,11 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 
 export const metadata: Metadata = {
   title: 'Pricing – Deepclario',
-  description: 'Free until you outgrow it. Pro is $4.99/month right now - a launch discount from $9.99 - for unlimited rewrites, unlimited AI detection, full history, and weekly insights.',
+  description: 'Free until you outgrow it. Pro is $4.99/month right now - a launch discount from $9.99 - for Deep Rewrite on our strongest model, unlimited rewrites and AI detection, full history, and weekly insights.',
   alternates: { canonical: 'https://deepclario.com/pricing' },
   openGraph: {
     title: 'Deepclario Pricing - Pro at $4.99/month (launch offer)',
-    description: 'Launch pricing: Pro is $4.99/month, down from $9.99. Unlimited prompt rewrites, unlimited AI detection, full history, and weekly insights. The free plan stays free.',
+    description: 'Launch pricing: Pro is $4.99/month, down from $9.99. Deep Rewrite on our strongest model, unlimited prompt rewrites and AI detection, full history, and weekly insights. The free plan stays free.',
     url: 'https://deepclario.com/pricing',
     type: 'website',
   },

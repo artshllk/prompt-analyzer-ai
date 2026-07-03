@@ -54,6 +54,7 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
   const priorAnswersRef = useRef<QAPair[]>([])
   const promptRef = useRef<string>('')
   const toneRef = useRef<Tone>('professional')
+  const deepRef = useRef<boolean>(false)
 
   const apply = useCallback((next: Partial<SessionState>) => {
     setState(prev => {
@@ -65,9 +66,10 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
     })
   }, [])
 
-  const analyze = useCallback(async (prompt: string, tone: Tone) => {
+  const analyze = useCallback(async (prompt: string, tone: Tone, deep = false) => {
     promptRef.current = prompt
     toneRef.current = tone
+    deepRef.current = deep && !anonymous
     apply({ stage: 'analyzing', error: null, priorAnswers: [], clarifying: null, improved: null, sessionId: null })
 
     const endpoint = anonymous ? '/api/anon/analyze' : '/api/prompts/analyze'
@@ -76,7 +78,7 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, tone, priorAnswers: [] }),
+        body: JSON.stringify({ prompt, tone, priorAnswers: [], deep: deepRef.current }),
       })
 
       const data = await res.json()
@@ -155,8 +157,9 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
             prompt: promptRef.current,
             tone: toneRef.current,
             priorAnswers: newPriorAnswers,
+            deep: deepRef.current,
           }
-        : { answer, turn: clarifying.turn }
+        : { answer, turn: clarifying.turn, deep: deepRef.current }
 
       const res = await fetch(url, {
         method: 'POST',
@@ -206,6 +209,7 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
     clarifyingRef.current = null
     priorAnswersRef.current = []
     promptRef.current = ''
+    deepRef.current = false
     setState(INITIAL_STATE)
   }, [])
 
