@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ToneDropdown } from '@/components/playground/ToneDropdown'
 import { SignupGate } from '@/components/playground/SignupGate'
+import { FreeCreditsMeter } from '@/components/playground/FreeCreditsMeter'
 import { PaywallModal } from '@/components/ui/PaywallModal'
 import { StreamOut } from '@/components/shared/StreamOut'
 import { usePromptSession } from '@/hooks/usePromptSession'
@@ -32,9 +33,16 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
   const [paywallOpen, setPaywallOpen] = useState(false)
   const [anonCount, setAnonCount] = useState(0)
   const [hydrated, setHydrated] = useState(false)
+  // Live free-rewrite count, seeded from the server and decremented
+  // optimistically as the user spends credits this session.
+  const [rewritesUsed, setRewritesUsed] = useState(usage?.used ?? 0)
 
   const session = usePromptSession({ anonymous: !isSignedIn })
   const isAnon = !isSignedIn
+
+  const isFree = !isAnon && usage?.tier === 'free' && usage.limit != null
+  const rewriteLimit = usage?.limit ?? 0
+  const rewritesLeft = Math.max(0, rewriteLimit - rewritesUsed)
 
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const answerRef = useRef<HTMLTextAreaElement>(null)
@@ -95,6 +103,9 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
       const next = anonCount + 1
       setAnonCount(next)
       window.localStorage.setItem(ANON_KEY, String(next))
+    } else if (usage?.tier === 'free' && result && !result.usageLimitReached) {
+      // A fresh analysis spends one credit (clarify turns don't recount).
+      setRewritesUsed(u => u + 1)
     }
     if (result?.usageLimitReached) setPaywallOpen(true)
   }
@@ -123,18 +134,13 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
         </p>
       </header>
 
-      {/* Inline usage note - only for free tier ≥80% used. */}
-      {!isAnon && usage && usage.tier === 'free' && usage.limit && usage.used / usage.limit >= 0.8 && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 py-3 mb-6" style={{ borderTop: '1px solid var(--color-rule-strong)', borderBottom: '1px solid var(--color-rule-strong)' }}>
-          <p className="text-sm" style={{ color: usage.isAtLimit ? '#C25E5E' : 'var(--color-accent)' }}>
-            {usage.isAtLimit
-              ? `You've used all ${usage.limit} free rewrites for now (resets within 48h).`
-              : `${usage.limit - usage.used} of ${usage.limit} free rewrites left (48h window).`}
-          </p>
-          <button onClick={() => setPaywallOpen(true)} className="text-sm underline-offset-4 hover:underline transition-all" style={{ color: 'var(--color-paper)' }}>
-            Upgrade to Pro →
-          </button>
-        </div>
+      {/* Always-on free-credits meter with the Pro value beside it. */}
+      {isFree && (
+        <FreeCreditsMeter
+          used={rewritesUsed}
+          limit={rewriteLimit}
+          onUpgrade={() => setPaywallOpen(true)}
+        />
       )}
 
       {anonGated ? (
@@ -383,6 +389,29 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
                   Try another
                 </button>
               </div>
+            )}
+
+            {/* Value-moment nudge: fires only for free users running low, right
+                after they've felt the payoff of a rewrite. */}
+            {session.stage === 'done' && isFree && rewritesLeft <= 2 && (
+              <motion.p
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="mt-3 text-xs"
+                style={{ color: 'var(--color-paper-mute)' }}
+              >
+                {rewritesLeft > 0
+                  ? `${rewritesLeft} free rewrite${rewritesLeft === 1 ? '' : 's'} left. `
+                  : 'That was your last free rewrite. '}
+                <button
+                  onClick={() => setPaywallOpen(true)}
+                  className="underline underline-offset-4 transition-opacity hover:opacity-80"
+                  style={{ color: 'var(--color-accent-bright)' }}
+                >
+                  Keep the momentum with Pro →
+                </button>
+              </motion.p>
             )}
 
             {session.stage === 'error' && (
