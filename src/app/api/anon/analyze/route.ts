@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { analyzePrompt } from '@/lib/engine'
-import { take, getClientIp, ANON_LIMIT } from '@/lib/rate-limit'
+import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
 import { createServiceClient } from '@/lib/supabase/server'
 import { REWRITE_FREE_LIMIT, REWRITE_WINDOW_HOURS, windowStart } from '@/lib/limits'
@@ -49,7 +49,9 @@ export async function POST(req: NextRequest) {
   const token = extractBearerToken(req.headers.get('authorization'))
   const auth = token ? await validateToken(token) : null
 
-  // Anonymous: IP-throttle. Token-bearing: skip IP throttle entirely.
+  // Anonymous: IP-throttle. Token-bearing: per-user burst limit, same
+  // tiers as the website route (10/min free, 30/min pro) so the
+  // extension can't be used to sidestep the site's rate limiting.
   if (!auth) {
     const ip = getClientIp(req)
     const limit = take(`anon:${ip}`, ANON_LIMIT)
@@ -57,6 +59,14 @@ export async function POST(req: NextRequest) {
       return withCors(NextResponse.json(
         { error: 'rate_limited', retryAfterMs: limit.retryAfterMs },
         { status: 429, headers: { 'Retry-After': String(Math.ceil(limit.retryAfterMs / 1000)) } }
+      ))
+    }
+  } else {
+    const burst = take(`user:${auth.userId}`, auth.tier === 'pro' ? PRO_USER_LIMIT : USER_LIMIT)
+    if (!burst.allowed) {
+      return withCors(NextResponse.json(
+        { error: 'rate_limited', retryAfterMs: burst.retryAfterMs },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil(burst.retryAfterMs / 1000)) } }
       ))
     }
   }

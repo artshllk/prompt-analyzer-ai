@@ -250,19 +250,26 @@
   let lastPrompt = ''
   let authState = { token: null, tier: 'anon' }  // tier: 'anon' | 'free' | 'pro'
   let prefs = { tone: 'professional', deep: false }
+  let anonCount = 0
 
   const TONES = ['professional', 'friendly', 'persuasive', 'concise', 'creative']
+  // Anonymous tries before the connect gate - mirrors the website
+  // playground (2 tries, then sign in). Keeps the extension from being
+  // a way around the site's signup gate. The per-IP server throttle
+  // remains the hard backstop.
+  const ANON_FREE_TRIES = 2
 
   /* ---------- Account / token / preference storage ---------- */
 
   function loadAuth() {
     return new Promise(resolve => {
       try {
-        chrome.storage.local.get(['dc_token', 'dc_tier', 'dc_tone', 'dc_deep'], v => {
+        chrome.storage.local.get(['dc_token', 'dc_tier', 'dc_tone', 'dc_deep', 'dc_anon_count'], v => {
           authState.token = v?.dc_token || null
           authState.tier = v?.dc_tier || (authState.token ? 'free' : 'anon')
           if (TONES.includes(v?.dc_tone)) prefs.tone = v.dc_tone
           prefs.deep = v?.dc_deep === true
+          anonCount = Number.isFinite(v?.dc_anon_count) ? v.dc_anon_count : 0
           resolve()
         })
       } catch { resolve() }
@@ -299,7 +306,29 @@
   }
   function closePanel() { overlay.classList.remove('open') }
 
+  function renderAnonGate() {
+    stage.innerHTML = `
+      <div class="rule"></div>
+      <h2 style="margin-top:0">That was your free taste.</h2>
+      <p class="sub">
+        You have used your ${ANON_FREE_TRIES} free tries. Create a free Deepclario
+        account for ${5} rewrites every 48 hours, or go Pro for unlimited.
+      </p>
+      <div class="actions">
+        <button class="btn" id="gate-connect">Connect account</button>
+        <a class="btn ghost" href="https://deepclario.com/login" target="_blank" rel="noopener" style="text-decoration:none">Create free account</a>
+      </div>
+    `
+    $('#gate-connect').addEventListener('click', renderConnect)
+  }
+
   function renderInput(text) {
+    // Anonymous users get the same deal as the website playground:
+    // a couple of free tries, then the gate.
+    if (authState.tier === 'anon' && anonCount >= ANON_FREE_TRIES) {
+      renderAnonGate()
+      return
+    }
     const badge = authState.tier === 'pro'
       ? `<span class="badge pro">Pro</span>`
       : authState.tier === 'free'
@@ -513,6 +542,13 @@
         // updates the moment a Pro user's token is recognized.
         if (d.tier && d.tier !== 'anon' && authState.token) {
           saveAuth(authState.token, d.tier)
+        }
+        // Count anonymous analyses (first turn only - clarification rounds
+        // belong to the same one) toward the connect gate. Trust the
+        // server's word on anonymity, not our local guess.
+        if (d.anon && prior.length === 0) {
+          anonCount += 1
+          try { chrome.storage.local.set({ dc_anon_count: anonCount }) } catch {}
         }
         if (d.type === 'clarifying' && prior.length < 3) renderClarify(d)
         else if (d.type === 'improved') renderDone(d)
