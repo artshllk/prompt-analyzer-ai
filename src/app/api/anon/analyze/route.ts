@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { analyzePrompt } from '@/lib/engine'
-import { take, getClientIp, ANON_LIMIT } from '@/lib/rate-limit'
+import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
 import { createServiceClient } from '@/lib/supabase/server'
 import { REWRITE_FREE_LIMIT, REWRITE_WINDOW_HOURS, windowStart } from '@/lib/limits'
@@ -14,6 +14,10 @@ interface AnonAnalyzeBody {
   /** Where the call came from. Defaults to 'web' (homepage demo).
    *  The browser extension sends 'extension'. Used only for analytics. */
   source?: string
+  /** Deep Rewrite (draft-critique-refine on the stronger model).
+   *  Honored only for validated Pro tokens - same gate as the
+   *  authenticated playground route. */
+  deep?: boolean
 }
 
 // Permissive CORS - this endpoint is public, no-auth, and per-IP rate
@@ -45,7 +49,9 @@ export async function POST(req: NextRequest) {
   const token = extractBearerToken(req.headers.get('authorization'))
   const auth = token ? await validateToken(token) : null
 
-  // Anonymous: IP-throttle. Token-bearing: skip IP throttle entirely.
+  // Anonymous: IP-throttle. Token-bearing: per-user burst limit, same
+  // tiers as the website route (10/min free, 30/min pro) so the
+  // extension can't be used to sidestep the site's rate limiting.
   if (!auth) {
     const ip = getClientIp(req)
     const limit = take(`anon:${ip}`, ANON_LIMIT)
@@ -53,6 +59,14 @@ export async function POST(req: NextRequest) {
       return withCors(NextResponse.json(
         { error: 'rate_limited', retryAfterMs: limit.retryAfterMs },
         { status: 429, headers: { 'Retry-After': String(Math.ceil(limit.retryAfterMs / 1000)) } }
+      ))
+    }
+  } else {
+    const burst = take(`user:${auth.userId}`, auth.tier === 'pro' ? PRO_USER_LIMIT : USER_LIMIT)
+    if (!burst.allowed) {
+      return withCors(NextResponse.json(
+        { error: 'rate_limited', retryAfterMs: burst.retryAfterMs },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil(burst.retryAfterMs / 1000)) } }
       ))
     }
   }
@@ -73,6 +87,13 @@ export async function POST(req: NextRequest) {
   if (prompt.length > 4000) {
     return withCors(NextResponse.json({ error: 'prompt_too_long' }, { status: 400 }))
   }
+
+  // Deep Rewrite is Pro-only. Reject explicitly (rather than silently
+  // downgrading) so the extension can tell the user what happened.
+  if (body.deep && auth?.tier !== 'pro') {
+    return withCors(NextResponse.json({ error: 'pro_required' }, { status: 402 }))
+  }
+  const deep = body.deep === true && auth?.tier === 'pro'
 
   // Rolling-window quota for signed-in free users on the extension:
   // 5 rewrites per 48h. Pro users bypass entirely. New turns in an
@@ -102,13 +123,13 @@ export async function POST(req: NextRequest) {
   const ip = auth ? null : getClientIp(req)
   const ipBucket = ip ? ip.split('.').slice(0, 3).join('.') + '.x' : null
   console.log(
-    `[anon-analyze] source=${source} turn=${priorAnswers.length} ` +
+    `[anon-analyze] source=${source} turn=${priorAnswers.length} deep=${deep} ` +
     `auth=${auth ? `${auth.tier}:${auth.userId.slice(0, 8)}` : 'anon'} ` +
     `${ipBucket ? `ipBucket=${ipBucket} ` : ''}` +
     `ts=${new Date().toISOString()}`
   )
 
-  const result = await analyzePrompt({ prompt, tone, priorAnswers })
+  const result = await analyzePrompt({ prompt, tone, priorAnswers, deep })
   if (!result) {
     return withCors(NextResponse.json({ error: 'ai_unavailable' }, { status: 503 }))
   }
@@ -127,5 +148,6 @@ export async function POST(req: NextRequest) {
     ...result,
     anon: !auth,
     tier: auth?.tier ?? 'anon',
+    deep,
   }))
 }
