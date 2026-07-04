@@ -440,12 +440,32 @@
         : "Reading what you wrote. Checking what's clear and what isn't."}</p>`
   }
 
+  // Hitting the quota is not an error - it gets a calm gate screen with
+  // one clear action, in the same voice as the anon gate.
+  function renderQuotaGate(limit, windowHours) {
+    stage.innerHTML = `
+      <div class="rule"></div>
+      <h2 style="margin-top:0">You are out of free rewrites.</h2>
+      <p class="sub">
+        All ${limit} are used. They come back within ${windowHours} hours -
+        or go Pro for unlimited rewrites, with Deep Rewrite included.
+      </p>
+      <div class="actions">
+        <a class="btn" href="https://deepclario.com/pricing" target="_blank" rel="noopener" style="text-decoration:none">Upgrade to Pro</a>
+        <button class="btn ghost" id="retry">Back</button>
+      </div>
+    `
+    $('#retry').addEventListener('click', () => renderInput(lastPrompt))
+  }
+
   function renderError(resp) {
     const kind = resp?.error || 'network'
+    if (kind === 'quota') {
+      renderQuotaGate(resp.limit ?? 5, resp.windowHours ?? 48)
+      return
+    }
     const msg = kind === 'rate_limited'
       ? 'Slow down a moment - free analyses are rate-limited by IP. Connect a Deepclario account for higher limits.'
-      : kind === 'quota'
-      ? `You have used all ${resp.limit ?? 5} free rewrites for now. They reset within ${resp.windowHours ?? 48} hours - or go <a href="https://deepclario.com/pricing" target="_blank" rel="noopener">Pro</a> for unlimited.`
       : kind === 'pro_required'
       ? 'Deep Rewrite is a Pro feature. Upgrade at <a href="https://deepclario.com/pricing" target="_blank" rel="noopener">deepclario.com/pricing</a>, or turn it off and improve normally.'
       : kind === 'network'
