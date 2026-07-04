@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { markSignedOut } from '@/lib/auth/local-hints'
+import { REWRITE_FREE_LIMIT, REWRITE_WINDOW_HOURS } from '@/lib/limits'
 
 interface SettingsClientProps {
   email: string
@@ -90,7 +91,7 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
       <section className="glass rounded-2xl border border-[#1e2d4a] p-6 space-y-4">
         <h2 className="text-sm font-semibold text-[#f0f4ff] uppercase tracking-wider">Browser extension</h2>
         <p className="text-sm text-[#8b9cc8]">
-          Connect the Deepclario extension to this account so it uses your plan {isPro ? '(unlimited)' : '(25 / month)'} instead of the public free quota.
+          Connect the Deepclario extension to this account so it uses your plan {isPro ? '(unlimited, with Deep Rewrite)' : `(${REWRITE_FREE_LIMIT} rewrites / ${REWRITE_WINDOW_HOURS}h)`} instead of the public free quota.
         </p>
         <a
           href="/extension/connect"

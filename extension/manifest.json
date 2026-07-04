@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Deepclario - Improve your AI prompts",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Score and improve the prompt you're about to send to ChatGPT, Claude, or Gemini - without leaving the page.",
   "icons": {
     "16": "icons/icon16.png",

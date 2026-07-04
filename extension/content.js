@@ -188,6 +188,29 @@
         border: 1px solid rgba(245,244,241,.18);
       }
       .badge.pro { background: #F5F4F1; color: #0E0E10; border-color: transparent; }
+      .controls { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+      .select {
+        appearance: none; -webkit-appearance: none;
+        background: #1A1A20; color: #F5F4F1; cursor: pointer;
+        border: 1px solid rgba(245,244,241,.18); border-radius: 999px;
+        padding: 7px 26px 7px 12px; font-size: 12px; font-family: inherit;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'><path d='M1 1l3 3 3-3' stroke='%23A8A6A0' fill='none' stroke-width='1.4' stroke-linecap='round'/></svg>");
+        background-repeat: no-repeat; background-position: right 10px center;
+      }
+      .select:focus { outline: none; border-color: #A8A6A0; }
+      .chip {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 7px 12px; border-radius: 999px; cursor: pointer;
+        background: transparent; color: #A8A6A0; font-size: 12px; font-weight: 500;
+        border: 1px solid rgba(245,244,241,.18); font-family: inherit;
+        transition: color .15s, border-color .15s, background .15s;
+      }
+      .chip:hover { color: #F5F4F1; }
+      .chip.on { color: #8FB4F2; border-color: #8FB4F2; background: rgba(91,143,237,.12); }
+      .chip .tag { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: #8FB4F2; }
+      .upsell { margin-top: 14px; font-size: 12px; line-height: 1.5; color: #A8A6A0; }
+      .upsell a { color: #8FB4F2; text-decoration: none; }
+      .upsell a:hover { text-decoration: underline; text-underline-offset: 3px; }
       .link {
         background: none; border: none; color: #A8A6A0; font-size: 12px;
         cursor: pointer; padding: 4px 0; text-decoration: underline;
@@ -226,19 +249,28 @@
   let history = []
   let lastPrompt = ''
   let authState = { token: null, tier: 'anon' }  // tier: 'anon' | 'free' | 'pro'
+  let prefs = { tone: 'professional', deep: false }
 
-  /* ---------- Account / token storage ---------- */
+  const TONES = ['professional', 'friendly', 'persuasive', 'concise', 'creative']
+
+  /* ---------- Account / token / preference storage ---------- */
 
   function loadAuth() {
     return new Promise(resolve => {
       try {
-        chrome.storage.local.get(['dc_token', 'dc_tier'], v => {
+        chrome.storage.local.get(['dc_token', 'dc_tier', 'dc_tone', 'dc_deep'], v => {
           authState.token = v?.dc_token || null
           authState.tier = v?.dc_tier || (authState.token ? 'free' : 'anon')
+          if (TONES.includes(v?.dc_tone)) prefs.tone = v.dc_tone
+          prefs.deep = v?.dc_deep === true
           resolve()
         })
       } catch { resolve() }
     })
+  }
+
+  function savePrefs() {
+    try { chrome.storage.local.set({ dc_tone: prefs.tone, dc_deep: prefs.deep }) } catch {}
   }
 
   function saveAuth(token, tier) {
@@ -277,10 +309,28 @@
       ? `<button class="link" id="disconnect">Disconnect</button>`
       : `<button class="link" id="connect">Connect account</button>`
 
+    const isPro = authState.tier === 'pro'
+    const deepOn = isPro && prefs.deep
+    // Pro: a real toggle. Free/anon: locked chip that opens the pricing
+    // page - the upgrade is felt at the point of use, not on a website.
+    const deepChip = isPro
+      ? `<button class="chip ${deepOn ? 'on' : ''}" id="deep" aria-pressed="${deepOn}"
+           title="Draft, critique, refine on our strongest model">Deep Rewrite · ${deepOn ? 'On' : 'Off'}</button>`
+      : `<button class="chip" id="deep"
+           title="Pro: your prompt gets drafted, critiqued, and refined on our strongest model">
+           <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><rect x="2.5" y="5" width="7" height="5" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V3.5a2 2 0 0 1 4 0V5" stroke="currentColor" stroke-width="1.2"/></svg>
+           Deep Rewrite <span class="tag">Pro</span></button>`
+
     stage.innerHTML = `
       <div class="account-row">${badge}${accountAction}</div>
       <div class="label">Your prompt</div>
       <textarea id="ta">${esc(text)}</textarea>
+      <div class="controls">
+        <select class="select" id="tone" aria-label="Tone">
+          ${TONES.map(t => `<option value="${t}" ${t === prefs.tone ? 'selected' : ''}>Tone: ${t[0].toUpperCase() + t.slice(1)}</option>`).join('')}
+        </select>
+        ${deepChip}
+      </div>
       <div class="actions">
         <button class="btn" id="go">Improve</button>
       </div>
@@ -296,6 +346,19 @@
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault()
         submit()
+      }
+    })
+    $('#tone').addEventListener('change', e => {
+      prefs.tone = e.target.value
+      savePrefs()
+    })
+    $('#deep').addEventListener('click', () => {
+      if (isPro) {
+        prefs.deep = !prefs.deep
+        savePrefs()
+        renderInput($('#ta').value)
+      } else {
+        window.open('https://deepclario.com/pricing', '_blank', 'noopener')
       }
     })
     const connectBtn = $('#connect')
@@ -340,17 +403,22 @@
     })
   }
 
-  function renderLoading() {
+  function renderLoading(deep) {
     stage.innerHTML = `<div class="rule"></div>
       <div class="dots" style="margin:18px 0"><span></span><span></span><span></span></div>
-      <p class="sub">Reading what you wrote. Checking what's clear and what isn't.</p>`
+      <p class="sub">${deep
+        ? 'Deep Rewrite: drafting, critiquing, refining. A little slower - the extra passes are the point.'
+        : "Reading what you wrote. Checking what's clear and what isn't."}</p>`
   }
 
-  function renderError(kind) {
+  function renderError(resp) {
+    const kind = resp?.error || 'network'
     const msg = kind === 'rate_limited'
       ? 'Slow down a moment - free analyses are rate-limited by IP. Connect a Deepclario account for higher limits.'
-      : kind === 'monthly_limit'
-      ? 'You have used all 25 free prompts this month. Upgrade to Pro at deepclario.com for unlimited use.'
+      : kind === 'quota'
+      ? `You have used all ${resp.limit ?? 5} free rewrites for now. They reset within ${resp.windowHours ?? 48} hours - or go <a href="https://deepclario.com/pricing" target="_blank" rel="noopener">Pro</a> for unlimited.`
+      : kind === 'pro_required'
+      ? 'Deep Rewrite is a Pro feature. Upgrade at <a href="https://deepclario.com/pricing" target="_blank" rel="noopener">deepclario.com/pricing</a>, or turn it off and improve normally.'
       : kind === 'network'
       ? 'Network hiccup. Check your connection and try again.'
       : 'Something went sideways on our end. Try again.'
@@ -396,6 +464,12 @@
   function renderDone(d) {
     const b = d.scoreBeforeImprovement ?? 0
     const a = d.clarityScoreAfter ?? 0
+    // The moment Pro value is felt: label the result when it came from
+    // the three-pass mode. For everyone else, one quiet upsell line.
+    const resultLabel = d.deep ? 'Deep Rewrite · 3 passes' : 'Improved prompt'
+    const upsell = authState.tier === 'pro' ? '' : `
+      <p class="upsell">Deep Rewrite gets you a sharper version of this - drafted, critiqued, and refined on our strongest model.
+        <a href="https://deepclario.com/pricing" target="_blank" rel="noopener">Pro, $4.99/mo →</a></p>`
     stage.innerHTML = `
       <div class="rule"></div>
       <div class="score-row">
@@ -404,14 +478,15 @@
         <span class="arrow">→</span>
         <span class="score ${scoreClass(a)}">${a}</span>
       </div>
-      <div class="label">Improved prompt</div>
+      <div class="label">${resultLabel}</div>
       <div class="result-box" id="rw">${esc(d.improvedPrompt)}</div>
       ${d.explanation ? `<div class="label">Why it is better</div><p class="sub" style="margin:0">${esc(d.explanation)}</p>` : ''}
       <div class="actions">
-        <button class="btn" id="copy">Copy</button>
-        <button class="btn ghost" id="replace">Replace in chat</button>
+        <button class="btn" id="replace">Replace in chat</button>
+        <button class="btn ghost" id="copy">Copy</button>
         <button class="btn ghost" id="again">New prompt</button>
       </div>
+      ${upsell}
     `
     $('#copy').addEventListener('click', e => {
       navigator.clipboard.writeText(d.improvedPrompt)
@@ -427,11 +502,12 @@
   }
 
   function analyze(prompt, prior) {
-    renderLoading()
+    const deep = authState.tier === 'pro' && prefs.deep
+    renderLoading(deep)
     chrome.runtime.sendMessage(
-      { type: 'DEEPCLARIO_ANALYZE', prompt, priorAnswers: prior, token: authState.token },
+      { type: 'DEEPCLARIO_ANALYZE', prompt, priorAnswers: prior, token: authState.token, tone: prefs.tone, deep },
       resp => {
-        if (!resp || !resp.ok) { renderError(resp ? resp.error : 'network'); return }
+        if (!resp || !resp.ok) { renderError(resp); return }
         const d = resp.data
         // Sync tier from the server's authoritative response so the badge
         // updates the moment a Pro user's token is recognized.

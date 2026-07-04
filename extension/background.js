@@ -21,9 +21,10 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     headers,
     body: JSON.stringify({
       prompt: msg.prompt,
-      tone: 'professional',
+      tone: msg.tone || 'professional',
       priorAnswers: msg.priorAnswers || [],
       source: 'extension',
+      deep: msg.deep === true,
     }),
   })
     .then(async res => {
@@ -32,8 +33,16 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         return
       }
       if (res.status === 402) {
-        // Signed-in free user hit their monthly quota.
-        sendResponse({ ok: false, error: 'monthly_limit' })
+        // Two distinct 402s: quota exhausted (rate_limited_quota, with
+        // used/limit/windowHours) or Deep Rewrite without Pro
+        // (pro_required). Forward the body so the panel can say which.
+        const body = await res.json().catch(() => ({}))
+        sendResponse({
+          ok: false,
+          error: body.error === 'pro_required' ? 'pro_required' : 'quota',
+          limit: body.limit,
+          windowHours: body.windowHours,
+        })
         return
       }
       if (!res.ok) {
