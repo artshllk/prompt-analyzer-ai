@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { avgScores, countTags, onlyScored } from '@/lib/insights/aggregate'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -33,9 +34,7 @@ export async function GET() {
     .gte('created_at', monthStart.toISOString())
     .order('created_at', { ascending: false })
 
-  const completed = (sessions ?? []).filter(
-    s => s.clarity_score_after != null && s.clarity_score_before != null
-  )
+  const completed = onlyScored(sessions ?? [])
 
   const week = completed.filter(s => new Date(s.created_at) >= weekStart)
   const prevWeek = completed.filter(s => {
@@ -135,26 +134,4 @@ export async function GET() {
         }
       : null,
   })
-}
-
-type CompletedSession = {
-  clarity_score_before: number | null
-  clarity_score_after: number | null
-}
-
-function avgScores(items: CompletedSession[]) {
-  if (!items.length) return { before: 0, after: 0, lift: 0 }
-  const before = Math.round(items.reduce((a, b) => a + (b.clarity_score_before ?? 0), 0) / items.length)
-  const after = Math.round(items.reduce((a, b) => a + (b.clarity_score_after ?? 0), 0) / items.length)
-  return { before, after, lift: after - before }
-}
-
-function countTags(rows: { improvement_tags: string[] | null }[]) {
-  const counts: Record<string, number> = {}
-  rows.forEach(r => {
-    ;(r.improvement_tags ?? []).forEach(tag => {
-      counts[tag] = (counts[tag] ?? 0) + 1
-    })
-  })
-  return counts
 }
