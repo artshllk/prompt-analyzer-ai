@@ -382,44 +382,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* FAQ + Final CTA combined - one closing block, not two.
-            FAQ handles last objections; the CTA below it asks for the
-            commit without a separator that would make this feel like
-            two closes stacked. */}
-        <section
-          id="faq"
-          className="px-6 md:px-10 py-24 md:py-32"
-          style={{ borderTop: "1px solid var(--color-rule)" }}
-        >
-          <div className="max-w-3xl mx-auto">
-            <p className="eyebrow mb-6">Questions</p>
-            <h2
-              className="display text-4xl md:text-5xl mb-12"
-              style={{ color: "var(--color-paper)" }}
-            >
-              Asked and answered.
-            </h2>
-            <FAQSection />
-
-            {/* Final CTA - merged into the same block. One close, not
-                two. Anchors back to the in-page demo so the visitor's
-                commit happens here, not on a redirect. */}
-            <div
-              className="mt-20 md:mt-24 pt-12 md:pt-16 text-center"
-              style={{ borderTop: "1px solid var(--color-rule)" }}
-            >
-              <h3
-                className="display text-4xl md:text-6xl mb-8"
-                style={{ color: "var(--color-paper)" }}
-              >
-                Bring your worst prompt.
-              </h3>
-              <div className="flex justify-center">
-                <HeroDemoModal />
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Footer */}
         <footer
