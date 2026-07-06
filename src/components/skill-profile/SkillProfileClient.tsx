@@ -10,6 +10,12 @@ interface WeekBucket {
   count: number
 }
 
+interface Gap {
+  tag: string
+  count: number
+  pct: number
+}
+
 interface SkillProfile {
   tier: 'free' | 'pro'
   snapshot: {
@@ -19,21 +25,59 @@ interface SkillProfile {
     avgLift: number
     topGapTag: string | null
   }
+  gaps: Gap[]
   trend: WeekBucket[]
   trendTruncated: boolean
   weeksTracked: number
 }
 
-// Human labels for the improvement tags, matching the voice used in
-// InsightsClient's TAG_LABELS. Kept short - this is a snapshot, not coaching.
-const TAG_LABEL: Record<string, string> = {
-  context: 'adding context',
-  role: 'assigning a role',
-  action: 'a clearer ask',
-  format: 'specifying format',
-  constraints: 'adding constraints',
-  examples: 'including examples',
-  specificity: 'being more specific',
+// Per-tag metadata: a display noun, what it means in the user's terms, a
+// concrete fix (same voice as InsightsClient's TAG_LABELS), and a link to
+// the existing guide that teaches it. No AI call - the meaningful data is
+// the user's own tag history; this map just makes it legible.
+const TAG_INFO: Record<string, { noun: string; meaning: string; tip: string; learnHref: string }> = {
+  context: {
+    noun: 'Context',
+    meaning: 'Your prompts often leave out the background the AI needs.',
+    tip: 'Give the model the situation up front: who the audience is, what came before, why it matters.',
+    learnHref: '/blog/what-is-a-good-prompt#context',
+  },
+  role: {
+    noun: 'Role',
+    meaning: 'Your prompts rarely tell the AI who to be.',
+    tip: 'Start with "Act as a..." to anchor the response in a specific perspective.',
+    learnHref: '/blog/chatgpt-system-prompt-examples',
+  },
+  action: {
+    noun: 'Clear ask',
+    meaning: 'The task in your prompts is often fuzzy.',
+    tip: 'Replace vague verbs with explicit ones: "rewrite", "summarize", "list".',
+    learnHref: '/blog/what-is-a-good-prompt#goal-clarity',
+  },
+  format: {
+    noun: 'Format',
+    meaning: 'You often leave the output shape up to the model.',
+    tip: 'Say exactly how you want the answer structured: bullets, length, sections.',
+    learnHref: '/blog/what-is-a-good-prompt#format',
+  },
+  constraints: {
+    noun: 'Constraints',
+    meaning: 'Your prompts rarely say what to avoid or stay within.',
+    tip: 'Length limits, tone rules, words to ban. Constraints focus the output.',
+    learnHref: '/blog/what-is-a-good-prompt#constraints',
+  },
+  examples: {
+    noun: 'Examples',
+    meaning: 'You rarely show the model what good looks like.',
+    tip: 'One example of the style you want beats five adjectives.',
+    learnHref: '/blog/what-is-a-good-prompt#examples',
+  },
+  specificity: {
+    noun: 'Specificity',
+    meaning: 'Your prompts lean on vague nouns and adjectives.',
+    tip: 'Swap generalities for concrete details and numbers.',
+    learnHref: '/blog/how-to-write-better-prompts',
+  },
 }
 
 export function SkillProfileClient() {
@@ -111,7 +155,7 @@ export function SkillProfileClient() {
   }
 
   const { snapshot } = data
-  const gapLabel = snapshot.topGapTag ? (TAG_LABEL[snapshot.topGapTag] ?? snapshot.topGapTag) : null
+  const topGap = data.gaps[0] ? TAG_INFO[data.gaps[0].tag] : null
 
   return (
     <section className="space-y-12">
@@ -124,8 +168,12 @@ export function SkillProfileClient() {
           <Metric label="Clarity now" value={String(snapshot.avgAfter)} sub="average after score" />
           <Metric
             label="Biggest gap"
-            value={gapLabel ? gapLabel.split(' ')[0] : '—'}
-            sub={gapLabel ? `you often need help ${gapLabel}` : 'not enough data'}
+            value={topGap ? topGap.noun : '—'}
+            sub={
+              data.gaps[0]
+                ? `added for you in ${data.gaps[0].count} of ${snapshot.promptsImproved} prompt${snapshot.promptsImproved !== 1 ? 's' : ''}`
+                : 'not enough data'
+            }
             small
           />
         </div>
@@ -143,7 +191,87 @@ export function SkillProfileClient() {
         <TrendChart trend={data.trend} />
         {data.trendTruncated && <TrendLock weeksTracked={data.weeksTracked} />}
       </div>
+
+      {/* Where to improve next - the user's real recurring gaps, with
+          evidence and a concrete next step. */}
+      {data.gaps.length > 0 && (
+        <GapSection gaps={data.gaps} total={snapshot.promptsImproved} />
+      )}
     </section>
+  )
+}
+
+function GapSection({ gaps, total }: { gaps: Gap[]; total: number }) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between mb-2">
+        <p className="eyebrow">Where to improve next</p>
+        <p className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>
+          what our rewrites keep adding for you
+        </p>
+      </div>
+      <p className="text-sm leading-relaxed max-w-xl mb-8" style={{ color: 'var(--color-paper-mute)' }}>
+        When Deepclario improves a prompt, it records what was missing. These are the things
+        it adds for you most often - close these gaps yourself and your prompts get better
+        before we ever touch them.
+      </p>
+
+      <div className="rule-strong" />
+      {gaps.map((g, i) => {
+        const info = TAG_INFO[g.tag]
+        if (!info) return null
+        return (
+          <div key={g.tag}>
+            <div className="grid md:grid-cols-12 gap-3 md:gap-8 py-6 items-start">
+              {/* Rank + name */}
+              <div className="md:col-span-3 flex items-baseline gap-3">
+                <span className="font-serif text-xl tabular-nums" style={{ color: 'var(--color-paper-mute)', fontWeight: 400 }}>
+                  {i + 1}
+                </span>
+                <span className="text-base" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>
+                  {info.noun}
+                </span>
+              </div>
+
+              {/* Evidence bar */}
+              <div className="md:col-span-4">
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-rule)' }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${Math.max(4, g.pct)}%`,
+                      background: i === 0 ? 'var(--color-accent)' : 'var(--color-paper-mute)',
+                      opacity: i === 0 ? 1 : 0.6,
+                    }}
+                  />
+                </div>
+                <p className="mt-2 text-xs tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
+                  added in {g.count} of {total} prompt{total !== 1 ? 's' : ''} ({g.pct}%)
+                </p>
+              </div>
+
+              {/* Meaning + fix + learn link */}
+              <div className="md:col-span-5">
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-paper)' }}>
+                  {info.meaning}
+                </p>
+                <p className="mt-1.5 text-sm leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
+                  {info.tip}
+                </p>
+                <a
+                  href={info.learnHref}
+                  className="inline-block mt-2.5 text-xs underline underline-offset-4 hover:opacity-80 transition-opacity"
+                  style={{ color: 'var(--color-paper)' }}
+                >
+                  Learn this skill →
+                </a>
+              </div>
+            </div>
+            <div className="rule" />
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
@@ -175,20 +303,44 @@ function TrendChart({ trend }: { trend: WeekBucket[] }) {
   // become once they have more weeks.
   if (trend.length < 2) {
     const w = trend[0]
+    const before = w?.avgBefore ?? 0
+    const after = w?.avgAfter ?? 0
+    const lift = after - before
     return (
-      <div>
-        <div className="flex items-end gap-8 py-4" style={{ height: 200 }}>
-          <SingleWeekBar label="Before" value={w?.avgBefore ?? 0} muted />
-          <SingleWeekBar label="After" value={w?.avgAfter ?? 0} />
-          <div className="flex-1" />
+      <div className="grid md:grid-cols-12 gap-8 items-end">
+        {/* Two bars anchored to a shared baseline, with the lift bridging them. */}
+        <div className="md:col-span-5">
+          <div
+            className="flex items-end justify-center gap-12 px-6 mb-10"
+            style={{ height: 180, borderBottom: '1px solid var(--color-rule-strong)' }}
+          >
+            <SingleWeekBar label="Before" value={before} muted />
+            <div className="flex flex-col items-center justify-center self-center">
+              <span
+                className="inline-flex items-center text-[11px] tracking-[0.08em] uppercase font-semibold px-2 py-0.5 rounded-full tabular-nums"
+                style={{
+                  background: 'var(--color-accent-soft)',
+                  color: 'var(--color-accent-bright)',
+                  border: '1px solid rgba(91, 143, 237, 0.25)',
+                }}
+              >
+                +{lift}
+              </span>
+              <svg width="28" height="12" viewBox="0 0 28 12" fill="none" className="mt-1.5" aria-hidden>
+                <path d="M2 10L26 2M26 2H18M26 2V10" stroke="var(--color-accent)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <SingleWeekBar label="After" value={after} />
+          </div>
         </div>
-        <div className="rule mt-2" />
-        <p className="mt-4 text-sm leading-relaxed max-w-lg" style={{ color: 'var(--color-paper-mute)' }}>
-          This is your first week. The two bars show your average clarity{' '}
-          <span style={{ color: 'var(--color-paper)' }}>before</span> and{' '}
-          <span style={{ color: 'var(--color-accent)' }}>after</span> Deepclario improved your prompts.
-          Keep improving prompts and this becomes a line you can watch climb week over week.
-        </p>
+        <div className="md:col-span-7">
+          <p className="text-sm leading-relaxed max-w-md" style={{ color: 'var(--color-paper-mute)' }}>
+            Your first week: prompts averaged{' '}
+            <span style={{ color: 'var(--color-paper)' }}>{before}</span> clarity as you wrote them,{' '}
+            <span style={{ color: 'var(--color-accent)' }}>{after}</span> after Deepclario improved them.
+            Keep going and this becomes a week-by-week line you can watch climb.
+          </p>
+        </div>
       </div>
     )
   }
@@ -245,19 +397,32 @@ function TrendChart({ trend }: { trend: WeekBucket[] }) {
 
 function SingleWeekBar({ label, value, muted }: { label: string; value: number; muted?: boolean }) {
   return (
-    <div className="flex flex-col items-center justify-end h-full" style={{ width: 64 }}>
-      <span className="font-serif text-2xl tabular-nums mb-2" style={{ color: muted ? 'var(--color-paper-mute)' : 'var(--color-accent)', fontWeight: 400 }}>
+    <div className="relative flex flex-col items-center justify-end h-full" style={{ width: 48 }}>
+      <span
+        className="font-serif text-xl tabular-nums mb-2"
+        style={{ color: muted ? 'var(--color-paper-mute)' : 'var(--color-accent-bright)', fontWeight: 400 }}
+      >
         {value}
       </span>
       <div
-        className="w-full rounded-t-md"
+        className="w-full rounded-t"
         style={{
-          height: `${Math.max(6, value)}%`,
-          background: muted ? 'var(--color-rule-strong)' : 'var(--color-accent)',
-          opacity: muted ? 1 : 0.85,
+          // Bars scale within ~70% of the container so a 100 score leaves
+          // headroom for its number label. The bar bottom sits flush on the
+          // container's baseline border.
+          height: `${Math.max(4, value * 0.7)}%`,
+          background: muted
+            ? 'var(--color-rule-strong)'
+            : 'linear-gradient(to top, rgba(91,143,237,0.55), var(--color-accent))',
         }}
       />
-      <span className="mt-3 text-xs" style={{ color: 'var(--color-paper-mute)' }}>{label}</span>
+      {/* Label lives below the baseline, like an axis label */}
+      <span
+        className="absolute top-full mt-2.5 text-[11px] tracking-widest uppercase"
+        style={{ color: 'var(--color-paper-mute)' }}
+      >
+        {label}
+      </span>
     </div>
   )
 }

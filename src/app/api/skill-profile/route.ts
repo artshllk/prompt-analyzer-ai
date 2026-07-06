@@ -44,19 +44,27 @@ export async function GET() {
   // Snapshot metrics (all-time). Same math as Insights - via shared helper.
   const { before, after, lift } = avgScores(completed)
 
-  // Tag frequency -> strongest/weakest skill. A tag the rewrite keeps
-  // ADDING is a skill the user keeps FORGETTING (their weakest); the tag it
-  // rarely needs to add is, loosely, a relative strength.
-  let topGapTag: string | null = null
+  // Tag frequency -> the user's recurring gaps. A tag the rewrite keeps
+  // ADDING is a skill the user keeps FORGETTING. Top 3, each with how many
+  // prompts it appeared in, so the UI can show real evidence instead of a
+  // single vague word.
+  let gaps: { tag: string; count: number; pct: number }[] = []
   if (completed.length > 0) {
     const { data: improvements } = await supabase
       .from('prompt_improvements')
       .select('improvement_tags')
       .in('session_id', completed.map(s => s.id))
     const counts = countTags(improvements ?? [])
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1])
-    topGapTag = sorted[0]?.[0] ?? null
+    gaps = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([tag, count]) => ({
+        tag,
+        count,
+        pct: Math.min(100, Math.round((count / completed.length) * 100)),
+      }))
   }
+  const topGapTag = gaps[0]?.tag ?? null
 
   // The trend - the whole point of the MVP. Full for Pro, last N weeks for
   // free, with a flag so the client knows to render the lock.
@@ -73,6 +81,7 @@ export async function GET() {
       avgLift: lift,
       topGapTag,
     },
+    gaps,
     trend,
     trendTruncated,
     weeksTracked: fullTrend.length,
