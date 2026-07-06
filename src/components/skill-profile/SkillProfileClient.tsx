@@ -169,11 +169,27 @@ function Metric({ label, value, sub, accent, small }: { label: string; value: st
  * = your lift" reads honestly and doesn't rescale week to week.
  */
 function TrendChart({ trend }: { trend: WeekBucket[] }) {
+  // With a single week there is nothing to draw a line between yet. Instead
+  // of an empty chart, show this week's before -> after as two bars so the
+  // user immediately sees their lift and understands what the trend will
+  // become once they have more weeks.
   if (trend.length < 2) {
+    const w = trend[0]
     return (
-      <p className="py-8 text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-        One week of data so far. Come back after a few more sessions to see the trend line grow.
-      </p>
+      <div>
+        <div className="flex items-end gap-8 py-4" style={{ height: 200 }}>
+          <SingleWeekBar label="Before" value={w?.avgBefore ?? 0} muted />
+          <SingleWeekBar label="After" value={w?.avgAfter ?? 0} />
+          <div className="flex-1" />
+        </div>
+        <div className="rule mt-2" />
+        <p className="mt-4 text-sm leading-relaxed max-w-lg" style={{ color: 'var(--color-paper-mute)' }}>
+          This is your first week. The two bars show your average clarity{' '}
+          <span style={{ color: 'var(--color-paper)' }}>before</span> and{' '}
+          <span style={{ color: 'var(--color-accent)' }}>after</span> Deepclario improved your prompts.
+          Keep improving prompts and this becomes a line you can watch climb week over week.
+        </p>
+      </div>
     )
   }
 
@@ -218,6 +234,30 @@ function TrendChart({ trend }: { trend: WeekBucket[] }) {
           {trend[0].weekStart} → {trend[n - 1].weekStart}
         </span>
       </div>
+      <p className="mt-3 text-sm leading-relaxed max-w-lg" style={{ color: 'var(--color-paper-mute)' }}>
+        The gap between the two lines is how much clearer your prompts got. When the{' '}
+        <span style={{ color: 'var(--color-paper)' }}>before</span> line rises over time, it means you are
+        writing stronger prompts on your own.
+      </p>
+    </div>
+  )
+}
+
+function SingleWeekBar({ label, value, muted }: { label: string; value: number; muted?: boolean }) {
+  return (
+    <div className="flex flex-col items-center justify-end h-full" style={{ width: 64 }}>
+      <span className="font-serif text-2xl tabular-nums mb-2" style={{ color: muted ? 'var(--color-paper-mute)' : 'var(--color-accent)', fontWeight: 400 }}>
+        {value}
+      </span>
+      <div
+        className="w-full rounded-t-md"
+        style={{
+          height: `${Math.max(6, value)}%`,
+          background: muted ? 'var(--color-rule-strong)' : 'var(--color-accent)',
+          opacity: muted ? 1 : 0.85,
+        }}
+      />
+      <span className="mt-3 text-xs" style={{ color: 'var(--color-paper-mute)' }}>{label}</span>
     </div>
   )
 }
