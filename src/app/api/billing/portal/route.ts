@@ -22,17 +22,26 @@ export async function POST() {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
-  const result = await paddleRequest(
-    `/customers/${profile.paddle_customer_id}/portal-sessions`,
-    {
-      method: 'POST',
-      body: JSON.stringify({ urls: { return: `${appUrl}/dashboard` } }),
-    }
-  )
+  // paddleRequest throws on non-2xx - without this catch the route dies
+  // as an unhandled 500 with no JSON body and the client can't tell the
+  // user anything useful.
+  let result
+  try {
+    result = await paddleRequest(
+      `/customers/${profile.paddle_customer_id}/portal-sessions`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ urls: { return: `${appUrl}/dashboard` } }),
+      }
+    )
+  } catch (err) {
+    console.error('[billing/portal] paddle error:', (err as Error).message)
+    return NextResponse.json({ error: 'portal_failed' }, { status: 502 })
+  }
 
   const portalUrl = result?.data?.urls?.general?.overview
   if (!portalUrl) {
-    return NextResponse.json({ error: 'portal_failed' }, { status: 500 })
+    return NextResponse.json({ error: 'portal_failed' }, { status: 502 })
   }
 
   return NextResponse.json({ url: portalUrl })

@@ -21,13 +21,31 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [signingOut, setSigningOut] = useState(false)
+  const [billingLoading, setBillingLoading] = useState(false)
+  const [billingError, setBillingError] = useState<string | null>(null)
 
   const isPro = tier === 'pro'
 
   async function handleManageBilling() {
-    const res = await fetch('/api/billing/portal', { method: 'POST' })
-    const data = await res.json()
-    if (data.url) window.location.href = data.url
+    setBillingLoading(true)
+    setBillingError(null)
+    try {
+      const res = await fetch('/api/billing/portal', { method: 'POST' })
+      const data = await res.json().catch(() => ({}))
+      if (data.url) {
+        window.location.href = data.url
+        return
+      }
+      setBillingError(
+        data.error === 'no_subscription'
+          ? 'No billing profile found for this account. If you just upgraded, give it a minute and refresh - otherwise contact support@deepclario.com.'
+          : 'Could not open the billing portal. Try again in a moment.'
+      )
+    } catch {
+      setBillingError('Network error. Check your connection and try again.')
+    } finally {
+      setBillingLoading(false)
+    }
   }
 
   async function handleSignOut() {
@@ -125,10 +143,14 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
             <p className="text-sm text-[#8b9cc8]">Manage your subscription, payment method, and invoices.</p>
             <button
               onClick={handleManageBilling}
-              className="px-4 py-2.5 rounded-xl bg-[#0f1628] border border-[#1e2d4a] hover:border-[#2d4070] text-[#f0f4ff] text-sm font-medium transition-all"
+              disabled={billingLoading}
+              className="px-4 py-2.5 rounded-xl bg-[#0f1628] border border-[#1e2d4a] hover:border-[#2d4070] text-[#f0f4ff] text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Manage billing →
+              {billingLoading ? 'Opening…' : 'Manage billing →'}
             </button>
+            {billingError && (
+              <p className="text-sm text-amber-400">{billingError}</p>
+            )}
           </>
         ) : (
           <p className="text-sm text-[#8b9cc8]">
