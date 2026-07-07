@@ -1,41 +1,79 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { PROMPT_LIBRARY, type PromptEntry } from '@/lib/prompt-library'
+import { PROMPT_LIBRARY } from '@/lib/prompt-library'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PromptLibraryBrowser } from '@/components/prompts/PromptLibraryBrowser'
 
 export const metadata: Metadata = {
-  title: 'Free ChatGPT Prompt Library - Copy-Paste Prompts That Work',
+  title: 'Free AI Prompt Library - Copy-Paste Prompts That Work',
   description:
-    'A free library of ready-to-use ChatGPT prompts for cover letters, emails, summaries, code review and more. Copy, paste, fill in the blanks. Works with Claude and Gemini too.',
+    'A free library of ready-to-use AI prompts for cover letters, emails, summaries, code review and more. Copy, paste, fill in the blanks. Works with ChatGPT, Claude, and Gemini.',
   alternates: { canonical: 'https://deepclario.com/prompts' },
   openGraph: {
-    title: 'Free ChatGPT Prompt Library',
+    title: 'Free AI Prompt Library',
     description:
-      'Ready-to-use prompts for real tasks: cover letters, emails, summaries, code review. Copy and paste.',
+      'Ready-to-use AI prompts for real tasks: cover letters, emails, summaries, code review. Copy and paste.',
     url: 'https://deepclario.com/prompts',
     type: 'website',
-    images: [{ url: 'https://deepclario.com/logo.png', width: 1254, height: 1254, alt: 'Deepclario' }],
+    // No explicit image so the site's default OG card applies instead of
+    // the square logo (which crops badly in social previews).
   },
 }
 
-// Group entries by category, preserving library order within each.
-function groupByCategory(entries: PromptEntry[]): [string, PromptEntry[]][] {
-  const groups = new Map<string, PromptEntry[]>()
-  for (const e of entries) {
-    if (!groups.has(e.category)) groups.set(e.category, [])
-    groups.get(e.category)!.push(e)
-  }
-  return Array.from(groups.entries())
-}
+const BASE = 'https://deepclario.com'
 
-export default function PromptsIndexPage() {
-  const grouped = groupByCategory(PROMPT_LIBRARY)
+export default async function PromptsIndexPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>
+}) {
+  const { q = '' } = await searchParams
+
+  // Structured data: tells Google this is a curated collection and lists
+  // every prompt page as an ItemList, which strengthens indexing of the
+  // whole hub and its child pages. The index previously had no JSON-LD.
+  const collectionSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Free AI Prompt Library',
+    description:
+      'A free, curated library of ready-to-use AI prompts for writing, work, coding, learning, and business. Works with ChatGPT, Claude, and Gemini.',
+    url: `${BASE}/prompts`,
+    isPartOf: { '@id': `${BASE}/#website` },
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: PROMPT_LIBRARY.length,
+      itemListElement: PROMPT_LIBRARY.map((entry, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `${BASE}/prompts/${entry.slug}`,
+        name: entry.heading,
+      })),
+    },
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: BASE },
+      { '@type': 'ListItem', position: 2, name: 'Prompt Library', item: `${BASE}/prompts` },
+    ],
+  }
 
   return (
     <div
       className="editorial grain min-h-screen"
       style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}
     >
+      {[collectionSchema, breadcrumbSchema].map((schema, i) => (
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
+
       <MarketingNav current="prompts" />
 
       <main className="max-w-4xl mx-auto px-6 md:px-10 pt-28 md:pt-36 pb-16 md:pb-24">
@@ -46,8 +84,8 @@ export default function PromptsIndexPage() {
             className="display text-5xl md:text-[4.5rem] leading-[1.05] tracking-tight"
             style={{ color: 'var(--color-paper)' }}
           >
-            Prompts that{' '}
-            <span style={{ color: 'var(--color-paper-mute)' }}>actually work.</span>
+            The free AI prompt library{' '}
+            <span style={{ color: 'var(--color-paper-mute)' }}>that actually works.</span>
           </h1>
           <p className="mt-6 md:mt-8 text-lg md:text-xl leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
             Ready-to-use prompts for real tasks. Copy one, paste it into ChatGPT, Claude,
@@ -56,38 +94,10 @@ export default function PromptsIndexPage() {
           </p>
         </div>
 
-        {/* Categories */}
-        <div className="mt-16 md:mt-20 space-y-16">
-          {grouped.map(([category, entries]) => (
-            <section key={category}>
-              <p className="eyebrow mb-5">{category}</p>
-              <ul className="space-y-px">
-                <li className="rule-strong" />
-                {entries.map(entry => (
-                  <li key={entry.slug}>
-                    <Link
-                      href={`/prompts/${entry.slug}`}
-                      className="block py-6 px-3 -mx-3 rounded-md row-hover"
-                    >
-                      <div className="flex items-baseline justify-between gap-4">
-                        <h2
-                          className="font-serif text-xl md:text-2xl"
-                          style={{ color: 'var(--color-paper)', fontWeight: 400 }}
-                        >
-                          {entry.heading}
-                        </h2>
-                        <span className="shrink-0" style={{ color: 'var(--color-paper-mute)' }}>→</span>
-                      </div>
-                      <p className="mt-2 text-sm md:text-base leading-[1.55] max-w-2xl" style={{ color: 'var(--color-paper-mute)' }}>
-                        {entry.intro}
-                      </p>
-                    </Link>
-                    <div className="rule" />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+        {/* Search + category filter (client). All entries are still
+            server-rendered for crawlers; this only filters on the client. */}
+        <div className="mt-12 md:mt-14">
+          <PromptLibraryBrowser entries={PROMPT_LIBRARY} initialQuery={q} />
         </div>
 
         {/* CTA */}

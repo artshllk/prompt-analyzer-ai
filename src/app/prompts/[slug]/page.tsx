@@ -31,7 +31,9 @@ export async function generateMetadata({
       description: entry.metaDescription,
       url: `${BASE}/prompts/${entry.slug}`,
       type: 'article',
-      images: [{ url: `${BASE}/logo.png`, width: 1254, height: 1254, alt: 'Deepclario' }],
+      // No explicit image: this lets the per-prompt opengraph-image.tsx
+      // (a branded 1200x630 card with the prompt heading) take over.
+      // Setting a square logo here previously overrode it and hurt CTR.
     },
   }
 }
@@ -66,7 +68,7 @@ export default async function PromptPage({
     },
     mainEntityOfPage: pageUrl,
     datePublished: '2026-04-01',
-    dateModified: '2026-05-01',
+    dateModified: '2026-07-01',
   }
 
   // HowTo schema - Google can surface the prompt steps directly in search results
@@ -94,36 +96,32 @@ export default async function PromptPage({
     ],
   }
 
-  // FAQ schema from whyItWorks - earns expanded FAQ rich result in Google
+  // FAQ items - the single source for both the visible FAQ section below
+  // AND the FAQPage structured data, so the marked-up answers are always
+  // present on the page (Google requires FAQ content to be visible).
+  const faqItems = [
+    {
+      q: `Why does this ${entry.title.toLowerCase()} prompt work better than a basic one?`,
+      a: entry.whyItWorks[0] ?? entry.metaDescription,
+    },
+    {
+      q: 'How do I adapt this prompt for my own situation?',
+      a: entry.tips[0] ?? 'Replace the text in [SQUARE BRACKETS] with your own details before you run it.',
+    },
+    {
+      q: 'Is this prompt free, and does it work with Claude and Gemini as well as ChatGPT?',
+      a: 'Yes on both. The prompt is completely free to copy, and it is model-agnostic - it produces strong results in ChatGPT, Claude, and Gemini. Paste it into any of them.',
+    },
+  ]
+
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: [
-      {
-        '@type': 'Question',
-        name: `Why does this ${entry.title.toLowerCase()} prompt work better than a basic one?`,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: entry.whyItWorks[0] ?? entry.metaDescription,
-        },
-      },
-      {
-        '@type': 'Question',
-        name: `How do I adapt this prompt for my specific situation?`,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: entry.tips[0] ?? 'Replace the placeholders in square brackets with your own details.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: `Does this prompt work with Claude and Gemini as well as ChatGPT?`,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Yes. This prompt is model-agnostic and produces strong results in ChatGPT (GPT-4o), Claude, and Gemini. Paste it into any of them.',
-        },
-      },
-    ],
+    mainEntity: faqItems.map(item => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
   }
 
   const breadcrumbSchema = {
@@ -233,6 +231,29 @@ export default async function PromptPage({
               </li>
             ))}
           </ul>
+        </section>
+
+        {/* FAQ - visible content that mirrors the FAQPage structured data. */}
+        <section className="mt-14">
+          <h2 className="font-serif text-2xl md:text-3xl mb-5" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
+            Frequently asked questions
+          </h2>
+          <div>
+            <div className="rule-strong" />
+            {faqItems.map(item => (
+              <div key={item.q}>
+                <div className="py-5">
+                  <h3 className="text-base md:text-lg mb-2" style={{ color: 'var(--color-paper)', fontWeight: 500 }}>
+                    {item.q}
+                  </h3>
+                  <p className="text-base leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
+                    {item.a}
+                  </p>
+                </div>
+                <div className="rule" />
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* Product CTA - the bridge from free value to the product */}
