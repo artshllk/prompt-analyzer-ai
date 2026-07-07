@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'Tokens are how AI models measure length. Price, context limits, and speed are all counted in tokens, not words. So knowing roughly how many tokens your text uses helps you control cost and stay within a model’s limit.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'how many tokens is 1000 words?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'For everyday English, about 1,300 to 1,400 tokens. The common rule is that 100 tokens is roughly 75 words, so tokens run a little higher than the word count. Code, numbers, and other languages use more tokens for the same amount of text.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'do tokens work the same for code and other languages?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No. The four-characters rule is for plain English. Code is token-heavy because of brackets and symbols, and many non-English languages, especially those without spaces or using non-Latin scripts, cost more tokens for the same meaning. The idea is the same, but the ratio changes.',
+      },
+    },
   ],
 }
 
@@ -174,6 +190,45 @@ export default function WhatIsATokenInAIPage() {
             </section>
 
             <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The three places tokens actually show up</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Tokens are not just trivia. They are the unit behind three things you deal with every
+                time you use an AI tool, even if nobody names them.
+              </p>
+              <div className="space-y-3">
+                {[
+                  { t: 'Cost', d: 'If you pay for an AI tool or its API, you pay per token, not per word. Input tokens and output tokens are usually priced separately. A wordy prompt and a long answer both cost more, because both are more tokens.' },
+                  { t: 'Limits', d: 'Every model has a maximum number of tokens it can handle at once, called the context window. Your prompt, any documents you paste, the chat history, and the answer all share that budget. Go over it and something gets cut.' },
+                  { t: 'Memory', d: 'In a long chat, the model can only "see" the tokens that fit in the window. Once a conversation gets long enough, the oldest tokens fall out of view, which is why a model can seem to forget how a long chat began.' },
+                ].map(item => (
+                  <div key={item.t} className="p-4 rounded-xl border border-[color:var(--color-rule)]">
+                    <p className="font-semibold text-[color:var(--color-paper)] text-sm mb-1">{item.t}</p>
+                    <p className="text-xs text-[color:var(--color-paper-mute)]">{item.d}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Tokens outside plain English</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                The four-characters rule holds for everyday English. It bends, sometimes a lot, once
+                you leave that comfort zone. This matters if your work involves any of the following.
+              </p>
+              <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Code. Brackets, symbols, and indentation are token-heavy, so a page of code uses more tokens than a page of prose.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Other languages. Many non-English languages, especially ones that do not use spaces or use non-Latin scripts, cost noticeably more tokens for the same meaning.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Numbers and data. Long numbers, tables, and IDs break into small pieces and add up fast.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Emoji and symbols. A single emoji can be one or more tokens, and decorative symbols are not free.</li>
+              </ul>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                None of this changes the idea, only the ratio. If you work heavily in code or another
+                language, expect the same text to use more tokens than the English rule of thumb
+                suggests.
+              </p>
+            </section>
+
+            <section>
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Why any of this is worth knowing</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
                 You do not need to count tokens by hand to use AI well. But knowing tokens exist
@@ -182,7 +237,9 @@ export default function WhatIsATokenInAIPage() {
                 start of a long chat.
               </p>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-                All of those come back to tokens. The next few guides go deeper on each one.
+                All of those come back to tokens. Once you can picture your text as a list of small
+                chunks instead of a block of words, the way AI tools behave stops feeling like magic
+                and starts making sense.
               </p>
             </section>
           </article>
@@ -197,11 +254,11 @@ export default function WhatIsATokenInAIPage() {
               <Link href="/blog/word-vs-token-how-ai-counts-text" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 Word vs token: how AI models count your text →
               </Link>
-              <Link href="/blog/why-token-limits-exist" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
-                Why token limits exist and what happens when you hit them →
+              <Link href="/blog/prompt-length-vs-response-quality" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                Prompt length vs response quality →
               </Link>
-              <Link href="/blog/how-token-count-affects-ai-costs" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
-                How token count affects your ChatGPT and Claude costs →
+              <Link href="/blog/what-is-prompt-engineering" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                What is prompt engineering? →
               </Link>
             </div>
           </div>

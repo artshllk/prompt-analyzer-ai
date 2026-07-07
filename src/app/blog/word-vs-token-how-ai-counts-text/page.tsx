@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'Models cannot store a slot for every possible word, so they keep a fixed set of common text pieces and build any word from those pieces. Counting in tokens lets the model handle rare words, other languages, and symbols with one consistent system.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'how do i estimate how many tokens my text is?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Three quick ways: take your word count and add about a third, divide the character count by four, or count roughly 650 to 700 tokens per page of normal text. For anything that has to be exact, like staying under a hard limit, use a real token counter instead of a guess.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'why does the word and token difference matter?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'It shows up in limits and cost. A document that looks short by word count can still be too long once counted in tokens, so part of it gets cut. And paid AI tools charge by the token, which runs higher than the word count, so a job can cost more than you expect. Planning in tokens avoids both surprises.',
+      },
+    },
   ],
 }
 
@@ -169,6 +185,49 @@ export default function WordVsTokenPage() {
             </section>
 
             <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">How to estimate tokens in your head</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                You rarely need an exact count. You just need a good enough guess to know if your text
+                will fit or what it might cost. Here are three quick ways, from roughest to closest.
+              </p>
+              <div className="space-y-3">
+                {[
+                  { t: 'From words', d: 'Take your word count and add about a third. 1,000 words is roughly 1,350 tokens. This is the fastest check when your word processor already shows a word count.' },
+                  { t: 'From characters', d: 'Divide the character count by four. This is handy for short text like a single prompt, where counting words is awkward.' },
+                  { t: 'From pages', d: 'One page of normal text is very roughly 500 words, so about 650 to 700 tokens. Useful for guessing whether a long document will fit.' },
+                ].map(item => (
+                  <div key={item.t} className="p-4 rounded-xl border border-[color:var(--color-rule)]">
+                    <p className="font-semibold text-[color:var(--color-paper)] text-sm mb-1">{item.t}</p>
+                    <p className="text-xs text-[color:var(--color-paper-mute)]">{item.d}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                For anything that has to be exact, like staying just under a hard limit, use a real
+                token counter rather than a guess. For everyday planning, these estimates are plenty.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Where the difference bites you</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                The gap between words and tokens is not just a curiosity. It shows up in two ways that
+                can catch you out.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                The first is limits. Every model can only handle so many tokens at once. If you paste a
+                document that looks fine by word count, it may still be too long once counted in
+                tokens, and the model will cut part of it. Planning in tokens, not words, stops that
+                surprise.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                The second is cost. Paid AI tools charge by the token. Because tokens run higher than
+                words, a job that feels short by word count can cost more than you expect, especially
+                if it involves code or another language. Knowing the real ratio helps you budget.
+              </p>
+            </section>
+
+            <section>
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Why the model bothers with tokens at all</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
                 It would be simpler for us if models just counted words. But a model cannot keep a
@@ -193,11 +252,11 @@ export default function WordVsTokenPage() {
               <Link href="/blog/what-is-a-token-in-ai" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 What is a token in AI? A plain-English explanation →
               </Link>
-              <Link href="/blog/why-token-limits-exist" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
-                Why token limits exist and what happens when you hit them →
+              <Link href="/blog/prompt-length-vs-response-quality" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                Prompt length vs response quality →
               </Link>
-              <Link href="/blog/how-token-count-affects-ai-costs" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
-                How token count affects your ChatGPT and Claude costs →
+              <Link href="/blog/how-to-write-better-prompts" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                How to write better prompts: 7 proven techniques →
               </Link>
             </div>
           </div>
