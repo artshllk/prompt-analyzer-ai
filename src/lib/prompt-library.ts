@@ -2,8 +2,8 @@
  * Prompt library - the data behind /prompts and /prompts/[slug].
  *
  * Each entry becomes one SEO landing page targeting a real Google search
- * ("chatgpt prompt for X"). Adding a new page = adding one object here.
- * No new files, no new routes.
+ * ("ai prompt for X" - model-agnostic, not tied to one chatbot brand).
+ * Adding a new page = adding one object here. No new files, no new routes.
  *
  * Quality bar for every entry:
  * - `prompt` must be genuinely good - something a prompt engineer would
@@ -41,13 +41,13 @@ export const PROMPT_LIBRARY: PromptEntry[] = [
   {
     slug: 'chatgpt-cover-letter',
     title: 'Cover letter',
-    searchTerm: 'chatgpt prompt for cover letter',
-    metaTitle: 'ChatGPT Prompt for Cover Letters (Free, Copy-Paste)',
+    searchTerm: 'ai prompt for a cover letter',
+    metaTitle: 'AI Prompt for a Cover Letter (Free, Copy-Paste)',
     metaDescription:
-      'A free, ready-to-use ChatGPT prompt that writes a tailored cover letter from a job description and your background. Copy, paste, fill in the blanks.',
-    heading: 'ChatGPT prompt for writing a cover letter',
+      'A free, ready-to-use AI prompt that writes a tailored cover letter from a job description and your background. Works in ChatGPT, Claude, and Gemini.',
+    heading: 'AI prompt for writing a cover letter',
     intro:
-      'Most cover letters written by ChatGPT sound generic because the prompt is generic. This one forces the model to tie your real experience to the specific job, in a human voice, instead of the usual "I am writing to express my interest" template.',
+      'Most AI-written cover letters sound generic because the prompt is generic. This one forces the model to tie your real experience to the specific job, in a human voice, instead of the usual "I am writing to express my interest" template.',
     category: 'Work',
     prompt: `You are an experienced career coach who has reviewed thousands of cover letters and knows what hiring managers actually read.
 
@@ -84,13 +84,13 @@ Return only the cover letter, ready to send.`,
   {
     slug: 'chatgpt-summarize-article',
     title: 'Summarize an article',
-    searchTerm: 'chatgpt prompt to summarize an article',
-    metaTitle: 'ChatGPT Prompt to Summarize Any Article (Free)',
+    searchTerm: 'ai prompt to summarize an article',
+    metaTitle: 'AI Prompt to Summarize Any Article (Free)',
     metaDescription:
-      'A free ChatGPT prompt that summarizes long articles into a clear, structured brief: key points, takeaways, and what to do next. Copy and paste.',
-    heading: 'ChatGPT prompt to summarize an article',
+      'A free AI prompt that summarizes long articles into a clear, structured brief: key points, takeaways, and what to do next. Works with ChatGPT, Claude, and Gemini.',
+    heading: 'AI prompt to summarize an article',
     intro:
-      'Asking ChatGPT to "summarize this" gives you a vague blob. This prompt produces a structured brief you can actually act on: the core argument, the key points, and what it means for you, at whatever length you need.',
+      'Asking an AI to "summarize this" gives you a vague blob. This prompt produces a structured brief you can actually act on: the core argument, the key points, and what it means for you, at whatever length you need.',
     category: 'Learning',
     prompt: `You are a sharp research assistant who is excellent at separating signal from noise.
 
@@ -127,13 +127,13 @@ Return only the structured summary.`,
   {
     slug: 'chatgpt-email-writing',
     title: 'Write an email',
-    searchTerm: 'chatgpt prompt for writing emails',
-    metaTitle: 'ChatGPT Prompt for Writing Professional Emails (Free)',
+    searchTerm: 'ai prompt for writing emails',
+    metaTitle: 'AI Prompt for Professional Emails (Free)',
     metaDescription:
-      'A free, copy-paste ChatGPT prompt for writing clear, professional emails that get a reply. Set the goal, tone, and context, then get a ready-to-send draft.',
-    heading: 'ChatGPT prompt for writing a professional email',
+      'A free, copy-paste AI prompt for writing clear, professional emails that get a reply. Set the goal, tone, and context, then get a ready-to-send draft.',
+    heading: 'AI prompt for writing a professional email',
     intro:
-      'A good email has one job and a clear ask. This prompt makes ChatGPT write emails that are short, get to the point, and make it easy for the other person to say yes, instead of the long, over-polite drafts AI usually produces.',
+      'A good email has one job and a clear ask. This prompt writes emails that are short, get to the point, and make it easy for the other person to say yes, instead of the long, over-polite drafts AI usually produces.',
     category: 'Work',
     prompt: `You are a clear, concise communicator who writes emails people actually reply to.
 
@@ -166,13 +166,13 @@ Return the subject line and the email body, ready to send.`,
   {
     slug: 'chatgpt-code-review',
     title: 'Review my code',
-    searchTerm: 'chatgpt prompt for code review',
-    metaTitle: 'ChatGPT Prompt for Code Review (Free, Copy-Paste)',
+    searchTerm: 'ai prompt for code review',
+    metaTitle: 'AI Prompt for Code Review (Free, Copy-Paste)',
     metaDescription:
-      'A free ChatGPT prompt that reviews your code like a senior engineer. It covers bugs, edge cases, readability, and security, with prioritized, specific feedback.',
-    heading: 'ChatGPT prompt for reviewing your code',
+      'A free AI prompt that reviews your code like a senior engineer: bugs, edge cases, readability, and security, with prioritized, specific feedback. ChatGPT, Claude, or Gemini.',
+    heading: 'AI prompt for reviewing your code',
     intro:
-      'Pasting code and asking "is this good?" gets you a vague thumbs-up. This prompt makes ChatGPT review like a senior engineer: it finds real bugs, flags edge cases, and gives you prioritized, specific feedback instead of generic praise.',
+      'Pasting code and asking "is this good?" gets you a vague thumbs-up. This prompt makes the model review like a senior engineer: it finds real bugs, flags edge cases, and gives you prioritized, specific feedback instead of generic praise.',
     category: 'Coding',
     prompt: `You are a senior software engineer doing a thorough but constructive code review. You care about correctness first, then readability, then performance.
 
@@ -213,13 +213,13 @@ Rules:
   {
     slug: 'chatgpt-blog-post',
     title: 'Write a blog post',
-    searchTerm: 'chatgpt prompt for blog post',
-    metaTitle: 'ChatGPT Prompt for Writing a Blog Post (Free)',
+    searchTerm: 'ai prompt for a blog post',
+    metaTitle: 'AI Prompt for Writing a Blog Post (Free)',
     metaDescription:
-      'A free ChatGPT prompt that writes a structured, readable blog post on any topic. Set the audience, angle, and length, then get a draft worth editing.',
-    heading: 'ChatGPT prompt for writing a blog post',
+      'A free AI prompt that writes a structured, readable blog post on any topic. Set the audience, angle, and length, then get a draft worth editing.',
+    heading: 'AI prompt for writing a blog post',
     intro:
-      'Asking ChatGPT to "write a blog post about X" gives you a flat, padded article that sounds like every other AI post. This prompt makes it pick a clear angle, write for a specific reader, and cut the filler.',
+      'Asking an AI to "write a blog post about X" gives you a flat, padded article that sounds like every other AI post. This prompt makes it pick a clear angle, write for a specific reader, and cut the filler.',
     category: 'Writing',
     prompt: `You are a skilled blog writer who writes clear, useful articles that people actually finish reading.
 
@@ -252,13 +252,13 @@ Return the post with a title and subheadings, ready to edit.`,
   {
     slug: 'chatgpt-product-description',
     title: 'Product description',
-    searchTerm: 'chatgpt prompt for product description',
-    metaTitle: 'ChatGPT Prompt for Product Descriptions (Free)',
+    searchTerm: 'ai prompt for product descriptions',
+    metaTitle: 'AI Prompt for Product Descriptions (Free)',
     metaDescription:
-      'A free ChatGPT prompt that writes product descriptions that sell. Turn features into benefits, match your brand voice, and keep it scannable.',
-    heading: 'ChatGPT prompt for writing a product description',
+      'A free AI prompt that writes product descriptions that sell. Turn features into benefits, match your brand voice, and keep it scannable.',
+    heading: 'AI prompt for writing a product description',
     intro:
-      'A weak product description just lists features. This prompt makes ChatGPT turn each feature into a reason to buy, written in your brand voice and short enough to actually be read.',
+      'A weak product description just lists features. This prompt turns each feature into a reason to buy, written in your brand voice and short enough to actually be read.',
     category: 'Writing',
     prompt: `You are an experienced ecommerce copywriter who knows that people buy benefits, not features.
 
@@ -291,13 +291,13 @@ Return the finished description.`,
   {
     slug: 'chatgpt-social-media-post',
     title: 'Social media post',
-    searchTerm: 'chatgpt prompt for social media posts',
-    metaTitle: 'ChatGPT Prompt for Social Media Posts (Free)',
+    searchTerm: 'ai prompt for social media posts',
+    metaTitle: 'AI Prompt for Social Media Posts (Free)',
     metaDescription:
-      'A free ChatGPT prompt for writing social media posts that get engagement. Set the platform, goal, and voice, then get a post that sounds human.',
-    heading: 'ChatGPT prompt for writing a social media post',
+      'A free AI prompt for writing social media posts that get engagement. Set the platform, goal, and voice, then get a post that sounds human.',
+    heading: 'AI prompt for writing a social media post',
     intro:
-      'Generic AI social posts are easy to spot: too polished, too many hashtags, no real voice. This prompt makes ChatGPT write a post that fits the platform and sounds like a person, not a brand robot.',
+      'Generic AI social posts are easy to spot: too polished, too many hashtags, no real voice. This prompt writes a post that fits the platform and sounds like a person, not a brand robot.',
     category: 'Writing',
     prompt: `You are a social media writer who knows each platform has its own rhythm and what makes people stop scrolling.
 
@@ -330,13 +330,13 @@ Return the finished post.`,
   {
     slug: 'chatgpt-story-writing',
     title: 'Creative story',
-    searchTerm: 'chatgpt prompt for creative writing',
-    metaTitle: 'ChatGPT Prompt for Creative Writing & Stories (Free)',
+    searchTerm: 'ai prompt for creative writing',
+    metaTitle: 'AI Prompt for Creative Writing & Stories (Free)',
     metaDescription:
-      'A free ChatGPT prompt for writing a short story. Set the genre, character, and conflict, then get a story with real tension instead of a flat summary.',
-    heading: 'ChatGPT prompt for creative writing and short stories',
+      'A free AI prompt for writing a short story. Set the genre, character, and conflict, then get a story with real tension instead of a flat summary.',
+    heading: 'AI prompt for creative writing and short stories',
     intro:
-      'Ask ChatGPT for a story and you often get a flat, rushed summary of events. This prompt gives it the building blocks of real fiction: a character who wants something, a conflict, and a reason to keep reading.',
+      'Ask an AI for a story and you often get a flat, rushed summary of events. This prompt gives it the building blocks of real fiction: a character who wants something, a conflict, and a reason to keep reading.',
     category: 'Writing',
     prompt: `You are a talented fiction writer who knows that good stories come from a character wanting something and struggling to get it.
 
@@ -372,11 +372,11 @@ Return the finished story.`,
   {
     slug: 'chatgpt-meeting-notes',
     title: 'Meeting notes',
-    searchTerm: 'chatgpt prompt for meeting notes',
-    metaTitle: 'ChatGPT Prompt for Meeting Notes & Summaries (Free)',
+    searchTerm: 'ai prompt for meeting notes',
+    metaTitle: 'AI Prompt for Meeting Notes & Summaries (Free)',
     metaDescription:
-      'A free ChatGPT prompt that turns a messy meeting transcript into clean notes: decisions, action items with owners, and open questions.',
-    heading: 'ChatGPT prompt for meeting notes and summaries',
+      'A free AI prompt that turns a messy meeting transcript into clean notes: decisions, action items with owners, and open questions.',
+    heading: 'AI prompt for meeting notes and summaries',
     intro:
       'A raw transcript is hard to use. This prompt turns it into notes people will actually read: what was decided, who owns what, and what is still open.',
     category: 'Work',
@@ -417,13 +417,13 @@ Return only the structured notes.`,
   {
     slug: 'chatgpt-job-description',
     title: 'Job description',
-    searchTerm: 'chatgpt prompt for job description',
-    metaTitle: 'ChatGPT Prompt for Writing a Job Description (Free)',
+    searchTerm: 'ai prompt for a job description',
+    metaTitle: 'AI Prompt for Writing a Job Description (Free)',
     metaDescription:
-      'A free ChatGPT prompt that writes a clear, honest job description that attracts the right people and filters out the wrong ones.',
-    heading: 'ChatGPT prompt for writing a job description',
+      'A free AI prompt that writes a clear, honest job description that attracts the right people and filters out the wrong ones.',
+    heading: 'AI prompt for writing a job description',
     intro:
-      'Most job descriptions are a vague wish list that attracts nobody well. This prompt makes ChatGPT write one that is honest about the role, clear about what success looks like, and easy for the right person to say yes to.',
+      'Most job descriptions are a vague wish list that attracts nobody well. This prompt writes one that is honest about the role, clear about what success looks like, and easy for the right person to say yes to.',
     category: 'Work',
     prompt: `You are an experienced hiring manager who writes job descriptions that attract strong candidates and are honest about the role.
 
@@ -458,13 +458,13 @@ Return the finished job description with clear sections.`,
   {
     slug: 'chatgpt-performance-review',
     title: 'Performance review',
-    searchTerm: 'chatgpt prompt for performance review',
-    metaTitle: 'ChatGPT Prompt for Performance Reviews (Free)',
+    searchTerm: 'ai prompt for performance reviews',
+    metaTitle: 'AI Prompt for Performance Reviews (Free)',
     metaDescription:
-      'A free ChatGPT prompt that helps you write a fair, specific performance review with real examples and constructive feedback.',
-    heading: 'ChatGPT prompt for writing a performance review',
+      'A free AI prompt that helps you write a fair, specific performance review with real examples and constructive feedback.',
+    heading: 'AI prompt for writing a performance review',
     intro:
-      'Performance reviews go wrong when they are vague ("great team player") or harsh without a path forward. This prompt helps ChatGPT turn your rough notes into specific, fair feedback the person can act on.',
+      'Performance reviews go wrong when they are vague ("great team player") or harsh without a path forward. This prompt turns your rough notes into specific, fair feedback the person can act on.',
     category: 'Work',
     prompt: `You are a thoughtful manager who writes performance reviews that are honest, specific, and genuinely helpful to the person.
 
@@ -503,13 +503,13 @@ Return the structured review.`,
   {
     slug: 'chatgpt-resignation-letter',
     title: 'Resignation letter',
-    searchTerm: 'chatgpt prompt for resignation letter',
-    metaTitle: 'ChatGPT Prompt for a Resignation Letter (Free)',
+    searchTerm: 'ai prompt for a resignation letter',
+    metaTitle: 'AI Prompt for a Resignation Letter (Free)',
     metaDescription:
-      'A free ChatGPT prompt that writes a professional, graceful resignation letter that keeps the relationship intact. Copy, paste, fill in the blanks.',
-    heading: 'ChatGPT prompt for writing a resignation letter',
+      'A free AI prompt that writes a professional, graceful resignation letter that keeps the relationship intact. Copy, paste, fill in the blanks.',
+    heading: 'AI prompt for writing a resignation letter',
     intro:
-      'A resignation letter has one job: leave on good terms. This prompt makes ChatGPT write one that is short, professional, and warm, without burning a bridge you may need later.',
+      'A resignation letter has one job: leave on good terms. This prompt writes one that is short, professional, and warm, without burning a bridge you may need later.',
     category: 'Work',
     prompt: `You are a calm, professional writer who helps people resign gracefully and keep their relationships intact.
 
@@ -545,13 +545,13 @@ Return the finished letter, ready to send.`,
   {
     slug: 'chatgpt-explain-code',
     title: 'Explain code',
-    searchTerm: 'chatgpt prompt to explain code',
-    metaTitle: 'ChatGPT Prompt to Explain Code (Free, Copy-Paste)',
+    searchTerm: 'ai prompt to explain code',
+    metaTitle: 'AI Prompt to Explain Code (Free, Copy-Paste)',
     metaDescription:
-      'A free ChatGPT prompt that explains any piece of code in plain language: what it does, how it works, line by line if you need it.',
-    heading: 'ChatGPT prompt to explain code',
+      'A free AI prompt that explains any piece of code in plain language: what it does, how it works, line by line if you need it.',
+    heading: 'AI prompt to explain code',
     intro:
-      'Pasting code and asking "what does this do?" often gets you a vague overview. This prompt makes ChatGPT explain it clearly, at the level of detail you choose, so you actually understand it.',
+      'Pasting code and asking "what does this do?" often gets you a vague overview. This prompt explains it clearly, at the level of detail you choose, so you actually understand it.',
     category: 'Coding',
     prompt: `You are a patient senior developer who is great at explaining code to others.
 
@@ -590,13 +590,13 @@ Rules:
   {
     slug: 'chatgpt-debug-error',
     title: 'Debug an error',
-    searchTerm: 'chatgpt prompt to fix an error',
-    metaTitle: 'ChatGPT Prompt to Debug & Fix Code Errors (Free)',
+    searchTerm: 'ai prompt to fix a code error',
+    metaTitle: 'AI Prompt to Debug & Fix Code Errors (Free)',
     metaDescription:
-      'A free ChatGPT prompt that helps you debug an error: explains the cause in plain language and shows the smallest fix that works.',
-    heading: 'ChatGPT prompt to debug and fix a code error',
+      'A free AI prompt that helps you debug an error: explains the cause in plain language and shows the smallest fix that works.',
+    heading: 'AI prompt to debug and fix a code error',
     intro:
-      'Pasting just an error message gets you a guess. This prompt gives ChatGPT what it actually needs to debug well: the error, the code, and what you expected, so you get a real diagnosis and a clean fix.',
+      'Pasting just an error message gets you a guess. This prompt gives the model what it actually needs to debug well: the error, the code, and what you expected, so you get a real diagnosis and a clean fix.',
     category: 'Coding',
     prompt: `You are an experienced developer who is calm and methodical at debugging.
 
@@ -640,13 +640,13 @@ Rules:
   {
     slug: 'chatgpt-write-tests',
     title: 'Write tests',
-    searchTerm: 'chatgpt prompt to write unit tests',
-    metaTitle: 'ChatGPT Prompt to Write Unit Tests (Free, Copy-Paste)',
+    searchTerm: 'ai prompt to write unit tests',
+    metaTitle: 'AI Prompt to Write Unit Tests (Free, Copy-Paste)',
     metaDescription:
-      'A free ChatGPT prompt that writes unit tests for your code, covering the normal case, edge cases, and failure cases.',
-    heading: 'ChatGPT prompt to write unit tests',
+      'A free AI prompt that writes unit tests for your code, covering the normal case, edge cases, and failure cases.',
+    heading: 'AI prompt to write unit tests',
     intro:
-      'Ask ChatGPT for tests and you often get one test for the happy path. This prompt makes it cover what actually matters: edge cases, invalid input, and the failures that break things in production.',
+      'Ask an AI for tests and you often get one test for the happy path. This prompt makes it cover what actually matters: edge cases, invalid input, and the failures that break things in production.',
     category: 'Coding',
     prompt: `You are a developer who writes thorough, readable unit tests and thinks hard about edge cases.
 
@@ -688,13 +688,13 @@ Return the test file, ready to run.`,
   {
     slug: 'chatgpt-regex',
     title: 'Write a regex',
-    searchTerm: 'chatgpt prompt for regex',
-    metaTitle: 'ChatGPT Prompt to Write Regex (Free, Copy-Paste)',
+    searchTerm: 'ai prompt to write regex',
+    metaTitle: 'AI Prompt to Write Regex (Free, Copy-Paste)',
     metaDescription:
-      'A free ChatGPT prompt that writes a regular expression for you and explains it clearly, with examples of what it matches and what it does not.',
-    heading: 'ChatGPT prompt to write a regular expression',
+      'A free AI prompt that writes a regular expression for you and explains it clearly, with examples of what it matches and what it does not.',
+    heading: 'AI prompt to write a regular expression',
     intro:
-      'Regex is easy to get slightly wrong and hard to read. This prompt makes ChatGPT write the pattern, explain every part, and show you exactly what it matches, so you can trust it.',
+      'Regex is easy to get slightly wrong and hard to read. This prompt writes the pattern, explains every part, and shows you exactly what it matches, so you can trust it.',
     category: 'Coding',
     prompt: `You are an expert at regular expressions who can also explain them clearly.
 
@@ -731,13 +731,13 @@ Rules:
   {
     slug: 'chatgpt-explain-concept-simply',
     title: 'Explain a concept simply',
-    searchTerm: 'chatgpt prompt to explain something simply',
-    metaTitle: 'ChatGPT Prompt to Explain Anything Simply (Free)',
+    searchTerm: 'ai prompt to explain something simply',
+    metaTitle: 'AI Prompt to Explain Anything Simply (Free)',
     metaDescription:
-      'A free ChatGPT prompt that explains any concept in plain, simple terms, with an analogy and a check that you understood it.',
-    heading: 'ChatGPT prompt to explain a concept simply',
+      'A free AI prompt that explains any concept in plain, simple terms, with an analogy and a check that you understood it.',
+    heading: 'AI prompt to explain a concept simply',
     intro:
-      'Ask ChatGPT to explain something and it often answers with the same jargon that confused you. This prompt makes it explain in plain words, use an analogy, and check that it actually landed.',
+      'Ask an AI to explain something and it often answers with the same jargon that confused you. This prompt makes it explain in plain words, use an analogy, and check that it actually landed.',
     category: 'Learning',
     prompt: `You are a brilliant teacher who can make any topic simple without making it wrong.
 
@@ -771,13 +771,13 @@ Rules:
   {
     slug: 'chatgpt-study-plan',
     title: 'Make a study plan',
-    searchTerm: 'chatgpt prompt for a study plan',
-    metaTitle: 'ChatGPT Prompt to Make a Study Plan (Free)',
+    searchTerm: 'ai prompt for a study plan',
+    metaTitle: 'AI Prompt to Make a Study Plan (Free)',
     metaDescription:
-      'A free ChatGPT prompt that builds a realistic study plan for any subject, based on your goal, deadline, and the time you actually have.',
-    heading: 'ChatGPT prompt to make a study plan',
+      'A free AI prompt that builds a realistic study plan for any subject, based on your goal, deadline, and the time you actually have.',
+    heading: 'AI prompt to make a study plan',
     intro:
-      'A vague "help me study" gives you a generic list. This prompt makes ChatGPT build a realistic plan around your real goal, deadline, and the hours you actually have each week.',
+      'A vague "help me study" gives you a generic list. This prompt builds a realistic plan around your real goal, deadline, and the hours you actually have each week.',
     category: 'Learning',
     prompt: `You are an experienced tutor who builds realistic study plans that people can actually stick to.
 
@@ -814,13 +814,13 @@ Rules:
   {
     slug: 'chatgpt-language-practice',
     title: 'Practice a language',
-    searchTerm: 'chatgpt prompt to practice a language',
-    metaTitle: 'ChatGPT Prompt to Practice a Language (Free)',
+    searchTerm: 'ai prompt to practice a language',
+    metaTitle: 'AI Prompt to Practice a Language (Free)',
     metaDescription:
-      'A free ChatGPT prompt that turns ChatGPT into a language practice partner, with conversation at your level and gentle correction.',
-    heading: 'ChatGPT prompt to practice a new language',
+      'A free AI prompt that turns any AI chatbot into a language practice partner, with conversation at your level and gentle correction.',
+    heading: 'AI prompt to practice a new language',
     intro:
-      'ChatGPT is a patient language partner if you set it up right. This prompt makes it hold a real conversation at your level and correct your mistakes without breaking the flow.',
+      'An AI chatbot is a patient language partner if you set it up right. This prompt makes it hold a real conversation at your level and correct your mistakes without breaking the flow.',
     category: 'Learning',
     prompt: `You are a friendly, patient language tutor and conversation partner.
 
@@ -854,13 +854,13 @@ Start by greeting me and asking the first question. Stay in this role until I sa
   {
     slug: 'chatgpt-business-plan',
     title: 'Business plan',
-    searchTerm: 'chatgpt prompt for a business plan',
-    metaTitle: 'ChatGPT Prompt for a Business Plan (Free, Copy-Paste)',
+    searchTerm: 'ai prompt for a business plan',
+    metaTitle: 'AI Prompt for a Business Plan (Free, Copy-Paste)',
     metaDescription:
-      'A free ChatGPT prompt that drafts a clear, practical one-page business plan from your idea, target customer, and how you will make money.',
-    heading: 'ChatGPT prompt for writing a business plan',
+      'A free AI prompt that drafts a clear, practical one-page business plan from your idea, target customer, and how you will make money.',
+    heading: 'AI prompt for writing a business plan',
     intro:
-      'A 30-page business plan helps no one in the early days. This prompt makes ChatGPT draft a sharp one-page plan that forces you to be clear about the customer, the problem, and how the money works.',
+      'A 30-page business plan helps no one in the early days. This prompt drafts a sharp one-page plan that forces you to be clear about the customer, the problem, and how the money works.',
     category: 'Business',
     prompt: `You are a practical startup advisor who helps founders think clearly, not write long documents.
 
@@ -900,13 +900,13 @@ Return the one-page plan.`,
   {
     slug: 'chatgpt-marketing-copy',
     title: 'Marketing copy',
-    searchTerm: 'chatgpt prompt for marketing copy',
-    metaTitle: 'ChatGPT Prompt for Marketing Copy (Free, Copy-Paste)',
+    searchTerm: 'ai prompt for marketing copy',
+    metaTitle: 'AI Prompt for Marketing Copy (Free, Copy-Paste)',
     metaDescription:
-      'A free ChatGPT prompt that writes marketing copy that focuses on the customer, leads with the benefit, and has one clear call to action.',
-    heading: 'ChatGPT prompt for writing marketing copy',
+      'A free AI prompt that writes marketing copy that focuses on the customer, leads with the benefit, and has one clear call to action.',
+    heading: 'AI prompt for writing marketing copy',
     intro:
-      'Most AI marketing copy is hype with no substance. This prompt makes ChatGPT write copy that speaks to a real customer, leads with what they get, and asks them to do one clear thing.',
+      'Most AI marketing copy is hype with no substance. This prompt writes copy that speaks to a real customer, leads with what they get, and asks them to do one clear thing.',
     category: 'Business',
     prompt: `You are a sharp marketing copywriter who writes copy that speaks to the customer, not about the company.
 
@@ -940,13 +940,13 @@ Give me 3 versions with different angles, so I can pick the strongest.`,
   {
     slug: 'chatgpt-swot-analysis',
     title: 'SWOT analysis',
-    searchTerm: 'chatgpt prompt for a SWOT analysis',
-    metaTitle: 'ChatGPT Prompt for a SWOT Analysis (Free)',
+    searchTerm: 'ai prompt for a SWOT analysis',
+    metaTitle: 'AI Prompt for a SWOT Analysis (Free)',
     metaDescription:
-      'A free ChatGPT prompt that runs a clear, honest SWOT analysis for your business, project, or career, with practical takeaways.',
-    heading: 'ChatGPT prompt for a SWOT analysis',
+      'A free AI prompt that runs a clear, honest SWOT analysis for your business, project, or career, with practical takeaways.',
+    heading: 'AI prompt for a SWOT analysis',
     intro:
-      'A SWOT analysis is only useful if it is honest and specific. This prompt makes ChatGPT produce one with real, concrete points and, more importantly, what to actually do about them.',
+      'A SWOT analysis is only useful if it is honest and specific. This prompt produces one with real, concrete points and, more importantly, what to actually do about them.',
     category: 'Business',
     prompt: `You are a clear-eyed business analyst who runs honest, practical SWOT analyses.
 
