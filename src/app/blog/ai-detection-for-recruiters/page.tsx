@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'Yes, if a score triggers rejection. False positives hit non-native English speakers hardest, so an auto-reject rule can quietly screen out qualified international applicants. Keep a human in the loop.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'is auto-rejecting candidates by ai score legal?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'It is risky. Employment law in many places judges hiring filters by their effect, not just intent. Because AI detectors flag plain, even writing, an auto-reject rule can reject non-native English speakers at a higher rate, which can amount to unlawful disparate impact even though the rule never mentions language. Consult your own legal guidance and keep a human decision-maker in the process.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'how should recruiters handle ai-written applications?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Judge the substance, not the texture. Look at experience, skills, and fit, and test real ability with a task or interview. Treat a detection score as a small note of context at most, never a gate. Using AI to polish an application is usually a sign of practical judgment, not dishonesty.',
+      },
+    },
   ],
 }
 
@@ -95,7 +111,10 @@ export default function AIDetectionForRecruitersPage() {
           <p className="text-lg text-[color:var(--color-paper-mute)] mb-10 leading-relaxed">
             Cover letters and applications written with AI are now common. That tempts recruiters to
             run a detector and filter them out. It is the same idea as detection in a classroom, in
-            a different setting, and it carries the same risk of getting good people wrong.
+            a different setting, and it carries the same risk of getting good people wrong, plus a
+            few risks that are specific to hiring. This guide covers what a detector can and cannot
+            tell you about a candidate, the legal exposure an auto-reject rule creates, and the few
+            places detection actually earns its keep in a hiring process.
           </p>
 
           <article className="max-w-none space-y-10">
@@ -124,6 +143,46 @@ export default function AIDetectionForRecruitersPage() {
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
                 So an auto-reject rule can silently drop qualified international candidates while
                 looking neutral. That is a legal and ethical problem, not just a quality one.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The legal risk hiring managers miss</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                This is the part that turns a quality problem into a liability. In most places,
+                employment law does not care whether you meant to discriminate. It cares about the
+                effect. If a hiring filter rejects one protected group at a higher rate than others,
+                that can be unlawful even if the rule looks perfectly neutral on paper. Lawyers call
+                this disparate impact.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                An AI-detector auto-reject is a textbook example. It flags plain, even writing, which
+                is exactly what many non-native English speakers produce. The rule never mentions
+                nationality or first language, yet it can screen those candidates out at a higher
+                rate. You would be building a bias into your pipeline and keeping no good record of
+                why anyone was rejected, since &ldquo;the detector said so&rdquo; is not a defensible
+                reason.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                Even setting fairness aside, that is a bad position to be in. A candidate who asks why
+                they were rejected deserves a real answer, and &ldquo;a tool guessed your cover letter
+                was too smooth&rdquo; is not one.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Using AI to apply is not a red flag</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                It is worth challenging the assumption underneath all of this. Why would you penalize a
+                candidate for using AI to write a cleaner cover letter? In most modern jobs, using the
+                available tools well is a skill, not a failing. A candidate who used a model to tighten
+                their application and fix their grammar showed exactly the kind of practical judgment
+                you probably want.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                The thing you are hiring for is almost never &ldquo;wrote this cover letter unassisted.&rdquo;
+                It is whether they can do the work. A detector answers the wrong question, and then
+                answers it badly.
               </p>
             </section>
 

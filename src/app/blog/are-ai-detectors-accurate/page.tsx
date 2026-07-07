@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'Trust it as a starting point that tells you where to look closer, not as a verdict. Read the writing yourself, consider the context, and never act on the number alone when the stakes are high.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'does a 99% accurate ai detector mean it is reliable?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Not necessarily. Accuracy numbers are usually measured on clean, obvious examples, so real-world accuracy on short, edited, or unusual writing is lower. And even a true 99% means one in a hundred is wrong, which becomes a large number of wrongly flagged people when you run it across thousands of documents. Ask how the number was measured before you trust it.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'are ai detectors getting more accurate over time?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'The trend is the other way. Detectors rely on the smooth, even style of AI writing, but models keep getting better at sounding human, which weakens the clue detectors depend on. A tool that looks accurate today can perform worse against newer models, so do not assume accuracy only improves.',
+      },
+    },
   ],
 }
 
@@ -158,10 +174,48 @@ export default function AreAIDetectorsAccuratePage() {
             </section>
 
             <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Why &ldquo;99% accurate&rdquo; can still be misleading</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Many detectors advertise a very high accuracy number. It sounds reassuring, but that
+                number hides two things you need to know before you trust it.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                First, an accuracy score is usually measured on a neat test set of clean, obvious
+                examples, not the messy real-world writing you will actually paste in. On the easy
+                cases the tool looks great. On short text, edited text, or unusual writing, the true
+                accuracy is much lower than the headline.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                Second, even a genuine 99% means one in a hundred is wrong. That feels tiny until you
+                run it across a lot of writing. A school checking thousands of essays, or a company
+                screening thousands of applications, will produce a real pile of wrong flags, and each
+                one is a real person. A high accuracy number and a real fairness problem can live side
+                by side.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Accuracy is getting harder, not easier</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                It would be nice if detectors were slowly getting more accurate. The opposite is
+                closer to the truth, and it is worth understanding why.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                Detectors work by spotting the smooth, even style of AI writing. But AI models keep
+                getting better at writing with variety and voice, so they sound more human every year.
+                As the machine writing gets less robotic, the clue detectors depend on gets weaker.
+                The thing they are trying to measure is fading, which means any tool that looks
+                accurate today may look worse against next year&apos;s models. Do not assume accuracy
+                only goes up.
+              </p>
+            </section>
+
+            <section>
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">How to use a score honestly</h2>
               <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
                 <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Treat it as a prompt to look closer, not as an answer.</li>
                 <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Be more careful the shorter the text is.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Do not trust a headline accuracy number without asking how it was measured.</li>
                 <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Never let the score alone decide something serious.</li>
                 <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Read the writing yourself before you act.</li>
               </ul>

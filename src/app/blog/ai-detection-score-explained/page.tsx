@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'For your own human writing, a low score is reassuring but a high one is not proof of anything. Treat scores in the middle as uncertain, and remember that short text produces unreliable numbers in either direction.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'why do two ai detectors give different scores?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Each detector was trained on different writing and tuned to weigh the signals differently, so they draw the AI-versus-human line in different places. They are all estimating the same hidden thing from the same surface clues. When two tools disagree sharply, the honest reading is that the text is genuinely uncertain, not that one tool is right.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'does a high ai score mean i will get caught?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No. A high score is a probability, not evidence, and a careful reviewer knows that. It also swings with text length and small edits. A high number is a reason for a closer look, not a verdict, and it should never decide a serious outcome on its own.',
+      },
+    },
   ],
 }
 
@@ -144,8 +160,48 @@ export default function AIDetectionScoreExplainedPage() {
                 Some tools also highlight individual sentences as more or less AI-like. That is a
                 separate view from the overall confidence score, and it is useful for seeing which
                 parts look smooth. But it carries the same warning: a highlighted sentence is a hint
-                to look closer, not a finding.
+                to look closer, not a finding. A single flagged sentence in an otherwise human essay
+                usually means nothing, since one smooth line is a coincidence, not a pattern.
               </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Why two detectors give different scores</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Paste the same text into two AI detectors and you will often get two different
+                numbers. One says 30% AI, the other says 80%. People find this alarming, but it makes
+                sense once you know what a score is.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                Each detector was trained on a different pile of writing and tuned to weigh the
+                signals differently. They are all guessing at the same hidden thing from the same
+                surface clues, but they draw the line in different places. The disagreement is not a
+                bug you can fix by finding the &ldquo;real&rdquo; detector. It is a reminder that every
+                one of these numbers is an estimate. When two tools disagree sharply, the honest
+                reading is &ldquo;this text is genuinely uncertain,&rdquo; not &ldquo;one of them is
+                right.&rdquo;
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">What to actually do at each score</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Reading a score is only useful if it changes what you do. Here is a sensible response
+                to each range, whether you are checking your own writing or someone else&apos;s.
+              </p>
+              <div className="space-y-3">
+                {[
+                  { t: 'High score on long text', d: 'Worth a closer look, but still not proof. Read the writing yourself and, if it matters, ask about the process. Never act on the number alone.' },
+                  { t: 'Middle score', d: 'The least useful result. Treat it as "no clear answer" rather than a lean either way. Do not build any decision on a middle score.' },
+                  { t: 'Low score', d: 'Mildly reassuring, nothing more. A low score does not certify that a human wrote it, since edited AI text scores low too.' },
+                  { t: 'Any score on short text', d: 'Ignore the confidence. A couple of sentences cannot produce a reliable number in either direction.' },
+                ].map(item => (
+                  <div key={item.t} className="p-4 rounded-xl border border-[color:var(--color-rule)]">
+                    <p className="font-semibold text-[color:var(--color-paper)] text-sm mb-1">{item.t}</p>
+                    <p className="text-xs text-[color:var(--color-paper-mute)]">{item.d}</p>
+                  </div>
+                ))}
+              </div>
             </section>
           </article>
 

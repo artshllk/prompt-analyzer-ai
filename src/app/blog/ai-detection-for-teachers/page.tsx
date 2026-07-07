@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'Treat the flag as a reason to talk, not a verdict. Ask the student about their process, look at drafts or version history, and consider the whole picture before deciding anything.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'how do i talk to a student about suspected ai use?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Open with curiosity, not accusation. Ask the student to walk you through how they approached the work and talk about the ideas rather than the tool. Do not lead with the detection score. Give them room to show drafts and notes, and be ready to drop it cleanly if their explanation holds up.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'how can i design assignments that resist ai cheating?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Use formats a model cannot easily fake: in-class or timed writing, staged assignments with drafts and checkpoints, prompts tied to a specific class discussion or the student’s own experience, and short oral follow-ups. These reduce your reliance on detection because the work is visible as it grows.',
+      },
+    },
   ],
 }
 
@@ -145,12 +161,41 @@ export default function AIDetectionForTeachersPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The better long game</h2>
-              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">How to have the conversation</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                The hardest part is not the score, it is the talk that follows. Handled badly, it
+                becomes an accusation that damages trust even when you are right, and does real harm
+                when you are wrong. Handled well, it is just a genuine question. A few things make it
+                go better.
+              </p>
+              <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Open with curiosity, not a verdict. &ldquo;Walk me through how you approached this&rdquo; beats &ldquo;this looks like AI.&rdquo;</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Ask about the ideas, not the tool. A student who wrote the essay can explain their own argument and choices.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Do not lead with the score. Naming a percent turns a conversation into a trial before it starts.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Give the student room to show their process, drafts, and notes without feeling cornered.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Be ready to be wrong. If the explanation holds up, drop it cleanly and say so.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The better long game: assignment design</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
                 Detection is a losing race on its own, since edited AI text slips through anyway. The
-                stronger move is to design work that is hard to fake: in-class writing, drafts you
-                see along the way, and questions tied to class discussion. A detector can support
-                that. It cannot replace it.
+                stronger move is to design work that is hard to fake in the first place, so you rely on
+                a detector less and less. A few formats do most of the work:
+              </p>
+              <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> In-class or timed writing, where the work happens in front of you.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Staged assignments with drafts, outlines, and checkpoints you see along the way.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Prompts tied to a specific class discussion, a local example, or the student&apos;s own experience.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> A short oral follow-up, where a student explains or defends their own work.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Reflection on the process itself, which a model cannot fake convincingly.</li>
+              </ul>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                None of these need a detector, because a model cannot easily reproduce a draft that
+                visibly grew or a reflection on a class it was not in. A detector can support this kind
+                of teaching, but it cannot replace it, and the more you lean on the assignment design,
+                the less the flaws of detection can hurt anyone.
               </p>
             </section>
           </article>

@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'Yes, because it measures the general traits of machine writing rather than one model. The same tool applies to ChatGPT, Claude, Gemini, and others, with the same strengths and the same blind spots.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'how can you tell chatgpt, claude, and gemini writing apart?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Only by soft style habits, and never with confidence. ChatGPT tends to be tidy and list-friendly, Claude tends toward longer flowing sentences and a warmer voice, and Gemini is often brisk and fact-forward. These are tendencies, not fingerprints, and they vanish as soon as the text is edited or the model is asked for a different tone.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'can a detector prove text came from a specific ai tool?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No. There is no reliable fingerprint that survives real use, so any claim that text came from one specific model should be treated with heavy doubt. A detector answers the useful question, which is whether text looks AI-written at all, not which tool produced it.',
+      },
+    },
   ],
 }
 
@@ -138,6 +154,47 @@ export default function DetectChatgptClaudeGeminiPage() {
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
                 What a detector can do is answer the useful question: does this look like AI at all?
                 Which model is a much harder call, and rarely the one you actually need.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The small style differences you might notice</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                A detector does not care about these, but a careful human reader sometimes does. Each
+                model has picked up its own habits. None of these are rules, and any of them can be
+                changed with a prompt, but here is the rough feel people report.
+              </p>
+              <div className="space-y-3">
+                {[
+                  { t: 'ChatGPT', d: 'Often tidy and list-friendly. It likes clear structure, headings, and a helpful, slightly formal tone by default.' },
+                  { t: 'Claude', d: 'Tends toward longer, more flowing sentences and a warmer, more explanatory voice. It often "talks through" an answer.' },
+                  { t: 'Gemini', d: 'Frequently brisk and fact-forward, and quick to pull in current information when it can.' },
+                ].map(item => (
+                  <div key={item.t} className="p-4 rounded-xl border border-[color:var(--color-rule)]">
+                    <p className="font-semibold text-[color:var(--color-paper)] text-sm mb-1">{item.t}</p>
+                    <p className="text-xs text-[color:var(--color-paper-mute)]">{item.d}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                Notice that these are style, not fingerprints. The moment someone edits the text or
+                asks for a different tone, the habit disappears. That is why even a sharp human guess
+                about the source model is shaky, and a detector does not try to make it at all.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Why the model barely matters for detection</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Here is the point that ties it together. A detector is not looking for &ldquo;ChatGPT
+                writing&rdquo; or &ldquo;Gemini writing.&rdquo; It is looking for the one thing all
+                these models share: smooth, predictable text. Their style differences are tiny next to
+                that shared trait.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                So the gap between any two of these models is much smaller than the gap between all of
+                them and a rough, bumpy human draft. That is why one detector covers every model. It
+                is measuring the family resemblance, not the individual face.
               </p>
             </section>
 

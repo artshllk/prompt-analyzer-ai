@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'No, but it limits them. They are still useful as a signal on untouched text and as a first filter. They just cannot be a reliable gate, since anyone motivated to pass can usually do so with a little effort.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'will ai detectors get better at catching ai?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'The trend runs the other way. Every time detectors improve at spotting smooth text, models improve at writing with more variety and voice, which erases the tells detectors rely on. As AI writing gets more human, the line a detector tries to draw gets fainter, so this is not a gap a better tool will simply close.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'can a detector be tricked into flagging human writing?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'It does not take trickery. Because detectors measure how smooth and even writing is, a person who writes plainly and carefully can be flagged for work they did entirely themselves. The same weakness that lets edited AI text pass also catches honest, plain human writers.',
+      },
+    },
   ],
 }
 
@@ -139,6 +155,44 @@ export default function CanAIDetectorsBeFooledPage() {
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
                 It is still useful for what it is: a signal on raw, untouched text, and a first pass
                 to decide what deserves a human look. Just not a verdict.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Why detection is losing the arms race</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                There is a deeper reason detectors will keep being easy to fool, and it is worth
+                understanding. Detection and generation are locked in a race, and the two sides are
+                not evenly matched.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Every time detectors get better at spotting smooth, even text, the models get better
+                at writing with more variety and voice. Newer models already sound less robotic than
+                older ones did, which erases the very tells detectors rely on. The target keeps
+                moving, and it moves in the direction that makes detection harder.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                So this is not a temporary gap that a better tool will close next year. The trend runs
+                the other way. As AI writing gets more human, the line a detector is trying to draw
+                gets fainter. Any strategy that depends on detection staying ahead is building on
+                ground that is sliding out from under it.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The flip side: honest writers get caught in the middle</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                People usually ask &ldquo;can detectors be fooled?&rdquo; worried about cheaters
+                slipping through. But the same weakness has a victim on the other side, and it is
+                worth naming.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                Because the tool only measures texture, a person who writes in a plain, even style can
+                be flagged for work they did entirely themselves. So the detector fails twice: the
+                motivated cheater edits their way past it, and the honest, plain writer gets caught by
+                it. If you are worried about being wrongly flagged, the answer is the same one that
+                protects everyone: keep your drafts and version history, and insist that any score be
+                treated as a question, not a conclusion.
               </p>
             </section>
 
