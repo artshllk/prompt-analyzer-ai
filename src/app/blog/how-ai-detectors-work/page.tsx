@@ -56,6 +56,14 @@ const faqSchema = {
         text: 'Because they measure predictability, not authorship. Simple, careful, or formulaic human writing can look just as even as AI writing, so it gets a high AI score. This is called a false positive.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'How are AI detectors trained?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'The makers gather two large piles of writing, one known to be human and one known to be AI, and the detector studies both to learn the patterns that separate them, like smoothness and predictable word choices. Nobody hands it a list of rules; it finds the patterns by comparing thousands of examples. Its blind spots come from whatever was missing or outdated in those piles.',
+      },
+    },
   ],
 }
 
@@ -164,6 +172,28 @@ export default function HowAIDetectorsWorkPage() {
             </section>
 
             <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">How a detector learns what to look for</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                A detector does not come with these rules built in by a person. It learns them. The
+                process is simpler than it sounds.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                The makers gather two big piles of writing. One pile is known to be written by people.
+                The other is known to be written by AI. The detector studies both and learns the
+                patterns that tend to separate them: the smoothness, the even rhythm, the predictable
+                word choices. Nobody hands it a list of tells. It finds them by comparing thousands of
+                examples.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                This is also where its weak spots come from. A detector is only as good as the piles
+                it learned from. If it never saw much writing from non-native English speakers, it may
+                wrongly lump their plain style in with AI. And because it learned from yesterday&apos;s
+                AI writing, it can struggle with the newer, more human-sounding models it was never
+                trained on. The tool is always looking slightly backward.
+              </p>
+            </section>
+
+            <section>
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">How to use a detector without getting burned</h2>
               <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
                 <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Treat the score as a signal that starts a conversation, not as proof.</li>
@@ -191,8 +221,8 @@ export default function HowAIDetectorsWorkPage() {
               <Link href="/blog/can-ai-detectors-be-fooled" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 Can AI detectors be fooled, and should you trust them →
               </Link>
-              <Link href="/blog/who-needs-an-ai-detector" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
-                Who actually needs an AI detector, and why →
+              <Link href="/blog/are-ai-detectors-accurate" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                Are AI detectors accurate? →
               </Link>
             </div>
           </div>

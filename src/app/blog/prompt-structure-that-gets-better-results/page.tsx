@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'Role, task, context, format, and constraints. Not every prompt needs all five, but naming the ones that apply removes the guesswork that leads to weak answers.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'is there a prompt template i can reuse?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. A simple one is: "Act as [role]. [The task in one sentence.] Context: [who it is for and the goal]. Format: [length, structure, tone]. Avoid: [what should not happen]." You do not have to fill every line every time; treat it as a checklist that stops you from forgetting the part that would have made the answer good.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'does a structured prompt have to be long?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No. Structure is about what you include, not how many words you use. A one-line request can carry the role, task, audience, format, and a limit in a single natural sentence, such as "As an editor, tighten this paragraph for a general reader, under 60 words, no jargon."',
+      },
+    },
   ],
 }
 
@@ -134,6 +150,40 @@ export default function PromptStructurePage() {
                   Role, task, context, format, constraints. Each part answers a question the model
                   would otherwise guess at.
                 </p>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">A template you can reuse</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Once the order is a habit, you can keep a simple fill-in-the-blank template and reach
+                for it any time a first answer is not good enough.
+              </p>
+              <div className="p-6 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                <p className="text-sm text-[color:var(--color-paper-mute)] leading-relaxed">
+                  Act as <span className="text-[color:var(--color-paper)]">[role]</span>.<br />
+                  <span className="text-[color:var(--color-paper)]">[The task, in one plain sentence.]</span><br />
+                  Context: <span className="text-[color:var(--color-paper)]">[who it is for, the goal, anything the model cannot see]</span>.<br />
+                  Format: <span className="text-[color:var(--color-paper)]">[length, structure, tone]</span>.<br />
+                  Avoid: <span className="text-[color:var(--color-paper)]">[what should not happen]</span>.
+                </p>
+              </div>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                You will not fill in every line every time, and that is fine. The template is a
+                checklist, not a form. Its job is to stop you from forgetting the part that would have
+                made the answer good.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">This works for short prompts too</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Structure does not mean long. A one-line request can still carry all five parts in a
+                tight, natural sentence. You do not have to write a form.
+              </p>
+              <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                <p className="text-sm text-[color:var(--color-paper)]">&ldquo;As an editor, tighten this paragraph for a general reader, under 60 words, no jargon.&rdquo;</p>
+                <p className="text-xs text-[color:var(--color-paper-mute)] mt-2">Role, task, audience, format, and a limit, all in one line. Structure is about what you include, not how many words you use.</p>
               </div>
             </section>
 

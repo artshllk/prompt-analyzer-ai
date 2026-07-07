@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'Enough that the model no longer has to guess the things that matter for your task. Usually that is the audience, the goal, and the tone. More than that is fine, but those three fix most generic answers.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'can you give an ai prompt too much context?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes, though giving too little is far more common. Context hurts when it buries the task under detail the model does not need, so the model answers the background instead of the question. Keep the task clear and near the top, and add only context that would change what a good answer looks like.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'what context should i add to an ai prompt?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'The most useful pieces are who the reader is and what they already know, what you will do with the answer, the tone you want, any hard facts like dates or numbers, what you have already tried, and any firm limits like a length or a rule. You will not need all of them, but add any the model would otherwise guess at.',
+      },
+    },
   ],
 }
 
@@ -142,6 +158,38 @@ export default function HowContextImprovesResponsesPage() {
                   <p className="text-sm text-[color:var(--color-paper)]">&ldquo;Write a product update for our small-business users, who are not technical. We just made invoices load twice as fast. Keep it friendly, under 100 words, and lead with what it means for them, not the tech.&rdquo;</p>
                 </div>
               </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The kinds of context worth adding</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Beyond the big three, here are the pieces of background that most often turn a generic
+                answer into a fitting one. You will not need all of them, but scan the list and add any
+                the model would otherwise guess at.
+              </p>
+              <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Who the reader is, and how much they already know.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> What you will do with the answer, so the model shapes it to fit.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> The tone and voice you want, in a word or two.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Any hard facts that matter: the product, the date, the numbers, the names.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> What you have already tried or ruled out, so it does not repeat it.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Any hard limits, like a length, a budget, or a rule you must follow.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Can you give too much context?</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Yes, though it is far less common than giving too little. Context helps when it changes
+                the answer. It hurts when it buries the task under detail the model does not need.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                If you paste three paragraphs of background and one line of actual request, the model
+                can lose the thread and answer the background instead of the question. The fix is not
+                to cut useful facts. It is to keep the task clear and near the top, then add the
+                context that supports it. Every piece of context should be there because it would
+                change what a good answer looks like. If it would not, leave it out.
+              </p>
             </section>
 
             <section>

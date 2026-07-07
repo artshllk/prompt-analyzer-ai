@@ -53,7 +53,23 @@ const faqSchema = {
       name: 'what makes a fair ai policy at a school?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Clear rules on what AI use is allowed, a flag that starts a review rather than a punishment, a chance for the student to explain, and never resting a decision on a detection score alone.',
+        text: 'Clear rules on what AI use is allowed, a flag that starts a review rather than a punishment, a chance for the student to explain, staff training on what the score means, and never resting a decision on a detection score alone.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'what should i do if a detector wrongly flagged my essay?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Stay calm and ask for the specific evidence, not just the score. Show your draft history, notes, and document version history to prove how the work grew over time, offer to talk through your argument, and use the appeals process in writing. A score is a guess, not proof, and false positives are a known problem, especially for non-native English writers.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'can a university fail a student based on an ai detector alone?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'It should not, and a fair policy forbids it. A detection score is a probability based on writing texture, not evidence of misconduct. Responsible institutions treat a flag as a reason to review and talk, and require other evidence before any academic penalty.',
       },
     },
   ],
@@ -95,7 +111,10 @@ export default function AIDetectionInUniversitiesPage() {
           <p className="text-lg text-[color:var(--color-paper-mute)] mb-10 leading-relaxed">
             Detection in a single classroom is one thing. Detection across a whole university,
             wired into the systems that grade thousands of students, is another. The same limits
-            apply, but the stakes and the failure modes get much larger.
+            apply, but the stakes and the failure modes get much larger. A tool that is merely
+            unreliable in one class becomes genuinely unfair at scale. This guide walks through how
+            institutions actually use AI detection, what breaks when you run it across a whole
+            student body, and what a fair policy looks like, for staff and students both.
           </p>
 
           <article className="max-w-none space-y-10">
@@ -106,10 +125,44 @@ export default function AIDetectionInUniversitiesPage() {
                 plagiarism system they already use. A score comes back, sometimes with sentences
                 highlighted, and it feeds into how the work is reviewed.
               </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                The detail that matters is where the score sits in the process. In a healthy setup it
+                is one input among several, seen by an instructor who knows the student and the
+                assignment. In an unhealthy setup it is a number on a dashboard that a busy
+                administrator treats as a verdict. Same tool, completely different outcomes, and the
+                difference is policy, not technology.
+              </p>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-                Used well, that flags work worth a closer look. Used badly, it becomes an automatic
-                accusation applied to thousands of students at once, and that is where the harm
-                scales up with it.
+                Used well, a detector flags work worth a closer look. Used badly, it becomes an
+                automatic accusation applied to thousands of students at once, and that is where the
+                harm scales up with it.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">A worked example: the 1% problem</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                It helps to put numbers on this. Say a detector is 99% accurate, which is far better
+                than most really are. That sounds almost perfect. Now run it across a university that
+                processes 50,000 pieces of student writing in a term.
+              </p>
+              <div className="p-6 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                <p className="text-sm text-[color:var(--color-paper)] leading-relaxed mb-3">
+                  A 1% false-positive rate on 50,000 submissions means about
+                  <span className="font-semibold"> 500 pieces of genuine human work</span> get
+                  flagged as AI. Every one of those is a real student, facing a real accusation,
+                  over an essay they actually wrote.
+                </p>
+                <p className="text-sm text-[color:var(--color-paper-mute)]">
+                  And the error is not spread evenly. Non-native English speakers, whose writing is
+                  plainer and more even, absorb a larger share of those 500. A tool that looks
+                  &ldquo;99% accurate&rdquo; on paper produces hundreds of unfair cases, concentrated
+                  on the students least able to fight back.
+                </p>
+              </div>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                This is the trap of scale. An error rate you would shrug off on a single essay becomes
+                a systemic fairness problem the moment you apply it to everyone.
               </p>
             </section>
 
@@ -130,26 +183,57 @@ export default function AIDetectionInUniversitiesPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">What a fair policy includes</h2>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">If you are a student who was wrongly flagged</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
-                A sound approach does not ban detection or trust it blindly. It puts guardrails
-                around it:
+                This happens, and it is frightening, so it is worth saying clearly: a detection score
+                is not proof, and you are allowed to say so. If your own writing has been flagged as
+                AI, here is what actually helps.
               </p>
               <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
-                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Clear rules on what AI use is allowed for each assignment.</li>
-                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> A flag that opens a review, never an automatic penalty.</li>
-                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> A real chance for the student to explain their process.</li>
-                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> A rule that no decision rests on a detection score alone.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Stay calm and ask for the specific evidence, not just the score. A percent is a guess, not a finding.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Show your process. Draft history, notes, browser or document version history, and outlines all demonstrate how the work came together over time.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Offer to talk through the ideas. A student who wrote the work can explain their own argument; that conversation is far stronger evidence than any tool.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Point to the known false-positive problem, especially if English is not your first language. This is documented, not an excuse.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Ask about the appeals process in writing. Most institutions have one, and using it calmly is your right.</li>
+              </ul>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                Going forward, keeping your drafts and working in a document with version history is
+                the single best protection. It costs nothing and gives you a clear record if a
+                question ever comes up.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">What a fair institutional policy includes</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                A sound approach does not ban detection or trust it blindly. It puts guardrails around
+                it so the tool supports human judgment instead of replacing it. The strongest policies
+                share these features:
+              </p>
+              <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Clear, per-assignment rules on what AI use is allowed, so students are not guessing.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> A flag that opens a review, never triggers an automatic penalty.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> A real chance for the student to explain their process before any decision.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> A firm rule that no outcome rests on a detection score alone.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Staff training on what the score means, and what it does not, so a number is never mistaken for a verdict.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Extra care with groups known to draw false positives, so the policy does not quietly punish them.</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The real fix is assignment design</h2>
-              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
                 The most reliable answer is not a better detector. It is coursework that is hard to
-                fake: work done in stages you can see, writing tied to class discussion, oral checks,
-                and tasks that ask for the student&apos;s own experience. Detection can sit beside
-                that as one small signal. On its own, at scale, it does more harm than good.
+                fake in the first place: work done in stages you can see, writing tied to class
+                discussion, oral checks, and tasks that ask for the student&apos;s own experience or
+                a specific in-class source.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                These formats do not need a detector, because a model cannot easily produce a
+                reflection on a discussion it was not part of, or a draft that visibly grew across
+                three checkpoints. Detection can sit beside that work as one small signal. On its own,
+                at scale, it does more harm than good, and the more a school leans on it, the less it
+                invests in the coursework changes that would actually solve the problem.
               </p>
             </section>
           </article>

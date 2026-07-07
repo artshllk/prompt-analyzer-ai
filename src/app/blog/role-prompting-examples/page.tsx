@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'Name a specific role, add who the answer is for, and say what to focus on. "Act as a hiring manager reviewing this resume for a junior developer role, and flag the three weakest points" beats a bare "act as an expert".',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'what are some good role prompt examples?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'A few that work well: "Act as a tough but fair editor. Cut anything that does not earn its place." "Act as a patient tutor for a beginner. Explain this with one everyday example, then quiz me." "Act as a skeptical first-time customer. Tell me what would stop you from buying." The pattern is role, audience, and the one thing to focus on.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'is act as a doctor a safe way to get expert advice?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No. A role changes how the model writes, not what it knows. Telling it to act as a doctor makes the answer sound like a doctor, but it does not make the medical claims safe to trust. Use roles to control tone and focus, and always check the facts yourself on anything that matters.',
+      },
+    },
   ],
 }
 
@@ -156,6 +172,52 @@ export default function RolePromptingExamplesPage() {
                 So use roles to control tone, focus, and depth. Do not use them as a shortcut to
                 expertise the model does not have. On anything that matters, still check the facts
                 yourself.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">More role prompts to copy</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Here is a longer set you can adapt. Notice that the good ones do not just name a role;
+                they add who the answer is for and what to focus on.
+              </p>
+              <div className="space-y-3">
+                {[
+                  { t: 'Marketing', d: '"Act as a plain-spoken marketer. Rewrite this product blurb for busy small-business owners. Cut the buzzwords and lead with the benefit."' },
+                  { t: 'Job hunting', d: '"Act as a hiring manager for a junior marketing role. Read my resume and tell me the three things that would make you skip it."' },
+                  { t: 'Studying', d: '"Act as a patient tutor for a complete beginner. Explain this topic with one everyday example, then quiz me with two short questions."' },
+                  { t: 'Writing', d: '"Act as a tough but fair editor. Cut anything that does not earn its place in this paragraph, and tell me what you cut and why."' },
+                  { t: 'Planning', d: '"Act as a practical project planner. Turn this goal into a simple week-by-week plan with the riskiest step flagged."' },
+                  { t: 'Getting feedback', d: '"Act as a skeptical first-time customer. Read this landing page and tell me what would stop you from buying."' },
+                ].map(item => (
+                  <div key={item.t} className="p-4 rounded-xl border border-[color:var(--color-rule)]">
+                    <p className="font-semibold text-[color:var(--color-paper)] text-sm mb-1">{item.t}</p>
+                    <p className="text-xs text-[color:var(--color-paper-mute)]">{item.d}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">A simple formula for writing your own</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Once you see the pattern, you can build a role prompt for anything. The good ones have
+                three parts, in this order.
+              </p>
+              <div className="p-6 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                <p className="text-sm text-[color:var(--color-paper)] leading-relaxed mb-3">
+                  <span className="font-semibold">Role + audience + focus.</span> Name who the model
+                  should be, who the answer is for, and the one thing to focus on.
+                </p>
+                <p className="text-sm text-[color:var(--color-paper-mute)]">
+                  &ldquo;Act as a <span className="italic">[role]</span> helping a
+                  <span className="italic"> [who the answer is for]</span>. Focus on
+                  <span className="italic"> [the one thing that matters most]</span>.&rdquo;
+                </p>
+              </div>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                A bare &ldquo;act as an expert&rdquo; leaves the model guessing at all three. Filling in
+                the blanks is what turns a vague role into a useful one.
               </p>
             </section>
           </article>

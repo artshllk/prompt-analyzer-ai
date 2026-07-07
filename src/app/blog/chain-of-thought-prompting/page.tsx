@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'Yes, on multi-step problems. Making the model lay out its steps reduces skipped logic and careless mistakes. On easy questions it makes no real difference and just adds text.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'what is a good chain-of-thought prompt to copy?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'A simple one is "Think step by step, then give your final answer." For a clean result, add "then give only the final answer on its own line." For a decision, try "List the options, weigh the pros and cons of each, then recommend one and say why." Any line that tells the model to reason before answering works.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'can chain-of-thought reasoning still be wrong?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. Reasoning that looks tidy can still reach a wrong answer. Chain-of-thought reduces careless mistakes on multi-step problems, but it is not a guarantee. Read the steps and check them; do not trust them just because they look organized.',
+      },
+    },
   ],
 }
 
@@ -158,6 +174,57 @@ export default function ChainOfThoughtPromptingPage() {
                 where the logic went wrong. A hidden answer you can only accept or reject. A
                 reasoned one you can check and correct.
               </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Phrases you can copy</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                You do not need special wording. Any line that tells the model to slow down and reason
+                first will do. Here are a few that work well, depending on what you want.
+              </p>
+              <div className="space-y-3">
+                {[
+                  { t: 'Simple and general', d: '"Think step by step, then give your final answer."' },
+                  { t: 'When you want a clean result', d: '"Work through this carefully, then give only the final answer on its own line."' },
+                  { t: 'For a decision', d: '"List the options, weigh the pros and cons of each, then recommend one and say why."' },
+                  { t: 'For checking work', d: '"Solve it, then check your own answer a second way and tell me if the two match."' },
+                ].map(item => (
+                  <div key={item.t} className="p-4 rounded-xl border border-[color:var(--color-rule)]">
+                    <p className="font-semibold text-[color:var(--color-paper)] text-sm mb-1">{item.t}</p>
+                    <p className="text-xs text-[color:var(--color-paper-mute)]">{item.d}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Two ways to do it</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                There are two flavors of chain-of-thought, and it is useful to know the difference.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                The first is just asking. You add &ldquo;think step by step&rdquo; and let the model
+                reason on its own. This is the easy, everyday version, and it is usually enough.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                The second is showing an example. You include one worked problem, with the reasoning
+                written out, before your real question. The model copies that style of thinking. This
+                takes more effort, but it helps when the problem has a specific method you want
+                followed. If you want to go deeper on this, it is the same idea as few-shot prompting.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Common mistakes</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Chain-of-thought is simple, but a few habits waste its value.
+              </p>
+              <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Using it on everything. On a simple lookup it just adds length and slows you down.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Trusting the steps blindly. Reasoning that looks tidy can still reach a wrong answer. Read it, do not just admire it.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Forgetting to ask for the final answer. Without it, you get a wall of working and no clear result.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Burying the request. Put the &ldquo;think step by step&rdquo; instruction near the task, not lost in a long paragraph.</li>
+              </ul>
             </section>
           </article>
 

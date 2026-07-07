@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'Yes. Newer models write with more variety and voice, so the old tells are fading. The gap between good AI text and human text keeps narrowing, which is why detection is getting harder, not easier.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'what are the signs that writing is ai-generated?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Common signs include very even sentence lengths, lots of transitions and hedges like "In conclusion" and "It is important to note," a balanced tone that never takes a strong position, tidy structure with no rough edges, and general points with few specific lived details. Treat these as hints, not proof, since plenty of careful human writing shows the same habits.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'does clear, careful writing look like ai?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Often, yes, and that is the problem. Clear, plain, well-organized writing is smooth and even, which is exactly the pattern that reads as AI. A careful student, a formal report, or a second-language writer can all produce writing that "sounds like AI" while being completely their own.',
+      },
+    },
   ],
 }
 
@@ -144,13 +160,45 @@ export default function HumanTextVsAITextPage() {
             </section>
 
             <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Common signs writing might be AI</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                If you are trying to spot AI writing by eye, these are the habits people notice most.
+                Treat them as hints, not proof. Any one of them shows up in plenty of human writing
+                too, and a person can add them or a model can drop them.
+              </p>
+              <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Very even sentences, all a similar length, marching one after another.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Lots of transitions and hedges: &ldquo;In conclusion,&rdquo; &ldquo;It is important to note,&rdquo; &ldquo;on the other hand.&rdquo;</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> A balanced, careful tone that never takes a strong or personal position.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Neat structure with tidy lists and no rough edges or asides.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> General points and few specific, lived details that only a real person would know.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Why &ldquo;it sounds like AI&rdquo; is a weak accusation</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                It is tempting to read a smooth, even paragraph and conclude a machine wrote it. Be
+                careful here. Everything on that list of tells also describes a whole lot of honest
+                human writing.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                A careful student, a formal report, a second-language writer keeping sentences simple,
+                a lawyer being precise: all of them produce even, balanced, tidy text. So &ldquo;this
+                sounds like AI&rdquo; often just means &ldquo;this is clear and careful,&rdquo; which
+                is not a crime. The tells are tendencies, not fingerprints, and treating them as proof
+                is how honest writers get wrongly accused.
+              </p>
+            </section>
+
+            <section>
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The gap is closing</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-                Newer models write with more rhythm and more voice than early ones did. The old
-                tells, the hedging and the flat evenness, are fading. This is the real reason
-                detection keeps getting harder. The differences that human and machine writing once
-                had are quietly disappearing, which is worth remembering before you trust your own
-                ear or any tool too much.
+                There is one more reason not to lean too hard on your own ear. Newer models write with
+                more rhythm and more voice than early ones did. The old tells, the hedging and the flat
+                evenness, are fading. This is the real reason detection keeps getting harder. The
+                differences that human and machine writing once had are quietly disappearing, which is
+                worth remembering before you trust your own ear or any tool too much.
               </p>
             </section>
           </article>
