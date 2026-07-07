@@ -4,6 +4,7 @@ import { analyzePrompt } from '@/lib/engine'
 import { getUsageInfo, recordUsage } from '@/lib/db/usage'
 import { createSession, updateSessionStatus, addClarificationExchange, saveImprovement } from '@/lib/db/sessions'
 import { take, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
+import { compileContextBrief } from '@/lib/context/compile'
 import type { Tone } from '@/types/database'
 import type { QAPair } from '@/types'
 
@@ -58,7 +59,15 @@ export async function POST(req: NextRequest) {
     }, { status: 402 })
   }
 
-  const result = await analyzePrompt({ prompt, tone, priorAnswers, deep })
+  // Portable Context Graph: compile the user's identity (+ Pro style
+  // hints) into the rewrite. Only on a fresh analysis - continuation turns
+  // reuse the same framing the first call established. Never fails the
+  // request: no graph just means a context-free rewrite.
+  const context = isFreshAnalysis
+    ? await compileContextBrief(user.id, { isPro: isProUser }).catch(() => null)
+    : null
+
+  const result = await analyzePrompt({ prompt, tone, priorAnswers, deep, context })
 
   if (!result) {
     return NextResponse.json({ error: 'ai_unavailable' }, { status: 503 })

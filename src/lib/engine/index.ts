@@ -48,6 +48,28 @@ interface StepResponse {
   }
 }
 
+/**
+ * Render the compiled Context Graph brief. Placed high in the system
+ * prompt as durable background the model should weight - but the user's
+ * explicit prompt and clarifications always take precedence over it.
+ */
+function buildContextBlock(input: AnalyzeInput): string {
+  const ctx = input.context
+  if (!ctx || (!ctx.identity?.length && !ctx.styleHints?.length)) return ''
+
+  const lines: string[] = ['# CONTEXT — who you are writing for (persistent profile)']
+  lines.push('Weight this, but never let it override the explicit prompt or clarifications below.')
+  if (ctx.identity?.length) {
+    lines.push('', 'About the user:')
+    ctx.identity.forEach(l => lines.push(`- ${l}`))
+  }
+  if (ctx.styleHints?.length) {
+    lines.push('', 'Learned style preferences (from outputs they actually accepted):')
+    ctx.styleHints.forEach(l => lines.push(`- ${l}`))
+  }
+  return lines.join('\n') + '\n\n'
+}
+
 function buildSystemPrompt(input: AnalyzeInput): string {
   const turnCount = input.priorAnswers.length
   const remainingTurns = MAX_CLARIFY_TURNS - turnCount
@@ -55,7 +77,7 @@ function buildSystemPrompt(input: AnalyzeInput): string {
 
   const toneRule = TONE_RULES[input.tone]
 
-  return `You are operating as a top-0.1% prompt engineer - the kind a senior staff engineer would consult before shipping a critical AI feature. You have shipped real systems in code, content, design, research, and business strategy. You think first, then act.
+  return `${buildContextBlock(input)}You are operating as a top-0.1% prompt engineer - the kind a senior staff engineer would consult before shipping a critical AI feature. You have shipped real systems in code, content, design, research, and business strategy. You think first, then act.
 
 # YOUR JOB
 

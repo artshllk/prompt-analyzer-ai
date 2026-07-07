@@ -99,9 +99,58 @@ export type UserPromptPatternRow = {
   created_at: string
 }
 
+export type ExpertiseLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert'
+
+export type ContextIdentityRow = {
+  user_id: string
+  role: string | null
+  company: string | null
+  industry: string | null
+  expertise_level: ExpertiseLevel | null
+  languages: string[]
+  tone_note: string | null
+  extra: Json
+  suggestion: Json | null
+  confirmed: boolean
+  updated_at: string
+}
+
+export type ContextStyleSignalRow = {
+  id: string
+  user_id: string
+  session_id: string | null
+  ai_draft: string
+  user_final: string
+  source: 'web' | 'extension'
+  created_at: string
+}
+
 export type Database = {
   public: {
     Tables: {
+      context_identity: {
+        Row: ContextIdentityRow
+        Insert: Omit<ContextIdentityRow, 'languages' | 'extra' | 'suggestion' | 'confirmed' | 'updated_at'> & {
+          languages?: string[]
+          extra?: Json
+          suggestion?: Json | null
+          confirmed?: boolean
+          updated_at?: string
+        }
+        Update: Partial<Omit<ContextIdentityRow, 'user_id' | 'updated_at'>>
+        Relationships: []
+      }
+      context_style_signals: {
+        Row: ContextStyleSignalRow
+        Insert: Omit<ContextStyleSignalRow, 'id' | 'created_at' | 'source' | 'session_id'> & {
+          id?: string
+          created_at?: string
+          source?: 'web' | 'extension'
+          session_id?: string | null
+        }
+        Update: Partial<Omit<ContextStyleSignalRow, 'id' | 'created_at'>>
+        Relationships: []
+      }
       profiles: {
         Row: ProfileRow
         Insert: Omit<ProfileRow, 'created_at' | 'updated_at' | 'email_weekly' | 'email_tips' | 'email_unsubscribed'> & {

@@ -34,6 +34,18 @@ export interface QAPair {
   turn: number
 }
 
+/**
+ * Compiled Context Graph brief injected into the rewrite. Kept as small,
+ * pre-rendered line lists (not raw records) so the engine spends minimal
+ * tokens and only ever sees what the compiler chose to expose.
+ */
+export interface ContextBrief {
+  /** Confirmed identity facts, e.g. "Role: senior product manager". */
+  identity?: string[]
+  /** Learned style rules from accepted edits (Pro only), e.g. "Shortens drafts ~30%". */
+  styleHints?: string[]
+}
+
 export interface AnalyzeInput {
   prompt: string
   tone: import('./database').Tone
@@ -41,6 +53,8 @@ export interface AnalyzeInput {
   currentConfidence?: number
   /** Pro-only Deep Rewrite: stronger model, draft-critique-refine pass. */
   deep?: boolean
+  /** Portable Context Graph brief. Null/absent for anonymous callers. */
+  context?: ContextBrief | null
 }
 
 export type AnalyzeResult =

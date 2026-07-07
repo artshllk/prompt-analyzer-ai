@@ -46,6 +46,12 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
   const rewritesLeft = Math.max(0, rewriteLimit - rewritesUsed);
   const isPro = usage?.tier === "pro";
 
+  // Style-capture: Pro users can edit the rewrite before copying; the
+  // accepted (edited or verbatim) text feeds the Context Graph's Style layer.
+  const [copied, setCopied] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const answerRef = useRef<HTMLTextAreaElement>(null);
   const responseRef = useRef<HTMLDivElement>(null);
@@ -131,6 +137,37 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
     session.reset();
     setPrompt("");
     setAnswer("");
+    setEditing(false);
+    setDraft("");
+    setCopied(false);
+  }
+
+  async function handleCopyRewrite() {
+    const aiDraft = session.improved?.improvedPrompt ?? "";
+    if (!aiDraft) return;
+    const finalText = editing && draft.trim() ? draft : aiDraft;
+    try {
+      await navigator.clipboard.writeText(finalText);
+    } catch {}
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1600);
+    // Style layer (Pro): record what the user actually accepted so the
+    // graph learns their edits. The server re-checks Pro; fire-and-forget.
+    if (isPro) {
+      fetch("/api/context/style-signal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aiDraft, userFinal: finalText }),
+      }).catch(() => {});
+    }
+  }
+
+  function toggleEdit() {
+    setEditing((v) => {
+      const next = !v;
+      if (next) setDraft(session.improved?.improvedPrompt ?? "");
+      return next;
+    });
   }
 
   return (
@@ -554,15 +591,51 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
             </AnimatePresence>
 
             {session.stage === "done" && session.improved && (
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                <CopyButton text={session.improved.improvedPrompt} />
-                <button
-                  onClick={handleReset}
-                  className="text-sm transition-opacity hover:opacity-100 opacity-70"
-                  style={{ color: "var(--color-paper-mute)" }}
-                >
-                  Try another
-                </button>
+              <div className="mt-4 space-y-3">
+                {isPro && editing && (
+                  <textarea
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    rows={7}
+                    className="w-full rounded-2xl p-4 text-[15px] leading-[1.7] outline-none resize-y"
+                    style={{
+                      background: "var(--color-ink-card)",
+                      border: "1px solid var(--color-rule-strong)",
+                      color: "var(--color-paper)",
+                      fontFamily: "var(--font-inter)",
+                    }}
+                  />
+                )}
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={handleCopyRewrite}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all btn-paper"
+                    style={{ background: "var(--color-paper)", color: "var(--color-ink)", fontWeight: 500 }}
+                  >
+                    {copied ? "Copied" : "Copy rewrite"}
+                  </button>
+                  {isPro && (
+                    <button
+                      onClick={toggleEdit}
+                      className="text-sm transition-opacity hover:opacity-100 opacity-70"
+                      style={{ color: "var(--color-paper-mute)" }}
+                    >
+                      {editing ? "Done editing" : "Edit before copying"}
+                    </button>
+                  )}
+                  <button
+                    onClick={handleReset}
+                    className="text-sm transition-opacity hover:opacity-100 opacity-70"
+                    style={{ color: "var(--color-paper-mute)" }}
+                  >
+                    Try another
+                  </button>
+                </div>
+                {isPro && editing && (
+                  <p className="text-xs" style={{ color: "var(--color-paper-mute)" }}>
+                    Your edits teach DeepClario your style. Copy when it reads the way you&apos;d send it.
+                  </p>
+                )}
               </div>
             )}
 
@@ -765,27 +838,6 @@ function TokenDelta({
         {after}
       </span>
     </span>
-  );
-}
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={() => {
-        navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1600);
-      }}
-      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all btn-paper"
-      style={{
-        background: "var(--color-paper)",
-        color: "var(--color-ink)",
-        fontWeight: 500,
-      }}
-    >
-      {copied ? "Copied" : "Copy rewrite"}
-    </button>
   );
 }
 
