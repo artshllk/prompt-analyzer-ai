@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation'
 import { createOtpClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
 import GoogleSignIn from './GoogleSignIn'
+import { OAuthButtons, socialOAuthAvailable } from './OAuthButtons'
 import {
   parseLastSignIn,
   readLastSignInRaw,
@@ -60,11 +61,15 @@ function LoginInner() {
   const last = useMemo(() => parseLastSignIn(lastRaw), [lastRaw])
 
   const effectiveEmail = emailEdited ? email : (email || last?.email || '')
-  const showEmail = showEmailOverride ?? (!googleAvailable || last?.method === 'email')
+  // Any social path available (Google button, or a redirect-OAuth provider).
+  // When none are configured, the email form is the default view.
+  const hasSocial = googleAvailable || socialOAuthAvailable()
+  const showEmail = showEmailOverride ?? (!hasSocial || last?.method === 'email')
 
   const handleGoogleUnavailable = useCallback(() => {
     setGoogleAvailable(false)
-    setShowEmailOverride(true)
+    // Only fall back to email if there's no other social option left.
+    if (!socialOAuthAvailable()) setShowEmailOverride(true)
   }, [])
 
   // Implicit-flow client: the email path is request-code / verify-code,
@@ -207,8 +212,17 @@ function LoginInner() {
                 </p>
               </>
             )}
+
+            {/* Redirect-OAuth providers (GitHub, X). Each appears only when
+                enabled in the environment + Supabase dashboard. */}
+            {socialOAuthAvailable() && (
+              <div className={googleAvailable ? 'mt-3' : ''}>
+                <OAuthButtons redirectTo={redirectTo} onError={setError} />
+              </div>
+            )}
+
             {error && !showEmail && (
-              <p className="mt-2 text-xs text-center" style={{ color: '#C25E5E' }}>{error}</p>
+              <p className="mt-3 text-xs text-center" style={{ color: '#C25E5E' }}>{error}</p>
             )}
 
             {/* Email path */}
@@ -221,8 +235,8 @@ function LoginInner() {
                 Or use email instead
               </button>
             ) : (
-              <div className={googleAvailable ? 'mt-8' : ''}>
-                {googleAvailable && (
+              <div className={hasSocial ? 'mt-8' : ''}>
+                {hasSocial && (
                   <div className="flex items-center gap-3 mb-5">
                     <span className="flex-1 h-px" style={{ background: 'var(--color-rule)' }} />
                     <span className="eyebrow">Email</span>
