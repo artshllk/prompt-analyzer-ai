@@ -108,7 +108,7 @@ export function MarketingMobileMenu({ links, current }: MarketingMobileMenuProps
   const router = useRouter()
 
   // Close the drawer first, then navigate once the exit animation has had
-  // a moment to play — so tapping a link feels like a deliberate transition
+  // a moment to play - so tapping a link feels like a deliberate transition
   // rather than an instant hard swap. Same-page taps just close.
   const navigate = (href: string, isCurrent: boolean) => {
     setOpen(false)

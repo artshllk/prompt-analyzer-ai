@@ -93,7 +93,7 @@ async function runAnalysis(args: {
   // Loop: analyze → maybe ask a question → answer → analyze again.
   // The engine forces an improvement once it has enough turns, and we cap
   // at MAX_CLARIFY regardless.
-  // eslint-disable-next-line no-constant-condition
+   
   while (true) {
     let result: AnalyzeResult
     try {
@@ -154,7 +154,7 @@ async function presentResult(
   after: number,
 ) {
   const pick = await vscode.window.showInformationMessage(
-    `Prompt improved — clarity ${before} → ${after}.`,
+    `Prompt improved - clarity ${before} → ${after}.`,
     { modal: true, detail: improved },
     'Replace selection',
     'Copy',
