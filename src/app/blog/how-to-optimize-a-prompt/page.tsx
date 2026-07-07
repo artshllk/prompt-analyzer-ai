@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'When it gives a useful answer across several runs and several inputs, not just the first one you tried. Chasing perfection past that point usually wastes time for little gain.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'can ai improve its own prompt?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'It can help. When an answer is close but not right, tell the model what was off and ask it to rewrite your prompt, for example "That was too formal and too long. Rewrite my prompt so the next answer is warmer and under 90 words." You still make the final call, but it is a fast way to get an improved draft to react to.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'what order should i fix a prompt in?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Start from a clear goal, then improve one part at a time in this order: the task, the context, the format, then the constraints. Test after each change so you know what helped. Fixing one thing at a time is slower than a full rewrite, but it is the only way to learn which change actually worked.',
+      },
+    },
   ],
 }
 
@@ -143,6 +159,47 @@ export default function HowToOptimizeAPromptPage() {
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
                 Over a few rounds, you are not just fixing this prompt. You are learning which fixes
                 tend to work, which makes the next prompt faster to write.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Watch it improve, step by step</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-5">
+                Here is the whole method on one prompt. Each version fixes one part and gets closer.
+              </p>
+              <div className="space-y-3">
+                {[
+                  { n: 'Start', d: '"Write a follow-up email." The answer is generic and could be for anyone.' },
+                  { n: 'Fix the task', d: '"Write a follow-up email to a client who has not replied in a week." Better, but still flat.' },
+                  { n: 'Add context', d: 'Add: "We sent a proposal; they seemed keen but went quiet." Now it can reference the situation.' },
+                  { n: 'Add format', d: 'Add: "Keep it under 90 words, warm and low-pressure." Now the shape fits.' },
+                  { n: 'Add a limit', d: 'Add: "Do not sound pushy or guilt them for not replying." The final version lands.' },
+                ].map(item => (
+                  <div key={item.n} className="p-4 rounded-xl border border-[color:var(--color-rule)]">
+                    <p className="font-semibold text-[color:var(--color-paper)] text-sm mb-1">{item.n}</p>
+                    <p className="text-xs text-[color:var(--color-paper-mute)]">{item.d}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                Five small edits, tested one at a time, and a vague request became a prompt you can
+                reuse with confidence. No single change was clever. The method is what did the work.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Let the model help you optimize</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                A quiet trick: the AI can help improve its own prompt. When an answer is close but not
+                right, tell the model what was off and ask it to suggest a better prompt.
+              </p>
+              <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                <p className="text-sm text-[color:var(--color-paper)]">&ldquo;That answer was too formal and too long. Rewrite my prompt so the next answer is warmer and under 90 words.&rdquo;</p>
+              </div>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                You still make the final call, since the model does not know what you want better than
+                you do. But it is a fast way to get an improved draft to react to, which often beats
+                staring at a blank prompt trying to fix it alone.
               </p>
             </section>
 

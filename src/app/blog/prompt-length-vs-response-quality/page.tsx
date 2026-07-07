@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'As long as it needs to be clear, and no longer. Include the task, the context that matters, the format, and any limits. Cut anything that does not change the answer.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'when is a longer prompt actually better?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'When the extra words add something the model needs: an example of the output you want, clear steps for a complex task, real background like a document or specific facts, or things to avoid. Length that carries information helps. Length that carries filler and flattery does not.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'how do i shorten a prompt without losing quality?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Read it back and cross out any line that would not change the answer if it were gone. Flattery, hedging, and repeated instructions can go. Keep every real instruction and the context that matters. A trimmed prompt with the same detail usually performs as well or better.',
+      },
+    },
   ],
 }
 
@@ -140,6 +156,44 @@ export default function PromptLengthPage() {
                 <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Piling on background that has nothing to do with the answer you want.</li>
                 <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Burying the actual task in the middle of a long paragraph, where it is easy to miss.</li>
               </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">When a longer prompt genuinely helps</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                To be fair, length is not the enemy. Plenty of strong prompts are long, because the
+                task really does need the detail. A prompt should get longer when the extra words add
+                something the model cannot do without.
+              </p>
+              <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> When you include an example of the output you want, which is one of the most powerful things you can add.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> When the task is complex and genuinely needs several clear steps or rules.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> When real background matters: a document to work from, specific facts, or firm limits.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> When you are naming things to avoid that the model would otherwise get wrong.</li>
+              </ul>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                Notice the pattern. Each of these adds useful detail, not more words for their own
+                sake. Length that carries information is good. Length that carries filler is not.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The same request, trimmed</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-5">
+                Here is what cutting filler without losing detail looks like. Both prompts contain the
+                same real instructions.
+              </p>
+              <div className="grid gap-4">
+                <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                  <p className="text-xs text-[#C25E5E] font-semibold uppercase mb-2">Padded</p>
+                  <p className="text-sm text-[color:var(--color-paper-mute)] italic">&ldquo;Hi, I was hoping you could possibly help me with something if it is not too much trouble. I really need a good, high-quality summary of the article below, something that is engaging and professional, that I can share with my team. Please make it really good. Keep it fairly short if you can.&rdquo;</p>
+                </div>
+                <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                  <p className="text-xs text-[color:var(--color-paper)] font-semibold uppercase mb-2">Trimmed</p>
+                  <p className="text-sm text-[color:var(--color-paper)]">&ldquo;Summarize the article below in 3 bullet points for my team. Plain and professional.&rdquo;</p>
+                  <p className="text-xs text-[color:var(--color-paper-mute)] mt-2">The flattery and hedging are gone. Every real instruction stayed. The short one will do better.</p>
+                </div>
+              </div>
             </section>
 
             <section>

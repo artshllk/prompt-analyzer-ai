@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'It gives a useful answer across several tries and several inputs, not just the one you happened to test first. If it only works on the easy example, it is not ready.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'do i need to test every prompt?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No. Match the effort to the stakes. A one-time question needs no real testing; just fix and re-ask. A prompt you will reuse is worth the three checks. A prompt others rely on, like one that powers a template or a tool, deserves the hardest testing, because a weak prompt fails quietly at scale.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'how long does it take to test a prompt?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'For most prompts, about five minutes. Write down what a good answer must include, run the prompt on three real and varied inputs including a hard one, and check each result against your list. Where it fails is what you fix.',
+      },
+    },
   ],
 }
 
@@ -138,6 +154,47 @@ export default function HowToTestAPromptPage() {
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
                 One change, one test. It feels slower, but it is how you end up with a prompt you
                 actually understand.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Match the effort to the stakes</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Not every prompt deserves a full test. The right amount of testing depends on how many
+                times you will use the prompt and how much a bad answer would cost.
+              </p>
+              <div className="space-y-3">
+                {[
+                  { t: 'A one-time question', d: 'No real testing needed. If the answer looks off, just fix the prompt and ask again. This is most of what people do.' },
+                  { t: 'A prompt you will reuse', d: 'Worth the three checks: run it a few times, try a hard input, and judge against a standard. A few minutes now saves repeated cleanup later.' },
+                  { t: 'A prompt others will rely on', d: 'Test it hardest. If it powers a workflow, a template, or a tool, a weak prompt fails quietly at scale. Stress it before you trust it.' },
+                ].map(item => (
+                  <div key={item.t} className="p-4 rounded-xl border border-[color:var(--color-rule)]">
+                    <p className="font-semibold text-[color:var(--color-paper)] text-sm mb-1">{item.t}</p>
+                    <p className="text-xs text-[color:var(--color-paper-mute)]">{item.d}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">What a quick test looks like</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Testing sounds formal, but for most prompts it takes about five minutes. Say you have a
+                prompt that turns messy meeting notes into a clean summary.
+              </p>
+              <div className="p-6 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                <p className="text-sm text-[color:var(--color-paper-mute)] leading-relaxed">
+                  Write down what a good summary must have first: three to five bullets, decisions and
+                  owners named, no filler. Then run the prompt on three real sets of notes, including a
+                  short one and a rambling one. Check each result against your list. If the rambling
+                  one drops the decisions, you know exactly what to fix, and you know it before you
+                  trusted the prompt on something that mattered.
+                </p>
+              </div>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                That is the whole method: a standard written in advance, a few varied inputs, and an
+                honest look at the results.
               </p>
             </section>
 

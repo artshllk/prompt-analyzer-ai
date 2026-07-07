@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'Almost always the prompt. Modern models are capable, but they can only work with what you give them. A vague or thin prompt produces a vague answer no matter how good the model is.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'should i switch ai tools if i get bad answers?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Usually not. Switching tools is the most common wrong response to a weak answer. When an answer disappoints, look at your prompt first. Nine times out of ten the fix is a sentence you left out, like the audience or the format, not a different model.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'what are the four things a prompt usually misses?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'A clear goal, the context the model cannot see, a stated format for the answer, and limits on what to avoid. Most weak prompts are missing just one of these, so adding the one that is absent usually turns a vague answer into a useful one.',
+      },
+    },
   ],
 }
 
@@ -185,12 +201,59 @@ export default function WhyMostPromptsFailPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Fix one gap at a time</h2>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The fifth reason: blaming the model</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                There is one more reason prompts fail, and it is the sneakiest, because it stops you
+                from fixing the other four. It is the habit of blaming the model.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                When an answer is weak, the easy thought is &ldquo;this AI is not very good.&rdquo; So
+                people switch tools, or give up, or paste the same vague prompt again and hope for a
+                better roll. None of that fixes anything, because the prompt was the problem the whole
+                time. The model did exactly what the words told it to do.
+              </p>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-                You rarely need all four fixes at once. Most weak prompts are missing just one
-                thing. Read your prompt back and ask: is the goal clear, is the context there, did
-                I name a format, did I set any limits? Add the one that is missing, and the answer
-                usually jumps in quality.
+                The shift that changes everything is small: when an answer disappoints, look at your
+                prompt first, not the model. Nine times out of ten, the fix is a sentence you left
+                out, not a tool you need to replace.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">All four fixes in one example</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-5">
+                Here is what it looks like to fix every gap at once. Watch the same request grow from
+                a vague ask into a clear brief.
+              </p>
+              <div className="grid gap-4">
+                <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                  <p className="text-xs text-[#C25E5E] font-semibold uppercase mb-2">The weak prompt</p>
+                  <p className="text-sm text-[color:var(--color-paper-mute)] italic">&ldquo;Write about our new feature.&rdquo;</p>
+                </div>
+                <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                  <p className="text-xs text-[color:var(--color-paper)] font-semibold uppercase mb-2">The fixed prompt</p>
+                  <p className="text-sm text-[color:var(--color-paper)] mb-3">&ldquo;Write a short announcement for our small-business customers about our new one-click invoice feature. They are not technical and mostly care about saving time. Keep it to 80 words, warm and plain. Do not use tech jargon, and lead with what it saves them, not how it works.&rdquo;</p>
+                  <p className="text-xs text-[color:var(--color-paper-mute)]">Goal (announcement about the invoice feature), context (small-business, non-technical, time-focused), format (80 words, warm), limits (no jargon, lead with the benefit). Same task, night-and-day result.</p>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Fix one gap at a time</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                You rarely need all four fixes at once. Most weak prompts are missing just one thing.
+                When an answer disappoints, run this quick check before you touch anything else:
+              </p>
+              <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Is the goal clear enough that a stranger would know what I want?</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Did I give the context the model cannot see, like the audience and the purpose?</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Did I say how the answer should look: length, structure, tone?</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Did I set any limits on what to avoid?</li>
+              </ul>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                Add the one that is missing, and the answer usually jumps in quality. You will be
+                surprised how often the same model, given one more sentence, produces a completely
+                different result.
               </p>
             </section>
           </article>

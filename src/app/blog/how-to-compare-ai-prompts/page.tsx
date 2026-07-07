@@ -56,6 +56,22 @@ const faqSchema = {
         text: 'Whatever matters for your task: accuracy, tone, length, format, and how consistent the answers are across runs. Decide these before you test, so you are not moving the goalposts to fit the prompt you already liked.',
       },
     },
+    {
+      '@type': 'Question',
+      name: 'should i pick the prompt with the single best answer?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No. A single great answer can be luck. Judge consistency instead: a prompt that is good on every run is usually better to rely on than one that swings between brilliant and poor. Steady and good beats occasionally brilliant for anything you will reuse.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'why do my prompt comparisons give unreliable results?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Usually one of four mistakes: feeding each prompt a different input, running each only once, deciding what counts as good after seeing the results, or judging the prompt text instead of the answers it produces. Fix those and use the same input, a written standard set in advance, and several runs each.',
+      },
+    },
   ],
 }
 
@@ -139,6 +155,41 @@ export default function HowToCompareAIPromptsPage() {
                 Steady and good beats occasionally brilliant, especially for anything you plan to
                 reuse.
               </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">A quick worked comparison</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Say you want a prompt that writes product descriptions, and you have two versions. Here
+                is the whole process in one pass.
+              </p>
+              <div className="p-6 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
+                <p className="text-sm text-[color:var(--color-paper-mute)] leading-relaxed">
+                  Pick one product and feed it to both prompts. Before you read anything, write your
+                  standard: under 50 words, one clear benefit, no buzzwords. Run each prompt four
+                  times. Prompt A gives one great description and three flat ones. Prompt B gives four
+                  solid, on-standard descriptions every time. Prompt B wins, even though A produced the
+                  single best line. Steady and good beats occasionally brilliant, because you can rely
+                  on it.
+                </p>
+              </div>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
+                That is the value of running each prompt several times. A single comparison would have
+                told you A was best, and you would have been wrong.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Common ways a comparison goes wrong</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                A few habits quietly ruin a comparison and lead you to the wrong winner.
+              </p>
+              <ul className="space-y-2 text-sm text-[color:var(--color-paper-mute)]">
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Different inputs. If each prompt gets a different example, you are testing the examples, not the prompts.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> One run each. A single answer can be luck. You need a few runs to see the real pattern.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Moving the goalposts. Deciding what counts as good after you see the results lets you pick the prompt you already liked.</li>
+                <li className="flex gap-2"><span className="text-[color:var(--color-paper)]">→</span> Judging the prompt, not the answers. A nicer-looking prompt can still produce worse output. Look at what comes out.</li>
+              </ul>
             </section>
 
             <section>
