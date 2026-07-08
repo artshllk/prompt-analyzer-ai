@@ -50,6 +50,7 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
   // accepted (edited or verbatim) text feeds the Context Graph's Style layer.
   const [copied, setCopied] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [edited, setEdited] = useState(false);
   const [draft, setDraft] = useState("");
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -138,14 +139,22 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
     setPrompt("");
     setAnswer("");
     setEditing(false);
+    setEdited(false);
     setDraft("");
     setCopied(false);
+  }
+
+  // The rewrite the user currently sees/copies: their edit if they've made
+  // one, otherwise the AI's draft.
+  function currentRewrite() {
+    const aiDraft = session.improved?.improvedPrompt ?? "";
+    return edited || editing ? draft : aiDraft;
   }
 
   async function handleCopyRewrite() {
     const aiDraft = session.improved?.improvedPrompt ?? "";
     if (!aiDraft) return;
-    const finalText = editing && draft.trim() ? draft : aiDraft;
+    const finalText = currentRewrite() || aiDraft;
     try {
       await navigator.clipboard.writeText(finalText);
     } catch {}
@@ -163,11 +172,17 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
   }
 
   function toggleEdit() {
-    setEditing((v) => {
-      const next = !v;
-      if (next) setDraft(session.improved?.improvedPrompt ?? "");
-      return next;
-    });
+    if (!editing) {
+      // Enter edit mode - seed from whatever is currently shown.
+      setDraft(edited ? draft : session.improved?.improvedPrompt ?? "");
+      setEditing(true);
+      return;
+    }
+    // Leave edit mode - commit the edit if it actually changed the text so
+    // the card keeps showing the user's version.
+    const original = session.improved?.improvedPrompt ?? "";
+    setEdited(draft.trim().length > 0 && draft.trim() !== original.trim());
+    setEditing(false);
   }
 
   return (
@@ -458,14 +473,47 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
                       </ul>
                     )}
 
-                    <StreamOut
-                      text={session.improved.improvedPrompt}
-                      className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
-                      style={{
-                        color: "var(--color-paper)",
-                        fontFamily: "var(--font-inter)",
-                      }}
-                    />
+                    {isPro && editing ? (
+                      <textarea
+                        value={draft}
+                        onChange={(e) => setDraft(e.target.value)}
+                        autoFocus
+                        rows={8}
+                        className="w-full bg-transparent resize-y outline-none text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap"
+                        style={{
+                          color: "var(--color-paper)",
+                          caretColor: "var(--color-paper)",
+                          fontFamily: "var(--font-inter)",
+                        }}
+                      />
+                    ) : edited ? (
+                      <p
+                        className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
+                        style={{
+                          color: "var(--color-paper)",
+                          fontFamily: "var(--font-inter)",
+                        }}
+                      >
+                        {draft}
+                      </p>
+                    ) : (
+                      <StreamOut
+                        text={session.improved.improvedPrompt}
+                        className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
+                        style={{
+                          color: "var(--color-paper)",
+                          fontFamily: "var(--font-inter)",
+                        }}
+                      />
+                    )}
+                    {edited && !editing && (
+                      <span
+                        className="inline-block mt-2 text-[11px] tracking-[0.12em] uppercase"
+                        style={{ color: "var(--color-paper-mute)" }}
+                      >
+                        Your edited version
+                      </span>
+                    )}
 
                     {/* Why the rewrite is better - the reasoning, not
                         just the result. */}
@@ -592,20 +640,6 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
 
             {session.stage === "done" && session.improved && (
               <div className="mt-4 space-y-3">
-                {isPro && editing && (
-                  <textarea
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                    rows={7}
-                    className="w-full rounded-2xl p-4 text-[15px] leading-[1.7] outline-none resize-y"
-                    style={{
-                      background: "var(--color-ink-card)",
-                      border: "1px solid var(--color-rule-strong)",
-                      color: "var(--color-paper)",
-                      fontFamily: "var(--font-inter)",
-                    }}
-                  />
-                )}
                 <div className="flex flex-wrap items-center gap-3">
                   <button
                     onClick={handleCopyRewrite}

@@ -93,7 +93,7 @@ export function ContextIdentityCard({
       } else {
         setScanNote(
           data.reason === "not_enough_history"
-            ? "Not enough prompts yet, run a few rewrites first."
+            ? "Run at least 3 rewrites while signed in, then scan again."
             : "Nothing clear to suggest from your prompts yet.",
         );
       }
