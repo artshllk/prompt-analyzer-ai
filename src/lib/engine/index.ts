@@ -55,13 +55,17 @@ interface StepResponse {
  */
 function buildContextBlock(input: AnalyzeInput): string {
   const ctx = input.context
-  if (!ctx || (!ctx.identity?.length && !ctx.styleHints?.length)) return ''
+  if (!ctx || (!ctx.identity?.length && !ctx.memories?.length && !ctx.styleHints?.length)) return ''
 
   const lines: string[] = ['# CONTEXT — who you are writing for (persistent profile)']
   lines.push('Weight this, but never let it override the explicit prompt or clarifications below.')
   if (ctx.identity?.length) {
     lines.push('', 'About the user:')
     ctx.identity.forEach(l => lines.push(`- ${l}`))
+  }
+  if (ctx.memories?.length) {
+    lines.push('', 'Standing preferences and notes:')
+    ctx.memories.forEach(l => lines.push(`- ${l}`))
   }
   if (ctx.styleHints?.length) {
     lines.push('', 'Learned style preferences (from outputs they actually accepted):')

@@ -150,6 +150,7 @@ const NAV_ITEMS: { href: string; label: string; isPro?: boolean }[] = [
   { href: "/playground", label: "Playground" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/history", label: "History" },
+  { href: "/context", label: "Context" },
   { href: "/insights", label: "Insights", isPro: true },
   { href: "/detector", label: "Detector" },
   { href: "/extension", label: "Extension" },

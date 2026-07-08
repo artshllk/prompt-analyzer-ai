@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getIdentity, saveIdentity } from '@/lib/context/graph'
+import { clearContext, getIdentity, saveIdentity } from '@/lib/context/graph'
 import type { ExpertiseLevel } from '@/types/database'
 
 const LEVELS: ExpertiseLevel[] = ['beginner', 'intermediate', 'advanced', 'expert']
@@ -55,4 +55,16 @@ export async function PUT(req: NextRequest) {
   })
 
   return NextResponse.json({ identity: await getIdentity(user.id) })
+}
+
+/**
+ * Clear the whole Context Graph: identity, memories, and style signals.
+ * The all-or-nothing reset every memory feature owes its users.
+ */
+export async function DELETE() {
+  const user = await requireUser()
+  if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+
+  await clearContext(user.id)
+  return NextResponse.json({ ok: true })
 }

@@ -16,10 +16,10 @@ const LEVELS: ExpertiseLevel[] = [
 ];
 
 /**
- * Identity layer of the Context Graph, surfaced in settings. Auto-extract
- * ("Scan my recent prompts") produces a suggestion the user confirms or
- * edits - never a blank form. Confirmed identity is injected into every
- * rewrite. Style learning is noted as Pro.
+ * Identity layer of the Context Graph - the pinned "About you" card on the
+ * Context page. Auto-extract ("Scan my prompts") produces a suggestion the
+ * user confirms or edits - never a blank form. Confirmed identity is
+ * injected into every rewrite. Style learning is noted as Pro.
  */
 export function ContextIdentityCard({
   initial,
@@ -114,19 +114,37 @@ export function ContextIdentityCard({
     setSuggestion(null);
   }
 
+  function dismissSuggestion() {
+    // Persist the dismissal - clearing local state alone lets the stored
+    // suggestion reappear on the next page load.
+    setSuggestion(null);
+    fetch("/api/context/identity/suggest", { method: "DELETE" }).catch(
+      () => {},
+    );
+  }
+
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 space-y-5">
+    <div
+      className="rounded-2xl p-6 space-y-5"
+      style={{
+        background: "var(--color-ink-card)",
+        border: "1px solid var(--color-rule-strong)",
+      }}
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.16em] text-[#6f7fa8] mb-1.5">
-            Context Graph
-          </p>
-          <h2 className="text-lg font-semibold text-[#f0f4ff]">
-            Your identity
+          <p className="eyebrow mb-2">About you</p>
+          <h2
+            className="text-lg"
+            style={{ color: "var(--color-paper)", fontWeight: 500 }}
+          >
+            Who you&apos;re writing as
           </h2>
-          <p className="text-sm text-[#8b9cc8] mt-1 max-w-md">
-            A profile DeepClario weaves into every rewrite, so you stop
-            re-explaining who you are.
+          <p
+            className="text-sm mt-1 max-w-md"
+            style={{ color: "var(--color-paper-mute)" }}
+          >
+            Woven into every rewrite, so you stop re-explaining who you are.
             {confirmed
               ? " Active on your rewrites."
               : " Confirm the basics to switch it on."}
@@ -135,21 +153,41 @@ export function ContextIdentityCard({
         <button
           onClick={scan}
           disabled={scanning}
-          className="shrink-0 text-xs px-3 py-1.5 rounded-full border border-white/15 text-[#c9d4f0] hover:bg-white/5 transition-colors disabled:opacity-50"
+          className="shrink-0 text-xs px-3 py-1.5 rounded-full chip-hover transition-colors disabled:opacity-50"
+          style={{
+            border: "1px solid var(--color-rule-strong)",
+            color: "var(--color-paper-mute)",
+          }}
         >
           {scanning ? "Scanning…" : "Scan my prompts"}
         </button>
       </div>
 
-      {scanNote && <p className="text-xs text-[#8b9cc8]">{scanNote}</p>}
+      {scanNote && (
+        <p className="text-xs" style={{ color: "var(--color-paper-mute)" }}>
+          {scanNote}
+        </p>
+      )}
 
       {/* Auto-extracted suggestion awaiting confirmation */}
       {suggestion && (
-        <div className="rounded-xl border border-violet-500/25 bg-violet-500/[0.06] p-4">
-          <p className="text-sm text-[#f0f4ff] font-medium mb-2">
+        <div
+          className="rounded-xl p-4"
+          style={{
+            border: "1px dashed var(--color-accent)",
+            background: "var(--color-accent-soft)",
+          }}
+        >
+          <p
+            className="text-sm font-medium mb-2"
+            style={{ color: "var(--color-paper)" }}
+          >
             From your recent prompts, you might be:
           </p>
-          <ul className="text-sm text-[#c9d4f0] space-y-0.5 mb-3">
+          <ul
+            className="text-sm space-y-0.5 mb-3"
+            style={{ color: "var(--color-paper-mute)" }}
+          >
             {suggestion.role && <li>· {suggestion.role}</li>}
             {suggestion.industry && <li>· in {suggestion.industry}</li>}
             {suggestion.company && <li>· at {suggestion.company}</li>}
@@ -164,13 +202,19 @@ export function ContextIdentityCard({
           <div className="flex items-center gap-3">
             <button
               onClick={() => applySuggestion(suggestion)}
-              className="text-xs px-3 py-1.5 rounded-full bg-violet-600 text-white hover:bg-violet-500 transition-colors"
+              className="text-xs px-3 py-1.5 rounded-full transition-all btn-paper"
+              style={{
+                background: "var(--color-paper)",
+                color: "var(--color-ink)",
+                fontWeight: 500,
+              }}
             >
               Use these
             </button>
             <button
-              onClick={() => setSuggestion(null)}
-              className="text-xs text-[#8b9cc8] hover:text-[#c9d4f0] transition-colors"
+              onClick={dismissSuggestion}
+              className="text-xs transition-opacity opacity-70 hover:opacity-100"
+              style={{ color: "var(--color-paper-mute)" }}
             >
               Dismiss
             </button>
@@ -199,7 +243,10 @@ export function ContextIdentityCard({
           placeholder="e.g. fintech"
         />
         <div>
-          <label className="block text-[11px] uppercase tracking-[0.12em] text-[#6f7fa8] mb-1.5">
+          <label
+            className="block text-[11px] uppercase tracking-[0.12em] mb-1.5"
+            style={{ color: "var(--color-paper-mute)" }}
+          >
             Expertise
           </label>
           <select
@@ -207,7 +254,12 @@ export function ContextIdentityCard({
             onChange={(e) =>
               setExpertise(e.target.value as ExpertiseLevel | "")
             }
-            className="w-full rounded-lg bg-[#0a0e1a] border border-white/10 px-3 py-2.5 text-sm text-[#f0f4ff] outline-none focus:border-violet-500/50"
+            className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition-colors"
+            style={{
+              background: "var(--color-ink)",
+              border: "1px solid var(--color-rule-strong)",
+              color: "var(--color-paper)",
+            }}
           >
             <option value="">Not set</option>
             {LEVELS.map((l) => (
@@ -224,10 +276,10 @@ export function ContextIdentityCard({
           placeholder="English, Spanish"
         />
         <Field
-          label="Voice note"
+          label="Tone & style preferences"
           value={toneNote}
           onChange={setToneNote}
-          placeholder="e.g. plain, no hype"
+          placeholder="e.g. plain language, no hype"
         />
       </div>
 
@@ -235,7 +287,12 @@ export function ContextIdentityCard({
         <button
           onClick={save}
           disabled={saving}
-          className="text-sm px-4 py-2 rounded-lg bg-white text-[#0a0e1a] font-medium hover:bg-white/90 transition-colors disabled:opacity-50"
+          className="text-sm px-4 py-2 rounded-full transition-all btn-paper disabled:opacity-50"
+          style={{
+            background: "var(--color-paper)",
+            color: "var(--color-ink)",
+            fontWeight: 500,
+          }}
         >
           {saving
             ? "Saving…"
@@ -243,24 +300,38 @@ export function ContextIdentityCard({
               ? "Save changes"
               : "Confirm & activate"}
         </button>
-        {saved && <span className="text-xs text-emerald-400">Saved</span>}
+        {saved && (
+          <span
+            className="text-xs"
+            style={{ color: "var(--color-accent-bright)" }}
+          >
+            Saved
+          </span>
+        )}
       </div>
 
       {/* Style layer note - Pro */}
-      <div className="pt-4 border-t border-white/10">
-        <p className="text-sm text-[#c9d4f0] font-medium">
+      <div className="pt-4" style={{ borderTop: "1px solid var(--color-rule)" }}>
+        <p
+          className="text-sm font-medium"
+          style={{ color: "var(--color-paper)" }}
+        >
           Style learning {isPro ? "· on" : "· Pro"}
         </p>
-        <p className="text-xs text-[#8b9cc8] mt-1 max-w-md">
+        <p
+          className="text-xs mt-1 max-w-md"
+          style={{ color: "var(--color-paper-mute)" }}
+        >
           {isPro
-            ? "DeepClario watches which edits you make to its drafts and adapts: shorter output, no em-dashes, your rhythm."
-            : "On Pro, DeepClario learns from the edits you make to its drafts and adapts to your real style automatically."}
+            ? "Deepclario watches which edits you make to its drafts and adapts: shorter output, no em-dashes, your rhythm."
+            : "On Pro, Deepclario learns from the edits you make to its drafts and adapts to your real style automatically."}
           {!isPro && (
             <>
               {" "}
               <Link
                 href="/pricing"
-                className="text-violet-300 underline underline-offset-4"
+                className="underline underline-offset-4 hover:opacity-80 transition-opacity"
+                style={{ color: "var(--color-accent-bright)" }}
               >
                 See Pro
               </Link>
@@ -286,14 +357,22 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-[11px] uppercase tracking-[0.12em] text-[#6f7fa8] mb-1.5">
+      <label
+        className="block text-[11px] uppercase tracking-[0.12em] mb-1.5"
+        style={{ color: "var(--color-paper-mute)" }}
+      >
         {label}
       </label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg bg-[#0a0e1a] border border-white/10 px-3 py-2.5 text-sm text-[#f0f4ff] outline-none focus:border-violet-500/50 placeholder:text-[#4a5a80]"
+        className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition-colors"
+        style={{
+          background: "var(--color-ink)",
+          border: "1px solid var(--color-rule-strong)",
+          color: "var(--color-paper)",
+        }}
       />
     </div>
   );

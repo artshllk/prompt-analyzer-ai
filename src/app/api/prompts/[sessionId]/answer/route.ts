@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { analyzePrompt } from '@/lib/engine'
 import { addClarificationExchange, updateSessionStatus, saveImprovement, getSessionWithDetails } from '@/lib/db/sessions'
+import { compileContextBrief } from '@/lib/context/compile'
+import { markMemoriesUsed } from '@/lib/context/graph'
+import type { ContextApplied } from '@/types'
 
 interface AnswerBody {
   answer: string
   turn: number
   /** Carried through from the client so a Deep Rewrite session stays deep. */
   deep?: boolean
+  /** Carried through so a context-off session stays context-off. */
+  useContext?: boolean
 }
 
 export async function POST(
@@ -29,16 +34,15 @@ export async function POST(
     return NextResponse.json({ error: 'answer is required' }, { status: 400 })
   }
 
-  // Deep Rewrite is Pro-only; re-check the tier rather than trusting the client.
-  let deep = false
-  if (body.deep) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('tier')
-      .eq('id', user.id)
-      .single()
-    deep = profile?.tier === 'pro'
-  }
+  // Tier gates Deep Rewrite (re-checked, never trusted from the client)
+  // and decides whether Pro style hints join the context brief.
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tier')
+    .eq('id', user.id)
+    .single()
+  const isPro = profile?.tier === 'pro'
+  const deep = body.deep === true && isPro
 
   const session = await getSessionWithDetails(sessionId, user.id)
   if (!session) {
@@ -70,12 +74,21 @@ export async function POST(
     },
   ]
 
+  // The Context Graph must reach the FINAL rewrite too, and with a clarify
+  // loop that rewrite lands here - each turn rebuilds the system prompt
+  // from scratch, so skipping compile here would silently drop the user's
+  // profile from the result. Fail-open like the fresh-analysis route.
+  const context = body.useContext === false
+    ? null
+    : await compileContextBrief(user.id, { isPro }).catch(() => null)
+
   // Re-analyze with accumulated context
   const result = await analyzePrompt({
     prompt: session.originalPrompt,
     tone: session.tone,
     priorAnswers,
     deep,
+    context,
   })
 
   if (!result) {
@@ -104,5 +117,17 @@ export async function POST(
     })
   }
 
-  return NextResponse.json({ ...result, sessionId })
+  const contextApplied: ContextApplied | null = context
+    ? {
+        identity: context.identity ?? [],
+        memories: context.usedMemories ?? [],
+        styleHints: context.styleHints ?? [],
+      }
+    : null
+  // Awaited: on serverless, work started after the response can be frozen.
+  if (context?.usedMemories?.length) {
+    await markMemoriesUsed(user.id, context.usedMemories.map(m => m.id)).catch(() => {})
+  }
+
+  return NextResponse.json({ ...result, sessionId, contextApplied })
 }

@@ -29,6 +29,9 @@ export const ANON_DETECT_LIMIT = 1
 /** Session history retention for free users, in days. Pro keeps everything. */
 export const HISTORY_FREE_DAYS = 7
 
+/** Active context memories for free users. Pro remembers everything. */
+export const MEMORY_FREE_LIMIT = 10
+
 /** ISO timestamp for the start of a rolling window `hours` ago. */
 export function windowStart(hours: number): string {
   return new Date(Date.now() - hours * 3_600_000).toISOString()

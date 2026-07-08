@@ -7,6 +7,7 @@ import { SignupGate } from "@/components/playground/SignupGate";
 import { FreeCreditsMeter } from "@/components/playground/FreeCreditsMeter";
 import { PaywallModal } from "@/components/ui/PaywallModal";
 import { StreamOut } from "@/components/shared/StreamOut";
+import { ContextAppliedChip } from "@/components/context/ContextAppliedChip";
 import { usePromptSession } from "@/hooks/usePromptSession";
 import { useTokenCount } from "@/hooks/useTokenCount";
 import type { Tone } from "@/types/database";
@@ -14,6 +15,7 @@ import type { UsageInfo } from "@/types";
 
 const ANON_LIMIT = 2;
 const ANON_KEY = "pc_anon_count";
+const USE_CONTEXT_KEY = "pc_use_context";
 
 interface PlaygroundClientProps {
   isSignedIn: boolean;
@@ -37,6 +39,9 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
   // optimistically as the user spends credits this session.
   const [rewritesUsed, setRewritesUsed] = useState(usage?.used ?? 0);
   const [deepMode, setDeepMode] = useState(false);
+  // "Use my context" - the per-session kill switch for the Context Graph.
+  // Sticky across visits: turning it off is a preference, not a one-off.
+  const [useMyContext, setUseMyContext] = useState(true);
 
   const session = usePromptSession({ anonymous: !isSignedIn });
   const isAnon = !isSignedIn;
@@ -63,8 +68,16 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
       const parsed = raw ? parseInt(raw, 10) : 0;
       setAnonCount(Number.isFinite(parsed) ? parsed : 0);
     }
+    setUseMyContext(window.localStorage.getItem(USE_CONTEXT_KEY) !== "off");
     setHydrated(true);
   }, [isSignedIn]);
+
+  function toggleUseContext() {
+    setUseMyContext((on) => {
+      window.localStorage.setItem(USE_CONTEXT_KEY, on ? "off" : "on");
+      return !on;
+    });
+  }
 
   // Auto-grow inputs.
   useEffect(() => {
@@ -116,7 +129,12 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
 
   async function handleAnalyze() {
     if (!prompt.trim() || thinking) return;
-    const result = await session.analyze(prompt, tone, deepMode && isPro);
+    const result = await session.analyze(
+      prompt,
+      tone,
+      deepMode && isPro,
+      useMyContext,
+    );
     if (isAnon) {
       const next = anonCount + 1;
       setAnonCount(next);
@@ -160,15 +178,24 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
     } catch {}
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
-    // Style layer (Pro): record what the user actually accepted so the
-    // graph learns their edits. The server re-checks Pro; fire-and-forget.
-    if (isPro) {
-      fetch("/api/context/style-signal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ aiDraft, userFinal: finalText }),
-      }).catch(() => {});
-    }
+    sendStyleSignal(aiDraft, finalText);
+  }
+
+  // Style layer (Pro): record what the user actually accepted so the graph
+  // learns their edits. Keyed by session server-side, so edit-commit then
+  // copy updates one signal instead of double-counting. The server
+  // re-checks Pro; fire-and-forget.
+  function sendStyleSignal(aiDraft: string, userFinal: string) {
+    if (!isPro || !aiDraft.trim() || !userFinal.trim()) return;
+    fetch("/api/context/style-signal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        aiDraft,
+        userFinal,
+        sessionId: session.sessionId ?? undefined,
+      }),
+    }).catch(() => {});
   }
 
   function toggleEdit() {
@@ -181,8 +208,12 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
     // Leave edit mode - commit the edit if it actually changed the text so
     // the card keeps showing the user's version.
     const original = session.improved?.improvedPrompt ?? "";
-    setEdited(draft.trim().length > 0 && draft.trim() !== original.trim());
+    const committed = draft.trim().length > 0 && draft.trim() !== original.trim();
+    setEdited(committed);
     setEditing(false);
+    // An edit the user keeps is an accepted output even if they never
+    // click Copy - capture the signal at commit, not just at copy.
+    if (committed) sendStyleSignal(original, draft);
   }
 
   return (
@@ -267,6 +298,39 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
                       onUpgrade={() => setPaywallOpen(true)}
                     />
                   )}
+                  {/* Context Graph kill switch - visible so users always
+                      know whether their profile is steering the rewrite. */}
+                  {isSignedIn && (
+                    <button
+                      type="button"
+                      disabled={started}
+                      aria-pressed={useMyContext}
+                      onClick={toggleUseContext}
+                      title="Weave your saved context into rewrites"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] transition-colors chip-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{
+                        border: `1px solid ${useMyContext ? "var(--color-accent-bright)" : "var(--color-rule-strong)"}`,
+                        color: useMyContext
+                          ? "var(--color-accent-bright)"
+                          : "var(--color-paper-mute)",
+                        background: useMyContext
+                          ? "var(--color-accent-soft)"
+                          : "transparent",
+                      }}
+                    >
+                      My context
+                      <span
+                        className="text-[10px] tracking-wider uppercase font-semibold"
+                        style={{
+                          color: useMyContext
+                            ? "var(--color-accent-bright)"
+                            : "var(--color-paper-mute)",
+                        }}
+                      >
+                        {useMyContext ? "On" : "Off"}
+                      </span>
+                    </button>
+                  )}
                 </div>
                 {!started ? (
                   <button
@@ -324,12 +388,21 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
           {/* RIGHT - Deepclario's response (progressive disclosure). */}
           <div ref={responseRef}>
             <div className="flex items-baseline justify-between mb-3">
-              <p
-                className="eyebrow"
-                style={{ color: "var(--color-accent-bright)" }}
-              >
-                Deepclario
-              </p>
+              <span className="flex items-center gap-3">
+                <p
+                  className="eyebrow"
+                  style={{ color: "var(--color-accent-bright)" }}
+                >
+                  Deepclario
+                </p>
+                {session.stage === "done" &&
+                  session.improved?.contextApplied && (
+                    <ContextAppliedChip
+                      key={session.sessionId ?? "ctx"}
+                      applied={session.improved.contextApplied}
+                    />
+                  )}
+              </span>
               {session.stage === "done" && session.improved && (
                 <span
                   className="flex flex-wrap justify-end gap-x-3 gap-y-1 text-xs tabular-nums"

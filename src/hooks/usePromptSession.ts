@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react'
 import type { Tone, ImprovementTag } from '@/types/database'
-import type { QAPair } from '@/types'
+import type { ContextApplied, QAPair } from '@/types'
 
 export type SessionStage = 'idle' | 'analyzing' | 'clarifying' | 'improving' | 'done' | 'error'
 
@@ -20,6 +20,8 @@ interface ImprovedState {
   improvementTags: ImprovementTag[]
   clarityScoreAfter: number
   scoreBeforeImprovement: number
+  /** What the Context Graph contributed to this rewrite, if anything. */
+  contextApplied: ContextApplied | null
 }
 
 interface SessionState {
@@ -55,6 +57,7 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
   const promptRef = useRef<string>('')
   const toneRef = useRef<Tone>('professional')
   const deepRef = useRef<boolean>(false)
+  const useContextRef = useRef<boolean>(true)
 
   const apply = useCallback((next: Partial<SessionState>) => {
     setState(prev => {
@@ -66,10 +69,11 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
     })
   }, [])
 
-  const analyze = useCallback(async (prompt: string, tone: Tone, deep = false) => {
+  const analyze = useCallback(async (prompt: string, tone: Tone, deep = false, useContext = true) => {
     promptRef.current = prompt
     toneRef.current = tone
     deepRef.current = deep && !anonymous
+    useContextRef.current = useContext
     apply({ stage: 'analyzing', error: null, priorAnswers: [], clarifying: null, improved: null, sessionId: null })
 
     const endpoint = anonymous ? '/api/anon/analyze' : '/api/prompts/analyze'
@@ -78,7 +82,7 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, tone, priorAnswers: [], deep: deepRef.current }),
+        body: JSON.stringify({ prompt, tone, priorAnswers: [], deep: deepRef.current, useContext }),
       })
 
       const data = await res.json()
@@ -118,6 +122,7 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
             improvementTags: data.improvementTags,
             clarityScoreAfter: data.clarityScoreAfter,
             scoreBeforeImprovement: data.scoreBeforeImprovement,
+            contextApplied: data.contextApplied ?? null,
           },
         })
       }
@@ -158,8 +163,9 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
             tone: toneRef.current,
             priorAnswers: newPriorAnswers,
             deep: deepRef.current,
+            useContext: useContextRef.current,
           }
-        : { answer, turn: clarifying.turn, deep: deepRef.current }
+        : { answer, turn: clarifying.turn, deep: deepRef.current, useContext: useContextRef.current }
 
       const res = await fetch(url, {
         method: 'POST',
@@ -196,6 +202,7 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
             improvementTags: data.improvementTags,
             clarityScoreAfter: data.clarityScoreAfter,
             scoreBeforeImprovement: data.scoreBeforeImprovement,
+            contextApplied: data.contextApplied ?? null,
           },
         })
       }
@@ -210,6 +217,7 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
     priorAnswersRef.current = []
     promptRef.current = ''
     deepRef.current = false
+    useContextRef.current = true
     setState(INITIAL_STATE)
   }, [])
 

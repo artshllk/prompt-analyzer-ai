@@ -1,6 +1,22 @@
-import type { ExpertiseLevel } from '@/types/database'
+import type { ExpertiseLevel, MemoryKind, MemorySource, MemoryStatus } from '@/types/database'
 
-export type { ExpertiseLevel }
+export type { ExpertiseLevel, MemoryKind, MemorySource, MemoryStatus }
+
+/**
+ * One standing memory: a single injectable sentence with a lifecycle.
+ * `suggested` rows await user review (never injected); `active` rows are
+ * selected into rewrites under the compile budget; `archived` rows are
+ * kept but ignored.
+ */
+export interface Memory {
+  id: string
+  kind: MemoryKind
+  content: string
+  source: MemorySource
+  status: MemoryStatus
+  lastUsedAt: string | null
+  createdAt: string
+}
 
 /**
  * The confirmed, user-facing shape of the Identity layer. This is what the

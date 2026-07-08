@@ -32,3 +32,16 @@ export async function POST() {
   await saveSuggestion(user.id, suggestion)
   return NextResponse.json({ suggestion })
 }
+
+/**
+ * Dismiss the pending suggestion for real. The UI's Dismiss button calls
+ * this - clearing local state alone would let the stored suggestion
+ * reappear on the next page load.
+ */
+export async function DELETE() {
+  const user = await requireUser()
+  if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+
+  await dismissSuggestion(user.id)
+  return NextResponse.json({ ok: true })
+}

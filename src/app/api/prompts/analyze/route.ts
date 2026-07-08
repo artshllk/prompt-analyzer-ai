@@ -5,8 +5,9 @@ import { getUsageInfo, recordUsage } from '@/lib/db/usage'
 import { createSession, updateSessionStatus, addClarificationExchange, saveImprovement } from '@/lib/db/sessions'
 import { take, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import { compileContextBrief } from '@/lib/context/compile'
+import { markMemoriesUsed } from '@/lib/context/graph'
 import type { Tone } from '@/types/database'
-import type { QAPair } from '@/types'
+import type { ContextApplied, QAPair } from '@/types'
 
 interface AnalyzeBody {
   prompt: string
@@ -14,6 +15,8 @@ interface AnalyzeBody {
   sessionId?: string
   priorAnswers?: QAPair[]
   deep?: boolean
+  /** "Use my context" toggle - defaults on; false skips the Context Graph entirely. */
+  useContext?: boolean
 }
 
 export async function POST(req: NextRequest) {
@@ -59,13 +62,15 @@ export async function POST(req: NextRequest) {
     }, { status: 402 })
   }
 
-  // Portable Context Graph: compile the user's identity (+ Pro style
-  // hints) into the rewrite. Only on a fresh analysis - continuation turns
-  // reuse the same framing the first call established. Never fails the
-  // request: no graph just means a context-free rewrite.
-  const context = isFreshAnalysis
-    ? await compileContextBrief(user.id, { isPro: isProUser }).catch(() => null)
-    : null
+  // Portable Context Graph: compile the user's identity, memories, and
+  // (Pro) style hints into the rewrite. Compiled on EVERY turn - the final
+  // rewrite usually lands on a continuation turn, and each call rebuilds
+  // the system prompt from scratch. Compile is deterministic and two cheap
+  // indexed reads, so re-running it never drifts the framing. Never fails
+  // the request: no graph just means a context-free rewrite.
+  const context = body.useContext === false
+    ? null
+    : await compileContextBrief(user.id, { isPro: isProUser }).catch(() => null)
 
   const result = await analyzePrompt({ prompt, tone, priorAnswers, deep, context })
 
@@ -124,5 +129,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ...result, sessionId: activeSessionId })
+  // Tell the client exactly what context shaped this result (the payoff
+  // loop), and stamp the used memories so the graph learns recency.
+  const contextApplied: ContextApplied | null = context
+    ? {
+        identity: context.identity ?? [],
+        memories: context.usedMemories ?? [],
+        styleHints: context.styleHints ?? [],
+      }
+    : null
+  // Awaited: on serverless, work started after the response can be frozen.
+  if (context?.usedMemories?.length) {
+    await markMemoriesUsed(user.id, context.usedMemories.map(m => m.id)).catch(() => {})
+  }
+
+  return NextResponse.json({ ...result, sessionId: activeSessionId, contextApplied })
 }

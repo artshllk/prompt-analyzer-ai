@@ -115,6 +115,24 @@ export type ContextIdentityRow = {
   updated_at: string
 }
 
+export type MemoryKind = 'preference' | 'fact' | 'style_rule'
+export type MemorySource = 'user' | 'extracted' | 'signal'
+export type MemoryStatus = 'active' | 'suggested' | 'archived'
+
+export type ContextMemoryRow = {
+  id: string
+  user_id: string
+  kind: MemoryKind
+  content: string
+  source: MemorySource
+  status: MemoryStatus
+  confidence: number | null
+  evidence: Json | null
+  last_used_at: string | null
+  created_at: string
+  updated_at: string
+}
+
 export type ContextStyleSignalRow = {
   id: string
   user_id: string
@@ -130,14 +148,24 @@ export type Database = {
     Tables: {
       context_identity: {
         Row: ContextIdentityRow
-        Insert: Omit<ContextIdentityRow, 'languages' | 'extra' | 'suggestion' | 'confirmed' | 'updated_at'> & {
-          languages?: string[]
-          extra?: Json
-          suggestion?: Json | null
-          confirmed?: boolean
+        // Every column except the PK is nullable or defaulted, so partial
+        // upserts (suggestion-only, fields-only) are legal.
+        Insert: Pick<ContextIdentityRow, 'user_id'> & Partial<Omit<ContextIdentityRow, 'user_id'>>
+        Update: Partial<Omit<ContextIdentityRow, 'user_id' | 'updated_at'>>
+        Relationships: []
+      }
+      context_memories: {
+        Row: ContextMemoryRow
+        Insert: Omit<ContextMemoryRow, 'id' | 'status' | 'confidence' | 'evidence' | 'last_used_at' | 'created_at' | 'updated_at'> & {
+          id?: string
+          status?: MemoryStatus
+          confidence?: number | null
+          evidence?: Json | null
+          last_used_at?: string | null
+          created_at?: string
           updated_at?: string
         }
-        Update: Partial<Omit<ContextIdentityRow, 'user_id' | 'updated_at'>>
+        Update: Partial<Omit<ContextMemoryRow, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
         Relationships: []
       }
       context_style_signals: {

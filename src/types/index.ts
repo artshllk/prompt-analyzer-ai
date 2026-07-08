@@ -44,6 +44,20 @@ export interface ContextBrief {
   identity?: string[]
   /** Learned style rules from accepted edits (Pro only), e.g. "Shortens drafts ~30%". */
   styleHints?: string[]
+  /** Active standing memories, selected under the compile token budget. */
+  memories?: string[]
+  /**
+   * The memory rows behind `memories` - NOT injected into the prompt.
+   * Powers last_used_at tracking and the "Context applied" UI.
+   */
+  usedMemories?: Array<{ id: string; content: string }>
+}
+
+/** What the analyze response tells the client about the injected context. */
+export interface ContextApplied {
+  identity: string[]
+  memories: Array<{ id: string; content: string }>
+  styleHints: string[]
 }
 
 export interface AnalyzeInput {

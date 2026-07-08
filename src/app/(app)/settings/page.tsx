@@ -1,22 +1,18 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { SettingsClient } from '@/components/settings/SettingsClient'
-import { ContextIdentityCard } from '@/components/context/ContextIdentityCard'
-import { getIdentity } from '@/lib/context/graph'
+import { ContextSettingsSection } from '@/components/context/ContextSettingsSection'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: profile }, identity] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('email, full_name, tier, subscription_status, subscription_period_end')
-      .eq('id', user.id)
-      .single(),
-    getIdentity(user.id),
-  ])
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('email, full_name, tier, subscription_status, subscription_period_end')
+    .eq('id', user.id)
+    .single()
 
   const tier = profile?.tier ?? 'free'
 
@@ -27,7 +23,7 @@ export default async function SettingsPage() {
         <p className="text-sm text-[#8b9cc8] mt-1">Manage your account.</p>
       </div>
 
-      <ContextIdentityCard initial={identity} isPro={tier === 'pro'} />
+      <ContextSettingsSection />
 
       <SettingsClient
         email={profile?.email ?? user.email ?? ''}
