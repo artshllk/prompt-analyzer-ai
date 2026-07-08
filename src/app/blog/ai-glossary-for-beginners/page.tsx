@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'AI Glossary for Beginners: 30 Terms Explained Simply',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'AI Glossary for Beginners: 30 Terms Explained Simply',
   description: 'A beginner-friendly glossary of common AI terms, each defined in plain English without jargon.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -222,6 +223,7 @@ export default function AIGlossaryPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="ai-glossary-for-beginners" />
         </main>
       </div>
     </>

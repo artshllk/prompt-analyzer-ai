@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'What is Prompt Engineering? A Complete Guide for Beginners',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'What is Prompt Engineering? A Complete Guide for Beginners',
   description: 'A comprehensive guide to prompt engineering - what it is, why it matters, and how to write better prompts for ChatGPT, Claude, and Gemini.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -223,6 +224,7 @@ export default function WhatIsPromptEngineeringPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="what-is-prompt-engineering" />
         </main>
       </div>
     </>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Human Text vs AI Text: What Actually Differs',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Human Text vs AI Text: What Actually Differs',
   description: 'The genuine differences between human and AI writing, why detectors rely on them, and why the differences are shrinking.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -225,6 +226,7 @@ export default function HumanTextVsAITextPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="human-text-vs-ai-text" />
         </main>
       </div>
     </>

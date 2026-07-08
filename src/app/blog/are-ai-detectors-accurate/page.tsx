@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Are AI Detectors Accurate? What They Can and Cannot Tell You',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Are AI Detectors Accurate? What They Can and Cannot Tell You',
   description: 'How accurate AI detectors are, the cases where they are reliable, and the cases where the score should not be trusted on its own.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -244,6 +245,7 @@ export default function AreAIDetectorsAccuratePage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="are-ai-detectors-accurate" />
         </main>
       </div>
     </>

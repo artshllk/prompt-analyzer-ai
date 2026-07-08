@@ -4,6 +4,7 @@ import { createEmailAdminClient } from '@/lib/email/admin'
 import { emailConfigured } from '@/lib/email/send'
 import { claimAndSend } from '@/lib/email/log'
 import { welcomeEmail } from '@/lib/email/templates'
+import { postSignInDestination } from '@/lib/auth/post-signin'
 
 /**
  * Welcome email for brand-new users, sent after the redirect is
@@ -83,6 +84,18 @@ export async function GET(req: NextRequest) {
     }
   )
 
+  // The response object already carries the session cookies, so a changed
+  // destination is applied by rewriting its Location header rather than
+  // building a fresh redirect.
+  function finish(user: { id: string; created_at?: string } | null) {
+    if (user) {
+      sendWelcomeIfNew(user.id)
+      const dest = postSignInDestination(next, user.created_at)
+      if (dest !== next) response.headers.set('location', `${origin}${dest}`)
+    }
+    return response
+  }
+
   if (code) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (error) {
@@ -90,8 +103,7 @@ export async function GET(req: NextRequest) {
       url.searchParams.set('reason', error.message)
       return NextResponse.redirect(url)
     }
-    if (data.user) sendWelcomeIfNew(data.user.id)
-    return response
+    return finish(data.user)
   }
 
   if (tokenHash && type) {
@@ -104,8 +116,7 @@ export async function GET(req: NextRequest) {
       url.searchParams.set('reason', error.message)
       return NextResponse.redirect(url)
     }
-    if (data.user) sendWelcomeIfNew(data.user.id)
-    return response
+    return finish(data.user)
   }
 
   return NextResponse.redirect(`${origin}/auth/auth-error?reason=unknown`)

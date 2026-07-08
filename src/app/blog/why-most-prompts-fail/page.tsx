@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Why Most AI Prompts Fail (And How to Fix Yours)',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Why Most AI Prompts Fail (And How to Fix Yours)',
   description: 'The four common reasons AI prompts fail, with a weak and strong example of each, so you can find and fix the problem in your own prompts.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -280,6 +281,7 @@ export default function WhyMostPromptsFailPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="why-most-prompts-fail" />
         </main>
       </div>
     </>

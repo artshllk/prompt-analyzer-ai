@@ -19,10 +19,20 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function PlaygroundPage() {
+export default async function PlaygroundPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ example?: string }>
+}) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const [{ data: { user } }, params] = await Promise.all([
+    supabase.auth.getUser(),
+    searchParams,
+  ])
   const isSignedIn = !!user
   const usage = isSignedIn && user ? await getUsageInfo(user.id) : undefined
-  return <PlaygroundClient isSignedIn={isSignedIn} usage={usage} />
+  // The dashboard empty state deep-links here with ?example=<prompt> so a
+  // new user lands with the textarea already filled.
+  const example = typeof params.example === 'string' ? params.example.slice(0, 4000) : undefined
+  return <PlaygroundClient isSignedIn={isSignedIn} usage={usage} initialPrompt={example} />
 }

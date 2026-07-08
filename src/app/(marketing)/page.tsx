@@ -6,7 +6,7 @@ import Image from "next/image";
 import { EditorialPricing } from "@/components/marketing/EditorialPricing";
 import { HeroDemoModal } from "@/components/marketing/HeroDemoModal";
 import { UseCases } from "@/components/marketing/UseCases";
-import { Testimonials } from "@/components/marketing/Testimonials";
+import { EarlyDays } from "@/components/marketing/EarlyDays";
 import { FAQSection } from "@/components/marketing/FAQSection";
 import { HeroRefinement } from "@/components/marketing/refinement/HeroRefinement";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -20,24 +20,24 @@ export const metadata: Metadata = {
   // this string. Primary keyword ("ai prompt improver") leads the SERP title.
   title: "AI Prompt Improver for ChatGPT, Claude & Gemini",
   description:
-    "Stop rewriting your prompts. Deepclario fixes what is missing and asks the questions a senior teammate would ask. ChatGPT, Claude, and Gemini stop guessing. You stop editing.",
+    "Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it so ChatGPT, Claude, and Gemini get it right the first time.",
   alternates: { canonical: "https://deepclario.com" },
   openGraph: {
-    title: "Deepclario - AI that actually understands what you mean",
+    title: "Deepclario - Turn a rough prompt into a great one",
     description:
-      "Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.",
+      "Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it. Works with ChatGPT, Claude, and Gemini.",
     url: "https://deepclario.com",
     type: "website",
     // This page defines its own openGraph object, which replaces (does not
     // merge with) the root layout's openGraph - including its image. See
     // defaultOGImage() for the full explanation.
-    images: defaultOGImage("Deepclario - AI that actually understands what you mean"),
+    images: defaultOGImage("Deepclario - Turn a rough prompt into a great one"),
   },
   twitter: {
     card: "summary_large_image",
-    title: "Deepclario - AI that actually understands what you mean",
+    title: "Deepclario - Turn a rough prompt into a great one",
     description:
-      "Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.",
+      "Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it. Works with ChatGPT, Claude, and Gemini.",
     images: ["/opengraph-image"],
   },
 };
@@ -52,12 +52,12 @@ const structuredData = {
       operatingSystem: "Web",
       url: "https://deepclario.com",
       description:
-        "Type the rough idea. Deepclario fixes what is missing in your prompt and asks the questions a senior teammate would ask, so ChatGPT, Claude, and Gemini return the answer you wanted on the first try.",
+        "Paste a rough prompt. Deepclario spots what is missing, asks one quick question if it has to, and rewrites the prompt so ChatGPT, Claude, and Gemini get it right the first time.",
       offers: {
         "@type": "Offer",
         price: "0",
         priceCurrency: "USD",
-        description: "Free plan with 25 prompt rewrites per month",
+        description: "Free plan with 5 prompt rewrites every 48 hours",
       },
     },
     {
@@ -84,7 +84,7 @@ const structuredData = {
           name: "Is Deepclario free?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes. The free plan gives you 25 prompt rewrites every month. Pro is $4.99 a month right now (a launch discount from $9.99) and removes the limit, adds full history, persona memory, and weekly insights.",
+            text: "Yes. The free plan gives you 5 prompt rewrites every 48 hours, no card required. Pro is $4.99 a month right now (a launch discount from $9.99) and removes the limit, keeps your full history, and adds weekly insights.",
           },
         },
       ],
@@ -130,9 +130,9 @@ export default function LandingPage() {
                     className="display text-5xl md:text-[5.25rem] leading-[1.04] tracking-tight"
                     style={{ color: "var(--color-paper)" }}
                   >
-                    AI that actually{" "}
+                    Turn a rough prompt{" "}
                     <span style={{ color: "var(--color-accent)" }}>
-                      understands what you mean.
+                      into a great one.
                     </span>
                   </h1>
                 </Reveal>
@@ -151,9 +151,9 @@ export default function LandingPage() {
                     className="mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-2xl"
                     style={{ color: "var(--color-paper-mute)" }}
                   >
-                    You type the rough idea. Deepclario fixes what is missing and
-                    asks the questions a senior teammate would ask. ChatGPT,
-                    Claude, and Gemini stop guessing. You stop editing.
+                    Paste your prompt. Deepclario spots what is missing, asks
+                    you one quick question, and rewrites it. Works with ChatGPT,
+                    Claude, and Gemini.
                   </p>
                 </Reveal>
 
@@ -233,21 +233,24 @@ export default function LandingPage() {
         </section>
         */}
 
-        {/* CUT - the live demo already teaches the Type -> Fix -> Answer
-            flow; restating it as labels right after was show-then-tell
-            duplication. Restore by uncommenting if data shows the demo
-            alone is not enough. */}
-        {/*
-        <section className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
+        {/* How it works - the same three steps the playground shows in its
+            idle state, so the promise on this page matches the product
+            word for word. */}
+        <section
+          className="px-6 md:px-10 py-24 md:py-32"
+          style={{ borderTop: "1px solid var(--color-rule)" }}
+        >
           <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-12 gap-8 md:gap-16 mb-16 md:mb-24">
+            <div className="grid md:grid-cols-12 gap-8 md:gap-16 mb-14 md:mb-20">
               <div className="md:col-span-3">
-                <p className="eyebrow">How it feels to use</p>
+                <p className="eyebrow">How it works</p>
               </div>
               <div className="md:col-span-9">
-                <h2 className="display text-4xl md:text-6xl" style={{ color: 'var(--color-paper)' }}>
-                  Three steps.<br/>
-                  <span style={{ color: 'var(--color-paper-mute)' }}>None of them is hard.</span>
+                <h2
+                  className="display text-4xl md:text-5xl"
+                  style={{ color: "var(--color-paper)" }}
+                >
+                  Three steps. None of them is hard.
                 </h2>
               </div>
             </div>
@@ -260,7 +263,6 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-        */}
 
         {/* Extension - promoted above UseCases. The inline-in-ChatGPT
             angle is the most distinctive distribution surface, so it
@@ -365,11 +367,58 @@ export default function LandingPage() {
         </section>
         */}
 
-        {/* Testimonials - placeholder quotes until real ones are
-            collected. Sits just above Pricing so social proof lands
-            at the moment buying-doubt peaks. See
-            src/components/marketing/Testimonials.tsx for swap instructions. */}
-        <Testimonials />
+        {/* Trust - the product asks people to paste work emails, code, and
+            business ideas, so the data-handling answer lives on the page,
+            not just in the FAQ. Every claim here must match /privacy. */}
+        <section
+          className="px-6 md:px-10 py-24 md:py-32"
+          style={{ borderTop: "1px solid var(--color-rule)" }}
+        >
+          <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
+            <div className="md:col-span-3">
+              <p className="eyebrow">Your data</p>
+            </div>
+            <div className="md:col-span-9">
+              <h2
+                className="font-serif text-3xl md:text-5xl leading-tight tracking-tight mb-10"
+                style={{ color: "var(--color-paper)", fontWeight: 400 }}
+              >
+                Your prompts stay yours.
+              </h2>
+              <div className="grid sm:grid-cols-3 gap-8">
+                {TRUST_POINTS.map((t) => (
+                  <div key={t.title}>
+                    <h3
+                      className="text-base mb-2"
+                      style={{ color: "var(--color-paper)", fontWeight: 500 }}
+                    >
+                      {t.title}
+                    </h3>
+                    <p
+                      className="text-sm leading-[1.7]"
+                      style={{ color: "var(--color-paper-mute)" }}
+                    >
+                      {t.body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <Link
+                href="/privacy"
+                className="inline-block mt-8 text-sm transition-opacity hover:opacity-100 opacity-80 underline underline-offset-4"
+                style={{ color: "var(--color-paper)" }}
+              >
+                Read the full privacy policy
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Honest proof - one real before/after rewrite plus a founder
+            note. Sits just above Pricing so proof lands at the moment
+            buying-doubt peaks. Swap for real testimonials once users
+            give attributable quotes. */}
+        <EarlyDays />
 
         {/* Pricing */}
         <section
@@ -408,8 +457,8 @@ export default function LandingPage() {
                 className="text-sm leading-[1.7] max-w-sm"
                 style={{ color: "var(--color-paper-mute)" }}
               >
-                One layer between you and ChatGPT, Claude, and Gemini, so the
-                model finally understands what you mean.
+                Deepclario rewrites your prompts before you send them, so
+                ChatGPT, Claude, and Gemini give you better answers.
               </p>
             </div>
             <FooterCol
@@ -473,12 +522,28 @@ export default function LandingPage() {
 
 /* ===== Sub-components ===== */
 
-/* CUT - paired with the Three-steps section above. Restore both together. */
-/*
+/* Claims here must stay in sync with /privacy. Prompts are processed by
+   Google Gemini to generate the rewrite, so we say "never used to train",
+   not "never leave our servers". */
+const TRUST_POINTS = [
+  {
+    title: 'Never used to train AI',
+    body: 'Your prompts are only used to generate your rewrite. We never use them to train models or sell them.',
+  },
+  {
+    title: 'Delete everything anytime',
+    body: 'Remove your account and all your data from Settings. Everything is gone within 24 hours.',
+  },
+  {
+    title: 'Payments by Paddle',
+    body: 'Card details never touch our servers. VAT and sales tax are handled automatically.',
+  },
+]
+
 const STEPS = [
-  { title: 'Type what you mean', description: 'Rough notes, half-formed thoughts, one-line briefs. Same as you would send a colleague before a meeting. No prompt-engineering degree required.' },
-  { title: 'We fix what is missing', description: 'Deepclario spots the gaps a fresh-eyes reviewer would catch and asks one quick question if it has to. Then it rewrites the prompt for clarity, in the background.' },
-  { title: 'You get the answer you wanted', description: 'The output comes back tight, on-format, and on-voice. First try. ChatGPT, Claude, or Gemini, your pick. No copy-paste loop, no five-prompt rewrite spiral.' },
+  { title: 'We read your prompt', description: 'Paste rough notes, a one-liner, or a request you have not finished writing. No prompt-engineering degree required.' },
+  { title: 'We ask one question if something is missing', description: 'Deepclario spots the gap a careful reader would catch and asks one quick question. Answer it, and the rewrite fills in the rest.' },
+  { title: 'You get a rewrite ready to send', description: 'Copy the improved prompt into your AI chat and get the answer you wanted on the first try. No five-prompt rewrite spiral.' },
 ]
 
 function Step({ index, title, description }: { index: number; title: string; description: string }) {
@@ -505,7 +570,6 @@ function Step({ index, title, description }: { index: number; title: string; des
     </>
   )
 }
-*/
 
 function FooterCol({
   title,

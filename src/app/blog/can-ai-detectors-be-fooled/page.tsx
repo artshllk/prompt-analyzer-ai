@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Can AI Detectors Be Fooled? An Honest Answer',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Can AI Detectors Be Fooled? An Honest Answer',
   description: 'Whether AI detectors can be fooled, the common ways it happens, and why this limits how much weight a detection score should carry.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -228,6 +229,7 @@ export default function CanAIDetectorsBeFooledPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="can-ai-detectors-be-fooled" />
         </main>
       </div>
     </>

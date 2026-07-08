@@ -1,4 +1,9 @@
-export const metadata = { title: 'Terms of Service - Deepclario' }
+export const metadata = {
+  title: 'Terms of Service',
+  description:
+    'The terms that govern your use of Deepclario: plans, billing, acceptable use, and cancellation.',
+  alternates: { canonical: 'https://deepclario.com/terms' },
+}
 
 export default function TermsPage() {
   return (
@@ -22,8 +27,8 @@ export default function TermsPage() {
 
       <Section title="Plans and billing">
         <ul className="list-disc pl-5 space-y-1.5">
-          <li><strong>Free</strong>: 25 prompt rewrites per calendar month.</li>
-          <li><strong>Pro</strong> ($9.99/month or $95.88/year): unlimited prompt rewrites, full history, weekly insights.</li>
+          <li><strong>Free</strong>: 5 prompt rewrites per rolling 48-hour window.</li>
+          <li><strong>Pro</strong>: unlimited prompt rewrites, full history, weekly insights. Current prices are shown on the Pricing page; launch discounts may apply.</li>
           <li>Subscriptions renew automatically. Cancel anytime in Settings → Manage billing. No prorated refunds.</li>
         </ul>
       </Section>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Prompt Length vs Response Quality: Does Longer Help?',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Prompt Length vs Response Quality: Does Longer Help?',
   description: 'How prompt length affects AI response quality, why more words is not the same as more clarity, and when a long prompt starts to hurt.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -228,6 +229,7 @@ export default function PromptLengthPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="prompt-length-vs-response-quality" />
         </main>
       </div>
     </>

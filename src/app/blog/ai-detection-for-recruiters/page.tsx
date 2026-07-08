@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'AI Detection for Recruiters and Hiring',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'AI Detection for Recruiters and Hiring',
   description: 'How recruiters can use AI detection on applications fairly, the false-positive risk to candidates, and why a score should never trigger an automatic rejection.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -234,6 +235,7 @@ export default function AIDetectionForRecruitersPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="ai-detection-for-recruiters" />
         </main>
       </div>
     </>

@@ -79,10 +79,10 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Account info */}
-      <section className="glass rounded-2xl border border-[#1e2d4a] p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-[#f0f4ff] uppercase tracking-wider">Account</h2>
+      <section className="card-editorial p-6 space-y-4">
+        <p className="eyebrow">Account</p>
         <div className="space-y-3 text-sm">
           <Row label="Email" value={email} />
           <Row label="Name" value={fullName ?? '-'} />
@@ -90,14 +90,19 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
             label="Plan"
             value={
               <span className="flex items-center gap-2">
-                <span className="capitalize text-[#f0f4ff]">{tier}</span>
+                <span className="capitalize" style={{ color: 'var(--color-paper)' }}>{tier}</span>
                 {isPro && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-violet-500/15 text-violet-400 border border-violet-500/20">
-                    PRO
+                  <span
+                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider"
+                    style={{ background: 'var(--color-accent-soft)', color: 'var(--color-accent-bright)' }}
+                  >
+                    Pro
                   </span>
                 )}
                 {subscriptionStatus && subscriptionStatus !== 'active' && (
-                  <span className="text-[10px] capitalize text-amber-400">{subscriptionStatus.replace('_', ' ')}</span>
+                  <span className="text-[10px] capitalize" style={{ color: '#E89A6B' }}>
+                    {subscriptionStatus.replace('_', ' ')}
+                  </span>
                 )}
               </span>
             }
@@ -106,14 +111,15 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
       </section>
 
       {/* Browser extension */}
-      <section className="glass rounded-2xl border border-[#1e2d4a] p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-[#f0f4ff] uppercase tracking-wider">Browser extension</h2>
-        <p className="text-sm text-[#8b9cc8]">
+      <section className="card-editorial p-6 space-y-4">
+        <p className="eyebrow">Browser extension</p>
+        <p className="text-sm leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
           Connect the Deepclario extension to this account so it uses your plan {isPro ? '(unlimited, with Deep Rewrite)' : `(${REWRITE_FREE_LIMIT} rewrites / ${REWRITE_WINDOW_HOURS}h)`} instead of the public free quota.
         </p>
         <a
           href="/extension/connect"
-          className="inline-block px-4 py-2.5 rounded-xl bg-[#0f1628] border border-[#1e2d4a] hover:border-[#2d4070] text-[#f0f4ff] text-sm font-medium transition-all"
+          className="inline-block px-4 py-2.5 rounded-full text-sm transition-all btn-outline"
+          style={{ border: '1px solid var(--color-rule-strong)', color: 'var(--color-paper)', fontWeight: 500 }}
         >
           Get connection code →
         </a>
@@ -121,58 +127,71 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
 
       {/* Session - Sign out lives here now that the sidebar footer
           is gone. Compact section, no need for theatre. */}
-      <section className="glass rounded-2xl border border-[#1e2d4a] p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-[#f0f4ff] uppercase tracking-wider">Session</h2>
-        <p className="text-sm text-[#8b9cc8]">
-          Signed in as <span className="text-[#f0f4ff]">{email}</span>.
+      <section className="card-editorial p-6 space-y-4">
+        <p className="eyebrow">Session</p>
+        <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
+          Signed in as <span style={{ color: 'var(--color-paper)' }}>{email}</span>.
         </p>
         <button
           onClick={handleSignOut}
           disabled={signingOut}
-          className="px-4 py-2.5 rounded-xl bg-[#0f1628] border border-[#1e2d4a] hover:border-[#2d4070] text-[#f0f4ff] text-sm font-medium transition-all disabled:opacity-50"
+          className="px-4 py-2.5 rounded-full text-sm transition-all btn-outline disabled:opacity-50"
+          style={{ border: '1px solid var(--color-rule-strong)', color: 'var(--color-paper)', fontWeight: 500 }}
         >
           {signingOut ? 'Signing out…' : 'Sign out'}
         </button>
       </section>
 
       {/* Billing */}
-      <section className="glass rounded-2xl border border-[#1e2d4a] p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-[#f0f4ff] uppercase tracking-wider">Billing</h2>
+      <section className="card-editorial p-6 space-y-4">
+        <p className="eyebrow">Billing</p>
         {isPro ? (
           <>
-            <p className="text-sm text-[#8b9cc8]">Manage your subscription, payment method, and invoices.</p>
+            <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
+              Manage your subscription, payment method, and invoices.
+            </p>
             <button
               onClick={handleManageBilling}
               disabled={billingLoading}
-              className="px-4 py-2.5 rounded-xl bg-[#0f1628] border border-[#1e2d4a] hover:border-[#2d4070] text-[#f0f4ff] text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2.5 rounded-full text-sm transition-all btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ border: '1px solid var(--color-rule-strong)', color: 'var(--color-paper)', fontWeight: 500 }}
             >
               {billingLoading ? 'Opening…' : 'Manage billing →'}
             </button>
             {billingError && (
-              <p className="text-sm text-amber-400">{billingError}</p>
+              <p className="text-sm" style={{ color: '#E89A6B' }}>{billingError}</p>
             )}
           </>
         ) : (
-          <p className="text-sm text-[#8b9cc8]">
-            You&apos;re on the free plan. Upgrade in the sidebar to unlock unlimited analyses and insights.
+          <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
+            You&apos;re on the free plan. Upgrade in the sidebar to unlock unlimited rewrites and insights.
           </p>
         )}
       </section>
 
       {/* Danger zone */}
-      <section className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-red-300 uppercase tracking-wider">Danger zone</h2>
-        <p className="text-sm text-[#8b9cc8]">
+      <section
+        className="rounded-2xl p-6 space-y-4"
+        style={{ border: '1px solid rgba(239,68,68,0.25)', background: 'rgba(239,68,68,0.05)' }}
+      >
+        <p className="eyebrow" style={{ color: '#F2A0A0' }}>Danger zone</p>
+        <p className="text-sm leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
           Permanently delete your account and all associated data - sessions, history, and insights. This cannot be undone.
           {isPro && (
-            <span className="block mt-2 text-amber-400">
+            <span className="block mt-2" style={{ color: '#E89A6B' }}>
               Cancel your subscription via &quot;Manage billing&quot; first to avoid further charges.
             </span>
           )}
         </p>
         <button
           onClick={() => setConfirmOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-300 text-sm font-medium transition-all"
+          className="px-4 py-2.5 rounded-full text-sm transition-all"
+          style={{
+            background: 'rgba(239,68,68,0.10)',
+            border: '1px solid rgba(239,68,68,0.30)',
+            color: '#F2A0A0',
+            fontWeight: 500,
+          }}
         >
           Delete account
         </button>
@@ -192,11 +211,14 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-md bg-[#0a0e1a] border border-red-500/30 rounded-2xl p-6 space-y-4"
+              className="w-full max-w-md rounded-2xl p-6 space-y-4"
+              style={{ background: 'var(--color-ink-card)', border: '1px solid rgba(239,68,68,0.30)' }}
             >
-              <h3 className="text-lg font-bold text-[#f0f4ff]">Delete account permanently?</h3>
-              <p className="text-sm text-[#8b9cc8]">
-                Type <strong className="text-red-300 font-mono">DELETE</strong> to confirm. Your account, sessions, and all data will be erased immediately.
+              <h3 className="font-serif text-xl" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
+                Delete account permanently?
+              </h3>
+              <p className="text-sm leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
+                Type <strong className="font-mono" style={{ color: '#F2A0A0' }}>DELETE</strong> to confirm. Your account, sessions, and all data will be erased immediately.
               </p>
               <input
                 type="text"
@@ -204,21 +226,27 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
                 onChange={e => setConfirmText(e.target.value)}
                 placeholder="Type DELETE"
                 disabled={deleting}
-                className="w-full bg-[#0f1628] border border-[#1e2d4a] focus:border-red-500/40 rounded-xl px-4 py-3 text-[#f0f4ff] placeholder:text-[#2d4070] text-sm font-mono outline-none transition-colors"
+                className="w-full rounded-xl px-4 py-3 text-sm font-mono outline-none transition-colors"
+                style={{
+                  background: 'var(--color-ink)',
+                  border: '1px solid var(--color-rule-strong)',
+                  color: 'var(--color-paper)',
+                }}
               />
               {error && <p className="text-xs text-red-400">{error}</p>}
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   onClick={() => setConfirmOpen(false)}
                   disabled={deleting}
-                  className="px-4 py-2 rounded-xl border border-[#1e2d4a] hover:border-[#2d4070] text-[#cdd5ee] text-sm font-medium transition-all disabled:opacity-50"
+                  className="px-4 py-2 rounded-full text-sm transition-all btn-outline disabled:opacity-50"
+                  style={{ border: '1px solid var(--color-rule-strong)', color: 'var(--color-paper)', fontWeight: 500 }}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDelete}
                   disabled={confirmText !== 'DELETE' || deleting}
-                  className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-4 py-2 rounded-full bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {deleting ? 'Deleting…' : 'Delete account'}
                 </button>
@@ -233,9 +261,12 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-[#1e2d4a]/60 last:border-b-0">
-      <span className="text-[#8b9cc8]">{label}</span>
-      <span className="text-[#f0f4ff]">{value}</span>
+    <div
+      className="flex items-center justify-between py-2 last:border-b-0"
+      style={{ borderBottom: '1px solid var(--color-rule)' }}
+    >
+      <span style={{ color: 'var(--color-paper-mute)' }}>{label}</span>
+      <span style={{ color: 'var(--color-paper)' }}>{value}</span>
     </div>
   )
 }

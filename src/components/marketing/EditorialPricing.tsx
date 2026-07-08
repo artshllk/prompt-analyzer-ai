@@ -20,12 +20,12 @@ const FREE_FEATURES = [
   "AI detector · 5 texts / 24h",
   "Chrome extension",
   "7-day session history",
-  "Five-dimension clarity scoring",
+  "Clarity score for every prompt",
   "Works with ChatGPT, Claude, Gemini",
 ];
 
 const PRO_FEATURES = [
-  "Deep Rewrite: multi-pass rewrites on our strongest model",
+  "Deep Rewrite: drafts, critiques, and refines your prompt for the hardest tasks",
   "Unlimited prompt rewrites and AI detection",
   "Weekly insights report: see exactly where your prompts improve",
   "Full history, kept forever (Free keeps 7 days)",

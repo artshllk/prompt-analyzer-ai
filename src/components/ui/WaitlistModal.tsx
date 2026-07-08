@@ -9,10 +9,10 @@ interface WaitlistModalProps {
 }
 
 const PRO_FEATURES = [
-  'Unlimited prompt analyses',
+  'Unlimited prompt rewrites',
   'Full session history',
   'Weekly insights & pattern reports',
-  'Mistake pattern analysis',
+  'Deep Rewrite for the hardest tasks',
 ]
 
 export function WaitlistModal({ open, onClose }: WaitlistModalProps) {

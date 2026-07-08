@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'AI Prompt Best Practices - What Actually Works in 2026',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'AI Prompt Best Practices',
   description: 'The most effective AI prompt best practices for ChatGPT, Claude, and Gemini.',
-  author: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -173,6 +174,7 @@ export default function AIPromptBestPracticesPage() {
             <Link href="/prompts" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>Browse all free prompt templates →</Link>
           </div>
         </div>
+        <PostFooter slug="ai-prompt-best-practices" />
       </main>
     </div>
   )

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'How to Use ChatGPT for Writing - A Practical Guide',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'How to Use ChatGPT for Writing - A Practical Guide',
   description: 'How to use ChatGPT for writing without sounding like a robot.',
-  author: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -234,6 +235,7 @@ export default function HowToUseChatGPTForWritingPage() {
             <Link href="/prompts" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>Browse all free prompt templates →</Link>
           </div>
         </div>
+        <PostFooter slug="how-to-use-chatgpt-for-writing" />
       </main>
     </div>
   )

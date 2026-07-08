@@ -121,7 +121,7 @@ export function WelcomeMoment({
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.9 }}
             >
-              Bring your worst prompt
+              Let&apos;s improve your first prompt
             </motion.p>
           </div>
         </motion.div>

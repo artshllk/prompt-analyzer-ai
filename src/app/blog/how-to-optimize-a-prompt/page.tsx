@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'How to Optimize a Prompt, Step by Step',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'How to Optimize a Prompt, Step by Step',
   description: 'A step-by-step method for optimizing an AI prompt: start from a clear goal, fix one weak part at a time, test, and stop when it is reliable.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -235,6 +236,7 @@ export default function HowToOptimizeAPromptPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="how-to-optimize-a-prompt" />
         </main>
       </div>
     </>

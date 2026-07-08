@@ -19,7 +19,7 @@ interface PaywallModalProps {
  * the modal stays scannable.
  */
 const PRO_FEATURES = [
-  "Deep Rewrite on our strongest model",
+  "Deep Rewrite for the hardest tasks",
   "Unlimited rewrites and AI detection",
   "Weekly insights report",
   "Full history, kept forever",

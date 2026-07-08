@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'AI Detection in Universities and Schools',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'AI Detection in Universities and Schools',
   description: 'How institutions use AI detection, the scale problems and fairness risks, and the elements of a sound academic-integrity policy.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -260,6 +261,7 @@ export default function AIDetectionInUniversitiesPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="ai-detection-in-universities" />
         </main>
       </div>
     </>

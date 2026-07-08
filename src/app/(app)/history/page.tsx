@@ -106,7 +106,7 @@ export default async function HistoryPage({
               fontWeight: 500,
             }}
           >
-            New analysis
+            New rewrite
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
               <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

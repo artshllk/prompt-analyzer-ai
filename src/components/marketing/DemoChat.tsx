@@ -132,7 +132,7 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       })
 
       if (res.status === 429) {
-        fail('We limit free analyses by IP. Give it a minute and try again.')
+        fail('We limit free rewrites by IP. Give it a minute and try again.')
         return
       }
       if (!res.ok) {
@@ -454,7 +454,13 @@ function Intro({
         ))}
       </div>
       <p className="mt-5 text-xs" style={{ color: 'var(--color-paper-mute)' }}>
-        Enter to send · Shift + Enter for a new line
+        Enter to send · Shift + Enter for a new line ·{' '}
+        <span>
+          Your prompts are private and never used to train AI models.{' '}
+          <a href="/privacy" className="underline underline-offset-2 transition-opacity hover:opacity-80">
+            Privacy
+          </a>
+        </span>
       </p>
     </motion.div>
   )

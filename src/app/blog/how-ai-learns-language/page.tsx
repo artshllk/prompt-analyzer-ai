@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'How Does AI Learn Language? A Simple Explanation',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'How Does AI Learn Language? A Simple Explanation',
   description: 'A plain-English explanation of how AI language models learn to read and write by practicing next-word prediction on huge amounts of text.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -211,6 +212,7 @@ export default function HowAILearnsLanguagePage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="how-ai-learns-language" />
         </main>
       </div>
     </>
