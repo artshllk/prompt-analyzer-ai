@@ -1,6 +1,10 @@
+<!-- Relocated from the repo root into .claude/architecture/. The chosen
+     decision is summarized in .claude/decisions/0003-auth-gis-no-supabase-co.md;
+     this file is the full record and the options that were considered. -->
+
 # Authentication Architecture & Decision Record
 
-**Status:** Recommendation — keep Supabase Auth, fix the OAuth branding.
+**Status:** Implemented — Google Identity Services + `signInWithIdToken` (see §3b).
 **Date:** 2026-07-02 (session-persistence investigation appended 2026-07-03)
 **Owner:** Deepclario
 
