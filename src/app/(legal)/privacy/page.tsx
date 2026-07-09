@@ -7,18 +7,21 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <article className="text-[#cdd5ee] space-y-5 leading-relaxed">
+    <article className="space-y-6 leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
       <header>
-        <h1 className="text-3xl font-bold text-[#f0f4ff] mb-2">Privacy Policy</h1>
-        <p className="text-sm text-[#8b9cc8]">Last updated: April 28, 2026</p>
+        <p className="eyebrow mb-3">Legal</p>
+        <h1 className="display text-3xl md:text-4xl tracking-tight mb-2" style={{ color: 'var(--color-paper)' }}>
+          Privacy Policy
+        </h1>
+        <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>Last updated: April 28, 2026</p>
       </header>
 
       <Section title="What we collect">
         <ul className="list-disc pl-5 space-y-1.5">
-          <li><strong>Account info</strong> - your email and (if signing in with Google) your display name and avatar.</li>
-          <li><strong>Prompts you submit</strong> - your original prompt, clarifications, and the AI-generated improvement, stored under your account.</li>
-          <li><strong>Usage events</strong> - timestamp of each analysis, used solely to enforce free-tier limits.</li>
-          <li><strong>Billing metadata</strong> - Paddle customer and subscription IDs (not card numbers - those stay with Paddle).</li>
+          <li><Strong>Account info</Strong> - your email and (if signing in with Google) your display name and avatar.</li>
+          <li><Strong>Prompts you submit</Strong> - your original prompt, clarifications, and the AI-generated improvement, stored under your account.</li>
+          <li><Strong>Usage events</Strong> - timestamp of each rewrite, used solely to enforce free-tier limits.</li>
+          <li><Strong>Billing metadata</Strong> - Paddle customer and subscription IDs (not card numbers - those stay with Paddle).</li>
         </ul>
       </Section>
 
@@ -32,10 +35,10 @@ export default function PrivacyPage() {
 
       <Section title="Third-party services">
         <ul className="list-disc pl-5 space-y-1.5">
-          <li><strong>Google Gemini</strong> - your prompt is sent to Google to generate the improvement. Google&apos;s policy applies to that processing.</li>
-          <li><strong>Supabase</strong> - auth and database hosting (data stored in the EU/US region of our project).</li>
-          <li><strong>Paddle</strong> - payment processing for Pro subscriptions.</li>
-          <li><strong>Vercel</strong> - application hosting.</li>
+          <li><Strong>Google Gemini</Strong> - your prompt is sent to Google to generate the improvement. Google&apos;s policy applies to that processing.</li>
+          <li><Strong>Supabase</Strong> - auth and database hosting (data stored in the EU/US region of our project).</li>
+          <li><Strong>Paddle</Strong> - payment processing for Pro subscriptions.</li>
+          <li><Strong>Vercel</Strong> - application hosting.</li>
         </ul>
       </Section>
 
@@ -52,9 +55,18 @@ export default function PrivacyPage() {
         <p>Account data is kept until you delete your account. After deletion, all rows are removed within 24 hours, including Paddle customer linkage. Backup snapshots may persist up to 30 days.</p>
       </Section>
 
-      <Section title="Contact">
-        <p>Questions: <a href="mailto:hello@deepclario.com" className="text-violet-400 hover:text-violet-300">hello@deepclario.com</a></p>
-      </Section>
+      {/* <Section title="Contact">
+        <p>
+          Questions:{' '}
+          <a
+            href="mailto:hello@deepclario.com"
+            className="underline underline-offset-4 transition-opacity hover:opacity-80"
+            style={{ color: 'var(--color-paper)' }}
+          >
+            hello@deepclario.com
+          </a>
+        </p>
+      </Section> */}
     </article>
   )
 }
@@ -62,8 +74,12 @@ export default function PrivacyPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="text-lg font-semibold text-[#f0f4ff] mt-6 mb-2">{title}</h2>
+      <h2 className="text-lg font-semibold mt-6 mb-2" style={{ color: 'var(--color-paper)' }}>{title}</h2>
       {children}
     </section>
   )
+}
+
+function Strong({ children }: { children: React.ReactNode }) {
+  return <strong style={{ color: 'var(--color-paper)' }}>{children}</strong>
 }

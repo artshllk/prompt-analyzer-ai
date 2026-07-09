@@ -10,7 +10,7 @@ import { StreamOut } from "@/components/shared/StreamOut";
 import { usePromptSession } from "@/hooks/usePromptSession";
 import { useTokenCount } from "@/hooks/useTokenCount";
 import { ANON_REWRITE_LIMIT } from "@/lib/limits";
-import { SAMPLE_PROMPTS } from "@/lib/sample-prompts";
+import { SAMPLE_PROMPTS, pickThree } from "@/lib/sample-prompts";
 import type { Tone } from "@/types/database";
 import type { UsageInfo } from "@/types";
 
@@ -40,6 +40,12 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
   // First-run guidance: both resolve from localStorage after hydration.
   const [showClarifyHint, setShowClarifyHint] = useState(false);
   const [showExtensionNudge, setShowExtensionNudge] = useState(false);
+  // Rotating sample chips. SSR and the first client render both use the
+  // deterministic first three (no hydration mismatch); a fresh random
+  // trio is swapped in right after mount, so each visit/refresh differs.
+  const [samples, setSamples] = useState<string[]>(() =>
+    SAMPLE_PROMPTS.slice(0, 3),
+  );
 
   const session = usePromptSession({ anonymous: !isSignedIn });
   const isAnon = !isSignedIn;
@@ -54,6 +60,7 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
   const responseRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setSamples(pickThree());
     if (!isSignedIn) {
       const raw = window.localStorage.getItem(ANON_KEY);
       const parsed = raw ? parseInt(raw, 10) : 0;
@@ -162,7 +169,7 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
           className="display text-3xl md:text-5xl tracking-tight"
           style={{ color: "var(--color-paper)" }}
         >
-          Sharpen your prompt.
+          Improve your prompt.
         </h1>
         <p
           className="mt-3 text-base md:text-lg"
@@ -273,7 +280,7 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
 
             {!started && (
               <div className="mt-4 flex flex-wrap gap-2">
-                {SAMPLE_PROMPTS.map((s) => (
+                {samples.map((s) => (
                   <button
                     key={s}
                     onClick={() => setPrompt(s)}

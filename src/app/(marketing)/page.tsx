@@ -236,7 +236,7 @@ export default function LandingPage() {
         {/* How it works - the same three steps the playground shows in its
             idle state, so the promise on this page matches the product
             word for word. */}
-        <section
+        {/* <section
           className="px-6 md:px-10 py-24 md:py-32"
           style={{ borderTop: "1px solid var(--color-rule)" }}
         >
@@ -262,7 +262,7 @@ export default function LandingPage() {
               <div className="rule-strong" />
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Extension - promoted above UseCases. The inline-in-ChatGPT
             angle is the most distinctive distribution surface, so it
@@ -273,7 +273,7 @@ export default function LandingPage() {
         >
           <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
             <div className="md:col-span-3">
-              <p className="eyebrow">Works where you already work</p>
+              {/* <p className="eyebrow">Works where you already work</p> */}
             </div>
             <div className="md:col-span-9">
               <h2
@@ -317,12 +317,12 @@ export default function LandingPage() {
                     />
                   </svg>
                 </Link>
-                <span
+                {/* <span
                   className="text-sm"
                   style={{ color: "var(--color-paper-mute)" }}
                 >
                   Chrome and Brave. Free, no account.
-                </span>
+                </span> */}
               </div>
             </div>
           </div>
@@ -376,7 +376,7 @@ export default function LandingPage() {
         >
           <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
             <div className="md:col-span-3">
-              <p className="eyebrow">Your data</p>
+              <p className="eyebrow">You own your data</p>
             </div>
             <div className="md:col-span-9">
               <h2
@@ -418,7 +418,7 @@ export default function LandingPage() {
             note. Sits just above Pricing so proof lands at the moment
             buying-doubt peaks. Swap for real testimonials once users
             give attributable quotes. */}
-        <EarlyDays />
+        {/* <EarlyDays /> */}
 
         {/* Pricing */}
         <section

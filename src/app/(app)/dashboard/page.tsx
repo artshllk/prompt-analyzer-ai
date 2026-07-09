@@ -8,7 +8,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { WelcomeMoment } from '@/components/ui/WelcomeMoment'
 import { CountUp } from '@/components/ui/CountUp'
 import { REWRITE_WINDOW_HOURS } from '@/lib/limits'
-import { SAMPLE_PROMPTS } from '@/lib/sample-prompts'
+import { pickThree } from '@/lib/sample-prompts'
 import type { SessionWithDetails, UsageInfo } from '@/types'
 
 export default async function DashboardPage({
@@ -366,6 +366,8 @@ function SpotlightCard({ session }: { session: SessionWithDetails }) {
 /* ===== Empty state ===== */
 
 function EmptyState() {
+  // Server-rendered, so this rotates the trio on each page load.
+  const samples = pickThree()
   return (
     <section className="grid md:grid-cols-12 gap-6 md:gap-12">
       <div className="md:col-span-4">
@@ -380,7 +382,7 @@ function EmptyState() {
           <p className="eyebrow mb-3">Try one of these</p>
           <ul className="space-y-px">
             <li className="rule-strong" />
-            {SAMPLE_PROMPTS.map(s => (
+            {samples.map(s => (
               <li key={s}>
                 <Link
                   href={`/playground?example=${encodeURIComponent(s)}`}
