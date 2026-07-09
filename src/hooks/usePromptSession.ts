@@ -121,6 +121,7 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
           },
         })
       }
+      return { usageLimitReached: false, usage: data.usage }
     } catch {
       apply({ stage: 'error', error: 'network' })
     }
