@@ -641,7 +641,7 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
             {/* First-rewrite nudge: cross-sell the extension at the moment
                 of payoff. Takes the slot over the low-credits nudge on the
                 very first rewrite. */}
-            {session.stage === "done" && showExtensionNudge && (
+            {(
               <motion.p
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
