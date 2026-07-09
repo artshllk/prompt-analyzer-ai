@@ -50,9 +50,6 @@ function LoginInner() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(errorFromUrl ?? '')
   const [googleAvailable, setGoogleAvailable] = useState(Boolean(GOOGLE_CLIENT_ID))
-  // null = "no explicit choice yet"; the default then follows what the
-  // returning user did last time (email users land on the email form).
-  const [showEmailOverride, setShowEmailOverride] = useState<boolean | null>(null)
 
   // Last completed sign-in on this browser. Server snapshot is null, so
   // SSR and hydration render the anonymous page; the hint applies on the
@@ -62,14 +59,11 @@ function LoginInner() {
 
   const effectiveEmail = emailEdited ? email : (email || last?.email || '')
   // Any social path available (Google button, or a redirect-OAuth provider).
-  // When none are configured, the email form is the default view.
+  // The email form always shows; social buttons stack above it.
   const hasSocial = googleAvailable || socialOAuthAvailable()
-  const showEmail = showEmailOverride ?? (!hasSocial || last?.method === 'email')
 
   const handleGoogleUnavailable = useCallback(() => {
     setGoogleAvailable(false)
-    // Only fall back to email if there's no other social option left.
-    if (!socialOAuthAvailable()) setShowEmailOverride(true)
   }, [])
 
   // Implicit-flow client: the email path is request-code / verify-code,
@@ -177,7 +171,6 @@ function LoginInner() {
               setAlreadySent(false)
               setEmail('')
               setEmailEdited(true)
-              setShowEmailOverride(!googleAvailable)
             }}
           />
         ) : (
@@ -213,29 +206,23 @@ function LoginInner() {
               </>
             )}
 
-            {/* Redirect-OAuth providers (GitHub, X). Each appears only when
-                enabled in the environment + Supabase dashboard. */}
+            {/* Redirect-OAuth providers (Google, GitHub, X). Each appears
+                only when enabled in the environment + Supabase dashboard.
+                When the GIS Google button is live, the redirect-Google
+                button is excluded so Google never shows twice. */}
             {socialOAuthAvailable() && (
               <div className={googleAvailable ? 'mt-3' : ''}>
-                <OAuthButtons redirectTo={redirectTo} onError={setError} />
+                <OAuthButtons
+                  redirectTo={redirectTo}
+                  onError={setError}
+                  exclude={googleAvailable ? ['google'] : []}
+                />
               </div>
             )}
 
-            {error && !showEmail && (
-              <p className="mt-3 text-xs text-center" style={{ color: '#C25E5E' }}>{error}</p>
-            )}
-
-            {/* Email path */}
-            {!showEmail ? (
-              <button
-                onClick={() => setShowEmailOverride(true)}
-                className="block mx-auto mt-5 text-sm underline-offset-4 hover:underline transition-all"
-                style={{ color: 'var(--color-paper-mute)' }}
-              >
-                Or use email instead
-              </button>
-            ) : (
-              <div className={hasSocial ? 'mt-8' : ''}>
+            {/* Email path - always visible below the social buttons, so no
+                extra click stands between the user and signing in. */}
+            <div className={hasSocial ? 'mt-8' : ''}>
                 {hasSocial && (
                   <div className="flex items-center gap-3 mb-5">
                     <span className="flex-1 h-px" style={{ background: 'var(--color-rule)' }} />
@@ -275,7 +262,10 @@ function LoginInner() {
                         onBlur={() => setEmailFocused(false)}
                         placeholder="you@example.com"
                         required
-                        autoFocus
+                        // Only steal focus when email is the sole option -
+                        // with social buttons above, autofocus would yank
+                        // the page past them.
+                        autoFocus={!hasSocial}
                         autoComplete="email"
                         className="w-full py-3.5 text-base focus:outline-none bg-transparent"
                         style={{
@@ -320,7 +310,6 @@ function LoginInner() {
                   </p>
                 </form>
               </div>
-            )}
           </>
         )}
       </motion.div>

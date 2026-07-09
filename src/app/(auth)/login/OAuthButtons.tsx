@@ -18,10 +18,14 @@ import { rememberSignIn, type SignInMethod } from '@/lib/auth/local-hints'
  */
 const GITHUB_ENABLED = process.env.NEXT_PUBLIC_ENABLE_GITHUB_AUTH === 'true'
 const TWITTER_ENABLED = process.env.NEXT_PUBLIC_ENABLE_TWITTER_AUTH === 'true'
+// Redirect-OAuth Google: the plain Supabase flow, offered when no GIS
+// client ID is configured (GIS keeps the consent screen on our own brand,
+// so it stays the preferred Google path when available).
+const GOOGLE_OAUTH_ENABLED = process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH === 'true'
 
 /** True when at least one redirect-OAuth provider is configured. */
 export function socialOAuthAvailable(): boolean {
-  return GITHUB_ENABLED || TWITTER_ENABLED
+  return GITHUB_ENABLED || TWITTER_ENABLED || GOOGLE_OAUTH_ENABLED
 }
 
 interface ProviderConfig {
@@ -32,6 +36,7 @@ interface ProviderConfig {
 }
 
 const PROVIDERS: ProviderConfig[] = [
+  GOOGLE_OAUTH_ENABLED && { id: 'google' as Provider, method: 'google' as SignInMethod, label: 'Continue with Google', Icon: GoogleIcon },
   GITHUB_ENABLED && { id: 'github' as Provider, method: 'github' as SignInMethod, label: 'Continue with GitHub', Icon: GitHubIcon },
   TWITTER_ENABLED && { id: 'twitter' as Provider, method: 'twitter' as SignInMethod, label: 'Continue with X', Icon: XIcon },
 ].filter(Boolean) as ProviderConfig[]
@@ -39,13 +44,17 @@ const PROVIDERS: ProviderConfig[] = [
 export function OAuthButtons({
   redirectTo,
   onError,
+  exclude = [],
 }: {
   redirectTo: string
   onError: (message: string) => void
+  /** Providers already offered by another surface (e.g. GIS Google). */
+  exclude?: Provider[]
 }) {
   const [pending, setPending] = useState<Provider | null>(null)
 
-  if (PROVIDERS.length === 0) return null
+  const providers = PROVIDERS.filter(p => !exclude.includes(p.id))
+  if (providers.length === 0) return null
 
   async function start(p: ProviderConfig) {
     setPending(p.id)
@@ -76,7 +85,7 @@ export function OAuthButtons({
 
   return (
     <div className="space-y-2.5">
-      {PROVIDERS.map(p => {
+      {providers.map(p => {
         const busy = pending === p.id
         return (
           <button
@@ -99,6 +108,17 @@ export function OAuthButtons({
         )
       })}
     </div>
+  )
+}
+
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+      <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47a5.57 5.57 0 0 1-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82Z" />
+      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09A11.99 11.99 0 0 0 12 24Z" />
+      <path fill="#FBBC05" d="M5.27 14.29A7.19 7.19 0 0 1 4.89 12c0-.8.14-1.57.38-2.29V6.62H1.29a11.97 11.97 0 0 0 0 10.76l3.98-3.09Z" />
+      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75Z" />
+    </svg>
   )
 }
 
