@@ -225,7 +225,13 @@ body {
 
 @media (max-width: 767.98px) {
   .editorial:not(.no-page-transition) {
-    animation: editorial-page-enter 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+    /* Fill mode must NOT be `both`/`forwards`: retaining the keyframe's
+       `transform` after the animation ends makes `.editorial` the
+       containing block for every `position: fixed` descendant (nav bar,
+       hero demo modal, detector gate), pinning them to the page instead
+       of the viewport - on mobile only. `backwards` lets the transform
+       revert to none once the entrance finishes. */
+    animation: editorial-page-enter 0.42s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
 
   @media (prefers-reduced-motion: reduce) {
