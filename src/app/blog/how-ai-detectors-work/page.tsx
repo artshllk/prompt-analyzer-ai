@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'How AI Detectors Work: A Clear Guide to Accuracy and Limits',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'How AI Detectors Work: A Clear Guide to Accuracy and Limits',
   description: 'A plain explanation of how AI text detectors work, what signals they use, and the reasons they produce wrong answers.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -226,6 +227,7 @@ export default function HowAIDetectorsWorkPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="how-ai-detectors-work" />
         </main>
       </div>
     </>

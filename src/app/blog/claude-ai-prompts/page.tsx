@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Claude AI Prompts - How to Write Better Prompts for Claude',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Claude AI Prompts - How to Write Better Prompts for Claude',
   description: 'How to write better prompts for Claude (Anthropic) with real examples.',
-  author: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -227,6 +228,7 @@ Be direct - I want your actual recommendation, not a list of options.`}</pre>
             <Link href="/prompts" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>Browse all free prompt templates →</Link>
           </div>
         </div>
+        <PostFooter slug="claude-ai-prompts" />
       </main>
     </div>
   )

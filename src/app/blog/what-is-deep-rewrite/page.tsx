@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'What is Deep Rewrite? How the Pro Rewrite Mode Works',
@@ -21,7 +22,7 @@ const structuredData = {
   '@type': 'Article',
   headline: 'What is Deep Rewrite? How the Pro Rewrite Mode Works',
   description: 'Deep Rewrite runs your prompt through a stronger model with a three-pass process: draft, critique, refine.',
-  author: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -284,6 +285,7 @@ export default function WhatIsDeepRewritePage() {
             <Link href="/blog/prompt-engineering-examples" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Real before and after prompt examples →</Link>
           </div>
         </div>
+        <PostFooter slug="what-is-deep-rewrite" />
       </main>
     </div>
   )

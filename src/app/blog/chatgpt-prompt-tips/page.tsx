@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: '10 ChatGPT Prompt Tips That Actually Work',
@@ -21,7 +22,7 @@ const structuredData = {
   '@type': 'Article',
   headline: '10 ChatGPT Prompt Tips That Actually Work',
   description: 'Practical tips for writing better ChatGPT prompts with real examples.',
-  author: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -213,6 +214,7 @@ export default function ChatGPTPromptTipsPage() {
             <Link href="/prompts" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Browse all free prompts →</Link>
           </div>
         </div>
+        <PostFooter slug="chatgpt-prompt-tips" />
       </main>
     </div>
   )

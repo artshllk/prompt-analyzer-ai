@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Word Count vs Token Count: Why AI Counts Text Differently',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Word Count vs Token Count: Why AI Counts Text Differently',
   description: 'The difference between word count and token count, why AI models use tokens, and a simple rule to convert between the two.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -260,6 +261,7 @@ export default function WordVsTokenPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="word-vs-token-how-ai-counts-text" />
         </main>
       </div>
     </>

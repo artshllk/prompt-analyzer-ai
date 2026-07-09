@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Why Does AI Make Mistakes? Hallucinations Explained Simply',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Why Does AI Make Mistakes? Hallucinations Explained Simply',
   description: 'A plain-English explanation of why AI models make confident mistakes, what an AI hallucination is, and how to reduce the risk.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -224,6 +225,7 @@ export default function WhyAIMakesMistakesPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="why-ai-makes-mistakes" />
         </main>
       </div>
     </>

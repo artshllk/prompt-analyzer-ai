@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'How to Compare Two AI Prompts (And Pick the Better One)',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'How to Compare Two AI Prompts (And Pick the Better One)',
   description: 'A fair method for comparing two AI prompts: same input, same standard, several runs, so you pick the better prompt on evidence not on a hunch.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -224,6 +225,7 @@ export default function HowToCompareAIPromptsPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="how-to-compare-ai-prompts" />
         </main>
       </div>
     </>

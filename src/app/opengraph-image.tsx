@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'Deepclario - AI that actually understands what you mean'
+export const alt = 'Deepclario - Turn a rough prompt into a great one'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -54,7 +54,7 @@ export default async function Image() {
               display: 'flex',
             }}
           >
-            AI that actually understands what you mean.
+            Turn a rough prompt into a great one.
           </div>
           <div
             style={{
@@ -65,7 +65,7 @@ export default async function Image() {
               display: 'flex',
             }}
           >
-            Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini stop guessing.
+            Paste your prompt. Deepclario spots what is missing and rewrites it. First try.
           </div>
         </div>
 

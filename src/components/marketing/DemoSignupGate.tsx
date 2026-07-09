@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion'
  * either:
  *   - dropping their email for 3 more free runs (uses the existing
  *     /api/anon/capture-email endpoint shared with the playground), or
- *   - creating an account for 25 rewrites a month.
+ *   - creating a free account (limits defined in src/lib/limits.ts).
  *
  * Visually quieter than the playground's SignupGate because the
  * homepage uses the editorial palette. Uses the accent blue for the
@@ -92,7 +92,7 @@ export function DemoSignupGate({ used, limit, onEmailCaptured }: Props) {
               style={{ color: 'var(--color-paper-mute)' }}
             >
               Drop your email for three more right here, or create a free
-              account for 25 rewrites every month plus history and the
+              account for 5 rewrites every 48 hours plus history and the
               browser extension.
             </p>
 
@@ -225,8 +225,8 @@ export function DemoSignupGate({ used, limit, onEmailCaptured }: Props) {
               className="text-base md:text-lg leading-[1.6] mb-6 max-w-xl"
               style={{ color: 'var(--color-paper-mute)' }}
             >
-              Keep going below. When you want history and 25 rewrites a
-              month, a free account takes 10 seconds.
+              Keep going below. When you want history and 5 rewrites every
+              48 hours, a free account takes 10 seconds.
             </p>
             <Link
               href="/login?signup=1&redirectTo=/playground"

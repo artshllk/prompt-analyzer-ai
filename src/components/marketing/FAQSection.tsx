@@ -9,7 +9,7 @@ const FAQS = [
   },
   {
     q: 'Is Deepclario free to use?',
-    a: 'Yes. The free plan gives you 25 prompt rewrites per month with full clarity scoring and the full rewrite. No credit card needed. Pro is $4.99 a month right now (a launch discount from $9.99) and removes the limit, adds full history, persona memory, and weekly insights.',
+    a: 'Yes. The free plan gives you 5 prompt rewrites every 48 hours with full clarity scoring and the full rewrite. No credit card needed. Pro is $4.99 a month right now (a launch discount from $9.99) and removes the limit, keeps your full history, and adds weekly insights.',
   },
   {
     q: 'Do I have to learn prompt engineering to use this?',
@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: 'Why not just ask ChatGPT to improve my prompt?',
-    a: 'You can, but you have to know your prompt was the problem in the first place. ChatGPT will not tell you. It will just produce something generic and leave you guessing. Deepclario catches the gap before you send. It asks one quick question if it has to, then hands you the fixed prompt. No rewrite spiral, no second guessing, no five-prompt session to land on the answer you wanted in the first place. One layer between you and every AI model. Same model. Better output. Less of your time.',
+    a: 'You can, but you have to know your prompt was the problem in the first place. ChatGPT will not tell you. It will just produce something generic and leave you guessing. Deepclario catches the gap before you send. It asks one quick question if it has to, then hands you the fixed prompt. No rewrite spiral, no second guessing, no five-prompt session to land on the answer you wanted in the first place. You paste your prompt into Deepclario first, we fix it, and then you use it in ChatGPT, Claude, or Gemini. Same AI, much better answers.',
   },
   {
     q: 'What is prompt engineering?',
@@ -29,7 +29,7 @@ const FAQS = [
   },
   {
     q: 'Does Deepclario store my prompts?',
-    a: 'Signed-in users get full session history. Anonymous users (no account) get 2 free rewrites with no data stored. You can delete your account and all data at any time from Settings.',
+    a: 'Signed-in users get session history so they can come back to past rewrites. We never use your prompts to train AI models. You can delete your account and all data at any time from Settings.',
   },
   {
     q: 'Can I cancel Pro anytime?',

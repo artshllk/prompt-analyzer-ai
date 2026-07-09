@@ -26,10 +26,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL('https://deepclario.com'),
   title: {
-    default: 'Deepclario - AI that actually understands what you mean',
+    default: 'Deepclario - Turn a rough prompt into a great one',
     template: '%s | Deepclario',
   },
-  description: 'Stop rewriting your prompts. Deepclario fixes what is missing and asks the questions a senior teammate would ask. ChatGPT, Claude, and Gemini stop guessing. You stop editing.',
+  description: 'Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it so ChatGPT, Claude, and Gemini get it right the first time.',
   keywords: ['prompt improver', 'AI prompt improver', 'prompt analyzer', 'prompt engineering', 'improve AI prompts', 'ChatGPT prompts', 'better prompts', 'prompt optimization', 'how to write better prompts'],
   authors: [{ name: 'Deepclario', url: 'https://deepclario.com' }],
   creator: 'Deepclario',
@@ -38,16 +38,16 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://deepclario.com',
     siteName: 'Deepclario',
-    title: 'Deepclario - AI that actually understands what you mean',
-    description: 'Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.',
+    title: 'Deepclario - Turn a rough prompt into a great one',
+    description: 'Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it. Works with ChatGPT, Claude, and Gemini.',
     // OG image is auto-generated from src/app/opengraph-image.tsx (1200x630).
   },
   twitter: {
     card: 'summary_large_image',
     site: '@deepclario',
     creator: '@deepclario',
-    title: 'Deepclario - AI that actually understands what you mean',
-    description: 'Type the rough idea. We fix what is missing. ChatGPT, Claude, and Gemini return the answer you wanted, first try.',
+    title: 'Deepclario - Turn a rough prompt into a great one',
+    description: 'Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it. Works with ChatGPT, Claude, and Gemini.',
   },
   robots: {
     index: true,

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Can You Detect Text from ChatGPT, Claude, and Gemini?',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Can You Detect Text from ChatGPT, Claude, and Gemini?',
   description: 'Why AI detection does not depend much on which model wrote the text, and how ChatGPT, Claude, and Gemini output compares for a detector.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -231,6 +232,7 @@ export default function DetectChatgptClaudeGeminiPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="detect-chatgpt-claude-gemini-text" />
         </main>
       </div>
     </>

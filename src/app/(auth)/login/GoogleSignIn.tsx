@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { rememberSignIn, wasExplicitlySignedOut } from '@/lib/auth/local-hints'
+import { postSignInDestination } from '@/lib/auth/post-signin'
 
 /**
  * Sign in with Google using Google Identity Services (GIS) directly, then hand
@@ -127,7 +128,8 @@ export default function GoogleSignIn({
       }
       rememberSignIn('google', data.user?.email ?? null)
       // Full navigation so the server picks up the fresh session cookie.
-      window.location.assign(redirectTo)
+      // Brand-new users land in the playground instead of the dashboard.
+      window.location.assign(postSignInDestination(redirectTo, data.user?.created_at))
     },
     [supabase, redirectTo, onError]
   )

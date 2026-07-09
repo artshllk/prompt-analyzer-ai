@@ -14,11 +14,13 @@ export default async function SettingsPage() {
     .single()
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-8 space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-[#f0f4ff]">Settings</h1>
-        <p className="text-sm text-[#8b9cc8] mt-1">Manage your account.</p>
-      </div>
+    <div className="max-w-2xl mx-auto px-6 py-10 md:py-14 space-y-8">
+      <header>
+        <p className="eyebrow mb-3">Settings</p>
+        <h1 className="display text-3xl md:text-4xl tracking-tight" style={{ color: 'var(--color-paper)' }}>
+          Your account.
+        </h1>
+      </header>
 
       <SettingsClient
         email={profile?.email ?? user.email ?? ''}

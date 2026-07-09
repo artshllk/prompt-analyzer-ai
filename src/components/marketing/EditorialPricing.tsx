@@ -20,12 +20,12 @@ const FREE_FEATURES = [
   "AI detector · 5 texts / 24h",
   "Chrome extension",
   "7-day session history",
-  "Five-dimension clarity scoring",
+  "Clarity score for every prompt",
   "Works with ChatGPT, Claude, Gemini",
 ];
 
 const PRO_FEATURES = [
-  "Deep Rewrite: multi-pass rewrites on our strongest model",
+  "Deep Rewrite: drafts, critiques, and refines your prompt for the hardest tasks",
   "Unlimited prompt rewrites and AI detection",
   "Weekly insights report: see exactly where your prompts improve",
   "Full history, kept forever (Free keeps 7 days)",
@@ -66,56 +66,45 @@ export function EditorialPricing({
 
   return (
     <div>
-      {/* Section header */}
-      <div className="grid md:grid-cols-12 gap-8 md:gap-16 mb-12 md:mb-16">
-        <div className="md:col-span-5">
-          <p className="eyebrow mb-6">Pricing</p>
-          <Heading
-            className="display text-4xl md:text-5xl"
-            style={{ color: "var(--color-paper)" }}
-          >
-            Free until you outgrow it.
-          </Heading>
-          <p
-            className="mt-5 text-base md:text-lg leading-relaxed"
-            style={{ color: "var(--color-paper-mute)" }}
-          >
-            The free plan is the product, not a trial. Upgrade only when you
-            reach for Deepclario every day.
-          </p>
-        </div>
+      {/* Section header - centered: heading, then the billing toggle
+          directly below it. */}
+      <div className="flex flex-col items-center text-center mb-12 md:mb-16">
+        <Heading
+          className="display text-4xl md:text-5xl"
+          style={{ color: "var(--color-paper)" }}
+        >
+          Pricing
+        </Heading>
 
         {/* Billing toggle */}
-        <div className="md:col-span-7 flex md:justify-end md:items-end">
-          <div
-            className="inline-flex p-1 rounded-full"
-            style={{
-              background: "var(--color-ink-card)",
-              border: "1px solid var(--color-rule)",
-            }}
-            role="tablist"
-            aria-label="Billing period"
-          >
-            <BillingToggle active={!annual} onClick={() => setAnnual(false)}>
-              Monthly
-            </BillingToggle>
-            <BillingToggle active={annual} onClick={() => setAnnual(true)}>
-              Yearly
-              <span
-                className="ml-2 text-[10px] tracking-wider uppercase font-semibold px-1.5 py-0.5 rounded"
-                style={{
-                  background: annual
-                    ? "var(--color-accent-soft)"
-                    : "transparent",
-                  color: annual
-                    ? "var(--color-accent-bright)"
-                    : "var(--color-paper-mute)",
-                }}
-              >
-                Save 20%
-              </span>
-            </BillingToggle>
-          </div>
+        <div
+          className="inline-flex p-1 rounded-full mt-8"
+          style={{
+            background: "var(--color-ink-card)",
+            border: "1px solid var(--color-rule)",
+          }}
+          role="tablist"
+          aria-label="Billing period"
+        >
+          <BillingToggle active={!annual} onClick={() => setAnnual(false)}>
+            Monthly
+          </BillingToggle>
+          <BillingToggle active={annual} onClick={() => setAnnual(true)}>
+            Yearly
+            <span
+              className="ml-2 text-[10px] tracking-wider uppercase font-semibold px-1.5 py-0.5 rounded"
+              style={{
+                background: annual
+                  ? "var(--color-accent-soft)"
+                  : "transparent",
+                color: annual
+                  ? "var(--color-accent-bright)"
+                  : "var(--color-paper-mute)",
+              }}
+            >
+              Save 20%
+            </span>
+          </BillingToggle>
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'How Context Improves AI Responses (With Examples)',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'How Context Improves AI Responses (With Examples)',
   description: 'Why AI answers are generic without context, what context to give a prompt, and examples of how it changes the output.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -229,6 +230,7 @@ export default function HowContextImprovesResponsesPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="how-context-improves-ai-responses" />
         </main>
       </div>
     </>

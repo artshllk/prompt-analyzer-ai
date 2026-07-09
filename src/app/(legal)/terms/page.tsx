@@ -1,11 +1,19 @@
-export const metadata = { title: 'Terms of Service - Deepclario' }
+export const metadata = {
+  title: 'Terms of Service',
+  description:
+    'The terms that govern your use of Deepclario: plans, billing, acceptable use, and cancellation.',
+  alternates: { canonical: 'https://deepclario.com/terms' },
+}
 
 export default function TermsPage() {
   return (
-    <article className="text-[#cdd5ee] space-y-5 leading-relaxed">
+    <article className="space-y-6 leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
       <header>
-        <h1 className="text-3xl font-bold text-[#f0f4ff] mb-2">Terms of Service</h1>
-        <p className="text-sm text-[#8b9cc8]">Last updated: April 28, 2026</p>
+        <p className="eyebrow mb-3">Legal</p>
+        <h1 className="display text-3xl md:text-4xl tracking-tight mb-2" style={{ color: 'var(--color-paper)' }}>
+          Terms of Service
+        </h1>
+        <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>Last updated: April 28, 2026</p>
       </header>
 
       <Section title="Acceptance">
@@ -13,7 +21,7 @@ export default function TermsPage() {
       </Section>
 
       <Section title="Service">
-        <p>Deepclario analyzes the prompts you submit and returns AI-generated suggestions and rewrites. Output quality depends on the underlying language model and the input you provide; we make no guarantee of accuracy.</p>
+        <p>Deepclario reviews the prompts you submit and returns AI-generated suggestions and rewrites. Output quality depends on the underlying language model and the input you provide; we make no guarantee of accuracy.</p>
       </Section>
 
       <Section title="Account">
@@ -22,8 +30,8 @@ export default function TermsPage() {
 
       <Section title="Plans and billing">
         <ul className="list-disc pl-5 space-y-1.5">
-          <li><strong>Free</strong>: 25 prompt rewrites per calendar month.</li>
-          <li><strong>Pro</strong> ($9.99/month or $95.88/year): unlimited prompt rewrites, full history, weekly insights.</li>
+          <li><Strong>Free</Strong>: 5 prompt rewrites per rolling 48-hour window.</li>
+          <li><Strong>Pro</Strong>: unlimited prompt rewrites, full history, weekly insights. Current prices are shown on the Pricing page; launch discounts may apply.</li>
           <li>Subscriptions renew automatically. Cancel anytime in Settings → Manage billing. No prorated refunds.</li>
         </ul>
       </Section>
@@ -48,10 +56,18 @@ export default function TermsPage() {
       <Section title="Changes">
         <p>We may update these terms. Material changes will be announced by email or in-app notice. Continued use after changes means you accept the new terms.</p>
       </Section>
-
+{/* 
       <Section title="Contact">
-        <p><a href="mailto:hello@deepclario.com" className="text-violet-400 hover:text-violet-300">hello@deepclario.com</a></p>
-      </Section>
+        <p>
+          <a
+            href="mailto:hello@deepclario.com"
+            className="underline underline-offset-4 transition-opacity hover:opacity-80"
+            style={{ color: 'var(--color-paper)' }}
+          >
+            hello@deepclario.com
+          </a>
+        </p>
+      </Section> */}
     </article>
   )
 }
@@ -59,8 +75,12 @@ export default function TermsPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="text-lg font-semibold text-[#f0f4ff] mt-6 mb-2">{title}</h2>
+      <h2 className="text-lg font-semibold mt-6 mb-2" style={{ color: 'var(--color-paper)' }}>{title}</h2>
       {children}
     </section>
   )
+}
+
+function Strong({ children }: { children: React.ReactNode }) {
+  return <strong style={{ color: 'var(--color-paper)' }}>{children}</strong>
 }

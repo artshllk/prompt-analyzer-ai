@@ -181,6 +181,21 @@ export function DetectorClient({ plan }: { plan: Plan }) {
             />
           </div>
 
+          {/* Trust note - claims must match /privacy. */}
+          <p
+            className="mt-3 text-xs leading-relaxed"
+            style={{ color: "var(--color-paper-mute)" }}
+          >
+            Pasted text is only used to run this check and never used to train
+            AI models.{" "}
+            <a
+              href="/privacy"
+              className="underline underline-offset-2 transition-opacity hover:opacity-80"
+            >
+              Privacy
+            </a>
+          </p>
+
           {/* Meta + action on one row */}
           <div className="flex items-center justify-between gap-4 mt-3">
             <span

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Machine Learning Explained: A Simple Guide for Beginners',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Machine Learning Explained: A Simple Guide for Beginners',
   description: 'A plain-English explanation of machine learning: learning from examples instead of rules, the main types, and where it shows up in daily life.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -234,6 +235,7 @@ export default function MachineLearningExplainedPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="machine-learning-explained" />
         </main>
       </div>
     </>

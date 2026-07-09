@@ -142,7 +142,7 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
       if (res.status === 429) {
         setState({
           kind: 'error',
-          message: 'Slow down a moment - we limit free analyses by IP. Try again in a minute, or open the playground for unlimited use.',
+          message: 'Slow down a moment - we limit free rewrites by IP. Try again in a minute, or open the playground for unlimited use.',
         })
         return
       }

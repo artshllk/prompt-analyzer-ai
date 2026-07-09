@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Chain-of-Thought Prompting Explained (With Examples)',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Chain-of-Thought Prompting Explained (With Examples)',
   description: 'What chain-of-thought prompting is, why asking the model to reason step by step improves hard answers, and when to use it.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -250,6 +251,7 @@ export default function ChainOfThoughtPromptingPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="chain-of-thought-prompting" />
         </main>
       </div>
     </>

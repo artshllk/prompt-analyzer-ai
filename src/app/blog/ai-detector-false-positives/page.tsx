@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'AI Detection False Positives: Why Human Writing Gets Flagged',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'AI Detection False Positives: Why Human Writing Gets Flagged',
   description: 'What a false positive is, why AI detectors flag genuine human writing, which writers get hit most, and how to handle a flagged result fairly.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -231,6 +232,7 @@ export default function AIDetectorFalsePositivesPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="ai-detector-false-positives" />
         </main>
       </div>
     </>

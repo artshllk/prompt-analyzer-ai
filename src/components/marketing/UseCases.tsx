@@ -64,9 +64,9 @@ export function UseCases() {
     >
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-12 gap-8 md:gap-16 mb-14 md:mb-20">
-          <div className="md:col-span-3">
+          {/* <div className="md:col-span-3">
             <p className="eyebrow">Use cases</p>
-          </div>
+          </div> */}
           <div className="md:col-span-9">
             <h2
               className="display text-4xl md:text-6xl"
@@ -78,7 +78,7 @@ export function UseCases() {
               className="mt-6 text-lg leading-relaxed max-w-2xl"
               style={{ color: 'var(--color-paper-mute)' }}
             >
-              Real examples of prompts people improve. Click any one to see the full version.
+              Real examples of prompts people improve
             </p>
           </div>
         </div>

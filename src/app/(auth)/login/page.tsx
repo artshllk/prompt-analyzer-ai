@@ -13,6 +13,7 @@ import {
   rememberSignIn,
   subscribeToStorage,
 } from '@/lib/auth/local-hints'
+import { postSignInDestination } from '@/lib/auth/post-signin'
 
 export default function LoginPage() {
   return (
@@ -126,7 +127,7 @@ function LoginInner() {
    *  also works when the email is read on another device. */
   async function handleVerifyCode(code: string): Promise<string | null> {
     const address = effectiveEmail.trim()
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       email: address,
       token: code,
       type: 'email',
@@ -138,7 +139,8 @@ function LoginInner() {
     }
     rememberSignIn('email', address)
     // Full navigation so the server picks up the fresh session cookie.
-    window.location.assign(redirectTo)
+    // Brand-new users land in the playground instead of the dashboard.
+    window.location.assign(postSignInDestination(redirectTo, data.user?.created_at))
     return null
   }
 

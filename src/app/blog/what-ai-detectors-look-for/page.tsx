@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'What AI Detectors Look For in Writing (The Real Signals)',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'What AI Detectors Look For in Writing (The Real Signals)',
   description: 'The specific patterns AI detectors measure, including word predictability, sentence variety, phrasing, and formatting, explained without jargon.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -314,6 +315,7 @@ export default function WhatAIDetectorsLookForPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="what-ai-detectors-look-for" />
         </main>
       </div>
     </>

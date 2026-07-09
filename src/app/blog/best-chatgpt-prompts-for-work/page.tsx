@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Best ChatGPT Prompts for Work (2026) - Copy and Use Today',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Best ChatGPT Prompts for Work (2026)',
   description: 'Ready-to-use ChatGPT prompts for emails, reports, analysis, and more work tasks.',
-  author: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -260,6 +261,7 @@ export default function BestChatGPTPromptsForWorkPage() {
             <Link href="/prompts" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>Browse all 23 free prompt templates →</Link>
           </div>
         </div>
+        <PostFooter slug="best-chatgpt-prompts-for-work" />
       </main>
     </div>
   )

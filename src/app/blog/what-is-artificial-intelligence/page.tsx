@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'What Is Artificial Intelligence? A Simple Guide for Beginners',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'What Is Artificial Intelligence? A Simple Guide for Beginners',
   description: 'A plain-English explanation of what artificial intelligence is, how it differs from normal software, and the main types of AI in everyday use.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -229,6 +230,7 @@ export default function WhatIsAIPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="what-is-artificial-intelligence" />
         </main>
       </div>
     </>

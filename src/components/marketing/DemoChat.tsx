@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { StreamOut } from '@/components/shared/StreamOut'
+import { SAMPLE_PROMPTS, pickThree } from '@/lib/sample-prompts'
 
 /**
  * Chat-style demo shown inside the hero modal (HeroDemoModal owns the
@@ -38,12 +39,6 @@ type Response =
 
 type Phase = 'idle' | 'thinking' | 'awaiting-answer' | 'done' | 'error'
 
-const SAMPLES = [
-  'Create a post for LinkedIn',
-  'Help me fix this bug',
-  'Name my orange cat',
-]
-
 interface DemoChatProps {
   /** Reports whether the panel should widen to the conversation layout. */
   onWide?: (wide: boolean) => void
@@ -62,12 +57,16 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
 
   const [runs, setRuns] = useState(0)
   const [hydrated, setHydrated] = useState(false)
+  // Rotating sample chips: deterministic first three for SSR / first
+  // client render, then a fresh random trio each time the modal mounts.
+  const [samples, setSamples] = useState<string[]>(() => SAMPLE_PROMPTS.slice(0, 3))
 
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const answerRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
+    setSamples(pickThree())
     const r = parseInt(window.localStorage.getItem(RUNS_KEY) ?? '0', 10)
     setRuns(Number.isFinite(r) ? r : 0)
     setHydrated(true)
@@ -132,7 +131,7 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       })
 
       if (res.status === 429) {
-        fail('We limit free analyses by IP. Give it a minute and try again.')
+        fail('We limit free rewrites by IP. Give it a minute and try again.')
         return
       }
       if (!res.ok) {
@@ -223,7 +222,7 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
         setInput={setInput}
         onSend={handleSend}
         inputRef={inputRef}
-        samples={SAMPLES}
+        samples={samples}
       />
     )
   }
@@ -454,7 +453,13 @@ function Intro({
         ))}
       </div>
       <p className="mt-5 text-xs" style={{ color: 'var(--color-paper-mute)' }}>
-        Enter to send · Shift + Enter for a new line
+        Enter to send · Shift + Enter for a new line ·{' '}
+        <span>
+          Your prompts are private and never used to train AI models.{' '}
+          <a href="/privacy" className="underline underline-offset-2 transition-opacity hover:opacity-80">
+            Privacy
+          </a>
+        </span>
       </p>
     </motion.div>
   )

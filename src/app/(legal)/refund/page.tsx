@@ -3,27 +3,38 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Refund Policy',
+  description:
+    'Deepclario Pro comes with a 30-day money-back guarantee. Here is how refunds and cancellations work.',
   alternates: { canonical: 'https://deepclario.com/refund' },
 }
 
 export default function RefundPage() {
   return (
-    <article className="text-[#cdd5ee] space-y-6 leading-relaxed">
+    <article className="space-y-6 leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
       <header>
-        <h1 className="text-3xl font-bold text-[#f0f4ff] mb-2">Refund Policy</h1>
-        <p className="text-sm text-[#8b9cc8]">Last updated: April 2026</p>
+        <p className="eyebrow mb-3">Legal</p>
+        <h1 className="display text-3xl md:text-4xl tracking-tight mb-2" style={{ color: 'var(--color-paper)' }}>
+          Refund Policy
+        </h1>
+        <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>Last updated: April 2026</p>
       </header>
 
       {/* Highlighted guarantee card */}
-      <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-5 flex items-start gap-4">
-        <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center shrink-0">
+      <div
+        className="rounded-2xl p-5 flex items-start gap-4"
+        style={{ border: '1px solid rgba(74, 176, 118, 0.28)', background: 'rgba(74, 176, 118, 0.06)' }}
+      >
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: 'rgba(74, 176, 118, 0.15)', border: '1px solid rgba(74, 176, 118, 0.28)' }}
+        >
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M9 1L11 6L16 6.5L12.5 10L13.5 15L9 12.5L4.5 15L5.5 10L2 6.5L7 6L9 1Z" stroke="#34d399" strokeWidth="1.5" strokeLinejoin="round"/>
+            <path d="M9 1L11 6L16 6.5L12.5 10L13.5 15L9 12.5L4.5 15L5.5 10L2 6.5L7 6L9 1Z" stroke="#5FBE8C" strokeWidth="1.5" strokeLinejoin="round"/>
           </svg>
         </div>
         <div>
-          <h2 className="text-[15px] font-semibold text-[#f0f4ff] mb-1">30-day money-back guarantee</h2>
-          <p className="text-sm text-[#8b9cc8]">
+          <h2 className="text-[15px] font-semibold mb-1" style={{ color: 'var(--color-paper)' }}>30-day money-back guarantee</h2>
+          <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
             If Deepclario Pro isn&apos;t for you, email us within 30 days of purchase and we&apos;ll
             refund you in full. No forms, no questions.
           </p>
@@ -33,10 +44,8 @@ export default function RefundPage() {
       <Section title="How to request a refund">
         <p>
           Email{' '}
-          <a href="mailto:hello@deepclario.com" className="text-violet-400 hover:text-violet-300 transition-colors">
-            hello@deepclario.com
-          </a>{' '}
-          with the subject line <strong className="text-[#f0f4ff]">&ldquo;Refund Request&rdquo;</strong> and the email address tied to your account.
+          <MailLink />{' '}
+          with the subject line <Strong>&ldquo;Refund Request&rdquo;</Strong> and the email address tied to your account.
         </p>
         <p className="mt-3">We&apos;ll process the refund within 5 business days.</p>
       </Section>
@@ -54,21 +63,23 @@ export default function RefundPage() {
       <Section title="Exceptions">
         <p>
           Refunds are not available for accounts found to be in violation of our{' '}
-          <Link href="/terms" className="text-violet-400 hover:text-violet-300 transition-colors">
+          <Link
+            href="/terms"
+            className="underline underline-offset-4 transition-opacity hover:opacity-80"
+            style={{ color: 'var(--color-paper)' }}
+          >
             Terms of Service
           </Link>
           {' '}- for example, abuse, fraud, or automated misuse of the platform.
         </p>
       </Section>
 
-      <Section title="Contact">
+      {/* <Section title="Contact">
         <p>
           Questions about this policy:{' '}
-          <a href="mailto:hello@deepclario.com" className="text-violet-400 hover:text-violet-300 transition-colors">
-            hello@deepclario.com
-          </a>
+          <MailLink />
         </p>
-      </Section>
+      </Section> */}
     </article>
   )
 }
@@ -76,8 +87,24 @@ export default function RefundPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="text-lg font-semibold text-[#f0f4ff] mt-6 mb-2">{title}</h2>
+      <h2 className="text-lg font-semibold mt-6 mb-2" style={{ color: 'var(--color-paper)' }}>{title}</h2>
       <div className="text-sm">{children}</div>
     </section>
+  )
+}
+
+function Strong({ children }: { children: React.ReactNode }) {
+  return <strong style={{ color: 'var(--color-paper)' }}>{children}</strong>
+}
+
+function MailLink() {
+  return (
+    <a
+      href="mailto:hello@deepclario.com"
+      className="underline underline-offset-4 transition-opacity hover:opacity-80"
+      style={{ color: 'var(--color-paper)' }}
+    >
+      hello@deepclario.com
+    </a>
   )
 }

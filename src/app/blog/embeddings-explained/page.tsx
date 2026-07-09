@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Embeddings Explained: How AI Turns Words Into Numbers',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Embeddings Explained: How AI Turns Words Into Numbers',
   description: 'A plain-English explanation of embeddings: how AI turns words into numbers so it can measure meaning and find related things.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -212,6 +213,7 @@ export default function EmbeddingsExplainedPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="embeddings-explained" />
         </main>
       </div>
     </>

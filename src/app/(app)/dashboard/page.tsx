@@ -8,6 +8,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { WelcomeMoment } from '@/components/ui/WelcomeMoment'
 import { CountUp } from '@/components/ui/CountUp'
 import { REWRITE_WINDOW_HOURS } from '@/lib/limits'
+import { pickThree } from '@/lib/sample-prompts'
 import type { SessionWithDetails, UsageInfo } from '@/types'
 
 export default async function DashboardPage({
@@ -83,7 +84,7 @@ export default async function DashboardPage({
               className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
               style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
             >
-              New analysis
+              New rewrite
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
                 <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -190,7 +191,7 @@ export default async function DashboardPage({
                     See your patterns over weeks, <span style={{ color: 'var(--color-paper-mute)' }}>not days.</span>
                   </h2>
                   <p className="text-base leading-[1.6] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
-                    Deep Rewrite on our strongest model, unlimited rewrites, full history, and a weekly report on the fixes you reach for most.
+                    Deep Rewrite for the hardest tasks, unlimited rewrites, full history, and a weekly report on the fixes you reach for most.
                   </p>
                 </div>
                 <div className="md:col-span-4 md:flex md:items-center md:justify-end">
@@ -364,13 +365,9 @@ function SpotlightCard({ session }: { session: SessionWithDetails }) {
 
 /* ===== Empty state ===== */
 
-const SAMPLES = [
-  'Write a landing page hero for my SaaS',
-  'Help me refactor this auth code',
-  'Summarize this research paper for a non-technical reader',
-]
-
 function EmptyState() {
+  // Server-rendered, so this rotates the trio on each page load.
+  const samples = pickThree()
   return (
     <section className="grid md:grid-cols-12 gap-6 md:gap-12">
       <div className="md:col-span-4">
@@ -385,7 +382,7 @@ function EmptyState() {
           <p className="eyebrow mb-3">Try one of these</p>
           <ul className="space-y-px">
             <li className="rule-strong" />
-            {SAMPLES.map(s => (
+            {samples.map(s => (
               <li key={s}>
                 <Link
                   href={`/playground?example=${encodeURIComponent(s)}`}

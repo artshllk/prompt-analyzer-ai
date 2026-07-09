@@ -9,25 +9,25 @@ import { PaywallModal } from "@/components/ui/PaywallModal";
 import { StreamOut } from "@/components/shared/StreamOut";
 import { usePromptSession } from "@/hooks/usePromptSession";
 import { useTokenCount } from "@/hooks/useTokenCount";
+import { ANON_REWRITE_LIMIT } from "@/lib/limits";
+import { SAMPLE_PROMPTS, pickThree } from "@/lib/sample-prompts";
 import type { Tone } from "@/types/database";
 import type { UsageInfo } from "@/types";
 
-const ANON_LIMIT = 2;
 const ANON_KEY = "pc_anon_count";
+// One-time first-run flags, same pattern as dc:welcomed in WelcomeMoment.
+const CLARIFY_HINT_KEY = "dc:clarify-hint-seen";
+const FIRST_REWRITE_KEY = "dc:first-rewrite-done";
 
 interface PlaygroundClientProps {
   isSignedIn: boolean;
   usage?: UsageInfo;
+  /** Pre-fills the textarea (from /playground?example=…). */
+  initialPrompt?: string;
 }
 
-const SAMPLES = [
-  "Write me a cover letter",
-  "Summarize this article",
-  "Help me debug this function",
-];
-
-export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
-  const [prompt, setPrompt] = useState("");
+export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: PlaygroundClientProps) {
+  const [prompt, setPrompt] = useState(initialPrompt ?? "");
   const [tone, setTone] = useState<Tone>("professional");
   const [answer, setAnswer] = useState("");
   const [paywallOpen, setPaywallOpen] = useState(false);
@@ -37,6 +37,15 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
   // optimistically as the user spends credits this session.
   const [rewritesUsed, setRewritesUsed] = useState(usage?.used ?? 0);
   const [deepMode, setDeepMode] = useState(false);
+  // First-run guidance: both resolve from localStorage after hydration.
+  const [showClarifyHint, setShowClarifyHint] = useState(false);
+  const [showExtensionNudge, setShowExtensionNudge] = useState(false);
+  // Rotating sample chips. SSR and the first client render both use the
+  // deterministic first three (no hydration mismatch); a fresh random
+  // trio is swapped in right after mount, so each visit/refresh differs.
+  const [samples, setSamples] = useState<string[]>(() =>
+    SAMPLE_PROMPTS.slice(0, 3),
+  );
 
   const session = usePromptSession({ anonymous: !isSignedIn });
   const isAnon = !isSignedIn;
@@ -51,6 +60,7 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
   const responseRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setSamples(pickThree());
     if (!isSignedIn) {
       const raw = window.localStorage.getItem(ANON_KEY);
       const parsed = raw ? parseInt(raw, 10) : 0;
@@ -72,6 +82,24 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
   useEffect(() => {
     if (session.stage !== "clarifying") return;
     answerRef.current?.focus();
+    // The clarifying question is the product's signature moment; the very
+    // first time it fires, say why it happened so it doesn't read as an
+    // error. Shown once per browser, ever.
+    if (!window.localStorage.getItem(CLARIFY_HINT_KEY)) {
+      window.localStorage.setItem(CLARIFY_HINT_KEY, "1");
+      setShowClarifyHint(true);
+    }
+  }, [session.stage]);
+
+  useEffect(() => {
+    if (session.stage !== "done") return;
+    setShowClarifyHint(false);
+    // Right after the first-ever successful rewrite, cross-sell the
+    // extension at the moment of payoff. Once per browser.
+    if (!window.localStorage.getItem(FIRST_REWRITE_KEY)) {
+      window.localStorage.setItem(FIRST_REWRITE_KEY, "1");
+      setShowExtensionNudge(true);
+    }
   }, [session.stage]);
 
   useEffect(() => {
@@ -102,7 +130,7 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
   }, [session.stage]);
 
   const anonGated =
-    isAnon && hydrated && anonCount >= ANON_LIMIT && session.stage === "idle";
+    isAnon && hydrated && anonCount >= ANON_REWRITE_LIMIT && session.stage === "idle";
   const started = session.stage !== "idle";
   const thinking =
     session.stage === "analyzing" || session.stage === "improving";
@@ -141,7 +169,7 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
           className="display text-3xl md:text-5xl tracking-tight"
           style={{ color: "var(--color-paper)" }}
         >
-          Sharpen your prompt.
+          Improve your prompt.
         </h1>
         <p
           className="mt-3 text-base md:text-lg"
@@ -161,7 +189,7 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
       )}
 
       {anonGated ? (
-        <SignupGate used={anonCount} limit={ANON_LIMIT} />
+        <SignupGate used={anonCount} limit={ANON_REWRITE_LIMIT} />
       ) : (
         <div className="grid md:grid-cols-2 gap-5 md:gap-6 items-start">
           {/* LEFT - the prompt. */}
@@ -252,7 +280,7 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
 
             {!started && (
               <div className="mt-4 flex flex-wrap gap-2">
-                {SAMPLES.map((s) => (
+                {samples.map((s) => (
                   <button
                     key={s}
                     onClick={() => setPrompt(s)}
@@ -267,6 +295,21 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
                 ))}
               </div>
             )}
+
+            {/* Trust note - people paste work emails, code, and business
+                ideas here. Claims must match /privacy. */}
+            <p
+              className="mt-4 text-xs leading-relaxed"
+              style={{ color: "var(--color-paper-mute)" }}
+            >
+              Your prompts are private and never used to train AI models.{" "}
+              <a
+                href="/privacy"
+                className="underline underline-offset-2 transition-opacity hover:opacity-80"
+              >
+                Privacy
+              </a>
+            </p>
           </div>
 
           {/* RIGHT - Deepclario's response (progressive disclosure). */}
@@ -381,6 +424,18 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
                         <span style={{ color: "var(--color-paper)" }}>
                           {session.clarifying.targetsGap}
                         </span>
+                      </p>
+                    )}
+                    {showClarifyHint && (
+                      <p
+                        className="mt-3 pt-3 text-xs leading-relaxed"
+                        style={{
+                          borderTop: "1px solid var(--color-rule)",
+                          color: "var(--color-paper-mute)",
+                        }}
+                      >
+                        This is the important part. Deepclario asks when
+                        something is missing instead of guessing.
                       </p>
                     )}
                   </motion.div>
@@ -566,9 +621,31 @@ export function PlaygroundClient({ isSignedIn, usage }: PlaygroundClientProps) {
               </div>
             )}
 
+            {/* First-rewrite nudge: cross-sell the extension at the moment
+                of payoff. Takes the slot over the low-credits nudge on the
+                very first rewrite. */}
+            {session.stage === "done" && showExtensionNudge && (
+              <motion.p
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="mt-3 text-xs"
+                style={{ color: "var(--color-paper-mute)" }}
+              >
+                That&apos;s the whole product.{" "}
+                <a
+                  href="/extension"
+                  className="underline underline-offset-4 transition-opacity hover:opacity-80"
+                  style={{ color: "var(--color-accent-bright)" }}
+                >
+                  Install the extension to do this inside ChatGPT →
+                </a>
+              </motion.p>
+            )}
+
             {/* Value-moment nudge: fires only for free users running low, right
                 after they've felt the payoff of a rewrite. */}
-            {session.stage === "done" && isFree && rewritesLeft <= 2 && (
+            {session.stage === "done" && !showExtensionNudge && isFree && rewritesLeft <= 2 && (
               <motion.p
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -825,7 +902,7 @@ function errorCopy(error: string | null): string {
       return "The AI service is briefly unreachable. Try again in a moment.";
     case "session_lost":
     case "session_not_found":
-      return "Your session expired. Start a new analysis.";
+      return "Your session expired. Start a new rewrite.";
     default:
       return "Something went sideways on our end. Try again.";
   }

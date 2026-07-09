@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'How to Test a Prompt: A Simple Method',
@@ -22,7 +23,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'How to Test a Prompt: A Simple Method',
   description: 'A practical method for testing an AI prompt: run it more than once, feed it hard inputs, and check the answer against a clear standard.',
-  author: { '@type': 'Organization', name: 'Deepclario' },
+  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
@@ -230,6 +231,7 @@ export default function HowToTestAPromptPage() {
               </Link>
             </div>
           </div>
+          <PostFooter slug="how-to-test-a-prompt" />
         </main>
       </div>
     </>

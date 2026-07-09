@@ -66,7 +66,7 @@ export default async function ExtensionConnectPage() {
           {profile?.tier === 'pro' ? (
             <span style={{ color: 'var(--color-paper)' }}>Pro · unlimited</span>
           ) : (
-            <>Free · 25 prompts / month</>
+            <>Free · 5 rewrites / 48h</>
           )}
         </p>
 
