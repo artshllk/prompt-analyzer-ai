@@ -335,7 +335,7 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
                   placeholder="Type your answer…"
                   rows={1}
                   maxLength={1000}
-                  className="flex-1 bg-transparent resize-none py-2 px-2 text-[15px] sm:text-base outline-none"
+                  className="flex-1 bg-transparent resize-none py-2 px-2 text-base outline-none"
                   style={{ color: 'var(--color-paper)', caretColor: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.55 }}
                   onKeyDown={e => {
                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -392,7 +392,7 @@ function Intro({
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
     >
       <h3
-        className="font-serif text-[1.6rem] sm:text-3xl leading-[1.15] tracking-tight mb-2.5"
+        className="font-serif text-[1.6rem] sm:text-3xl leading-[1.15] tracking-tight mb-2.5 pr-10 sm:pr-0"
         style={{ color: 'var(--color-paper)', fontWeight: 400 }}
       >
         Paste a prompt. Watch it get sharper.
@@ -417,7 +417,7 @@ function Intro({
             placeholder="Message Deepclario…"
             rows={1}
             maxLength={4000}
-            className="flex-1 bg-transparent resize-none py-2.5 px-2 text-[15px] sm:text-base focus:outline-none focus-visible:outline-none"
+            className="flex-1 bg-transparent resize-none py-2.5 px-2 text-base focus:outline-none focus-visible:outline-none"
             style={{ color: 'var(--color-paper)', caretColor: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.55 }}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -453,7 +453,8 @@ function Intro({
         ))}
       </div>
       <p className="mt-5 text-xs" style={{ color: 'var(--color-paper-mute)' }}>
-        Enter to send · Shift + Enter for a new line ·{' '}
+        {/* Keyboard shortcuts only make sense with a physical keyboard. */}
+        <span className="hidden sm:inline">Enter to send · Shift + Enter for a new line ·{' '}</span>
         <span>
           Your prompts are private and never used to train AI models.{' '}
           <a href="/privacy" className="underline underline-offset-2 transition-opacity hover:opacity-80">
