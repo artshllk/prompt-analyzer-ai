@@ -8,10 +8,38 @@ import { REWRITE_FREE_LIMIT, REWRITE_WINDOW_HOURS } from "@/lib/limits";
 
 const PADDLE_LIVE = process.env.NEXT_PUBLIC_PADDLE_LIVE === "true";
 
+/**
+ * Why the modal was opened - drives the headline + body copy so the
+ * message actually matches what the user just did. All four call sites
+ * used to share the "you've hit your limit" copy, which was wrong (and
+ * confusing) for anything that wasn't the real usage-limit trigger - e.g.
+ * clicking the locked Deep Rewrite chip while free rewrites remained.
+ */
+type PaywallReason = "limit" | "deep-rewrite" | "upgrade";
+
 interface PaywallModalProps {
   open: boolean;
   onClose: () => void;
+  reason?: PaywallReason;
 }
+
+const COPY: Record<PaywallReason, { headline: string; body: (limit: number, hours: number) => string }> = {
+  limit: {
+    headline: "You've hit your limit.",
+    body: (limit, hours) =>
+      `You've used all ${limit} free rewrites for now. Go Pro for unlimited rewrites, plus Deep Rewrite on our strongest model, or wait for your ${hours}-hour window to reset.`,
+  },
+  "deep-rewrite": {
+    headline: "Deep Rewrite is a Pro feature.",
+    body: () =>
+      "Unlock our strongest model for the hardest rewrites, plus unlimited rewrites, full history, and more.",
+  },
+  upgrade: {
+    headline: "Go unlimited with Pro.",
+    body: () =>
+      "Unlimited rewrites and AI detection, Deep Rewrite on our strongest model, and full history kept forever.",
+  },
+};
 
 /**
  * Pro feature bullets, in the same short-noun-phrase tone as the pricing
@@ -37,7 +65,7 @@ const LAUNCH = {
   yearly: { list: "7.99", now: "3.99", billedTotal: "47.88" },
 };
 
-export function PaywallModal({ open, onClose }: PaywallModalProps) {
+export function PaywallModal({ open, onClose, reason = "upgrade" }: PaywallModalProps) {
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<"pro_monthly" | "pro_annual">("pro_monthly");
   const [showWaitlist, setShowWaitlist] = useState(false);
@@ -45,6 +73,7 @@ export function PaywallModal({ open, onClose }: PaywallModalProps) {
 
   const annual = plan === "pro_annual";
   const period = annual ? LAUNCH.yearly : LAUNCH.monthly;
+  const copy = COPY[reason];
 
   // Escape to close + lock body scroll while open, matching the other
   // overlays (hero demo, detector gate).
@@ -161,16 +190,13 @@ export function PaywallModal({ open, onClose }: PaywallModalProps) {
               className="font-serif text-3xl sm:text-[2.25rem] leading-tight tracking-tight mb-3"
               style={{ color: "var(--color-paper)", fontWeight: 400 }}
             >
-              You&apos;ve hit your limit.
+              {copy.headline}
             </h2>
             <p
               className="text-sm sm:text-[15px] leading-relaxed mb-7"
               style={{ color: "var(--color-paper-mute)" }}
             >
-              You&apos;ve used all {REWRITE_FREE_LIMIT} free rewrites for now.
-              Go Pro for unlimited rewrites, plus Deep Rewrite on our strongest
-              model, or wait for your {REWRITE_WINDOW_HOURS}-hour window to
-              reset.
+              {copy.body(REWRITE_FREE_LIMIT, REWRITE_WINDOW_HOURS)}
             </p>
 
             {/* Billing toggle */}
