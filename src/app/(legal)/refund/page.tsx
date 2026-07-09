@@ -74,12 +74,12 @@ export default function RefundPage() {
         </p>
       </Section>
 
-      {/* <Section title="Contact">
+      <Section title="Contact">
         <p>
           Questions about this policy:{' '}
           <MailLink />
         </p>
-      </Section> */}
+      </Section>
     </article>
   )
 }
@@ -100,11 +100,11 @@ function Strong({ children }: { children: React.ReactNode }) {
 function MailLink() {
   return (
     <a
-      href="mailto:hello@deepclario.com"
+      href="mailto:contact@deepclario.com"
       className="underline underline-offset-4 transition-opacity hover:opacity-80"
       style={{ color: 'var(--color-paper)' }}
     >
-      hello@deepclario.com
+      contact@deepclario.com
     </a>
   )
 }
