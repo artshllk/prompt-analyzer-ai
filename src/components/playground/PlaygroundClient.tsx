@@ -31,6 +31,11 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
   const [tone, setTone] = useState<Tone>("professional");
   const [answer, setAnswer] = useState("");
   const [paywallOpen, setPaywallOpen] = useState(false);
+  // Which trigger opened the paywall - drives the modal's headline/body so
+  // "you've hit your limit" only ever shows when that's actually true.
+  const [paywallReason, setPaywallReason] = useState<
+    "limit" | "deep-rewrite" | "upgrade"
+  >("upgrade");
   const [anonCount, setAnonCount] = useState(0);
   const [hydrated, setHydrated] = useState(false);
   // Live free-rewrite count, seeded from the server and decremented
@@ -146,7 +151,10 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
       // A fresh analysis spends one credit (clarify turns don't recount).
       setRewritesUsed((u) => u + 1);
     }
-    if (result?.usageLimitReached) setPaywallOpen(true);
+    if (result?.usageLimitReached) {
+      setPaywallReason("limit");
+      setPaywallOpen(true);
+    }
   }
 
   function handleAnswer() {
@@ -184,7 +192,10 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
         <FreeCreditsMeter
           used={rewritesUsed}
           limit={rewriteLimit}
-          onUpgrade={() => setPaywallOpen(true)}
+          onUpgrade={() => {
+            setPaywallReason("upgrade");
+            setPaywallOpen(true);
+          }}
         />
       )}
 
@@ -243,7 +254,10 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                       active={deepMode}
                       disabled={started}
                       onToggle={() => setDeepMode((d) => !d)}
-                      onUpgrade={() => setPaywallOpen(true)}
+                      onUpgrade={() => {
+                        setPaywallReason("deep-rewrite");
+                        setPaywallOpen(true);
+                      }}
                     />
                   )}
                 </div>
@@ -660,7 +674,10 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                   ? `${rewritesLeft} free rewrite${rewritesLeft === 1 ? "" : "s"} left. `
                   : "That was your last free rewrite. "}
                 <button
-                  onClick={() => setPaywallOpen(true)}
+                  onClick={() => {
+                    setPaywallReason(rewritesLeft > 0 ? "upgrade" : "limit");
+                    setPaywallOpen(true);
+                  }}
                   className="underline underline-offset-4 transition-opacity hover:opacity-80"
                   style={{ color: "var(--color-accent-bright)" }}
                 >
@@ -682,7 +699,11 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
         </div>
       )}
 
-      <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} />
+      <PaywallModal
+        open={paywallOpen}
+        onClose={() => setPaywallOpen(false)}
+        reason={paywallReason}
+      />
     </div>
   );
 }
