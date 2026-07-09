@@ -6,7 +6,9 @@
  * (SSR, private mode) by degrading to "no hint".
  */
 
-export type SignInMethod = 'google' | 'email'
+export type SignInMethod = 'google' | 'email' | 'github' | 'twitter'
+
+const VALID_METHODS: SignInMethod[] = ['google', 'email', 'github', 'twitter']
 
 export interface LastSignIn {
   method: SignInMethod
@@ -37,7 +39,7 @@ export function parseLastSignIn(raw: string | null): LastSignIn | null {
   if (!raw) return null
   try {
     const parsed = JSON.parse(raw)
-    if (parsed?.method !== 'google' && parsed?.method !== 'email') return null
+    if (!VALID_METHODS.includes(parsed?.method)) return null
     return {
       method: parsed.method,
       email: typeof parsed.email === 'string' ? parsed.email : null,

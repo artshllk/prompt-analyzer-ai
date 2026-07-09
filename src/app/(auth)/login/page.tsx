@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation'
 import { createOtpClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
 import GoogleSignIn from './GoogleSignIn'
+import { OAuthButtons, socialOAuthAvailable } from './OAuthButtons'
 import {
   parseLastSignIn,
   readLastSignInRaw,
@@ -50,9 +51,6 @@ function LoginInner() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(errorFromUrl ?? '')
   const [googleAvailable, setGoogleAvailable] = useState(Boolean(GOOGLE_CLIENT_ID))
-  // null = "no explicit choice yet"; the default then follows what the
-  // returning user did last time (email users land on the email form).
-  const [showEmailOverride, setShowEmailOverride] = useState<boolean | null>(null)
 
   // Last completed sign-in on this browser. Server snapshot is null, so
   // SSR and hydration render the anonymous page; the hint applies on the
@@ -61,11 +59,12 @@ function LoginInner() {
   const last = useMemo(() => parseLastSignIn(lastRaw), [lastRaw])
 
   const effectiveEmail = emailEdited ? email : (email || last?.email || '')
-  const showEmail = showEmailOverride ?? (!googleAvailable || last?.method === 'email')
+  // Any social path available (Google button, or a redirect-OAuth provider).
+  // The email form always shows; social buttons stack above it.
+  const hasSocial = googleAvailable || socialOAuthAvailable()
 
   const handleGoogleUnavailable = useCallback(() => {
     setGoogleAvailable(false)
-    setShowEmailOverride(true)
   }, [])
 
   // Implicit-flow client: the email path is request-code / verify-code,
@@ -174,7 +173,6 @@ function LoginInner() {
               setAlreadySent(false)
               setEmail('')
               setEmailEdited(true)
-              setShowEmailOverride(!googleAvailable)
             }}
           />
         ) : (
@@ -209,22 +207,25 @@ function LoginInner() {
                 </p>
               </>
             )}
-            {error && !showEmail && (
-              <p className="mt-2 text-xs text-center" style={{ color: '#C25E5E' }}>{error}</p>
+
+            {/* Redirect-OAuth providers (Google, GitHub, X). Each appears
+                only when enabled in the environment + Supabase dashboard.
+                When the GIS Google button is live, the redirect-Google
+                button is excluded so Google never shows twice. */}
+            {socialOAuthAvailable() && (
+              <div className={googleAvailable ? 'mt-3' : ''}>
+                <OAuthButtons
+                  redirectTo={redirectTo}
+                  onError={setError}
+                  exclude={googleAvailable ? ['google'] : []}
+                />
+              </div>
             )}
 
-            {/* Email path */}
-            {!showEmail ? (
-              <button
-                onClick={() => setShowEmailOverride(true)}
-                className="block mx-auto mt-5 text-sm underline-offset-4 hover:underline transition-all"
-                style={{ color: 'var(--color-paper-mute)' }}
-              >
-                Or use email instead
-              </button>
-            ) : (
-              <div className={googleAvailable ? 'mt-8' : ''}>
-                {googleAvailable && (
+            {/* Email path - always visible below the social buttons, so no
+                extra click stands between the user and signing in. */}
+            <div className={hasSocial ? 'mt-8' : ''}>
+                {hasSocial && (
                   <div className="flex items-center gap-3 mb-5">
                     <span className="flex-1 h-px" style={{ background: 'var(--color-rule)' }} />
                     <span className="eyebrow">Email</span>
@@ -263,7 +264,10 @@ function LoginInner() {
                         onBlur={() => setEmailFocused(false)}
                         placeholder="you@example.com"
                         required
-                        autoFocus
+                        // Only steal focus when email is the sole option -
+                        // with social buttons above, autofocus would yank
+                        // the page past them.
+                        autoFocus={!hasSocial}
                         autoComplete="email"
                         className="w-full py-3.5 text-base focus:outline-none bg-transparent"
                         style={{
@@ -308,7 +312,6 @@ function LoginInner() {
                   </p>
                 </form>
               </div>
-            )}
           </>
         )}
       </motion.div>
