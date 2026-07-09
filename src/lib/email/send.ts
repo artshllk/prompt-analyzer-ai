@@ -26,8 +26,8 @@ export async function sendEmail({ to, subject, text, unsubscribeUrl }: SendArgs)
     return false
   }
 
-  const from = process.env.EMAIL_FROM ?? 'Art from Deepclario <art@deepclario.com>'
-  const replyTo = process.env.EMAIL_REPLY_TO ?? 'art@deepclario.com'
+  const from = process.env.EMAIL_FROM ?? 'Deepclario <contact@deepclario.com>'
+  const replyTo = process.env.EMAIL_REPLY_TO ?? 'contact@deepclario.com'
 
   // Gmail and Yahoo require one-click unsubscribe headers at volume;
   // they also route spam-button clicks into unsubscribes instead of

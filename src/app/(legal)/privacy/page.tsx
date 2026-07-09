@@ -59,11 +59,11 @@ export default function PrivacyPage() {
         <p>
           Questions:{' '}
           <a
-            href="mailto:hello@deepclario.com"
+            href="mailto:contact@deepclario.com"
             className="underline underline-offset-4 transition-opacity hover:opacity-80"
             style={{ color: 'var(--color-paper)' }}
           >
-            hello@deepclario.com
+            contact@deepclario.com
           </a>
         </p>
       </Section> */}
