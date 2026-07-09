@@ -52,7 +52,7 @@ export function ToneDropdown({ value, onChange, disabled }: ToneDropdownProps) {
         onClick={() => setOpen(o => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="btn-outline inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+        className="btn-outline inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
         style={{ color: 'var(--color-paper)', border: '1px solid var(--color-rule-strong)' }}
       >
         <span style={{ color: 'var(--color-paper-mute)' }}>Tone:</span>

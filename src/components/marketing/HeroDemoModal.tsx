@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
@@ -29,6 +30,12 @@ export function HeroDemoModal() {
   const [wide, setWide] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [nudge, setNudge] = useState(false)
+  // Portals need `document`, which only exists after mount on the client.
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const supabase = createClient()
@@ -127,6 +134,13 @@ export function HeroDemoModal() {
         </svg>
       </button>
 
+      {/* Portal to <body> so the overlay is positioned against the real
+          viewport. The trigger sits inside a Reveal (framer-motion) wrapper
+          and, on mobile, inside the `.editorial` page-enter animation -
+          either can carry a `transform`, which would otherwise become the
+          containing block for this `position: fixed` overlay and pin the
+          modal to the page instead of the screen. */}
+      {mounted && createPortal(
       <AnimatePresence>
         {open && (
           <motion.div
@@ -161,6 +175,9 @@ export function HeroDemoModal() {
                 maxHeight: '90dvh',
                 transition: 'max-width 0.45s cubic-bezier(0.16,1,0.3,1)',
                 boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+                // Bottom-sheet presentation on mobile sits flush with the
+                // screen edge - keep content clear of the home indicator.
+                paddingBottom: 'env(safe-area-inset-bottom)',
               }}
             >
               <button
@@ -206,7 +223,9 @@ export function HeroDemoModal() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body,
+      )}
     </>
   )
 }

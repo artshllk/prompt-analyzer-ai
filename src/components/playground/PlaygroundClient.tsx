@@ -210,7 +210,7 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                 placeholder="A rough idea, a one-liner, or a request you haven't finished writing…"
                 rows={5}
                 maxLength={4000}
-                className="w-full bg-transparent resize-none p-3 text-[15px] sm:text-base outline-none disabled:opacity-60"
+                className="w-full bg-transparent resize-none p-3 text-base outline-none disabled:opacity-60"
                 style={{
                   color: "var(--color-paper)",
                   caretColor: "var(--color-paper)",
@@ -224,8 +224,11 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                   }
                 }}
               />
-              <div className="flex items-center justify-between gap-3 p-1.5 pt-2">
-                <div className="flex items-center gap-2 min-w-0">
+              {/* Wraps on narrow screens: Tone + Deep Rewrite don't fit
+                  beside Improve, so Improve drops to its own full-width
+                  row (a better thumb target). Single row from sm up. */}
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 p-1.5 pt-2">
+                <div className="flex flex-wrap items-center gap-2 min-w-0">
                   <ToneDropdown
                     value={tone}
                     onChange={setTone}
@@ -248,7 +251,7 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                   <button
                     onClick={handleAnalyze}
                     disabled={!prompt.trim()}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all btn-paper disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="grow sm:grow-0 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all btn-paper disabled:opacity-30 disabled:cursor-not-allowed"
                     style={{
                       background: "var(--color-paper)",
                       color: "var(--color-ink)",
@@ -269,7 +272,7 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                 ) : (
                   <button
                     onClick={handleReset}
-                    className="text-sm transition-opacity hover:opacity-100 opacity-70 focus:opacity-100 px-2"
+                    className="ml-auto text-sm transition-opacity hover:opacity-100 opacity-70 focus:opacity-100 px-2"
                     style={{ color: "var(--color-paper-mute)" }}
                   >
                     New prompt
@@ -564,7 +567,7 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                       placeholder="Type your answer…"
                       rows={1}
                       maxLength={1000}
-                      className="flex-1 bg-transparent resize-none py-2 px-2 text-[15px] sm:text-base outline-none"
+                      className="flex-1 bg-transparent resize-none py-2 px-2 text-base outline-none"
                       style={{
                         color: "var(--color-paper)",
                         caretColor: "var(--color-paper)",
@@ -723,7 +726,7 @@ function DeepRewriteToggle({
         onFocus={() => setTipOpen(true)}
         onBlur={() => setTipOpen(false)}
         onClick={() => (isPro ? onToggle() : onUpgrade())}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] transition-colors chip-hover disabled:opacity-50 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] whitespace-nowrap transition-colors chip-hover disabled:opacity-50 disabled:cursor-not-allowed"
         style={{
           border: `1px solid ${on ? "var(--color-accent-bright)" : "var(--color-rule-strong)"}`,
           color: on ? "var(--color-accent-bright)" : "var(--color-paper-mute)",
