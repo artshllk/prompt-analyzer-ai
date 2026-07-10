@@ -21,6 +21,24 @@ export type BlogPost = {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: 'chatgpt-vs-claude-vs-gemini',
+    title: 'ChatGPT vs Claude vs Gemini: An Honest Comparison',
+    description: 'Not which one is best, but which one fits what you need. A plain comparison of ChatGPT, Claude, and Gemini based on how they actually behave, not marketing claims.',
+    datePublished: '2026-07-08',
+    dateModified: '2026-07-08',
+    readTime: '8 min read',
+    tag: 'AI Models',
+  },
+  {
+    slug: 'which-ai-model-should-you-use',
+    title: 'Which AI Model Should You Use? A Simple Guide',
+    description: 'A quick, honest guide to choosing between ChatGPT, Claude, and Gemini based on what you actually need it for, not rankings or hype.',
+    datePublished: '2026-07-08',
+    dateModified: '2026-07-08',
+    readTime: '6 min read',
+    tag: 'AI Models',
+  },
+  {
     slug: 'ai-detection-vs-plagiarism-checkers',
     title: 'AI Detection vs Plagiarism Checkers: What Is the Difference?',
     description: 'AI detectors and plagiarism checkers look for completely different things. Here is what each one actually catches, and why passing one says nothing about the other.',
