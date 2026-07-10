@@ -21,6 +21,24 @@ export type BlogPost = {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: 'what-is-an-llm',
+    title: 'What Is an LLM? Large Language Models Explained Simply',
+    description: 'LLM stands for large language model, the technology behind ChatGPT, Claude, and Gemini. Here is what that actually means, without the jargon.',
+    datePublished: '2026-07-08',
+    dateModified: '2026-07-08',
+    readTime: '6 min read',
+    tag: 'AI Models',
+  },
+  {
+    slug: 'what-are-ai-model-parameters',
+    title: 'What Are AI Model Parameters? Explained Simply',
+    description: 'You keep seeing "billion parameters" in AI news. Here is what a parameter actually is, why the count matters less than people think, and what to focus on instead.',
+    datePublished: '2026-07-08',
+    dateModified: '2026-07-08',
+    readTime: '6 min read',
+    tag: 'AI Models',
+  },
+  {
     slug: 'chatgpt-vs-claude-vs-gemini',
     title: 'ChatGPT vs Claude vs Gemini: An Honest Comparison',
     description: 'Not which one is best, but which one fits what you need. A plain comparison of ChatGPT, Claude, and Gemini based on how they actually behave, not marketing claims.',
