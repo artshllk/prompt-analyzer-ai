@@ -1,13 +1,18 @@
+// Amounts are cents and must match BOTH the Paddle dashboard price IDs
+// (authoritative - what the customer is actually charged) and the
+// marketing display in EditorialPricing.tsx ($4.99/mo, $47.88/yr).
+// If these drift again, fix the Paddle dashboard or the marketing copy -
+// not just this file.
 export const PADDLE_PLANS = {
   pro_monthly: {
     priceId: process.env.PADDLE_PRO_MONTHLY_PRICE_ID!,
-    amount: 500,
+    amount: 499,
     interval: 'month' as const,
     label: 'Pro Monthly',
   },
   pro_annual: {
     priceId: process.env.PADDLE_PRO_ANNUAL_PRICE_ID!,
-    amount: 4800,
+    amount: 4788,
     interval: 'year' as const,
     label: 'Pro Annual',
   },

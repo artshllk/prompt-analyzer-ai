@@ -1,58 +1,158 @@
 /**
- * Gemini responseSchema definitions (OpenAPI 3.0 subset).
+ * Response schemas for the pipeline stages (JSON Schema subset accepted by
+ * both OpenAI Structured Outputs strict:false and Gemini responseSchema).
  * Setting these forces structurally valid JSON - no parse retries needed.
  */
 
-export const STEP_SCHEMA = {
+const INTENTS = [
+  'writing',
+  'coding',
+  'marketing',
+  'research',
+  'data-analysis',
+  'education',
+  'image-generation',
+  'system-prompt',
+  'general',
+]
+
+export const DIAGNOSE_SCHEMA = {
   type: 'object',
   properties: {
-    decision: {
-      type: 'string',
-      enum: ['ask', 'improve'],
-      description: 'ask = need more info from user; improve = ready to rewrite',
-    },
+    intent: { type: 'string', enum: INTENTS },
     score: {
       type: 'object',
       properties: {
         total: { type: 'integer', minimum: 0, maximum: 100 },
         confidence: { type: 'integer', minimum: 0, maximum: 100 },
-        gaps: {
-          type: 'array',
-          items: { type: 'string' },
-          description: '1-3 short noun phrases naming what is missing',
-        },
-        domain: {
-          type: 'string',
-          description: 'short label for the domain inferred (e.g. "landing page copy", "react component", "data analysis")',
-        },
       },
-      required: ['total', 'confidence', 'gaps', 'domain'],
+      required: ['total', 'confidence'],
+    },
+    already_good: {
+      type: 'boolean',
+      description: 'true only when the prompt is genuinely strong as-is and a rewrite would add mostly noise',
+    },
+    already_good_notes: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', description: 'Specific reasons the prompt is strong - name what it does right' },
+        tweaks: { type: 'array', items: { type: 'string' }, description: '1-2 marginal tweaks worth considering' },
+      },
+      required: ['message', 'tweaks'],
+    },
+    forks: {
+      type: 'array',
+      description: '2-3 genuinely different plausible readings of the prompt, if any exist',
+      items: {
+        type: 'object',
+        properties: {
+          label: { type: 'string', description: 'Short name for this reading, max ~8 words' },
+          summary: { type: 'string', description: 'One sentence: what the output would look like under this reading' },
+        },
+        required: ['label', 'summary'],
+      },
     },
     question: {
       type: 'object',
+      description: 'Present ONLY when the forks diverge enough that the rewrite would be substantively different',
       properties: {
-        text: { type: 'string', description: 'The single most important clarifying question' },
-        targets_gap: { type: 'string', description: 'Which gap this question addresses' },
-        why_it_matters: { type: 'string', description: 'One sentence on why answering this changes the outcome' },
+        text: { type: 'string' },
+        targets_gap: { type: 'string' },
       },
-      required: ['text', 'targets_gap', 'why_it_matters'],
+      required: ['text', 'targets_gap'],
     },
-    improvement: {
+    audit: {
       type: 'object',
       properties: {
-        improved_prompt: { type: 'string' },
-        explanation: { type: 'string' },
-        improvement_tags: {
+        dimensions: {
           type: 'array',
           items: {
-            type: 'string',
-            enum: ['context', 'role', 'action', 'format', 'constraints', 'examples', 'specificity'],
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              score: { type: 'integer', minimum: 0, maximum: 100 },
+            },
+            required: ['name', 'score'],
           },
         },
-        clarity_score_after: { type: 'integer', minimum: 0, maximum: 100 },
+        findings: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              dimension: { type: 'string' },
+              severity: { type: 'string', enum: ['critical', 'moderate', 'minor'] },
+              evidence: {
+                type: 'string',
+                description: 'EXACT phrase copied from the user prompt this finding anchors to; empty string when the problem is an absence',
+              },
+              note: { type: 'string', description: 'Plain-English what is wrong and why it matters' },
+            },
+            required: ['dimension', 'severity', 'evidence', 'note'],
+          },
+        },
+        failure_forecast: {
+          type: 'array',
+          items: { type: 'string' },
+          description: '1-3 concrete predictions of what a model will do wrong given the prompt as-is',
+        },
       },
-      required: ['improved_prompt', 'explanation', 'improvement_tags', 'clarity_score_after'],
+      required: ['dimensions', 'findings', 'failure_forecast'],
     },
   },
-  required: ['decision', 'score'],
+  required: ['intent', 'score', 'already_good', 'audit'],
+} as const
+
+export const REWRITE_SCHEMA = {
+  type: 'object',
+  properties: {
+    minimal_edit: {
+      type: 'string',
+      description: "The user's own wording, gaps patched with the fewest possible changes",
+    },
+    restructured: {
+      type: 'string',
+      description: 'The full expert rewrite',
+    },
+    template: {
+      type: 'string',
+      description: 'Reusable version of the restructured prompt with {curly_brace} variables for the parts that change per use',
+    },
+    explanation: { type: 'string' },
+    improvement_tags: {
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: ['context', 'role', 'action', 'format', 'constraints', 'examples', 'specificity'],
+      },
+    },
+    clarity_score_after: { type: 'integer', minimum: 0, maximum: 100 },
+  },
+  required: ['minimal_edit', 'restructured', 'template', 'explanation', 'improvement_tags', 'clarity_score_after'],
+} as const
+
+export const CRITIC_SCHEMA = {
+  type: 'object',
+  properties: {
+    critique: {
+      type: 'string',
+      description: 'The hostile review of the draft, 2-4 pointed sentences. Shown to the user.',
+    },
+    refined_prompt: {
+      type: 'string',
+      description: 'The rewrite with every critique point resolved',
+    },
+  },
+  required: ['critique', 'refined_prompt'],
+} as const
+
+export const CONTRAST_SCHEMA = {
+  type: 'object',
+  properties: {
+    contrast: {
+      type: 'string',
+      description: '1-2 sentences naming the most important behavioral difference between the two outputs',
+    },
+  },
+  required: ['contrast'],
 } as const
