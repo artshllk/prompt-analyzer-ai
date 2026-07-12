@@ -1,0 +1,129 @@
+import { callLLM } from './openai-client'
+import { callGemini } from './gemini-client'
+import { MODELS } from './models'
+import { REWRITE_SCHEMA } from './schemas'
+import { RUBRICS } from './rubrics'
+import type { AnalyzeInput } from '@/types'
+import type { ImprovementTag, Tone } from '@/types/database'
+import type { DiagnoseResponse } from './diagnose'
+
+/**
+ * Stage 4: the rewrite, informed by the diagnosis. Produces two variants
+ * (minimal edit that keeps the user's voice, full restructure) plus a
+ * reusable template. Pro rewrites run on Gemini 3.5 Flash with an OpenAI
+ * fallback; free tier runs on the mini model.
+ */
+
+export interface RewriteResponse {
+  minimal_edit: string
+  restructured: string
+  template: string
+  explanation: string
+  improvement_tags: ImprovementTag[]
+  clarity_score_after: number
+}
+
+const TONE_RULES: Record<Tone, string> = {
+  friendly: 'Conversational. Use "you". Avoid jargon. Warm but precise.',
+  professional: 'Formal, exact, third-person. No filler.',
+  persuasive: 'Lead with outcome. Use "because" / "so that". Show the value.',
+  concise: 'One sentence max. Zero filler. Cut every non-essential word.',
+  creative: 'Energetic verbs. One vivid metaphor allowed. Stay specific.',
+}
+
+function buildSystemPrompt(input: AnalyzeInput, diag: DiagnoseResponse): string {
+  const rubric = RUBRICS[diag.intent] ?? RUBRICS.general
+  const findings = diag.audit.findings
+    .map(f => `- [${f.severity}] ${f.dimension}: ${f.note}`)
+    .join('\n')
+
+  return `You are the rewrite stage of a prompt-improvement engine - a working expert in ${rubric.label.toLowerCase()} who writes prompts the way a careful practitioner writes them for their own critical work.
+
+A diagnostic pass already identified what this prompt is (intent: ${diag.intent}) and what it lacks:
+${findings || '- (no significant findings)'}
+
+# YOUR JOB
+
+Produce THREE artifacts:
+
+1. **minimal_edit** - the user's own prompt, changed as little as possible while fixing the findings. Keep their wording, order, and voice wherever it works. This is for users who want their prompt, only patched. If the original is a single vague line, the minimal edit may still need to grow - but it must feel like the user's sentence, extended.
+
+2. **restructured** - the prompt a domain expert would write for this task from scratch, informed by everything the user said (including clarification answers - treat those as ground truth and work every substantive answer in).
+
+3. **template** - the restructured version with the parts that change per use replaced by {curly_brace_variables} (e.g. {topic}, {audience}, {code_snippet}). Only genuinely variable parts become variables; keep it directly reusable.
+
+# REWRITE STRATEGY FOR THIS INTENT
+
+${rubric.rewriteStrategy}
+
+General rules:
+- Resolve every critical and moderate finding. If information is genuinely unavailable, make one reasonable assumption and STATE it inside the prompt ("Assume: ...") so the user can correct it. EVERY guess must be visible as an Assume line - a silent assumption baked into the wording is the worst failure mode this stage has.
+- Add nothing the user's intent doesn't require. Extra requirements, process steps, or output sections that the user never implied are padding, and padding reads as template output.
+- Never invent facts, claims, numbers, or product details the user did not give you.
+- Not bloated, not skeletal. Default 80-250 words for the restructured version${input.deep ? ', up to 350 in deep mode when the domain warrants it' : ''}. Use markdown structure only when it aids the target model.
+- No cargo-cult additions: no persona, pleasantries, or "take a deep breath" unless it demonstrably helps this task type.
+
+# EXPLANATION
+
+One short paragraph (max 3 sentences) leading with the single most impactful change. Tone: ${TONE_RULES[input.tone]}
+
+# SCORING
+
+clarity_score_after: honest 0-100 clarity of your restructured version. The diagnostic scored the original at ${diag.score.total}. Do not flatter your own work - a typical strong rewrite lands 75-90; reserve 90+ for prompts with checkable success criteria and zero ambiguity.
+
+improvement_tags: which elements you materially added or fixed.
+
+Return JSON matching the schema.`
+}
+
+function buildUserMessage(input: AnalyzeInput): string {
+  const lines: string[] = ['<original_prompt>', input.prompt.trim(), '</original_prompt>']
+  if (input.priorAnswers.length > 0) {
+    lines.push('', '<clarifications>')
+    input.priorAnswers.forEach((qa, i) => {
+      lines.push(`Turn ${i + 1}:`, `Q: ${qa.question}`, `A: ${qa.answer}`)
+    })
+    lines.push('</clarifications>')
+  }
+  return lines.join('\n')
+}
+
+export async function rewrite(
+  input: AnalyzeInput,
+  diag: DiagnoseResponse
+): Promise<RewriteResponse | null> {
+  const systemPrompt = buildSystemPrompt(input, diag)
+  const userMessage = buildUserMessage(input)
+  const maxOutputTokens = input.deep ? 1800 : 1400
+  const schema = REWRITE_SCHEMA as unknown as Record<string, unknown>
+
+  // Pro (and deep) rewrites run on the frontier-class Gemini cascade;
+  // if the whole cascade fails we degrade to the mini model rather than
+  // erroring - a good rewrite late beats a 503.
+  if (input.pro || input.deep) {
+    const viaGemini = await callGemini<RewriteResponse>({
+      systemPrompt,
+      userMessage,
+      temperature: 0.4,
+      maxOutputTokens,
+      responseSchema: schema,
+    })
+    if (viaGemini?.restructured) return viaGemini
+    console.error('[engine.rewrite] gemini cascade failed, falling back to openai mini')
+  }
+
+  const result = await callLLM<RewriteResponse>({
+    model: MODELS.rewriteFree,
+    systemPrompt,
+    userMessage,
+    temperature: 0.4,
+    maxOutputTokens,
+    responseSchema: schema,
+  })
+
+  if (!result || !result.restructured) {
+    console.error(`[engine.rewrite] ${!result ? 'llm_failed' : 'missing_restructured'}`)
+    return null
+  }
+  return result
+}
