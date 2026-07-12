@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 
 /**
@@ -22,6 +22,8 @@ interface StreamOutProps {
   style?: React.CSSProperties
   /** Show a blinking caret while streaming. */
   caret?: boolean
+  /** Fired once when the full text has finished revealing. */
+  onDone?: () => void
 }
 
 export function StreamOut({
@@ -30,8 +32,13 @@ export function StreamOut({
   className,
   style,
   caret = true,
+  onDone,
 }: StreamOutProps) {
   const [count, setCount] = useState(0)
+
+  // Keep onDone in a ref so its identity doesn't restart the animation.
+  const onDoneRef = useRef(onDone)
+  onDoneRef.current = onDone
 
   useEffect(() => {
     setCount(0)
@@ -42,6 +49,7 @@ export function StreamOut({
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     if (reduce) {
       setCount(text.length)
+      onDoneRef.current?.()
       return
     }
 
@@ -50,7 +58,11 @@ export function StreamOut({
     const tick = (now: number) => {
       const target = Math.min(text.length, Math.floor(((now - start) / 1000) * cps))
       setCount(target)
-      if (target < text.length) raf = requestAnimationFrame(tick)
+      if (target < text.length) {
+        raf = requestAnimationFrame(tick)
+      } else {
+        onDoneRef.current?.()
+      }
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)

@@ -5,11 +5,18 @@ import {
   REWRITE_WINDOW_HOURS,
   DETECT_FREE_LIMIT,
   DETECT_WINDOW_HOURS,
+  PRO_DEEP_LIMIT,
+  PRO_DEEP_WINDOW_HOURS,
+  PRO_VERIFY_LIMIT,
+  PRO_VERIFY_WINDOW_HOURS,
+  FREE_VERIFY_LIFETIME_CREDITS,
   windowStart,
 } from '@/lib/limits'
 
 const REWRITE_EVENT = 'prompt_analyzed'
 const DETECT_EVENT = 'text_detected'
+const DEEP_EVENT = 'deep_rewrite'
+const VERIFY_EVENT = 'verify_run'
 
 /**
  * Count a user's events of one type inside a rolling window, and read
@@ -72,4 +79,54 @@ export function getDetectorUsage(userId: string): Promise<UsageInfo> {
 
 export function recordDetectorUsage(userId: string): Promise<void> {
   return record(userId, DETECT_EVENT)
+}
+
+/** Count a user's events of one type since `sinceIso` (omit for lifetime). */
+async function countEvents(userId: string, eventType: string, sinceIso?: string): Promise<number> {
+  const supabase = await createClient()
+  let query = supabase
+    .from('usage_events')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('event_type', eventType)
+  if (sinceIso) query = query.gte('created_at', sinceIso)
+  const { count } = await query
+  return count ?? 0
+}
+
+/**
+ * Deep Rewrite fair-use meter (Pro only - free users never reach it).
+ * The critic pass runs on the expensive model, so it's capped per
+ * rolling 30 days rather than unlimited.
+ */
+export async function isAtDeepLimit(userId: string): Promise<boolean> {
+  const used = await countEvents(userId, DEEP_EVENT, windowStart(PRO_DEEP_WINDOW_HOURS))
+  return used >= PRO_DEEP_LIMIT
+}
+
+export function recordDeepUsage(userId: string): Promise<void> {
+  return record(userId, DEEP_EVENT)
+}
+
+/**
+ * Verification-run allowance: Pro gets PRO_VERIFY_LIMIT per rolling 30
+ * days; free users get a small lifetime credit so they experience the
+ * before/after proof at least once.
+ */
+export async function getVerifyAllowance(
+  userId: string,
+  tier: string
+): Promise<{ used: number; limit: number; isAtLimit: boolean }> {
+  const isPro = tier === 'pro'
+  const used = await countEvents(
+    userId,
+    VERIFY_EVENT,
+    isPro ? windowStart(PRO_VERIFY_WINDOW_HOURS) : undefined
+  )
+  const limit = isPro ? PRO_VERIFY_LIMIT : FREE_VERIFY_LIFETIME_CREDITS
+  return { used, limit, isAtLimit: used >= limit }
+}
+
+export function recordVerifyUsage(userId: string): Promise<void> {
+  return record(userId, VERIFY_EVENT)
 }

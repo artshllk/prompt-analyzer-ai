@@ -69,14 +69,28 @@ export async function saveImprovement(params: {
   improvedPrompt: string
   explanation: string
   improvementTags: string[]
+  /** Pipeline extras (minimal edit, template, rubric audit, critique, intent). */
+  analysis?: Record<string, unknown>
 }): Promise<void> {
   const supabase = await createClient()
-  await supabase.from('prompt_improvements').insert({
+  const row = {
     session_id: params.sessionId,
     improved_prompt: params.improvedPrompt,
     explanation: params.explanation,
     improvement_tags: params.improvementTags as import('@/types/database').ImprovementTag[],
-  })
+  }
+
+  // The analysis JSONB column arrives with migration 006. Until it has
+  // run in an environment, fall back to inserting without it so the core
+  // improvement is never lost to a schema mismatch.
+  if (params.analysis) {
+    const { error } = await supabase
+      .from('prompt_improvements')
+      .insert({ ...row, analysis: params.analysis })
+    if (!error) return
+    console.error('saveImprovement with analysis failed, retrying without:', error.message)
+  }
+  await supabase.from('prompt_improvements').insert(row)
 }
 
 export async function getSessionWithDetails(

@@ -2,24 +2,45 @@
 
 import { useState, useCallback, useRef } from 'react'
 import type { Tone, ImprovementTag } from '@/types/database'
-import type { QAPair } from '@/types'
+import type { QAPair, ForkOption, RubricAudit } from '@/types'
 
-export type SessionStage = 'idle' | 'analyzing' | 'clarifying' | 'improving' | 'done' | 'error'
+export type SessionStage =
+  | 'idle'
+  | 'analyzing'
+  | 'clarifying'
+  | 'improving'
+  | 'done'
+  | 'already_good'
+  | 'error'
 
 interface ClarifyingState {
   question: string
   targetsGap: string
+  /** Interpretation forks offered as one-click answers. */
+  options: ForkOption[]
   confidenceSoFar: number
   scoreBeforeImprovement: number
+  audit: RubricAudit | null
   turn: number
 }
 
 interface ImprovedState {
   improvedPrompt: string
+  minimalEdit: string | null
+  template: string | null
   explanation: string
   improvementTags: ImprovementTag[]
   clarityScoreAfter: number
   scoreBeforeImprovement: number
+  audit: RubricAudit | null
+  critique: string | null
+}
+
+interface AlreadyGoodState {
+  message: string
+  tweaks: string[]
+  scoreBeforeImprovement: number
+  audit: RubricAudit | null
 }
 
 interface SessionState {
@@ -27,6 +48,7 @@ interface SessionState {
   sessionId: string | null
   clarifying: ClarifyingState | null
   improved: ImprovedState | null
+  alreadyGood: AlreadyGoodState | null
   priorAnswers: QAPair[]
   error: string | null
 }
@@ -36,6 +58,7 @@ const INITIAL_STATE: SessionState = {
   sessionId: null,
   clarifying: null,
   improved: null,
+  alreadyGood: null,
   priorAnswers: [],
   error: null,
 }
@@ -44,6 +67,41 @@ interface UsePromptSessionOptions {
   /** When true, calls the unauthenticated /api/anon/analyze endpoint and tracks count locally. */
   anonymous?: boolean
 }
+
+interface AnalyzeOutcome {
+  usageLimitReached: boolean
+  usage?: unknown
+  /** 'already_good' analyses are free - the caller must not count them. */
+  resultType?: string
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function toImproved(data: any): ImprovedState {
+  return {
+    improvedPrompt: data.improvedPrompt,
+    minimalEdit: data.minimalEdit ?? null,
+    template: data.template ?? null,
+    explanation: data.explanation,
+    improvementTags: data.improvementTags ?? [],
+    clarityScoreAfter: data.clarityScoreAfter,
+    scoreBeforeImprovement: data.scoreBeforeImprovement,
+    audit: data.audit ?? null,
+    critique: data.critique ?? null,
+  }
+}
+
+function toClarifying(data: any, turn: number): ClarifyingState {
+  return {
+    question: data.question,
+    targetsGap: data.targetsGap,
+    options: data.options ?? [],
+    confidenceSoFar: data.confidenceSoFar,
+    scoreBeforeImprovement: data.scoreBeforeImprovement,
+    audit: data.audit ?? null,
+    turn,
+  }
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export function usePromptSession(options: UsePromptSessionOptions = {}) {
   const { anonymous = false } = options
@@ -66,11 +124,19 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
     })
   }, [])
 
-  const analyze = useCallback(async (prompt: string, tone: Tone, deep = false) => {
+  const analyze = useCallback(async (prompt: string, tone: Tone, deep = false): Promise<AnalyzeOutcome | null> => {
     promptRef.current = prompt
     toneRef.current = tone
     deepRef.current = deep && !anonymous
-    apply({ stage: 'analyzing', error: null, priorAnswers: [], clarifying: null, improved: null, sessionId: null })
+    apply({
+      stage: 'analyzing',
+      error: null,
+      priorAnswers: [],
+      clarifying: null,
+      improved: null,
+      alreadyGood: null,
+      sessionId: null,
+    })
 
     const endpoint = anonymous ? '/api/anon/analyze' : '/api/prompts/analyze'
 
@@ -100,28 +166,27 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
         apply({
           stage: 'clarifying',
           sessionId: data.sessionId ?? null,
-          clarifying: {
-            question: data.question,
-            targetsGap: data.targetsGap,
-            confidenceSoFar: data.confidenceSoFar,
+          clarifying: toClarifying(data, 1),
+        })
+      } else if (data.type === 'already_good') {
+        apply({
+          stage: 'already_good',
+          sessionId: null,
+          alreadyGood: {
+            message: data.message,
+            tweaks: data.tweaks ?? [],
             scoreBeforeImprovement: data.scoreBeforeImprovement,
-            turn: 1,
+            audit: data.audit ?? null,
           },
         })
       } else {
         apply({
           stage: 'done',
           sessionId: data.sessionId ?? null,
-          improved: {
-            improvedPrompt: data.improvedPrompt,
-            explanation: data.explanation,
-            improvementTags: data.improvementTags,
-            clarityScoreAfter: data.clarityScoreAfter,
-            scoreBeforeImprovement: data.scoreBeforeImprovement,
-          },
+          improved: toImproved(data),
         })
       }
-      return { usageLimitReached: false, usage: data.usage }
+      return { usageLimitReached: false, usage: data.usage, resultType: data.type }
     } catch {
       apply({ stage: 'error', error: 'network' })
     }
@@ -179,25 +244,15 @@ export function usePromptSession(options: UsePromptSessionOptions = {}) {
         apply({
           stage: 'clarifying',
           sessionId: data.sessionId ?? sessionId,
-          clarifying: {
-            question: data.question,
-            targetsGap: data.targetsGap,
-            confidenceSoFar: data.confidenceSoFar,
-            scoreBeforeImprovement: data.scoreBeforeImprovement,
-            turn: clarifying.turn + 1,
-          },
+          clarifying: toClarifying(data, clarifying.turn + 1),
         })
       } else {
+        // Continuation turns never return already_good (the engine owes a
+        // rewrite once it asked a question), so everything else is improved.
         apply({
           stage: 'done',
           sessionId: data.sessionId ?? sessionId,
-          improved: {
-            improvedPrompt: data.improvedPrompt,
-            explanation: data.explanation,
-            improvementTags: data.improvementTags,
-            clarityScoreAfter: data.clarityScoreAfter,
-            scoreBeforeImprovement: data.scoreBeforeImprovement,
-          },
+          improved: toImproved(data),
         })
       }
     } catch {

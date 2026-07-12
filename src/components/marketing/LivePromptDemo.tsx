@@ -44,6 +44,12 @@ type AnalyzeResponse =
       clarityScoreAfter: number
       scoreBeforeImprovement: number
     }
+  | {
+      type: 'already_good'
+      message: string
+      tweaks: string[]
+      scoreBeforeImprovement: number
+    }
 
 type State =
   | { kind: 'idle' }
@@ -174,6 +180,17 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
           gap: data.targetsGap,
           score: data.scoreBeforeImprovement,
           answer: '',
+        })
+      } else if (data.type === 'already_good') {
+        // Rare in the demo (sample prompts are deliberately rough), but a
+        // visitor can paste anything. Show the honest verdict in the same
+        // done layout: their prompt, unchanged, with the reasons.
+        setState({
+          kind: 'done',
+          before: data.scoreBeforeImprovement,
+          after: data.scoreBeforeImprovement,
+          rewrite: currentPrompt,
+          explanation: `${data.message} ${data.tweaks.join(' ')}`.trim(),
         })
       } else {
         setState({
