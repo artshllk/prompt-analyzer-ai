@@ -47,11 +47,38 @@ export default async function PromptPage({
   const entry = getPromptEntry(slug)
   if (!entry) notFound()
 
-  // Related: up to 3 other entries, same category first.
-  const related = [
-    ...PROMPT_LIBRARY.filter(e => e.slug !== entry.slug && e.category === entry.category),
-    ...PROMPT_LIBRARY.filter(e => e.slug !== entry.slug && e.category !== entry.category),
-  ].slice(0, 3)
+  // Internal linking (the Ticket-Compare move): every prompt page links out to
+  // a wide set of siblings, not just 3. This spreads link equity, gets Google
+  // to crawl the whole library fast, and keeps people on site.
+  //
+  // Column 1: every OTHER prompt in the same category (the tight cluster).
+  // Column 2: a spread across the other categories (cross-cluster reach).
+  const sameCategory = PROMPT_LIBRARY.filter(
+    e => e.slug !== entry.slug && e.category === entry.category,
+  )
+  const otherCategories = PROMPT_LIBRARY.filter(
+    e => e.slug !== entry.slug && e.category !== entry.category,
+  )
+  // Interleave other-category entries so the spread hits multiple categories
+  // rather than dumping all of one before the next.
+  const byCategory = new Map<string, typeof PROMPT_LIBRARY>()
+  for (const e of otherCategories) {
+    const list = byCategory.get(e.category) ?? []
+    list.push(e)
+    byCategory.set(e.category, list)
+  }
+  const spread: typeof PROMPT_LIBRARY = []
+  let added = true
+  while (added && spread.length < 12) {
+    added = false
+    for (const list of byCategory.values()) {
+      const next = list.shift()
+      if (next) {
+        spread.push(next)
+        added = true
+      }
+    }
+  }
 
   const pageUrl = `${BASE}/prompts/${entry.slug}`
 
@@ -280,27 +307,61 @@ export default async function PromptPage({
           </Link>
         </section>
 
-        {/* Related prompts - internal links help SEO and keep people on site */}
-        {related.length > 0 && (
-          <section className="mt-16">
-            <p className="eyebrow mb-4">More free prompts</p>
-            <ul className="space-y-px">
-              <li className="rule-strong" />
-              {related.map(r => (
-                <li key={r.slug}>
-                  <Link
-                    href={`/prompts/${r.slug}`}
-                    className="flex items-center justify-between py-4 px-3 -mx-3 rounded-md row-hover"
-                  >
-                    <span className="text-base" style={{ color: 'var(--color-paper)' }}>{r.heading}</span>
-                    <span style={{ color: 'var(--color-paper-mute)' }}>→</span>
-                  </Link>
-                  <div className="rule" />
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+        {/* Internal links - two columns of siblings. This is the SEO workhorse:
+            wide, crawlable links across the whole library, hub-and-spoke style. */}
+        <section className="mt-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-10">
+            {sameCategory.length > 0 && (
+              <div>
+                <p className="eyebrow mb-4">More {entry.category.toLowerCase()} prompts</p>
+                <ul className="space-y-px">
+                  <li className="rule-strong" />
+                  {sameCategory.map(r => (
+                    <li key={r.slug}>
+                      <Link
+                        href={`/prompts/${r.slug}`}
+                        className="block py-3.5 text-[15px] leading-snug row-hover-text"
+                        style={{ color: 'var(--color-paper)' }}
+                      >
+                        {r.title}
+                      </Link>
+                      <div className="rule" />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {spread.length > 0 && (
+              <div>
+                <p className="eyebrow mb-4">Popular free prompts</p>
+                <ul className="space-y-px">
+                  <li className="rule-strong" />
+                  {spread.map(r => (
+                    <li key={r.slug}>
+                      <Link
+                        href={`/prompts/${r.slug}`}
+                        className="block py-3.5 text-[15px] leading-snug row-hover-text"
+                        style={{ color: 'var(--color-paper)' }}
+                      >
+                        {r.title}
+                      </Link>
+                      <div className="rule" />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <p className="mt-8 text-sm" style={{ color: 'var(--color-paper-mute)' }}>
+            Or{' '}
+            <Link href="/prompts" className="underline underline-offset-4" style={{ color: 'var(--color-paper)' }}>
+              browse the full prompt library
+            </Link>
+            .
+          </p>
+        </section>
       </main>
 
       <footer className="px-6 md:px-10 py-10" style={{ borderTop: '1px solid var(--color-rule)' }}>

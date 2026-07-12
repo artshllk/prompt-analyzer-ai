@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { analyzePrompt } from '@/lib/engine'
-import { getUsageInfo, recordUsage } from '@/lib/db/usage'
+import { getUsageInfo, recordUsage, isAtDeepLimit, recordDeepUsage } from '@/lib/db/usage'
 import { createSession, updateSessionStatus, addClarificationExchange, saveImprovement } from '@/lib/db/sessions'
 import { take, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import type { Tone } from '@/types/database'
@@ -46,7 +46,15 @@ export async function POST(req: NextRequest) {
   if (body.deep && !isProUser) {
     return NextResponse.json({ error: 'pro_required' }, { status: 402 })
   }
-  const deep = body.deep === true && isProUser
+  let deep = body.deep === true && isProUser
+
+  // Deep Rewrite fair-use meter: past the monthly cap, run the standard
+  // pipeline instead of erroring - the user still gets their rewrite.
+  let deepDowngraded = false
+  if (deep && (await isAtDeepLimit(user.id))) {
+    deep = false
+    deepDowngraded = true
+  }
 
   // Charge usage once per logical analysis: first call (no sessionId, no priorAnswers).
   // Continuation calls (sessionId set, OR priorAnswers passed for fallback) don't re-charge.
@@ -58,10 +66,17 @@ export async function POST(req: NextRequest) {
     }, { status: 402 })
   }
 
-  const result = await analyzePrompt({ prompt, tone, priorAnswers, deep })
+  const result = await analyzePrompt({ prompt, tone, priorAnswers, deep, pro: isProUser })
 
   if (!result) {
     return NextResponse.json({ error: 'ai_unavailable' }, { status: 503 })
+  }
+
+  // Honest path: a strong prompt costs nothing and persists nothing -
+  // there is no improvement to store, and charging a credit for "your
+  // prompt is already good" would teach users not to trust the message.
+  if (result.type === 'already_good') {
+    return NextResponse.json({ ...result, sessionId: null, deepDowngraded })
   }
 
   // Persist to DB
@@ -105,6 +120,13 @@ export async function POST(req: NextRequest) {
         improvedPrompt: result.improvedPrompt,
         explanation: result.explanation,
         improvementTags: result.improvementTags,
+        analysis: {
+          minimalEdit: result.minimalEdit,
+          template: result.template,
+          audit: result.audit,
+          critique: result.critique,
+          intent: result.intent,
+        },
       })
 
       await updateSessionStatus(activeSessionId, 'completed', {
@@ -113,7 +135,10 @@ export async function POST(req: NextRequest) {
         clarifyTurns: priorAnswers.length,
       })
     }
+
+    // Meter the critic pass once per completed deep improvement.
+    if (deep) await recordDeepUsage(user.id)
   }
 
-  return NextResponse.json({ ...result, sessionId: activeSessionId })
+  return NextResponse.json({ ...result, sessionId: activeSessionId, deepDowngraded })
 }

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { PROMPT_LIBRARY } from '@/lib/prompt-library'
+import { PROMPT_LIBRARY, CATEGORY_HUBS } from '@/lib/prompt-library'
 import { BLOG_POSTS } from '@/lib/blog-posts'
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -12,6 +12,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: now,
     changeFrequency: 'monthly' as const,
     priority: 0.7,
+  }))
+
+  // Category hub pages (/prompts/category/<slug>) - generated from the hubs
+  // registry so new categories appear automatically. Higher priority than a
+  // single prompt page because a hub aggregates many.
+  const categoryPages: MetadataRoute.Sitemap = CATEGORY_HUBS.map(hub => ({
+    url: `${base}/prompts/category/${hub.slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.75,
   }))
 
   // Generated from the shared blog registry; lastModified reflects the real
@@ -29,6 +39,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/detector`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${base}/extension`, lastModified: now, changeFrequency: 'monthly', priority: 0.85 },
     { url: `${base}/prompts`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
+    ...categoryPages,
     ...promptPages,
     { url: `${base}/tools/prompt-improver`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${base}/tools/prompt-analyzer`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
