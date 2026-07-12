@@ -66,6 +66,8 @@ export type PromptImprovementRow = {
   improved_prompt: string
   explanation: string
   improvement_tags: ImprovementTag[]
+  /** Engine v2 extras (minimal edit, template, rubric audit, critique, intent). Migration 006. */
+  analysis: Record<string, unknown> | null
   created_at: string
 }
 
@@ -137,7 +139,12 @@ export type Database = {
       }
       prompt_improvements: {
         Row: PromptImprovementRow
-        Insert: Omit<PromptImprovementRow, 'id' | 'created_at'> & { id?: string }
+        // analysis stays optional on insert: the pre-migration fallback in
+        // saveImprovement inserts without the column.
+        Insert: Omit<PromptImprovementRow, 'id' | 'created_at' | 'analysis'> & {
+          id?: string
+          analysis?: Record<string, unknown> | null
+        }
         Update: Partial<Omit<PromptImprovementRow, 'id' | 'created_at'>>
         Relationships: []
       }

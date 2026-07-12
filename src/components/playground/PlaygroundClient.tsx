@@ -12,7 +12,12 @@ import { useTokenCount } from "@/hooks/useTokenCount";
 import { ANON_REWRITE_LIMIT } from "@/lib/limits";
 import { SAMPLE_PROMPTS, pickThree } from "@/lib/sample-prompts";
 import type { Tone } from "@/types/database";
-import type { UsageInfo } from "@/types";
+import type { UsageInfo, RubricAudit, VerifyResult } from "@/types";
+
+type VerifyState =
+  | { status: "running" }
+  | { status: "done"; result: VerifyResult; remaining: number }
+  | { status: "error"; error: string };
 
 const ANON_KEY = "pc_anon_count";
 // One-time first-run flags, same pattern as dc:welcomed in WelcomeMoment.
@@ -51,6 +56,14 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
   const [samples, setSamples] = useState<string[]>(() =>
     SAMPLE_PROMPTS.slice(0, 3),
   );
+  // Which rewrite variant is displayed/copied: the full restructure or
+  // the light-touch minimal edit that keeps the user's own wording.
+  const [variant, setVariant] = useState<"full" | "minimal">("full");
+  // The rewrite streams in once, on arrival. After that, variant switches
+  // show plain text instantly instead of re-typing an already-seen result.
+  const [hasStreamed, setHasStreamed] = useState(false);
+  // Verification run state (original vs improved executed on a real model).
+  const [verify, setVerify] = useState<VerifyState | null>(null);
 
   const session = usePromptSession({ anonymous: !isSignedIn });
   const isAnon = !isSignedIn;
@@ -123,7 +136,8 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
     if (
       session.stage === "analyzing" ||
       session.stage === "clarifying" ||
-      session.stage === "done"
+      session.stage === "done" ||
+      session.stage === "already_good"
     ) {
       if (typeof window !== "undefined" && window.innerWidth < 768) {
         responseRef.current?.scrollIntoView({
@@ -142,12 +156,24 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
 
   async function handleAnalyze() {
     if (!prompt.trim() || thinking) return;
+    setVariant("full");
+    setHasStreamed(false);
+    setVerify(null);
     const result = await session.analyze(prompt, tone, deepMode && isPro);
-    if (isAnon) {
+    // "Already good" verdicts are free - the server doesn't charge them,
+    // so the local meters must not either.
+    const charged = result?.resultType !== "already_good";
+    if (isAnon && charged) {
       const next = anonCount + 1;
       setAnonCount(next);
       window.localStorage.setItem(ANON_KEY, String(next));
-    } else if (usage?.tier === "free" && result && !result.usageLimitReached) {
+    } else if (
+      !isAnon &&
+      usage?.tier === "free" &&
+      result &&
+      !result.usageLimitReached &&
+      charged
+    ) {
       // A fresh analysis spends one credit (clarify turns don't recount).
       setRewritesUsed((u) => u + 1);
     }
@@ -159,6 +185,7 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
 
   function handleAnswer() {
     if (!answer.trim() || thinking) return;
+    setHasStreamed(false);
     session.submitAnswer(answer.trim());
     setAnswer("");
   }
@@ -167,7 +194,53 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
     session.reset();
     setPrompt("");
     setAnswer("");
+    setVariant("full");
+    setHasStreamed(false);
+    setVerify(null);
   }
+
+  // Run original vs improved on a real model - the proof step. Signed-in
+  // only (the endpoint meters credits per account).
+  async function handleVerify() {
+    if (!session.improved || verify?.status === "running") return;
+    setVerify({ status: "running" });
+    try {
+      const res = await fetch("/api/prompts/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          original: prompt,
+          improved: displayedRewrite,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.error === "verify_limit" && data.tier !== "pro") {
+          setPaywallReason("upgrade");
+          setPaywallOpen(true);
+        }
+        setVerify({ status: "error", error: data.error ?? "unknown" });
+        return;
+      }
+      setVerify({
+        status: "done",
+        result: {
+          originalOutput: data.originalOutput,
+          improvedOutput: data.improvedOutput,
+          contrast: data.contrast,
+          model: data.model,
+        },
+        remaining: data.remaining ?? 0,
+      });
+    } catch {
+      setVerify({ status: "error", error: "network" });
+    }
+  }
+
+  const displayedRewrite =
+    variant === "minimal" && session.improved?.minimalEdit
+      ? session.improved.minimalEdit
+      : (session.improved?.improvedPrompt ?? "");
 
   return (
     <div className="max-w-6xl mx-auto px-5 sm:px-8 md:px-10 py-10 md:py-16">
@@ -443,6 +516,50 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                         </span>
                       </p>
                     )}
+                    {/* Interpretation forks: the readings the engine could
+                        take. One click answers the question - no typing. */}
+                    {session.clarifying.options.length > 0 && (
+                      <div className="mt-4 space-y-2">
+                        {session.clarifying.options.map((o) => (
+                          <button
+                            key={o.label}
+                            onClick={() => {
+                              if (thinking) return;
+                              setAnswer("");
+                              setHasStreamed(false);
+                              session.submitAnswer(`${o.label} — ${o.summary}`);
+                            }}
+                            className="block w-full text-left px-4 py-3 rounded-xl transition-colors chip-hover"
+                            style={{
+                              border: "1px solid var(--color-rule-strong)",
+                              background: "transparent",
+                            }}
+                          >
+                            <span
+                              className="block text-sm"
+                              style={{
+                                color: "var(--color-paper)",
+                                fontWeight: 500,
+                              }}
+                            >
+                              {o.label}
+                            </span>
+                            <span
+                              className="block mt-0.5 text-xs leading-relaxed"
+                              style={{ color: "var(--color-paper-mute)" }}
+                            >
+                              {o.summary}
+                            </span>
+                          </button>
+                        ))}
+                        <p
+                          className="text-xs pt-1"
+                          style={{ color: "var(--color-paper-mute)" }}
+                        >
+                          None of these? Type your own answer below.
+                        </p>
+                      </div>
+                    )}
                     {showClarifyHint && (
                       <p
                         className="mt-3 pt-3 text-xs leading-relaxed"
@@ -493,14 +610,70 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                       </ul>
                     )}
 
-                    <StreamOut
-                      text={session.improved.improvedPrompt}
-                      className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
-                      style={{
-                        color: "var(--color-paper)",
-                        fontFamily: "var(--font-inter)",
-                      }}
-                    />
+                    {/* Two rewrites: the expert restructure and a minimal
+                        edit that keeps the user's own wording. */}
+                    {session.improved.minimalEdit && (
+                      <div className="mb-3 flex items-center gap-2 text-xs">
+                        {(
+                          [
+                            ["full", "Full rewrite"],
+                            ["minimal", "Minimal edit"],
+                          ] as const
+                        ).map(([key, label], i) => (
+                          <span key={key} className="flex items-center">
+                            {i > 0 && (
+                              <span
+                                className="mx-2"
+                                style={{ color: "var(--color-rule-strong)" }}
+                              >
+                                ·
+                              </span>
+                            )}
+                            <button
+                              onClick={() => setVariant(key)}
+                              style={{
+                                color:
+                                  variant === key
+                                    ? "var(--color-paper)"
+                                    : "var(--color-paper-mute)",
+                                fontWeight: variant === key ? 500 : 400,
+                                textDecorationLine:
+                                  variant === key ? "underline" : "none",
+                                textUnderlineOffset: "4px",
+                              }}
+                            >
+                              {label}
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Stream the rewrite once, when it first arrives.
+                        Switching variants after that shows plain text
+                        instantly - re-typing an already-seen rewrite is
+                        slow and annoying, not delightful. */}
+                    {hasStreamed ? (
+                      <p
+                        className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
+                        style={{
+                          color: "var(--color-paper)",
+                          fontFamily: "var(--font-inter)",
+                        }}
+                      >
+                        {displayedRewrite}
+                      </p>
+                    ) : (
+                      <StreamOut
+                        text={displayedRewrite}
+                        onDone={() => setHasStreamed(true)}
+                        className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
+                        style={{
+                          color: "var(--color-paper)",
+                          fontFamily: "var(--font-inter)",
+                        }}
+                      />
+                    )}
 
                     {/* Why the rewrite is better - the reasoning, not
                         just the result. */}
@@ -539,6 +712,83 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                         )}
                       </div>
                     )}
+
+                    {/* Deep mode: what the critic caught in the first
+                        draft. The visible second pass IS the paid value. */}
+                    {session.improved.critique && (
+                      <div
+                        className="mt-5 pt-4"
+                        style={{ borderTop: "1px solid var(--color-rule)" }}
+                      >
+                        <p
+                          className="eyebrow mb-2"
+                          style={{ color: "var(--color-accent-bright)" }}
+                        >
+                          What the critic caught
+                        </p>
+                        <p
+                          className="text-sm leading-[1.6]"
+                          style={{ color: "var(--color-paper-mute)" }}
+                        >
+                          {session.improved.critique}
+                        </p>
+                      </div>
+                    )}
+
+                    <DiagnosisBlock audit={session.improved.audit} />
+                  </motion.div>
+                )}
+
+                {session.stage === "already_good" && session.alreadyGood && (
+                  <motion.div
+                    key="already-good"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <p
+                      className="eyebrow mb-3"
+                      style={{ color: "var(--color-accent-bright)" }}
+                    >
+                      Already strong · clarity{" "}
+                      {session.alreadyGood.scoreBeforeImprovement}/100
+                    </p>
+                    <p
+                      className="text-[15px] sm:text-base leading-[1.7]"
+                      style={{ color: "var(--color-paper)" }}
+                    >
+                      {session.alreadyGood.message}
+                    </p>
+                    {session.alreadyGood.tweaks.length > 0 && (
+                      <div
+                        className="mt-5 pt-4"
+                        style={{ borderTop: "1px solid var(--color-rule)" }}
+                      >
+                        <p className="eyebrow mb-2">If you want to tune it</p>
+                        <ul
+                          className="space-y-2 text-sm leading-[1.6]"
+                          style={{ color: "var(--color-paper-mute)" }}
+                        >
+                          {session.alreadyGood.tweaks.map((t) => (
+                            <li key={t} className="flex items-baseline gap-2.5">
+                              <span
+                                className="shrink-0"
+                                style={{ color: "var(--color-accent)" }}
+                              >
+                                –
+                              </span>
+                              {t}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <p
+                      className="mt-5 text-xs leading-relaxed"
+                      style={{ color: "var(--color-paper-mute)" }}
+                    >
+                      This one didn&apos;t use a credit. We only charge for
+                      rewrites we actually do.
+                    </p>
                   </motion.div>
                 )}
 
@@ -626,14 +876,130 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
             </AnimatePresence>
 
             {session.stage === "done" && session.improved && (
+              <>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <CopyButton
+                    text={displayedRewrite}
+                    label={
+                      variant === "minimal" ? "Copy minimal edit" : "Copy rewrite"
+                    }
+                  />
+                  {session.improved.template && (
+                    <CopyButton
+                      text={session.improved.template}
+                      label="Copy as reusable template"
+                      subtle
+                    />
+                  )}
+                  {isSignedIn && verify?.status !== "done" && (
+                    <button
+                      onClick={handleVerify}
+                      disabled={verify?.status === "running"}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors chip-hover disabled:opacity-50"
+                      style={{
+                        border: "1px solid var(--color-accent-bright)",
+                        color: "var(--color-accent-bright)",
+                      }}
+                    >
+                      {verify?.status === "running"
+                        ? "Running both prompts…"
+                        : "Prove it: run both prompts"}
+                    </button>
+                  )}
+                  <button
+                    onClick={handleReset}
+                    className="text-sm transition-opacity hover:opacity-100 opacity-70"
+                    style={{ color: "var(--color-paper-mute)" }}
+                  >
+                    Try another
+                  </button>
+                </div>
+
+                {/* Verification: the original and improved prompts, actually
+                    executed. Seeing the difference is the whole argument. */}
+                {verify?.status === "done" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-5 rounded-2xl p-4 sm:p-5"
+                    style={{
+                      background: "var(--color-ink-card)",
+                      border: "1px solid var(--color-rule-strong)",
+                    }}
+                  >
+                    <p className="eyebrow mb-1">Same model, both prompts</p>
+                    {verify.result.contrast && (
+                      <p
+                        className="text-sm leading-[1.6] mb-4"
+                        style={{ color: "var(--color-paper)" }}
+                      >
+                        {verify.result.contrast}
+                      </p>
+                    )}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <p
+                          className="eyebrow mb-2"
+                          style={{ color: "var(--color-paper-mute)" }}
+                        >
+                          From your original
+                        </p>
+                        <p
+                          className="text-xs leading-[1.65] whitespace-pre-wrap"
+                          style={{ color: "var(--color-paper-mute)" }}
+                        >
+                          {verify.result.originalOutput}
+                        </p>
+                      </div>
+                      <div>
+                        <p
+                          className="eyebrow mb-2"
+                          style={{ color: "var(--color-accent-bright)" }}
+                        >
+                          From the improved prompt
+                        </p>
+                        <p
+                          className="text-xs leading-[1.65] whitespace-pre-wrap"
+                          style={{ color: "var(--color-paper)" }}
+                        >
+                          {verify.result.improvedOutput}
+                        </p>
+                      </div>
+                    </div>
+                    <p
+                      className="mt-4 text-xs"
+                      style={{ color: "var(--color-paper-mute)" }}
+                    >
+                      {verify.remaining}{" "}
+                      verification{verify.remaining === 1 ? "" : "s"} left
+                    </p>
+                  </motion.div>
+                )}
+                {verify?.status === "error" && (
+                  <p
+                    className="mt-3 text-xs"
+                    style={{ color: "#E89A6B" }}
+                  >
+                    {verify.error === "verify_limit"
+                      ? "You've used all your verification runs for now."
+                      : "Couldn't run the comparison. Try again in a moment."}
+                  </p>
+                )}
+              </>
+            )}
+
+            {session.stage === "already_good" && (
               <div className="mt-4 flex flex-wrap items-center gap-3">
-                <CopyButton text={session.improved.improvedPrompt} />
                 <button
                   onClick={handleReset}
-                  className="text-sm transition-opacity hover:opacity-100 opacity-70"
-                  style={{ color: "var(--color-paper-mute)" }}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all btn-paper"
+                  style={{
+                    background: "var(--color-paper)",
+                    color: "var(--color-ink)",
+                    fontWeight: 500,
+                  }}
                 >
-                  Try another
+                  Try another prompt
                 </button>
               </div>
             )}
@@ -869,7 +1235,15 @@ function TokenDelta({
   );
 }
 
-function CopyButton({ text }: { text: string }) {
+function CopyButton({
+  text,
+  label = "Copy rewrite",
+  subtle = false,
+}: {
+  text: string;
+  label?: string;
+  subtle?: boolean;
+}) {
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -878,15 +1252,110 @@ function CopyButton({ text }: { text: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1600);
       }}
-      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all btn-paper"
-      style={{
-        background: "var(--color-paper)",
-        color: "var(--color-ink)",
-        fontWeight: 500,
-      }}
+      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all ${subtle ? "chip-hover" : "btn-paper"}`}
+      style={
+        subtle
+          ? {
+              border: "1px solid var(--color-rule-strong)",
+              color: "var(--color-paper-mute)",
+            }
+          : {
+              background: "var(--color-paper)",
+              color: "var(--color-ink)",
+              fontWeight: 500,
+            }
+      }
     >
-      {copied ? "Copied" : "Copy rewrite"}
+      {copied ? "Copied" : label}
     </button>
+  );
+}
+
+const SEVERITY_COLOR: Record<string, string> = {
+  critical: "#C25E5E",
+  moderate: "#E89A6B",
+  minor: "var(--color-paper-mute)",
+};
+
+/**
+ * The rubric audit: what the diagnostic found, anchored to the user's own
+ * words, plus the failure forecast. This is the part a plain rewrite
+ * never shows - the diagnosis is the product.
+ */
+function DiagnosisBlock({ audit }: { audit: RubricAudit | null }) {
+  if (!audit || (audit.findings.length === 0 && audit.failureForecast.length === 0)) {
+    return null;
+  }
+  return (
+    <div
+      className="mt-5 pt-4"
+      style={{ borderTop: "1px solid var(--color-rule)" }}
+    >
+      {audit.findings.length > 0 && (
+        <>
+          <p className="eyebrow mb-2.5">
+            What was missing
+            {audit.intent !== "general" && (
+              <span
+                className="ml-2 normal-case tracking-normal"
+                style={{ color: "var(--color-paper-mute)" }}
+              >
+                read as: {audit.intent.replace(/-/g, " ")}
+              </span>
+            )}
+          </p>
+          <ul className="space-y-2.5">
+            {audit.findings.map((f, i) => (
+              <li key={i} className="flex items-baseline gap-2.5 text-sm">
+                <span
+                  className="shrink-0 inline-block w-1.5 h-1.5 rounded-full -translate-y-px"
+                  style={{
+                    background: SEVERITY_COLOR[f.severity] ?? SEVERITY_COLOR.minor,
+                  }}
+                  title={f.severity}
+                />
+                <span
+                  className="leading-[1.55]"
+                  style={{ color: "var(--color-paper-mute)" }}
+                >
+                  {f.note}
+                  {f.evidence && (
+                    <span
+                      className="italic"
+                      style={{ color: "var(--color-paper)" }}
+                    >
+                      {" "}
+                      (&ldquo;{f.evidence}&rdquo;)
+                    </span>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {audit.failureForecast.length > 0 && (
+        <div className={audit.findings.length > 0 ? "mt-4" : ""}>
+          <p className="eyebrow mb-2.5">Run as-is, this is what happens</p>
+          <ul
+            className="space-y-2 text-sm leading-[1.55]"
+            style={{ color: "var(--color-paper-mute)" }}
+          >
+            {audit.failureForecast.map((f) => (
+              <li key={f} className="flex items-baseline gap-2.5">
+                <span
+                  className="shrink-0"
+                  style={{ color: "var(--color-accent)" }}
+                >
+                  →
+                </span>
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -981,6 +981,409 @@ Rules:
       'Focus your energy on the 3 actions. The four lists are just the setup for them.',
     ],
   },
+  {
+    slug: 'chatgpt-rewrite-text',
+    title: 'Rewrite text',
+    searchTerm: 'ai prompt to rewrite text',
+    metaTitle: 'AI Prompt to Rewrite Any Text (Free, Copy-Paste)',
+    metaDescription:
+      'A free AI prompt that rewrites your text to be clearer and better without changing your meaning or voice. Works in ChatGPT, Claude, and Gemini.',
+    heading: 'AI prompt for rewriting text',
+    intro:
+      'Most rewrite prompts hand you back something that says the same thing in a blander, more "AI" way. This one keeps your meaning and your voice, and only fixes what is actually weak: clunky sentences, repetition, and padding.',
+    category: 'Writing',
+    prompt: `You are a sharp editor who improves writing without flattening the author's voice.
+
+Rewrite the text below.
+
+TEXT:
+[PASTE YOUR TEXT]
+
+GOAL: [e.g. make it clearer / shorter / more confident / less formal]
+
+Rules:
+- Keep my meaning and my voice. Do not make it sound like generic AI writing.
+- Cut padding, repetition, and filler words.
+- Fix awkward or run-on sentences, but keep any phrasing that is working.
+- Do not add new claims or facts I did not write.
+- Match the length I asked for. If I did not say, keep it about the same length.
+
+Return only the rewritten text. Then, in one line, tell me the single biggest change you made.`,
+    whyItWorks: [
+      'It tells the model to preserve your voice, which is the exact thing most rewrite prompts destroy.',
+      'A clear goal ("shorter", "more confident") gives the edit a direction instead of a vague "improve this".',
+      'Banning new facts stops the model from quietly inventing claims you never made.',
+    ],
+    tips: [
+      'Be specific in the GOAL line. "More confident" produces a very different result than "friendlier".',
+      'If it changed too much, add: "Stay closer to my original wording."',
+      'Run it twice with different goals to compare, then take the best lines from each.',
+    ],
+  },
+  {
+    slug: 'chatgpt-proofread',
+    title: 'Proofread and edit',
+    searchTerm: 'ai prompt to proofread',
+    metaTitle: 'AI Prompt to Proofread Your Writing (Free)',
+    metaDescription:
+      'A free AI prompt that proofreads text for grammar, spelling, and clarity, and shows you what it changed. Works in ChatGPT, Claude, and Gemini.',
+    heading: 'AI prompt for proofreading',
+    intro:
+      'A plain "proofread this" often rewrites your whole style along the way. This prompt fixes real errors, flags anything unclear, and shows you exactly what it changed, so you stay in control of your own words.',
+    category: 'Writing',
+    prompt: `You are a careful proofreader. You fix errors without rewriting the author's style.
+
+Proofread the text below.
+
+TEXT:
+[PASTE YOUR TEXT]
+
+Do this:
+1. Fix spelling, grammar, and punctuation errors.
+2. Fix anything that is genuinely unclear or ambiguous.
+3. Leave my style, tone, and word choices alone otherwise.
+
+Then give me:
+- The corrected text.
+- A short list of the changes you made and why (one line each).
+- Anything you were unsure about, phrased as a question.
+
+Do not rephrase sentences that are already correct.`,
+    whyItWorks: [
+      'It separates real errors from style, so you get a fix, not a full rewrite.',
+      'The change list means you learn from the edits instead of blindly accepting them.',
+      'Asking the model to flag what it was unsure about surfaces judgment calls you should make, not it.',
+    ],
+    tips: [
+      'For formal work, add: "Use British English" or "Use US English" so it stays consistent.',
+      'Read the change list before accepting. The model is occasionally wrong about grammar rules.',
+      'For a long document, paste it in sections so nothing gets skipped.',
+    ],
+  },
+  {
+    slug: 'chatgpt-presentation-outline',
+    title: 'Presentation outline',
+    searchTerm: 'ai prompt for a presentation outline',
+    metaTitle: 'AI Prompt for a Presentation Outline (Free)',
+    metaDescription:
+      'A free AI prompt that turns your topic into a clear slide-by-slide presentation outline with a strong narrative. Works in ChatGPT, Claude, and Gemini.',
+    heading: 'AI prompt for a presentation outline',
+    intro:
+      'The hardest part of a presentation is the structure, not the slides. This prompt builds a slide-by-slide outline with an actual argument running through it, so your talk goes somewhere instead of being a pile of bullet points.',
+    category: 'Work',
+    prompt: `You are a presentation coach who builds talks that hold an audience.
+
+Create a slide-by-slide outline for the presentation below.
+
+TOPIC: [WHAT THE TALK IS ABOUT]
+AUDIENCE: [WHO THEY ARE AND WHAT THEY CARE ABOUT]
+GOAL: [WHAT I WANT THEM TO THINK, FEEL, OR DO BY THE END]
+LENGTH: [e.g. 10 minutes, roughly 10-12 slides]
+
+For each slide give me:
+- A short slide title.
+- The one key point it makes (a full sentence, not a fragment).
+- 1-2 supporting bullets if needed.
+
+Rules:
+- Build a clear narrative: hook, then the problem, then the payoff, then a close.
+- One idea per slide. If a slide has two ideas, split it.
+- End with a specific ask or takeaway that matches my goal.
+
+Do not write speaker notes yet. Just the outline.`,
+    whyItWorks: [
+      'It anchors on audience and goal first, so the structure serves a point instead of just listing facts.',
+      'Forcing one idea per slide is what stops the usual wall-of-bullets deck.',
+      'The narrative arc (hook, problem, payoff, close) gives the talk momentum most outlines lack.',
+    ],
+    tips: [
+      'Be honest in the GOAL line. "Get budget approved" builds a very different deck than "explain our progress".',
+      'Once the outline is right, ask for speaker notes on one slide at a time.',
+      'If it feels flat, add: "Make slide 1 a stronger hook, something surprising."',
+    ],
+  },
+  {
+    slug: 'chatgpt-reply-difficult-email',
+    title: 'Reply to a hard email',
+    searchTerm: 'ai prompt to reply to a difficult email',
+    metaTitle: 'AI Prompt to Reply to a Difficult Email (Free)',
+    metaDescription:
+      'A free AI prompt that helps you write a calm, professional reply to a difficult or emotional email. Works in ChatGPT, Claude, and Gemini.',
+    heading: 'AI prompt for replying to a difficult email',
+    intro:
+      'When an email makes your blood pressure rise, the reply you want to send is rarely the one you should. This prompt helps you answer difficult messages calmly and professionally, holding your position without escalating.',
+    category: 'Work',
+    prompt: `You are a calm, experienced communicator who de-escalates tense situations in writing.
+
+Help me reply to the email below.
+
+THE EMAIL I RECEIVED:
+[PASTE THE EMAIL]
+
+WHAT I WANT TO ACHIEVE: [e.g. push back, apologize, set a boundary, buy time]
+MY SIDE OF THE STORY: [THE FACTS FROM MY POINT OF VIEW]
+TONE I WANT: [e.g. firm but polite / warm / strictly professional]
+
+Rules:
+- Stay calm and professional. Never sarcastic, defensive, or passive-aggressive.
+- Acknowledge their point before making mine.
+- Be clear about my position without over-explaining or over-apologizing.
+- Keep it short. Long replies escalate.
+
+Return the reply, ready to send. Then note anything I should double-check before sending.`,
+    whyItWorks: [
+      'It asks for your goal and your facts first, so the reply argues your case instead of just sounding nice.',
+      '"Acknowledge before you respond" is the single move that de-escalates most tense email threads.',
+      'The "keep it short" rule matters: long, defensive replies almost always make things worse.',
+    ],
+    tips: [
+      'Write your honest, angry version first somewhere else. Then paste the facts here and let this cool it down.',
+      'Always read the result once more before sending. You know the relationship; the model does not.',
+      'If it is too soft, add: "Be firmer about the deadline being non-negotiable."',
+    ],
+  },
+  {
+    slug: 'chatgpt-write-sql',
+    title: 'Write a SQL query',
+    searchTerm: 'ai prompt to write sql',
+    metaTitle: 'AI Prompt to Write a SQL Query (Free, Copy-Paste)',
+    metaDescription:
+      'A free AI prompt that writes a correct, readable SQL query from a plain-English description of what you need. Works in ChatGPT, Claude, and Gemini.',
+    heading: 'AI prompt for writing SQL',
+    intro:
+      'Describing what you want in plain English is easy; getting the joins and grouping right is not. This prompt turns a plain description into a correct, readable SQL query, and explains it so you can trust and adapt it.',
+    category: 'Coding',
+    prompt: `You are an expert SQL developer who writes clear, correct queries.
+
+Write a SQL query for the request below.
+
+DATABASE: [e.g. PostgreSQL, MySQL, SQLite, BigQuery]
+
+TABLES AND COLUMNS:
+[LIST EACH TABLE AND ITS RELEVANT COLUMNS, e.g. orders(id, user_id, total, created_at)]
+
+WHAT I NEED:
+[DESCRIBE THE RESULT IN PLAIN ENGLISH, e.g. "total revenue per customer for the last 30 days, highest first"]
+
+Rules:
+- Use the exact table and column names I gave you.
+- Write it for the specific database I named.
+- Format it to be readable, with the query on multiple lines.
+- Do not invent columns. If something is missing, ask me instead of guessing.
+
+Return the query, then explain in 2-3 lines what it does and any assumptions you made.`,
+    whyItWorks: [
+      'Giving it your real schema is what makes the difference between a query that runs and one that guesses column names.',
+      'Naming the database matters: date functions and syntax differ between Postgres, MySQL, and BigQuery.',
+      'Telling it to ask rather than guess prevents silent, invented columns that fail when you run them.',
+    ],
+    tips: [
+      'Paste your actual CREATE TABLE statements if you have them. That removes all ambiguity.',
+      'Always run the query on a small sample first. Verify the numbers before trusting them.',
+      'If it is slow, follow up with: "How would you make this query faster?"',
+    ],
+  },
+  {
+    slug: 'chatgpt-document-code',
+    title: 'Document code',
+    searchTerm: 'ai prompt to document code',
+    metaTitle: 'AI Prompt to Document Your Code (Free, Copy-Paste)',
+    metaDescription:
+      'A free AI prompt that writes clear comments and documentation for a function or file, explaining the why, not just the what. Works in ChatGPT, Claude, and Gemini.',
+    heading: 'AI prompt for documenting code',
+    intro:
+      'Bad code comments just restate the code. Good ones explain why it exists and what to watch out for. This prompt documents your code the useful way, capturing intent and edge cases, not just the obvious.',
+    category: 'Coding',
+    prompt: `You are a senior engineer who writes documentation other developers actually thank you for.
+
+Document the code below.
+
+CODE:
+[PASTE YOUR CODE]
+
+LANGUAGE / STYLE: [e.g. Python docstrings, JSDoc, plain comments]
+
+Do this:
+- Add a summary that explains what this does and, more importantly, why it exists.
+- Document parameters, return values, and anything that can throw or fail.
+- Add short inline comments only where the logic is non-obvious. Do not comment the obvious.
+- Note any edge cases, assumptions, or gotchas a future reader should know.
+
+Rules:
+- Do not restate the code in words ("increment i by 1"). Explain intent.
+- Do not change the code itself. Only add documentation.
+
+Return the fully documented code.`,
+    whyItWorks: [
+      'It targets the "why", which is the part that actually saves the next developer time.',
+      'Telling it not to comment the obvious avoids the noise that makes people ignore comments entirely.',
+      '"Do not change the code" keeps it a documentation task, so nothing breaks silently.',
+    ],
+    tips: [
+      'Name your doc style (JSDoc, docstrings) so the output drops straight into your codebase.',
+      'Check the "gotchas" it lists. Sometimes it spots a real edge case you had not considered.',
+      'For a whole file, do the trickiest function first. That is where good docs matter most.',
+    ],
+  },
+  {
+    slug: 'chatgpt-flashcards',
+    title: 'Make flashcards',
+    searchTerm: 'ai prompt to make flashcards',
+    metaTitle: 'AI Prompt to Make Flashcards (Free, Copy-Paste)',
+    metaDescription:
+      'A free AI prompt that turns your notes or a topic into effective question-and-answer flashcards for studying. Works in ChatGPT, Claude, and Gemini.',
+    heading: 'AI prompt for making flashcards',
+    intro:
+      'Good flashcards test one idea at a time and make you recall, not just recognize. This prompt turns your notes or a topic into cards built that way, so studying them actually moves things into memory.',
+    category: 'Learning',
+    prompt: `You are a learning expert who designs flashcards for effective recall.
+
+Make flashcards from the material below.
+
+MATERIAL:
+[PASTE YOUR NOTES, OR NAME THE TOPIC]
+
+LEVEL: [e.g. complete beginner, exam revision, professional]
+HOW MANY: [e.g. 15 cards]
+
+Rules:
+- One idea per card. Split anything that needs two answers.
+- Write the front as a clear question that forces recall, not a yes/no.
+- Keep the back short: the answer, plus one line of context only if needed.
+- Cover the most important points first, not trivia.
+- Avoid questions that give away the answer in the wording.
+
+Format each card as:
+Q: [question]
+A: [answer]`,
+    whyItWorks: [
+      'One idea per card is the rule that separates cards that work from cards you just reread.',
+      'Forcing recall questions ("what causes X?") beats recognition prompts ("is X true?") for memory.',
+      'Prioritizing key points over trivia means your study time goes to what actually matters.',
+    ],
+    tips: [
+      'Paste your own notes rather than naming a topic. The cards will match what you actually need to learn.',
+      'The Q:/A: format pastes straight into Anki or Quizlet.',
+      'If cards feel too easy, add: "Make the questions harder and more application-based."',
+    ],
+  },
+  {
+    slug: 'chatgpt-summarize-book',
+    title: 'Summarize a book',
+    searchTerm: 'ai prompt to summarize a book',
+    metaTitle: 'AI Prompt to Summarize a Book (Free, Copy-Paste)',
+    metaDescription:
+      'A free AI prompt that summarizes a book into its core ideas, key takeaways, and what to actually do with them. Works in ChatGPT, Claude, and Gemini.',
+    heading: 'AI prompt for summarizing a book',
+    intro:
+      'A book summary that just lists chapters is useless. This prompt pulls out the core argument, the ideas worth keeping, and what to actually do with them, so you get the value without the fluff.',
+    category: 'Learning',
+    prompt: `You are a sharp reader who explains books in a way that sticks.
+
+Summarize the book below.
+
+BOOK: [TITLE AND AUTHOR]
+
+Give me:
+1. The core argument in 2-3 sentences. What is this book really saying?
+2. The 5-7 key ideas worth remembering, one line each.
+3. The most useful practical takeaways: things I could actually apply.
+4. One honest note on who this book is for and who can skip it.
+
+Rules:
+- Focus on ideas, not a chapter-by-chapter recap.
+- Be concrete. Avoid vague self-help phrasing like "unlock your potential".
+- If the book is well known enough that you know it, say so. If you are unsure of details, say that instead of inventing them.`,
+    whyItWorks: [
+      'Asking for the core argument first forces the summary to have a spine, not just a list.',
+      'The "who can skip it" line is honest signal you rarely get from a summary, and it saves you time.',
+      'Telling the model to admit uncertainty reduces the risk of confidently invented details.',
+    ],
+    tips: [
+      'For a lesser-known book, paste the table of contents or a few key passages so it has real material.',
+      'Follow up on any idea with "explain number 3 with an example" to go deeper.',
+      'Treat it as a decision tool: read the summary, then decide if the full book is worth your time.',
+    ],
+  },
+  {
+    slug: 'chatgpt-customer-survey',
+    title: 'Customer survey',
+    searchTerm: 'ai prompt to create a customer survey',
+    metaTitle: 'AI Prompt to Create a Customer Survey (Free)',
+    metaDescription:
+      'A free AI prompt that writes clear, unbiased customer survey questions that get you honest, useful answers. Works in ChatGPT, Claude, and Gemini.',
+    heading: 'AI prompt for a customer survey',
+    intro:
+      'Most surveys ask leading questions and get flattering, useless answers. This prompt writes clear, unbiased questions tied to a real goal, so you learn something you can act on instead of just confirming what you hoped.',
+    category: 'Business',
+    prompt: `You are a research expert who designs surveys that produce honest, useful data.
+
+Write a customer survey based on the details below.
+
+WHAT I SELL / DO: [YOUR PRODUCT OR SERVICE]
+WHAT I WANT TO LEARN: [THE ONE MAIN QUESTION, e.g. "why do people cancel?"]
+WHO I AM ASKING: [e.g. new customers, churned users, free users]
+LENGTH: [e.g. 6-8 questions, under 3 minutes]
+
+Rules:
+- Every question must serve the main thing I want to learn. Cut anything that does not.
+- Write neutral, unbiased questions. No leading wording ("How great was...").
+- Mix a few rating-scale questions with 1-2 open-ended ones.
+- Put easy questions first, sensitive ones last.
+- Keep it short. Long surveys get abandoned.
+
+Return the survey, and for each question note in brackets what it is meant to reveal.`,
+    whyItWorks: [
+      'Tying every question to one goal is what stops surveys from ballooning into useless data.',
+      'Neutral wording is the whole game: leading questions produce answers that feel good and teach nothing.',
+      'Noting what each question reveals forces the survey to earn its length, question by question.',
+    ],
+    tips: [
+      'Be ruthless in the goal line. One clear question produces a far better survey than five vague ones.',
+      'Keep the open-ended questions to one or two. People skip surveys full of typing.',
+      'Test it on one real customer before sending. If a question confuses them, fix it.',
+    ],
+  },
+  {
+    slug: 'chatgpt-competitor-analysis',
+    title: 'Competitor analysis',
+    searchTerm: 'ai prompt for competitor analysis',
+    metaTitle: 'AI Prompt for Competitor Analysis (Free, Copy-Paste)',
+    metaDescription:
+      'A free AI prompt that structures a clear, honest competitor analysis and shows you where you can actually win. Works in ChatGPT, Claude, and Gemini.',
+    heading: 'AI prompt for competitor analysis',
+    intro:
+      'A competitor analysis is only useful if it ends in a decision. This prompt structures the comparison and then pushes to the part that matters: where you can realistically win, and where you should not bother competing.',
+    category: 'Business',
+    prompt: `You are a strategist who turns competitor research into clear decisions.
+
+Help me analyze my competitors using the details below.
+
+MY BUSINESS: [WHAT YOU DO, AND YOUR MAIN CUSTOMER]
+COMPETITORS: [LIST 2-4, WITH ANYTHING YOU KNOW ABOUT EACH]
+WHAT I ALREADY KNOW: [PRICING, POSITIONING, STRENGTHS, WHATEVER YOU HAVE]
+
+Give me:
+1. A short comparison of each competitor: their apparent strength, weakness, and who they target.
+2. The gaps: what customers seem to want that no one is doing well.
+3. Where I can realistically win, given who I am.
+4. Where I should not try to compete, and why.
+
+Rules:
+- Be honest, not flattering. If a competitor is genuinely stronger, say so.
+- Base this on what I told you. If you are guessing or filling gaps, mark it clearly as a guess.
+- End with the single most important move you would make.`,
+    whyItWorks: [
+      'It ends in a decision ("where you can win", "the one move"), not just a table nobody acts on.',
+      'Asking it to mark guesses keeps you from mistaking the assumptions it makes for real market data.',
+      'The "where not to compete" section is the discipline most analyses skip, and it saves the most money.',
+    ],
+    tips: [
+      'Feed it real detail: pricing pages, their taglines, review complaints. The output is only as good as the input.',
+      'Treat guessed points as questions to go research, not as facts.',
+      'Push on the final move: "What would it take to actually do that in the next 90 days?"',
+    ],
+  },
 ]
 
 export function getPromptEntry(slug: string): PromptEntry | undefined {
@@ -989,4 +1392,98 @@ export function getPromptEntry(slug: string): PromptEntry | undefined {
 
 export function getAllPromptSlugs(): string[] {
   return PROMPT_LIBRARY.map(e => e.slug)
+}
+
+// -- Category hubs -----------------------------------------------------------
+// Hub pages (/prompts/category/<slug>) group every prompt in a category. They
+// exist to rank for mid-tier searches like "AI prompts for coding" that the
+// individual prompt pages and the giant index don't target. Each needs its own
+// distinct intro copy so it reads as a real page, not a thin doorway list.
+
+type Category = PromptEntry['category']
+
+export interface CategoryHub {
+  /** URL slug: /prompts/category/<slug> */
+  slug: string
+  /** The category value as stored on entries. */
+  category: Category
+  /** H1 on the hub page. */
+  heading: string
+  /** <title> tag - keep under ~60 chars. */
+  metaTitle: string
+  /** <meta description> - keep under ~155 chars. */
+  metaDescription: string
+  /** One or two paragraphs of genuine, distinct intro copy. */
+  intro: string[]
+}
+
+export const CATEGORY_HUBS: CategoryHub[] = [
+  {
+    slug: 'writing',
+    category: 'Writing',
+    heading: 'AI prompts for writing',
+    metaTitle: 'AI Prompts for Writing (Free, Copy-Paste)',
+    metaDescription:
+      'Free, ready-to-use AI prompts for writing: articles, stories, rewrites, and editing. Copy, paste, and fill in the blanks. Works with ChatGPT, Claude, and Gemini.',
+    intro: [
+      'A blank page is the hardest part of any writing task. These prompts give you a running start. Each one sets the tone, structure, and detail an AI needs to produce a first draft you can actually build on, instead of the vague, hedged text you get from a one-line request.',
+      'Copy any prompt, fill in the parts in brackets, and paste it into your AI tool. Every prompt here is free and works the same in ChatGPT, Claude, and Gemini.',
+    ],
+  },
+  {
+    slug: 'work',
+    category: 'Work',
+    heading: 'AI prompts for work',
+    metaTitle: 'AI Prompts for Work (Free, Copy-Paste)',
+    metaDescription:
+      'Free AI prompts for everyday work: emails, cover letters, meeting notes, and reports. Copy, paste, and fill in the blanks. Works with ChatGPT, Claude, and Gemini.',
+    intro: [
+      'Most of the writing work throws at you is repetitive: the follow-up email, the status update, the cover letter that has to sound like you but better. These prompts handle the shape of those tasks so you only have to supply the facts.',
+      'Pick a prompt, replace the bracketed placeholders with your own details, and run it. They are free and produce strong results in ChatGPT, Claude, and Gemini alike.',
+    ],
+  },
+  {
+    slug: 'coding',
+    category: 'Coding',
+    heading: 'AI prompts for coding',
+    metaTitle: 'AI Prompts for Coding (Free, Copy-Paste)',
+    metaDescription:
+      'Free AI prompts for coding: code review, debugging, refactoring, and explaining code. Copy, paste, and fill in the blanks. Works with ChatGPT, Claude, and Gemini.',
+    intro: [
+      'AI is genuinely useful for code, but only when you tell it what "good" looks like. A prompt that names the language, the constraints, and the kind of answer you want turns a generic reply into a review you can act on. These prompts do that setup for you.',
+      'Grab a prompt, drop in your own code or context where marked, and paste it into your AI tool. Each one is free and works in ChatGPT, Claude, and Gemini.',
+    ],
+  },
+  {
+    slug: 'learning',
+    category: 'Learning',
+    heading: 'AI prompts for learning',
+    metaTitle: 'AI Prompts for Learning (Free, Copy-Paste)',
+    metaDescription:
+      'Free AI prompts for learning: explanations, study plans, quizzes, and summaries. Copy, paste, and fill in the blanks. Works with ChatGPT, Claude, and Gemini.',
+    intro: [
+      'An AI can be a patient tutor that never runs out of time, but the quality of the lesson depends entirely on how you ask. These prompts frame the request so the answer meets you at your level, checks your understanding, and builds from there.',
+      'Choose a prompt, tell it what you are trying to learn, and run it. They are all free and work the same in ChatGPT, Claude, and Gemini.',
+    ],
+  },
+  {
+    slug: 'business',
+    category: 'Business',
+    heading: 'AI prompts for business',
+    metaTitle: 'AI Prompts for Business (Free, Copy-Paste)',
+    metaDescription:
+      'Free AI prompts for business: strategy, marketing, analysis, and planning. Copy, paste, and fill in the blanks. Works with ChatGPT, Claude, and Gemini.',
+    intro: [
+      'Business questions are where generic AI answers hurt the most, because a vague plan looks fine until you try to act on it. These prompts force specificity: real context in, concrete and honest output back, including the parts most analyses skip.',
+      'Take a prompt, give it the real details of your situation, and run it. Every prompt here is free and works in ChatGPT, Claude, and Gemini.',
+    ],
+  },
+]
+
+export function getCategoryHub(slug: string): CategoryHub | undefined {
+  return CATEGORY_HUBS.find(h => h.slug === slug)
+}
+
+export function getPromptsInCategory(category: Category): PromptEntry[] {
+  return PROMPT_LIBRARY.filter(e => e.category === category)
 }

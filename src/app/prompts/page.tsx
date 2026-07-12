@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { PROMPT_LIBRARY } from '@/lib/prompt-library'
+import { PROMPT_LIBRARY, CATEGORY_HUBS } from '@/lib/prompt-library'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PromptLibraryBrowser } from '@/components/prompts/PromptLibraryBrowser'
 
@@ -93,6 +93,24 @@ export default async function PromptsIndexPage({
             engineer would write it, and free.
           </p>
         </div>
+
+        {/* Browse by category - links to the hub pages. Gives crawlers a clean
+            home -> hub -> prompt path and users a quick way in. */}
+        <nav className="mt-10 md:mt-12 flex flex-wrap gap-2.5" aria-label="Prompt categories">
+          {CATEGORY_HUBS.map(hub => (
+            <Link
+              key={hub.slug}
+              href={`/prompts/category/${hub.slug}`}
+              className="px-4 py-2 rounded-full text-sm transition-all row-hover"
+              style={{
+                border: '1px solid var(--color-rule-strong)',
+                color: 'var(--color-paper)',
+              }}
+            >
+              {hub.category}
+            </Link>
+          ))}
+        </nav>
 
         {/* Search + category filter (client). All entries are still
             server-rendered for crawlers; this only filters on the client. */}

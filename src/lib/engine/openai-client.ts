@@ -1,19 +1,19 @@
-// OpenAI provider for the prompt engine. Drop-in replacement for the old
-// Gemini client: same request shape, same `callLLM<T>()` contract, so
-// engine/index.ts only swaps the import.
+// OpenAI provider for the prompt engine. Same `callLLM<T>()` contract as
+// the Gemini client so stages can swap providers freely.
 //
-// Model: gpt-4.1-nano - cheap ($0.10/$0.40 per 1M), fast, no reasoning
-// overhead, and reliable at instruction-following + JSON. Right-sized for
-// scoring and rewriting a prompt.
+// Every pipeline stage passes its model explicitly (see models.ts); the
+// default below is only a safety net for callers that don't.
 //
 // We use Structured Outputs (response_format json_schema) with
 // strict:false. Strict mode requires every property to be `required` and
-// additionalProperties:false, but our schema intentionally leaves
-// `question` and `improvement` optional (the model returns one OR the
-// other). strict:false keeps strong schema adherence without that
-// constraint. A defensive JSON parse remains as a backstop.
+// additionalProperties:false, but our schemas intentionally have optional
+// branches (e.g. `question` vs `already_good_notes`). strict:false keeps
+// strong schema adherence without that constraint. A defensive JSON parse
+// remains as a backstop.
 
-const MODEL = 'gpt-4.1-nano'
+import { MODELS } from './models'
+
+const MODEL = MODELS.diagnose
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
 
 // One request; the timeout guards against a hung connection. gpt-4.1-nano
@@ -84,10 +84,22 @@ export async function callLLM<T>(req: LLMRequest): Promise<T | null> {
         Authorization: `Bearer ${apiKey}`,
       },
       signal: controller.signal,
+      // gpt-5.x models take max_completion_tokens (max_tokens is a 400)
+      // and only run at default temperature. Their budget also covers
+      // hidden reasoning tokens, so we give 2x headroom on top of the
+      // requested output size and pin reasoning effort low - otherwise
+      // reasoning can consume the whole budget and return empty content.
       body: JSON.stringify({
         model,
-        temperature: req.temperature ?? 0.3,
-        max_tokens: req.maxOutputTokens ?? 1024,
+        ...(model.startsWith('gpt-5')
+          ? {
+              max_completion_tokens: (req.maxOutputTokens ?? 1024) * 2 + 1000,
+              reasoning_effort: 'low',
+            }
+          : {
+              temperature: req.temperature ?? 0.3,
+              max_tokens: req.maxOutputTokens ?? 1024,
+            }),
         response_format,
         messages: [
           { role: 'system', content: req.systemPrompt },

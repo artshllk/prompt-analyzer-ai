@@ -129,14 +129,31 @@ export async function POST(req: NextRequest) {
     `ts=${new Date().toISOString()}`
   )
 
-  const result = await analyzePrompt({ prompt, tone, priorAnswers, deep })
+  let result = await analyzePrompt({ prompt, tone, priorAnswers, deep, pro: auth?.tier === 'pro' })
   if (!result) {
     return withCors(NextResponse.json({ error: 'ai_unavailable' }, { status: 503 }))
   }
 
+  // The extension predates the already_good result type and switches on
+  // `type`, so give it the same information in the improved shape it
+  // understands. Web clients get the honest type.
+  if (result.type === 'already_good' && source === 'extension') {
+    result = {
+      type: 'improved',
+      improvedPrompt: prompt.trim(),
+      explanation: `${result.message} ${result.tweaks.join(' ')}`.trim(),
+      improvementTags: [],
+      clarityScoreAfter: result.scoreBeforeImprovement,
+      scoreBeforeImprovement: result.scoreBeforeImprovement,
+      audit: result.audit,
+    }
+  }
+
   // Record usage for signed-in users, fire-and-forget. Only on the first
   // turn of a session - clarification rounds belong to the same analysis.
-  if (auth && priorAnswers.length === 0) {
+  // An already-good verdict is free: no rewrite was produced, and charging
+  // for "your prompt is fine" would teach users not to trust it.
+  if (auth && priorAnswers.length === 0 && result.type !== 'already_good') {
     const supabase = await createServiceClient()
     supabase
       .from('usage_events')

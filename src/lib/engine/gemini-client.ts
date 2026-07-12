@@ -1,19 +1,14 @@
-const MODELS = [
-  'gemini-2.5-flash',       // Your current baseline
-  'gemini-2.5-flash-lite',  // Your current fallback
-  'gemini-3.1-flash-lite-preview', // Brand new Google preview (Separate free quota!)
-  'gemini-3-flash-preview',      // Another separate free quota bucket from Google
-  'gemini-1.5-flash'        // Google legacy flash (More generous: 15 RPM / 1,500 Daily limit)
-] as const;
+import { GEMINI_CASCADE } from './models'
+
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
 // Worst case is exactly MODELS.length attempts (no same-model retries).
 // A same-model retry of an identical prompt rarely turns a timeout into
 // a success and doubles the wall-time budget - that stacking is what
 // produced the 17s+ failures. Resilience comes from the fallback MODEL.
-// 12s per call: structured-JSON generation is slower than free text,
-// so 8s false-failed valid slow responses; 12s lets them finish while
-// the absolute ceiling stays at ~MODELS.length * 12s = ~24s (rare).
-const TIMEOUT_MS = 12000
+// 20s per call: the rewrite/critic stages generate 1.4-1.8k tokens of
+// structured JSON, which the old 12s ceiling false-failed. Absolute
+// worst case stays bounded at ~cascade-length * 20s (rare).
+const TIMEOUT_MS = 20000
 
 interface GeminiRequest {
   systemPrompt: string
@@ -26,6 +21,8 @@ interface GeminiRequest {
    * eliminates the "invalid JSON, retrying" loop entirely.
    */
   responseSchema?: Record<string, unknown>
+  /** Override the fallback cascade (strongest first). Defaults to GEMINI_CASCADE. */
+  models?: readonly string[]
 }
 
 interface GeminiResponse {
@@ -61,7 +58,10 @@ async function callModel(model: string, req: GeminiRequest): Promise<ModelResult
           contents: [{ role: 'user', parts: [{ text: req.userMessage }] }],
           generationConfig: {
             temperature: req.temperature ?? 0.3,
-            maxOutputTokens: req.maxOutputTokens ?? 1024,
+            // Gemini 2.5+ models think by default and thought tokens count
+            // against maxOutputTokens - without headroom, large structured
+            // responses get truncated mid-JSON and fail to parse.
+            maxOutputTokens: (req.maxOutputTokens ?? 1024) * 2 + 1000,
             responseMimeType: 'application/json',
             ...(req.responseSchema ? { responseSchema: req.responseSchema } : {}),
           },
@@ -127,8 +127,8 @@ export async function callGemini<T>(req: GeminiRequest): Promise<T | null> {
 
   // One attempt per model, in order. No same-model retry - that
   // stacking is what created the 17s+ failures. Resilience comes from
-  // falling through to the next model. Worst case = MODELS.length calls.
-  for (const model of MODELS) {
+  // falling through to the next model. Worst case = cascade-length calls.
+  for (const model of req.models ?? GEMINI_CASCADE) {
     const result = await callModel(model, req)
     trail.push(`${model}:${result.reason}`)
 

@@ -450,6 +450,17 @@ a[aria-disabled="true"],
   background-color: rgba(245, 244, 241, 0.025);
 }
 
+/* Text link row - underlines on hover instead of a bg tint. Used for the
+   dense internal-link columns on prompt pages. */
+.row-hover-text {
+  transition: opacity 150ms ease;
+}
+.row-hover-text:hover {
+  opacity: 0.65;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 /* Sidebar / drawer nav item - paler hover bg without obscuring text. */
 .nav-item-hover {
   transition: background-color 200ms ease, color 200ms ease;

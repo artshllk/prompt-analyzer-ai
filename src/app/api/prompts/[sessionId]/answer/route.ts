@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { analyzePrompt } from '@/lib/engine'
 import { addClarificationExchange, updateSessionStatus, saveImprovement, getSessionWithDetails } from '@/lib/db/sessions'
+import { recordDeepUsage, isAtDeepLimit } from '@/lib/db/usage'
 
 interface AnswerBody {
   answer: string
@@ -29,16 +30,16 @@ export async function POST(
     return NextResponse.json({ error: 'answer is required' }, { status: 400 })
   }
 
-  // Deep Rewrite is Pro-only; re-check the tier rather than trusting the client.
-  let deep = false
-  if (body.deep) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('tier')
-      .eq('id', user.id)
-      .single()
-    deep = profile?.tier === 'pro'
-  }
+  // Tier gates both the Pro rewrite model and Deep Rewrite; re-check it
+  // rather than trusting the client.
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tier')
+    .eq('id', user.id)
+    .single()
+  const isProUser = profile?.tier === 'pro'
+  let deep = body.deep === true && isProUser
+  if (deep && (await isAtDeepLimit(user.id))) deep = false
 
   const session = await getSessionWithDetails(sessionId, user.id)
   if (!session) {
@@ -76,6 +77,7 @@ export async function POST(
     tone: session.tone,
     priorAnswers,
     deep,
+    pro: isProUser,
   })
 
   if (!result) {
@@ -89,12 +91,19 @@ export async function POST(
       aiQuestion: result.question,
       confidenceBefore: result.confidenceSoFar,
     })
-  } else {
+  } else if (result.type === 'improved') {
     await saveImprovement({
       sessionId,
       improvedPrompt: result.improvedPrompt,
       explanation: result.explanation,
       improvementTags: result.improvementTags,
+      analysis: {
+        minimalEdit: result.minimalEdit,
+        template: result.template,
+        audit: result.audit,
+        critique: result.critique,
+        intent: result.intent,
+      },
     })
 
     await updateSessionStatus(sessionId, 'completed', {
@@ -102,6 +111,8 @@ export async function POST(
       clarityScoreAfter: result.clarityScoreAfter,
       clarifyTurns: priorAnswers.length,
     })
+
+    if (deep) await recordDeepUsage(user.id)
   }
 
   return NextResponse.json({ ...result, sessionId })

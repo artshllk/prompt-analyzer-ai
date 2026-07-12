@@ -29,6 +29,24 @@ export const ANON_DETECT_LIMIT = 1
 /** Session history retention for free users, in days. Pro keeps everything. */
 export const HISTORY_FREE_DAYS = 7
 
+/**
+ * Pro fair-use meters. Standard improvements stay unlimited for Pro;
+ * the two expensive stages (Deep Rewrite's critic pass, verification
+ * runs) are metered per rolling 30 days so a single power user can't
+ * push per-account cost past the subscription price.
+ */
+export const PRO_DEEP_LIMIT = 100
+export const PRO_DEEP_WINDOW_HOURS = 30 * 24
+export const PRO_VERIFY_LIMIT = 100
+export const PRO_VERIFY_WINDOW_HOURS = 30 * 24
+
+/**
+ * Free users get a small lifetime taste of verification - seeing the
+ * original vs improved prompt actually behave differently is the
+ * conversion moment, so everyone gets to experience it a few times.
+ */
+export const FREE_VERIFY_LIFETIME_CREDITS = 3
+
 /** ISO timestamp for the start of a rolling window `hours` ago. */
 export function windowStart(hours: number): string {
   return new Date(Date.now() - hours * 3_600_000).toISOString()
