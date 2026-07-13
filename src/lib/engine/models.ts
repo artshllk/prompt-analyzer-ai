@@ -12,6 +12,13 @@
  */
 
 export const MODELS = {
+  /**
+   * Fast-path inline sharpen: one streaming call, no reasoning, no JSON
+   * schema, no diagnosis. The extension's default action - optimized for
+   * perceived latency (first token < 1s), not depth. nano is ~2x faster
+   * and ~4x cheaper than mini and plenty for a single rewrite.
+   */
+  sharpen: 'gpt-5.4-nano',
   /** Stage 1+2+3 merged: intent triage, interpretation forks, rubric audit. */
   diagnose: 'gpt-5.4-mini',
   /** Stage 4: rewrite for free-tier users. */

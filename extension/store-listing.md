@@ -4,26 +4,24 @@ Paste into the store listing's description field.
 
 ---
 
-Deepclario checks the prompt you are about to send to ChatGPT, Claude, or Gemini and rewrites it so you get a better answer on the first try. No copy-paste, no new tab.
+Deepclario sharpens the prompt you are about to send to ChatGPT, Claude, or Gemini in one keystroke, right in the chat box. You never leave your workflow. No copy-paste, no new tab, no panel to fill in.
 
 WHAT IT DOES
 
-• Gives your prompt a clarity score from 0 to 100.
-• Spots what is missing: who the answer is for, what format you want, what a good result looks like.
-• Asks you one short question if it needs more context.
-• Rewrites your prompt. One click puts the new version back in the chat box.
-• Lets you pick a tone: professional, friendly, persuasive, concise, or creative.
-• Pro: Deep Rewrite. Your prompt is drafted, critiqued, and refined in three passes on our strongest model.
+• Press Alt+I (or click the small ✦ Sharpen chip by the input) and your prompt is rewritten in place, streamed in live in about a second.
+• Not happy with it? Press Esc to undo instantly.
+• Want the details? Click "why?" to see the clarity score, what was missing, how the prompt could be misread, and interpretation choices.
+• Pick a tone: professional, friendly, persuasive, concise, or creative.
+• Pro: Deep Rewrite. Your prompt is drafted, critiqued, and refined on our strongest model, and you see what the critic caught.
 
 HOW TO USE IT
 
 1. Open ChatGPT, Claude, or Gemini.
 2. Type your rough prompt in the chat box.
-3. Click the "✦ Improve prompt" button in the bottom right corner.
-4. Your text appears in the Deepclario panel. Click Improve when you are ready.
-5. Review the rewrite, click "Replace in chat", and send.
+3. Press Alt+I. Your prompt is sharpened in place.
+4. Press Enter to send, or Esc to undo.
 
-Nothing runs on its own. Your prompt is only sent to Deepclario when you click Improve.
+Nothing runs on its own. Your prompt is only sent to Deepclario when you press Sharpen.
 
 WHERE IT WORKS
 

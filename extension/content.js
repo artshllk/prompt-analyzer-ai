@@ -1,10 +1,16 @@
-// Deepclario extension - content script.
+// Deepclario extension - content script (in-workflow, inline-first).
 //
-// Injects a floating "Improve prompt" button on ChatGPT / Claude / Gemini.
-// Reads the prompt you're about to send, scores it, asks one clarifying
-// question if needed, and gives you an improved rewrite - without leaving
-// the page. Everything lives in a Shadow DOM so the host site's CSS can't
-// touch it and ours can't leak out.
+// The product is not a panel. It is a quiet layer over ChatGPT / Claude /
+// Gemini: press one shortcut and the prompt in the box is sharpened in
+// place, streamed in live. No destination, no paste-back.
+//
+//   Alt+I (or the small ✦ chip by the input) → sharpen the current prompt.
+//   Tab / Enter while the "before" is shown → accept. Esc → undo.
+//   "why?" on the chip → opens the details panel (the old full flow) for
+//   the diagnosis, forks, and Deep Rewrite.
+//
+// Everything lives in a Shadow DOM so the host site's CSS can't touch us
+// and ours can't leak out.
 
 ;(function () {
   if (window.__deepclarioInjected) return
@@ -13,11 +19,11 @@
   /* ---------- Read / write the host page's prompt box ---------- */
 
   const READ_SELECTORS = [
-    '#prompt-textarea',                       // ChatGPT (contenteditable or textarea)
+    '#prompt-textarea',
     'textarea#prompt-textarea',
-    'div.ProseMirror[contenteditable="true"]',// Claude
-    'div.ql-editor[contenteditable="true"]',  // Gemini (Quill)
-    'rich-textarea textarea',                 // Gemini fallback
+    'div.ProseMirror[contenteditable="true"]',
+    'div.ql-editor[contenteditable="true"]',
+    'rich-textarea textarea',
     'main [contenteditable="true"]',
     'form textarea',
   ]
@@ -50,7 +56,6 @@
         setter.call(el, text)
         el.dispatchEvent(new Event('input', { bubbles: true }))
       } else {
-        // contenteditable (ProseMirror / Quill): select-all + insert
         const sel = window.getSelection()
         const range = document.createRange()
         range.selectNodeContents(el)
@@ -64,7 +69,40 @@
     }
   }
 
-  /* ---------- Shadow DOM UI ---------- */
+  /* ---------- Auth / prefs storage (unchanged contract) ---------- */
+
+  const TONES = ['professional', 'friendly', 'persuasive', 'concise', 'creative']
+  let authState = { token: null, tier: 'anon' }
+  let prefs = { tone: 'professional', deep: false }
+  let anonCount = 0
+  const ANON_FREE_TRIES = 2
+
+  function loadAuth() {
+    return new Promise(resolve => {
+      try {
+        chrome.storage.local.get(
+          ['dc_token', 'dc_tier', 'dc_tone', 'dc_deep', 'dc_anon_count'],
+          v => {
+            authState.token = v?.dc_token || null
+            authState.tier = v?.dc_tier || (authState.token ? 'free' : 'anon')
+            if (TONES.includes(v?.dc_tone)) prefs.tone = v.dc_tone
+            prefs.deep = v?.dc_deep === true
+            anonCount = Number.isFinite(v?.dc_anon_count) ? v.dc_anon_count : 0
+            resolve()
+          }
+        )
+      } catch {
+        resolve()
+      }
+    })
+  }
+
+  function bumpAnon() {
+    anonCount += 1
+    try { chrome.storage.local.set({ dc_anon_count: anonCount }) } catch {}
+  }
+
+  /* ---------- Shadow DOM host ---------- */
 
   const host = document.createElement('div')
   host.id = 'deepclario-host'
@@ -72,17 +110,6 @@
   document.documentElement.appendChild(host)
   const root = host.attachShadow({ mode: 'open' })
 
-  // Stop typing/paste events from leaking up to the host page's editor.
-  // Claude (ProseMirror), ChatGPT (Lexical), and Gemini (Quill) all have
-  // document-level keyboard listeners that swallow keystrokes meant for
-  // our panel's textareas - the user types "hello" in our answer field
-  // and it lands in Claude's chat input instead.
-  //
-  // Composed events cross the shadow boundary by default, so we catch
-  // them on the host element (after they have already reached their
-  // intended target inside the shadow tree) and stop propagation before
-  // they reach `document`. We never preventDefault - the textarea has
-  // already handled the event by the time it reaches the host.
   const STOP_BUBBLE = [
     'keydown', 'keypress', 'keyup',
     'input', 'beforeinput',
@@ -97,490 +124,284 @@
     <style>
       :host { all: initial; }
       * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
-      .fab {
-        position: fixed; right: 20px; bottom: 96px; z-index: 2147483646;
-        display: inline-flex; align-items: center; gap: 8px;
-        padding: 10px 16px; border-radius: 999px; cursor: pointer;
-        background: #F5F4F1; color: #0E0E10; font-size: 13px; font-weight: 600;
-        border: none; box-shadow: 0 4px 24px rgba(0,0,0,0.35);
-        transition: transform .18s cubic-bezier(.16,1,.3,1), opacity .2s;
-      }
-      .fab:hover { opacity: .92; }
-      .fab:active { transform: scale(.97); }
-      .fab .mark { font-size: 14px; }
-      .overlay {
-        position: fixed; inset: 0; z-index: 2147483647;
-        background: rgba(0,0,0,.55); display: none;
-      }
-      .overlay.open { display: block; }
-      .panel {
-        position: fixed; top: 0; right: 0; height: 100%;
-        width: 440px; max-width: 92vw; background: #0E0E10;
-        color: #F5F4F1; border-left: 1px solid rgba(245,244,241,.14);
-        transform: translateX(100%); transition: transform .35s cubic-bezier(.16,1,.3,1);
-        display: flex; flex-direction: column; overflow-y: auto;
-      }
-      .overlay.open .panel { transform: translateX(0); }
-      .pad { padding: 24px; }
-      .row { display: flex; align-items: center; justify-content: space-between; }
-      .eyebrow {
-        font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
-        color: #A8A6A0; font-weight: 500;
-      }
-      .x {
-        background: none; border: none; color: #A8A6A0; cursor: pointer;
-        font-size: 20px; line-height: 1; padding: 4px;
-      }
-      .x:hover { color: #F5F4F1; }
-      h2 { font-size: 22px; margin: 16px 0 6px; font-weight: 600; }
-      p.sub { color: #A8A6A0; font-size: 13px; line-height: 1.55; margin: 0 0 18px; }
-      textarea {
-        width: 100%; min-height: 120px; resize: vertical;
-        background: #1A1A20; color: #F5F4F1;
-        border: 1px solid rgba(245,244,241,.18); border-radius: 12px;
-        padding: 14px; font-size: 14px; line-height: 1.55; outline: none;
-        font-family: inherit;
-      }
-      textarea:focus { border-color: #A8A6A0; }
-      .btn {
-        display: inline-flex; align-items: center; gap: 8px;
-        padding: 11px 18px; border-radius: 999px; cursor: pointer;
-        background: #F5F4F1; color: #0E0E10; font-size: 13px; font-weight: 600;
-        border: none; transition: opacity .2s, transform .18s;
-      }
-      .btn:hover { opacity: .92; } .btn:active { transform: scale(.98); }
-      .btn:disabled { opacity: .4; cursor: not-allowed; }
-      .btn.ghost {
-        background: transparent; color: #F5F4F1;
-        border: 1px solid rgba(245,244,241,.18);
-      }
-      .btn.ghost:hover { background: rgba(245,244,241,.05); }
-      .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-      .rule { height: 1px; background: rgba(245,244,241,.14); margin: 22px 0; }
-      .score-row { display: flex; align-items: baseline; gap: 10px; margin: 4px 0 16px; }
-      .score { font-size: 34px; font-weight: 600; font-variant-numeric: tabular-nums; }
-      .score.lo { color: #C25E5E; } .score.mid { color: #A8A6A0; } .score.hi { color: #F5F4F1; }
-      .arrow { color: #A8A6A0; }
-      .result-box {
-        background: #1A1A20; border: 1px solid rgba(245,244,241,.18);
-        border-radius: 12px; padding: 16px; font-size: 14px; line-height: 1.6;
-        white-space: pre-wrap;
-      }
-      .label { font-size: 11px; letter-spacing:.14em; text-transform:uppercase; color:#A8A6A0; margin: 18px 0 8px; }
-      .dots span {
-        display:inline-block; width:5px;height:5px;border-radius:50%;
-        background:#F5F4F1; margin:0 2px; animation: d 1.2s infinite;
-      }
-      .dots span:nth-child(2){animation-delay:.18s} .dots span:nth-child(3){animation-delay:.36s}
-      @keyframes d { 0%,100%{opacity:.25} 50%{opacity:1} }
-      .foot { margin-top: auto; padding: 16px 24px; border-top: 1px solid rgba(245,244,241,.1); }
-      .foot a { color: #A8A6A0; font-size: 12px; text-decoration: none; }
-      .foot a:hover { color: #F5F4F1; }
-      .err { color: #C25E5E; font-size: 14px; line-height: 1.5; }
-      .account-row {
-        display: flex; align-items: center; justify-content: space-between;
-        gap: 10px; margin-bottom: 18px; min-height: 24px;
-      }
-      .badge {
-        display: inline-flex; align-items: center; padding: 4px 10px;
-        border-radius: 999px; font-size: 11px; font-weight: 600;
-        letter-spacing: .04em; color: #A8A6A0;
-        border: 1px solid rgba(245,244,241,.18);
-      }
-      .badge.pro { background: #F5F4F1; color: #0E0E10; border-color: transparent; }
-      .controls { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-      .select {
-        appearance: none; -webkit-appearance: none;
-        background: #1A1A20; color: #F5F4F1; cursor: pointer;
-        border: 1px solid rgba(245,244,241,.18); border-radius: 999px;
-        padding: 7px 26px 7px 12px; font-size: 12px; font-family: inherit;
-        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'><path d='M1 1l3 3 3-3' stroke='%23A8A6A0' fill='none' stroke-width='1.4' stroke-linecap='round'/></svg>");
-        background-repeat: no-repeat; background-position: right 10px center;
-      }
-      .select:focus { outline: none; border-color: #A8A6A0; }
+
+      /* Inline chip anchored near the prompt box - the whole default UI. */
       .chip {
-        display: inline-flex; align-items: center; gap: 6px;
+        position: fixed; z-index: 2147483646;
+        display: inline-flex; align-items: center; gap: 7px;
         padding: 7px 12px; border-radius: 999px; cursor: pointer;
-        background: transparent; color: #A8A6A0; font-size: 12px; font-weight: 500;
-        border: 1px solid rgba(245,244,241,.18); font-family: inherit;
-        transition: color .15s, border-color .15s, background .15s;
+        background: #F5F4F1; color: #0E0E10; font-size: 12.5px; font-weight: 600;
+        border: none; box-shadow: 0 3px 16px rgba(0,0,0,0.28);
+        opacity: 0; transform: translateY(4px) scale(.97); pointer-events: none;
+        transition: opacity .18s, transform .18s cubic-bezier(.16,1,.3,1);
+        max-width: min(78vw, 520px);
       }
-      .chip:hover { color: #F5F4F1; }
-      .chip.on { color: #8FB4F2; border-color: #8FB4F2; background: rgba(91,143,237,.12); }
-      .chip .tag { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: #8FB4F2; }
-      .upsell { margin-top: 14px; font-size: 12px; line-height: 1.5; color: #A8A6A0; }
-      .upsell a { color: #8FB4F2; text-decoration: none; }
-      .upsell a:hover { text-decoration: underline; text-underline-offset: 3px; }
-      .link {
-        background: none; border: none; color: #A8A6A0; font-size: 12px;
-        cursor: pointer; padding: 4px 0; text-decoration: underline;
-        text-underline-offset: 3px; font-family: inherit;
+      .chip.show { opacity: 1; transform: none; pointer-events: auto; }
+      .chip .mark { font-size: 13px; line-height: 1; }
+      .chip .kbd {
+        font-size: 10px; font-weight: 600; opacity: .55;
+        border: 1px solid rgba(14,14,16,.28); border-radius: 5px;
+        padding: 1px 5px; margin-left: 2px;
       }
-      .link:hover { color: #F5F4F1; }
-      a { color: #F5F4F1; }
+      .chip .why {
+        font-size: 11px; font-weight: 600; color: #3763b6;
+        margin-left: 4px; padding-left: 8px; border-left: 1px solid rgba(14,14,16,.2);
+        cursor: pointer;
+      }
+      .chip .why:hover { text-decoration: underline; }
+      .chip.state-working { background: #E9E7E2; cursor: default; }
+      .chip.state-done { background: #DFF0E4; }
+      .chip .dots span {
+        display:inline-block; width:4px;height:4px;border-radius:50%;
+        background:#0E0E10; margin:0 1.5px; animation: d 1.2s infinite; vertical-align: middle;
+      }
+      .chip .dots span:nth-child(2){animation-delay:.18s}
+      .chip .dots span:nth-child(3){animation-delay:.36s}
+      @keyframes d { 0%,100%{opacity:.25} 50%{opacity:1} }
+
+      /* Tiny toast for silent-ish states (already good, errors). */
+      .toast {
+        position: fixed; z-index: 2147483646;
+        font-size: 12px; font-weight: 600;
+        padding: 7px 12px; border-radius: 999px;
+        background: #0E0E10; color: #F5F4F1;
+        border: 1px solid rgba(245,244,241,.16);
+        box-shadow: 0 3px 16px rgba(0,0,0,.3);
+        opacity: 0; transform: translateY(4px);
+        transition: opacity .2s, transform .2s;
+        pointer-events: none;
+      }
+      .toast.show { opacity: 1; transform: none; }
+      .toast.good { background: #DFF0E4; color: #14401f; border-color: transparent; }
     </style>
 
-    <button class="fab" id="fab">
-      <span class="mark">✦</span> Improve prompt
-    </button>
-
-    <div class="overlay" id="overlay">
-      <div class="panel" role="dialog" aria-label="Deepclario">
-        <div class="pad">
-          <div class="row">
-            <span class="eyebrow">Deepclario</span>
-            <button class="x" id="close" aria-label="Close">×</button>
-          </div>
-          <h2>Improve your prompt</h2>
-          <p class="sub">We score it, ask what is missing, and rewrite it - before you send it.</p>
-
-          <div id="stage"></div>
-        </div>
-        <div class="foot">
-          <a href="https://deepclario.com" target="_blank" rel="noopener">Powered by Deepclario →</a>
-        </div>
-      </div>
-    </div>
+    <button class="chip" id="chip" aria-label="Sharpen prompt with Deepclario"></button>
+    <div class="toast" id="toast"></div>
   `
 
   const $ = sel => root.querySelector(sel)
-  const overlay = $('#overlay')
-  const stage = $('#stage')
-  let history = []
-  let lastPrompt = ''
-  let authState = { token: null, tier: 'anon' }  // tier: 'anon' | 'free' | 'pro'
-  let prefs = { tone: 'professional', deep: false }
-  let anonCount = 0
+  const chip = $('#chip')
+  const toastEl = $('#toast')
 
-  const TONES = ['professional', 'friendly', 'persuasive', 'concise', 'creative']
-  // Anonymous tries before the connect gate - mirrors the website
-  // playground (2 tries, then sign in). Keeps the extension from being
-  // a way around the site's signup gate. The per-IP server throttle
-  // remains the hard backstop.
-  const ANON_FREE_TRIES = 2
+  /* ---------- Positioning: anchor UI to the prompt box ---------- */
 
-  /* ---------- Account / token / preference storage ---------- */
-
-  function loadAuth() {
-    return new Promise(resolve => {
-      try {
-        chrome.storage.local.get(['dc_token', 'dc_tier', 'dc_tone', 'dc_deep', 'dc_anon_count'], v => {
-          authState.token = v?.dc_token || null
-          authState.tier = v?.dc_tier || (authState.token ? 'free' : 'anon')
-          if (TONES.includes(v?.dc_tone)) prefs.tone = v.dc_tone
-          prefs.deep = v?.dc_deep === true
-          anonCount = Number.isFinite(v?.dc_anon_count) ? v.dc_anon_count : 0
-          resolve()
-        })
-      } catch { resolve() }
-    })
+  function anchorTo(el, node, place) {
+    const r = el.getBoundingClientRect()
+    if (place === 'above') {
+      node.style.left = r.left + 'px'
+      node.style.top = Math.max(8, r.top - 42) + 'px'
+      node.style.bottom = 'auto'
+    } else {
+      // below-right of the input's top-right, tucked just inside
+      node.style.left = 'auto'
+      node.style.right = Math.max(8, window.innerWidth - r.right + 6) + 'px'
+      node.style.top = Math.max(8, r.top - 40) + 'px'
+      node.style.bottom = 'auto'
+    }
   }
 
-  function savePrefs() {
-    try { chrome.storage.local.set({ dc_tone: prefs.tone, dc_deep: prefs.deep }) } catch {}
+  function positionChip() {
+    const el = findPromptEl()
+    if (!el) { chip.classList.remove('show'); return false }
+    anchorTo(el, chip, 'right')
+    return true
   }
 
-  function saveAuth(token, tier) {
-    authState.token = token
-    authState.tier = tier
-    try { chrome.storage.local.set({ dc_token: token, dc_tier: tier }) } catch {}
+  /* ---------- Chip states ---------- */
+
+  const IDLE_HTML =
+    `<span class="mark">✦</span>Sharpen<span class="kbd">Alt+I</span>`
+
+  function showIdleChip() {
+    if (state.phase === 'working') return
+    if (!positionChip()) return
+    chip.className = 'chip show'
+    chip.innerHTML = IDLE_HTML
+    chip.onclick = onSharpen
   }
 
-  function clearAuth() {
-    authState.token = null
-    authState.tier = 'anon'
-    try { chrome.storage.local.remove(['dc_token', 'dc_tier']) } catch {}
+  function hideChip() { chip.classList.remove('show') }
+
+  function showWorkingChip() {
+    positionChip()
+    chip.className = 'chip show state-working'
+    chip.innerHTML = `<span class="dots"><span></span><span></span><span></span></span>Sharpening`
+    chip.onclick = null
   }
 
-  function scoreClass(n) { return n < 30 ? 'lo' : n < 60 ? 'mid' : 'hi' }
-  function esc(s) {
-    const d = document.createElement('div'); d.innerText = s || ''; return d.innerHTML
+  function showDoneChip() {
+    positionChip()
+    chip.className = 'chip show state-done'
+    chip.innerHTML =
+      `<span class="mark">✓</span>Sharpened<span class="kbd">Esc to undo</span><span class="why" id="why">why?</span>`
+    const why = $('#why')
+    if (why) why.onclick = openDetails
+    chip.onclick = null
+    clearTimeout(state.doneTimer)
+    state.doneTimer = setTimeout(showIdleChip, 4200)
   }
 
-  async function openPanel() {
+  function toast(text, good) {
+    toastEl.textContent = text
+    toastEl.className = 'toast' + (good ? ' good' : '')
+    const el = findPromptEl()
+    if (el) anchorTo(el, toastEl, 'right')
+    requestAnimationFrame(() => toastEl.classList.add('show'))
+    clearTimeout(state.toastTimer)
+    state.toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1800)
+  }
+
+  /* ---------- The core action: fast-path streaming sharpen ---------- */
+
+  const state = {
+    phase: 'idle', // idle | working | done
+    before: '',
+    port: null,
+    doneTimer: 0,
+    toastTimer: 0,
+  }
+
+  async function onSharpen() {
+    if (state.phase === 'working') return
     await loadAuth()
-    lastPrompt = readPrompt()
-    history = []
-    renderInput(lastPrompt)
-    overlay.classList.add('open')
-  }
-  function closePanel() { overlay.classList.remove('open') }
 
-  function renderAnonGate() {
-    stage.innerHTML = `
-      <div class="rule"></div>
-      <h2 style="margin-top:0">That was your free taste.</h2>
-      <p class="sub">
-        You have used your ${ANON_FREE_TRIES} free tries. Create a free Deepclario
-        account for ${5} rewrites every 48 hours, or go Pro for unlimited.
-      </p>
-      <div class="actions">
-        <button class="btn" id="gate-connect">Connect account</button>
-        <a class="btn ghost" href="https://deepclario.com/login" target="_blank" rel="noopener" style="text-decoration:none">Create free account</a>
-      </div>
-    `
-    $('#gate-connect').addEventListener('click', renderConnect)
-  }
-
-  function renderInput(text) {
-    // Anonymous users get the same deal as the website playground:
-    // a couple of free tries, then the gate.
     if (authState.tier === 'anon' && anonCount >= ANON_FREE_TRIES) {
-      renderAnonGate()
+      toast('Free tries used - open Deepclario to connect')
       return
     }
-    const badge = authState.tier === 'pro'
-      ? `<span class="badge pro">Pro</span>`
-      : authState.tier === 'free'
-      ? `<span class="badge">Account connected</span>`
-      : ''
-    const accountAction = authState.token
-      ? `<button class="link" id="disconnect">Disconnect</button>`
-      : `<button class="link" id="connect">Connect account</button>`
 
-    const isPro = authState.tier === 'pro'
-    const deepOn = isPro && prefs.deep
-    // Pro: a real toggle. Free/anon: locked chip that opens the pricing
-    // page - the upgrade is felt at the point of use, not on a website.
-    const deepChip = isPro
-      ? `<button class="chip ${deepOn ? 'on' : ''}" id="deep" aria-pressed="${deepOn}"
-           title="Draft, critique, refine on our strongest model">Deep Rewrite · ${deepOn ? 'On' : 'Off'}</button>`
-      : `<button class="chip" id="deep"
-           title="Pro: your prompt gets drafted, critiqued, and refined on our strongest model">
-           <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><rect x="2.5" y="5" width="7" height="5" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V3.5a2 2 0 0 1 4 0V5" stroke="currentColor" stroke-width="1.2"/></svg>
-           Deep Rewrite <span class="tag">Pro</span></button>`
+    const prompt = readPrompt()
+    if (!prompt || prompt.length < 3) { toast('Type a prompt first'); return }
 
-    stage.innerHTML = `
-      <div class="account-row">${badge}${accountAction}</div>
-      <div class="label">Your prompt</div>
-      <textarea id="ta">${esc(text)}</textarea>
-      <div class="controls">
-        <select class="select" id="tone" aria-label="Tone">
-          ${TONES.map(t => `<option value="${t}" ${t === prefs.tone ? 'selected' : ''}>Tone: ${t[0].toUpperCase() + t.slice(1)}</option>`).join('')}
-        </select>
-        ${deepChip}
-      </div>
-      <div class="actions">
-        <button class="btn" id="go">Improve</button>
-      </div>
-    `
-    const submit = () => {
-      const v = $('#ta').value.trim()
-      if (!v) return
-      lastPrompt = v
-      analyze(v, [])
+    state.before = prompt
+    state.phase = 'working'
+    showWorkingChip()
+
+    // Stream the sharpened prompt straight into the box.
+    const port = chrome.runtime.connect({ name: 'DEEPCLARIO_SHARPEN' })
+    state.port = port
+    let acc = ''
+    let firstDelta = true
+
+    port.onMessage.addListener(msg => {
+      if (msg.type === 'DELTA') {
+        if (firstDelta) { acc = ''; firstDelta = false }
+        acc += msg.text
+        writePrompt(acc)
+      } else if (msg.type === 'DONE') {
+        finishSharpen(acc)
+        port.disconnect()
+      } else if (msg.type === 'ERROR') {
+        onSharpenError(msg)
+        port.disconnect()
+      }
+    })
+
+    if (authState.tier === 'anon') bumpAnon()
+    port.postMessage({ type: 'START', prompt, tone: prefs.tone, token: authState.token })
+  }
+
+  function finishSharpen(result) {
+    state.phase = 'done'
+    if (result && result.trim()) {
+      writePrompt(result.trim())
+      showDoneChip()
+    } else {
+      // Empty stream: leave the user's prompt untouched.
+      writePrompt(state.before)
+      state.phase = 'idle'
+      toast('Could not sharpen that - try again')
+      showIdleChip()
     }
-    $('#go').addEventListener('click', submit)
-    $('#ta').addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault()
-        submit()
+  }
+
+  function onSharpenError(msg) {
+    // Restore what the user had; never leave the box half-written.
+    writePrompt(state.before)
+    state.phase = 'idle'
+    const t =
+      msg.error === 'quota' ? 'Out of free rewrites - go Pro for unlimited'
+      : msg.error === 'rate_limited' ? 'Slow down a moment, then try again'
+      : msg.error === 'network' ? 'Network hiccup - try again'
+      : 'Something went wrong - try again'
+    toast(t)
+    showIdleChip()
+  }
+
+  function undoSharpen() {
+    if (state.phase !== 'done') return
+    writePrompt(state.before)
+    state.phase = 'idle'
+    toast('Reverted')
+    showIdleChip()
+  }
+
+  /* ---------- Details panel (the old deep flow, on demand only) ---------- */
+  // The fast path deliberately never forks - that's what keeps it fast.
+  // Interpretation forks live in the details panel, where the full
+  // analyze pipeline runs and renders them as one-click choices.
+
+  let panelLoaded = false
+  function openDetails() {
+    // Lazily inject the full panel module the first time it's needed, so
+    // the default inline path stays lightweight. The panel reuses the same
+    // analyze pipeline (forks, diagnosis, Deep Rewrite).
+    if (!panelLoaded) { buildPanel(); panelLoaded = true }
+    openPanel(state.before || readPrompt())
+  }
+
+  /* ---------- Triggers ---------- */
+
+  // Global hotkey. Alt+I is unclaimed on all three sites.
+  window.addEventListener(
+    'keydown',
+    e => {
+      const el = findPromptEl()
+      const inBox = el && (document.activeElement === el || el.contains(document.activeElement))
+      if (e.altKey && (e.key === 'i' || e.key === 'I')) {
+        if (readPrompt()) { e.preventDefault(); onSharpen() }
+      } else if (e.key === 'Escape' && state.phase === 'done') {
+        e.preventDefault(); undoSharpen()
+      } else if (inBox && state.phase === 'done' && (e.key === 'Enter' || e.key === 'Tab')) {
+        // Accept: just let the done state settle back to idle. The
+        // sharpened text is already in the box, so Enter sends it.
+        state.phase = 'idle'
+        showIdleChip()
       }
-    })
-    $('#tone').addEventListener('change', e => {
-      prefs.tone = e.target.value
-      savePrefs()
-    })
-    $('#deep').addEventListener('click', () => {
-      if (isPro) {
-        prefs.deep = !prefs.deep
-        savePrefs()
-        renderInput($('#ta').value)
-      } else {
-        window.open('https://deepclario.com/pricing', '_blank', 'noopener')
-      }
-    })
-    const connectBtn = $('#connect')
-    if (connectBtn) connectBtn.addEventListener('click', renderConnect)
-    const disconnectBtn = $('#disconnect')
-    if (disconnectBtn) disconnectBtn.addEventListener('click', () => {
-      clearAuth()
-      renderInput(lastPrompt)
-    })
+    },
+    true
+  )
+
+  // Show/hide the idle chip as the user focuses the prompt box and types.
+  function syncChip() {
+    if (state.phase === 'working' || state.phase === 'done') return
+    const el = findPromptEl()
+    if (el && readPrompt()) showIdleChip()
+    else hideChip()
   }
 
-  function renderConnect() {
-    stage.innerHTML = `
-      <div class="rule"></div>
-      <h2 style="margin-top:0">Connect your account</h2>
-      <p class="sub">
-        Open <a id="open-connect" href="https://deepclario.com/extension/connect" target="_blank" rel="noopener">deepclario.com/extension/connect</a>,
-        copy the code shown there, and paste it below.
-      </p>
-      <div class="label">Connection code</div>
-      <textarea id="code" placeholder="dc_..." style="min-height:80px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px"></textarea>
-      <div class="actions">
-        <button class="btn" id="save">Connect</button>
-        <button class="btn ghost" id="back">Back</button>
-      </div>
-      <p id="connect-err" class="err" style="display:none; margin-top:10px"></p>
-    `
-    $('#back').addEventListener('click', () => renderInput(lastPrompt))
-    $('#save').addEventListener('click', () => {
-      const v = $('#code').value.trim()
-      const err = $('#connect-err')
-      if (!v.startsWith('dc_')) {
-        err.style.display = 'block'
-        err.textContent = 'That does not look like a Deepclario code. It starts with "dc_".'
-        return
-      }
-      // We don't validate against the server here - the next analyze call
-      // will either succeed (token good) or silently fall back to anon
-      // (token bad). Keeping the connect path offline keeps it instant.
-      saveAuth(v, 'free')
-      renderInput(lastPrompt)
-    })
-  }
+  document.addEventListener('focusin', syncChip, true)
+  document.addEventListener('input', () => { if (state.phase === 'idle') syncChip() }, true)
+  window.addEventListener('scroll', () => {
+    if (chip.classList.contains('show')) positionChip()
+  }, true)
+  window.addEventListener('resize', syncChip)
 
-  function renderLoading(deep) {
-    stage.innerHTML = `<div class="rule"></div>
-      <div class="dots" style="margin:18px 0"><span></span><span></span><span></span></div>
-      <p class="sub">${deep
-        ? 'Deep Rewrite: drafting, critiquing, refining. A little slower - the extra passes are the point.'
-        : "Reading what you wrote. Checking what's clear and what isn't."}</p>`
-  }
+  // Re-evaluate periodically: these SPAs swap the input element on
+  // navigation, so a one-time bind isn't enough.
+  setInterval(syncChip, 1500)
 
-  // Hitting the quota is not an error - it gets a calm gate screen with
-  // one clear action, in the same voice as the anon gate.
-  function renderQuotaGate(limit, windowHours) {
-    stage.innerHTML = `
-      <div class="rule"></div>
-      <h2 style="margin-top:0">You are out of free rewrites.</h2>
-      <p class="sub">
-        All ${limit} are used. They come back within ${windowHours} hours -
-        or go Pro for unlimited rewrites, with Deep Rewrite included.
-      </p>
-      <div class="actions">
-        <a class="btn" href="https://deepclario.com/pricing" target="_blank" rel="noopener" style="text-decoration:none">Upgrade to Pro</a>
-        <button class="btn ghost" id="retry">Back</button>
-      </div>
-    `
-    $('#retry').addEventListener('click', () => renderInput(lastPrompt))
+  /* ---------- Details panel builder (kept from the panel-first version) ---------- */
+  // Defined lazily; only the deep-details path uses it. Injected the first
+  // time the user clicks "why?". Kept intentionally separate from the fast
+  // path so the default experience carries none of its weight.
+  let panelApi = null
+  function buildPanel() {
+    if (typeof window.createDetailsPanel !== 'function') return
+    panelApi = window.createDetailsPanel({ root, readPrompt, writePrompt, authState, prefs, TONES })
   }
-
-  function renderError(resp) {
-    const kind = resp?.error || 'network'
-    if (kind === 'quota') {
-      renderQuotaGate(resp.limit ?? 5, resp.windowHours ?? 48)
-      return
-    }
-    const msg = kind === 'rate_limited'
-      ? 'Slow down a moment - free analyses are rate-limited by IP. Connect a Deepclario account for higher limits.'
-      : kind === 'pro_required'
-      ? 'Deep Rewrite is a Pro feature. Upgrade at <a href="https://deepclario.com/pricing" target="_blank" rel="noopener">deepclario.com/pricing</a>, or turn it off and improve normally.'
-      : kind === 'network'
-      ? 'Network hiccup. Check your connection and try again.'
-      : 'Something went sideways on our end. Try again.'
-    stage.innerHTML = `<div class="rule"></div><p class="err">${msg}</p>
-      <div class="actions"><button class="btn ghost" id="retry">Back</button></div>`
-    $('#retry').addEventListener('click', () => renderInput(lastPrompt))
+  function openPanel(prompt) {
+    if (panelApi) panelApi.open(prompt)
+    else window.open('https://deepclario.com/playground', '_blank', 'noopener')
   }
-
-  function renderClarify(d) {
-    const s = d.scoreBeforeImprovement ?? 0
-    stage.innerHTML = `
-      <div class="rule"></div>
-      <div class="score-row">
-        <span class="eyebrow">Clarity</span>
-        <span class="score ${scoreClass(s)}">${s}</span>
-        <span class="arrow">/ 100</span>
-      </div>
-      <div class="label">One question first</div>
-      <div class="result-box">${esc(d.question)}</div>
-      <div class="label">Your answer</div>
-      <textarea id="ans" style="min-height:80px"></textarea>
-      <div class="actions">
-        <button class="btn" id="send">Get the rewrite</button>
-        <button class="btn ghost" id="skip">Start over</button>
-      </div>
-    `
-    const submit = () => {
-      const a = $('#ans').value.trim()
-      if (!a) return
-      history.push({ question: d.question, answer: a, turn: history.length + 1 })
-      analyze(lastPrompt, history)
-    }
-    $('#send').addEventListener('click', submit)
-    $('#ans').addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault()
-        submit()
-      }
-    })
-    $('#skip').addEventListener('click', () => renderInput(lastPrompt))
-  }
-
-  function renderDone(d) {
-    const b = d.scoreBeforeImprovement ?? 0
-    const a = d.clarityScoreAfter ?? 0
-    // The moment Pro value is felt: label the result when it came from
-    // the three-pass mode. For everyone else, one quiet upsell line.
-    const resultLabel = d.deep ? 'Deep Rewrite · 3 passes' : 'Improved prompt'
-    const upsell = authState.tier === 'pro' ? '' : `
-      <p class="upsell">Deep Rewrite gets you a sharper version of this - drafted, critiqued, and refined on our strongest model.
-        <a href="https://deepclario.com/pricing" target="_blank" rel="noopener">Pro, $4.99/mo →</a></p>`
-    stage.innerHTML = `
-      <div class="rule"></div>
-      <div class="score-row">
-        <span class="eyebrow">Clarity</span>
-        <span class="score ${scoreClass(b)}">${b}</span>
-        <span class="arrow">→</span>
-        <span class="score ${scoreClass(a)}">${a}</span>
-      </div>
-      <div class="label">${resultLabel}</div>
-      <div class="result-box" id="rw">${esc(d.improvedPrompt)}</div>
-      ${d.explanation ? `<div class="label">Why it is better</div><p class="sub" style="margin:0">${esc(d.explanation)}</p>` : ''}
-      <div class="actions">
-        <button class="btn" id="replace">Replace in chat</button>
-        <button class="btn ghost" id="copy">Copy</button>
-        <button class="btn ghost" id="again">New prompt</button>
-      </div>
-      ${upsell}
-    `
-    $('#copy').addEventListener('click', e => {
-      navigator.clipboard.writeText(d.improvedPrompt)
-      e.target.textContent = 'Copied'
-      setTimeout(() => { e.target.textContent = 'Copy' }, 1600)
-    })
-    $('#replace').addEventListener('click', e => {
-      const ok = writePrompt(d.improvedPrompt)
-      e.target.textContent = ok ? 'Replaced' : 'Copy instead →'
-      if (ok) setTimeout(closePanel, 700)
-    })
-    $('#again').addEventListener('click', () => { history = []; renderInput('') })
-  }
-
-  function analyze(prompt, prior) {
-    const deep = authState.tier === 'pro' && prefs.deep
-    renderLoading(deep)
-    chrome.runtime.sendMessage(
-      { type: 'DEEPCLARIO_ANALYZE', prompt, priorAnswers: prior, token: authState.token, tone: prefs.tone, deep },
-      resp => {
-        if (!resp || !resp.ok) { renderError(resp); return }
-        const d = resp.data
-        // Sync tier from the server's authoritative response so the badge
-        // updates the moment a Pro user's token is recognized.
-        if (d.tier && d.tier !== 'anon' && authState.token) {
-          saveAuth(authState.token, d.tier)
-        }
-        // Count anonymous analyses (first turn only - clarification rounds
-        // belong to the same one) toward the connect gate. Trust the
-        // server's word on anonymity, not our local guess.
-        if (d.anon && prior.length === 0) {
-          anonCount += 1
-          try { chrome.storage.local.set({ dc_anon_count: anonCount }) } catch {}
-        }
-        if (d.type === 'clarifying' && prior.length < 3) renderClarify(d)
-        else if (d.type === 'improved') renderDone(d)
-        else renderError('server_error')
-      }
-    )
-  }
-
-  $('#fab').addEventListener('click', openPanel)
-  $('#close').addEventListener('click', closePanel)
-  overlay.addEventListener('click', e => { if (e.target === overlay) closePanel() })
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && overlay.classList.contains('open')) closePanel()
-  })
 })()

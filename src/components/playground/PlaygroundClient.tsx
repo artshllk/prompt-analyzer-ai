@@ -505,17 +505,6 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                     >
                       {session.clarifying.question}
                     </p>
-                    {session.clarifying.targetsGap && (
-                      <p
-                        className="mt-2 text-xs"
-                        style={{ color: "var(--color-paper-mute)" }}
-                      >
-                        Filling the gap:{" "}
-                        <span style={{ color: "var(--color-paper)" }}>
-                          {session.clarifying.targetsGap}
-                        </span>
-                      </p>
-                    )}
                     {/* Interpretation forks: the readings the engine could
                         take. One click answers the question - no typing. */}
                     {session.clarifying.options.length > 0 && (
@@ -552,12 +541,6 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                             </span>
                           </button>
                         ))}
-                        <p
-                          className="text-xs pt-1"
-                          style={{ color: "var(--color-paper-mute)" }}
-                        >
-                          None of these? Type your own answer below.
-                        </p>
                       </div>
                     )}
                     {showClarifyHint && (
@@ -581,35 +564,6 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                   >
-                    {/* What it asked and what you said - the proof the
-                        rewrite is grounded in your answers, not guessed. */}
-                    {session.priorAnswers.length > 0 && (
-                      <ul className="mb-5 space-y-4">
-                        {session.priorAnswers.map((qa) => (
-                          <li
-                            key={qa.turn}
-                            className="pl-4"
-                            style={{
-                              borderLeft: "1px solid var(--color-rule-strong)",
-                            }}
-                          >
-                            <p
-                              className="text-sm"
-                              style={{ color: "var(--color-paper-mute)" }}
-                            >
-                              {qa.question}
-                            </p>
-                            <p
-                              className="text-sm mt-1"
-                              style={{ color: "var(--color-paper)" }}
-                            >
-                              {qa.answer}
-                            </p>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
                     {/* Two rewrites: the expert restructure and a minimal
                         edit that keeps the user's own wording. */}
                     {session.improved.minimalEdit && (
@@ -666,6 +620,7 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                     ) : (
                       <StreamOut
                         text={displayedRewrite}
+                        cps={300}
                         onDone={() => setHasStreamed(true)}
                         className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
                         style={{
@@ -675,67 +630,24 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                       />
                     )}
 
-                    {/* Why the rewrite is better - the reasoning, not
-                        just the result. */}
-                    {(session.improved.explanation ||
-                      session.improved.improvementTags.length > 0) && (
-                      <div
-                        className="mt-5 pt-4"
-                        style={{ borderTop: "1px solid var(--color-rule)" }}
+                    {/* One short line of why - the rest lives behind the
+                        diagnosis disclosure below. */}
+                    {session.improved.explanation && (
+                      <p
+                        className="mt-4 pt-3.5 text-sm leading-[1.6]"
+                        style={{
+                          borderTop: "1px solid var(--color-rule)",
+                          color: "var(--color-paper-mute)",
+                        }}
                       >
-                        {session.improved.explanation && (
-                          <p
-                            className="text-sm leading-[1.6]"
-                            style={{ color: "var(--color-paper-mute)" }}
-                          >
-                            {session.improved.explanation}
-                          </p>
-                        )}
-                        {session.improved.improvementTags.length > 0 && (
-                          <p
-                            className="mt-2.5 text-xs"
-                            style={{ color: "var(--color-paper-mute)" }}
-                          >
-                            <span className="eyebrow mr-2">Added</span>
-                            {session.improved.improvementTags.map((t, i) => (
-                              <span key={t}>
-                                {i > 0 && ", "}
-                                <span
-                                  className="capitalize"
-                                  style={{ color: "var(--color-paper)" }}
-                                >
-                                  {t.replace(/_/g, " ")}
-                                </span>
-                              </span>
-                            ))}
-                          </p>
-                        )}
-                      </div>
+                        {session.improved.explanation}
+                      </p>
                     )}
 
-                    {/* Deep mode: what the critic caught in the first
-                        draft. The visible second pass IS the paid value. */}
-                    {session.improved.critique && (
-                      <div
-                        className="mt-5 pt-4"
-                        style={{ borderTop: "1px solid var(--color-rule)" }}
-                      >
-                        <p
-                          className="eyebrow mb-2"
-                          style={{ color: "var(--color-accent-bright)" }}
-                        >
-                          What the critic caught
-                        </p>
-                        <p
-                          className="text-sm leading-[1.6]"
-                          style={{ color: "var(--color-paper-mute)" }}
-                        >
-                          {session.improved.critique}
-                        </p>
-                      </div>
-                    )}
-
-                    <DiagnosisBlock audit={session.improved.audit} />
+                    <DiagnosisDisclosure
+                      audit={session.improved.audit}
+                      critique={session.improved.critique}
+                    />
                   </motion.div>
                 )}
 
@@ -783,11 +695,10 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                       </div>
                     )}
                     <p
-                      className="mt-5 text-xs leading-relaxed"
+                      className="mt-5 text-xs"
                       style={{ color: "var(--color-paper-mute)" }}
                     >
-                      This one didn&apos;t use a credit. We only charge for
-                      rewrites we actually do.
+                      No credit used. We only charge for real rewrites.
                     </p>
                   </motion.div>
                 )}
@@ -828,7 +739,11 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
                       ref={answerRef}
                       value={answer}
                       onChange={(e) => setAnswer(e.target.value)}
-                      placeholder="Type your answer…"
+                      placeholder={
+                        (session.clarifying?.options.length ?? 0) > 0
+                          ? "Or type your own answer…"
+                          : "Type your answer…"
+                      }
                       rows={1}
                       maxLength={1000}
                       className="flex-1 bg-transparent resize-none py-2 px-2 text-base outline-none"
@@ -1006,8 +921,8 @@ export function PlaygroundClient({ isSignedIn, usage, initialPrompt }: Playgroun
 
             {/* First-rewrite nudge: cross-sell the extension at the moment
                 of payoff. Takes the slot over the low-credits nudge on the
-                very first rewrite. */}
-            {(
+                very first rewrite - and only then, never on idle screens. */}
+            {session.stage === "done" && showExtensionNudge && (
               <motion.p
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1278,19 +1193,102 @@ const SEVERITY_COLOR: Record<string, string> = {
 };
 
 /**
- * The rubric audit: what the diagnostic found, anchored to the user's own
- * words, plus the failure forecast. This is the part a plain rewrite
- * never shows - the diagnosis is the product.
+ * The rubric audit + deep-mode critique, behind one collapsed disclosure.
+ * The diagnosis is the product's depth, but the user's first job is
+ * copying the rewrite - so the detail is one tap away, not in the way.
  */
-function DiagnosisBlock({ audit }: { audit: RubricAudit | null }) {
+function DiagnosisDisclosure({
+  audit,
+  critique,
+}: {
+  audit: RubricAudit | null;
+  critique: string | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const gapCount = audit?.findings.length ?? 0;
+  const hasBody =
+    critique ||
+    (audit && (audit.findings.length > 0 || audit.failureForecast.length > 0));
+  if (!hasBody) return null;
+
+  return (
+    <div
+      className="mt-4 pt-3.5"
+      style={{ borderTop: "1px solid var(--color-rule)" }}
+    >
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="inline-flex items-center gap-2 text-xs transition-opacity hover:opacity-80"
+        style={{ color: "var(--color-paper-mute)" }}
+      >
+        <svg
+          width="9"
+          height="9"
+          viewBox="0 0 10 10"
+          fill="none"
+          aria-hidden
+          style={{
+            transform: open ? "rotate(90deg)" : "none",
+            transition: "transform 0.15s",
+          }}
+        >
+          <path
+            d="M3 1.5L7 5L3 8.5"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span>
+          {open ? "Hide the diagnosis" : "See the diagnosis"}
+          {!open && gapCount > 0 && (
+            <span style={{ color: "var(--color-paper)" }}>
+              {" "}
+              · {gapCount} gap{gapCount === 1 ? "" : "s"} found
+            </span>
+          )}
+          {!open && critique && (
+            <span style={{ color: "var(--color-accent-bright)" }}>
+              {" "}
+              · critic notes
+            </span>
+          )}
+        </span>
+      </button>
+
+      {open && (
+        <div className="mt-3">
+          {critique && (
+            <div className="mb-4">
+              <p
+                className="eyebrow mb-2"
+                style={{ color: "var(--color-accent-bright)" }}
+              >
+                What the critic caught
+              </p>
+              <p
+                className="text-sm leading-[1.6]"
+                style={{ color: "var(--color-paper-mute)" }}
+              >
+                {critique}
+              </p>
+            </div>
+          )}
+          <DiagnosisBody audit={audit} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DiagnosisBody({ audit }: { audit: RubricAudit | null }) {
   if (!audit || (audit.findings.length === 0 && audit.failureForecast.length === 0)) {
     return null;
   }
   return (
-    <div
-      className="mt-5 pt-4"
-      style={{ borderTop: "1px solid var(--color-rule)" }}
-    >
+    <div>
       {audit.findings.length > 0 && (
         <>
           <p className="eyebrow mb-2.5">
