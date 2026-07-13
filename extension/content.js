@@ -772,22 +772,14 @@
     if (existing) existing.remove()
   }
 
-  /* ---------- Details panel (the old deep flow, on demand only) ---------- */
-  // The fast path deliberately never forks - that's what keeps it fast.
-  // Interpretation forks live in the details panel, where the full
-  // analyze pipeline runs and renders them as one-click choices.
+  /* ---------- The "why?" panel: explanation only ---------- */
+  // It explains the sharpen that already happened - what was weak, what
+  // changed, what we could NOT fix. It never rewrites and never asks a
+  // question: the question is asked inline, before the rewrite.
 
-  let panelLoaded = false
   function openDetails() {
-    // Lazily inject the full panel the first time it's needed, so the
-    // default inline path stays lightweight.
-    if (!panelLoaded) { buildPanel(); panelLoaded = true }
-
-    // CRITICAL: always diagnose the user's ORIGINAL prompt, never our own
-    // output. Analyzing the sharpened text produced nonsense like
-    // "clarity 88 -> 88" plus a second, competing rewrite - it answered a
-    // question nobody asked. We pass the original, and tell the panel what
-    // we already wrote so it can show the real before/after.
+    // Always pass the ORIGINAL prompt and what we wrote. Explaining our own
+    // output would be nonsense ("clarity 88 -> 88").
     const original = state.before || readPrompt()
     openPanel(original, boxHoldsOurOutput() ? state.after : null)
   }
@@ -882,42 +874,32 @@
   window.addEventListener('resize', () => { syncChip(); positionForks() })
   setInterval(syncChip, 1200)
 
-  /* ---------- Details panel builder (kept from the panel-first version) ---------- */
-  // Defined lazily; only the deep-details path uses it. Injected the first
-  // time the user clicks "why?". Kept intentionally separate from the fast
-  // path so the default experience carries none of its weight.
+  /* ---------- Panel wiring ---------- */
+  // Built ONCE, eagerly, at startup. It used to be built lazily on the
+  // first "why?" click - but buildPanel() bailed silently if panel.js
+  // hadn't defined createDetailsPanel yet, leaving panelApi null. That is
+  // why "why?" needed two or three clicks before the panel appeared.
   let panelApi = null
   function buildPanel() {
-    if (typeof window.createDetailsPanel !== 'function') return
+    if (panelApi) return true
+    if (typeof window.createDetailsPanel !== 'function') return false
     panelApi = window.createDetailsPanel({
       root,
-      readPrompt,
-      writePrompt,
       authState,
-      prefs,
-      TONES,
       LINKS,
       onConnect: openConnect,
       onDisconnect: disconnect,
-      // The panel wrote a deeper rewrite into the box. Track it as our
-      // output so the sticky chip, undo, and re-sharpen guard all hold.
-      onReplace: text => {
-        const clean = (text || '').trim()
-        if (!clean) return
-        writePrompt(clean)
-        state.after = clean
-        state.phase = 'done'
-        showDoneChip()
-      },
-      // They restored their original from the panel.
-      onRestore: () => {
-        writePrompt(state.before)
-        resetToIdle()
-      },
     })
+    return true
   }
-  function openPanel(prompt, alreadyHave) {
-    if (panelApi) panelApi.open(prompt, alreadyHave)
+
+  // panel.js is listed before content.js in the manifest, so this normally
+  // succeeds immediately. The retry is a belt-and-braces guard against load
+  // ordering surprises - the panel must never need a second click.
+  if (!buildPanel()) setTimeout(buildPanel, 300)
+
+  function openPanel(original, sharpened) {
+    if (buildPanel()) panelApi.open(original, sharpened)
     else window.open(LINKS.playground, '_blank', 'noopener')
   }
 })()
