@@ -10,7 +10,7 @@
 // content.js. It builds its own panel inside the existing shadow root.
 
 window.createDetailsPanel = function createDetailsPanel(ctx) {
-  const { root, writePrompt, authState, prefs, TONES } = ctx
+  const { root, writePrompt, authState, prefs, LINKS, onConnect, onDisconnect } = ctx
 
   const wrap = document.createElement('div')
   wrap.innerHTML = `
@@ -52,6 +52,14 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
       .dc-forecast li{font-size:12.5px;color:#A8A6A0;line-height:1.5;padding-left:16px;position:relative;margin-bottom:5px}
       .dc-forecast li:before{content:'→';position:absolute;left:0;color:#8FB4F2}
       .dc-err{color:#C25E5E;font-size:13.5px;line-height:1.5}
+      .dc-acct{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 4px}
+      .dc-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.04em;color:#A8A6A0;border:1px solid rgba(245,244,241,.18)}
+      .dc-badge.pro{background:#F5F4F1;color:#0E0E10;border-color:transparent}
+      .dc-link{background:none;border:none;color:#A8A6A0;font-size:11.5px;cursor:pointer;padding:2px 0;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
+      .dc-link:hover{color:#F5F4F1}
+      .dc-foot{margin-top:auto;padding:14px 22px;border-top:1px solid rgba(245,244,241,.1);display:flex;gap:14px;flex-wrap:wrap}
+      .dc-foot a{color:#A8A6A0;font-size:11.5px;text-decoration:none}
+      .dc-foot a:hover{color:#F5F4F1;text-decoration:underline;text-underline-offset:3px}
     </style>
     <div class="dc-overlay" id="dc-overlay">
       <div class="dc-panel" role="dialog" aria-label="Deepclario details">
@@ -60,7 +68,13 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
             <span class="dc-eyebrow">Deepclario</span>
             <button class="dc-x" id="dc-close" aria-label="Close">×</button>
           </div>
+          <div class="dc-acct" id="dc-acct"></div>
           <div id="dc-stage"></div>
+        </div>
+        <div class="dc-foot">
+          <a href="${LINKS.playground}" target="_blank" rel="noopener">Open Deepclario →</a>
+          <a href="${LINKS.pricing}" target="_blank" rel="noopener">Pro</a>
+          <a href="${LINKS.privacy}" target="_blank" rel="noopener">Privacy</a>
         </div>
       </div>
     </div>
@@ -79,6 +93,27 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
   function close() { overlay.classList.remove('open') }
   overlay.addEventListener('click', e => { if (e.target === overlay) close() })
   q('#dc-close').addEventListener('click', close)
+
+  // Account row: always shows where the user stands and gives them the
+  // one action that matters, without sending them off to find the site.
+  function renderAccount() {
+    const acct = q('#dc-acct')
+    const tier = authState.tier
+    const badge =
+      tier === 'pro' ? '<span class="dc-badge pro">Pro</span>'
+      : tier === 'free' ? '<span class="dc-badge">Account connected</span>'
+      : '<span class="dc-badge">Not connected</span>'
+    const action =
+      tier === 'anon'
+        ? '<button class="dc-link" id="dc-connect">Connect account</button>'
+        : '<button class="dc-link" id="dc-disconnect">Disconnect</button>'
+    acct.innerHTML = badge + action
+
+    const c = q('#dc-connect')
+    if (c) c.addEventListener('click', () => { close(); onConnect() })
+    const d = q('#dc-disconnect')
+    if (d) d.addEventListener('click', () => { onDisconnect(); renderAccount() })
+  }
 
   function analyze(prompt, prior) {
     renderLoading()
@@ -102,16 +137,30 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
       <p class="dc-sub">Reading your prompt: what's clear, what's missing, and how it could be misread.</p>`
   }
 
+  // Errors are not dead ends: each one offers the action that resolves it.
   function renderError(resp) {
     const kind = resp?.error || 'network'
-    const msg = kind === 'quota'
-      ? 'You are out of free rewrites. <a href="https://deepclario.com/pricing" target="_blank" rel="noopener" style="color:#8FB4F2">Go Pro</a> for unlimited.'
-      : kind === 'rate_limited'
-      ? 'Slow down a moment, then try again.'
-      : kind === 'pro_required'
-      ? 'Deep Rewrite is a Pro feature.'
-      : 'Something went sideways. Try again.'
-    stage.innerHTML = `<div class="dc-rule"></div><p class="dc-err">${msg}</p>`
+    let msg = 'Something went sideways on our end. Try again.'
+    let action = ''
+
+    if (kind === 'quota') {
+      msg = 'You are out of free rewrites. They reset within 48 hours, or go Pro for unlimited.'
+      action = `<a class="dc-btn" href="${LINKS.pricing}" target="_blank" rel="noopener" style="text-decoration:none">Go Pro</a>`
+    } else if (kind === 'pro_required') {
+      msg = 'Deep Rewrite is a Pro feature: your prompt is drafted, critiqued, and refined on our strongest model.'
+      action = `<a class="dc-btn" href="${LINKS.pricing}" target="_blank" rel="noopener" style="text-decoration:none">See Pro</a>`
+    } else if (kind === 'rate_limited') {
+      msg = 'Too many requests from your network. Connecting an account raises the limit.'
+      action = `<button class="dc-btn" id="dc-err-connect">Connect account</button>`
+    } else if (kind === 'network') {
+      msg = 'Network hiccup. Check your connection and try again.'
+    }
+
+    stage.innerHTML = `<div class="dc-rule"></div><p class="dc-err">${msg}</p>${
+      action ? `<div class="dc-actions">${action}</div>` : ''
+    }`
+    const c = q('#dc-err-connect')
+    if (c) c.addEventListener('click', () => { close(); onConnect() })
   }
 
   function renderClarify(d) {
@@ -176,6 +225,11 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
         <button class="dc-btn" id="dc-replace">Use this in chat</button>
         <button class="dc-btn ghost" id="dc-copy">Copy</button>
       </div>
+      ${authState.tier !== 'pro' && !d.critique ? `
+        <p class="dc-sub" style="margin:14px 0 0;font-size:11.5px">
+          Deep Rewrite drafts, critiques, and refines this on our strongest model.
+          <a href="${LINKS.pricing}" target="_blank" rel="noopener" style="color:#8FB4F2;text-decoration:none">Get Pro →</a>
+        </p>` : ''}
     `
     q('#dc-copy').addEventListener('click', e => {
       navigator.clipboard.writeText(d.improvedPrompt)
@@ -192,6 +246,7 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
     open(prompt) {
       currentPrompt = prompt
       history = []
+      renderAccount()
       overlay.classList.add('open')
       analyze(prompt, [])
     },

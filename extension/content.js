@@ -71,6 +71,17 @@
 
   /* ---------- Auth / prefs storage (unchanged contract) ---------- */
 
+  // Every outbound link in one place. Users should never have to go find
+  // deepclario.com themselves - we take them exactly where they need to be.
+  const SITE = 'https://deepclario.com'
+  const LINKS = {
+    connect: SITE + '/extension/connect',
+    pricing: SITE + '/pricing',
+    signup: SITE + '/login',
+    playground: SITE + '/playground',
+    privacy: SITE + '/privacy',
+  }
+
   const TONES = ['professional', 'friendly', 'persuasive', 'concise', 'creative']
   let authState = { token: null, tier: 'anon' }
   let prefs = { tone: 'professional', deep: false }
@@ -159,20 +170,73 @@
       .chip .dots span:nth-child(3){animation-delay:.36s}
       @keyframes d { 0%,100%{opacity:.25} 50%{opacity:1} }
 
-      /* Tiny toast for silent-ish states (already good, errors). */
+      /* Toast. Carries an optional action button - a dead-end message
+         ("out of rewrites") is a UX failure; every wall needs a door. */
       .toast {
         position: fixed; z-index: 2147483646;
+        display: inline-flex; align-items: center; gap: 8px;
         font-size: 12px; font-weight: 600;
-        padding: 7px 12px; border-radius: 999px;
+        padding: 7px 8px 7px 12px; border-radius: 999px;
         background: #0E0E10; color: #F5F4F1;
         border: 1px solid rgba(245,244,241,.16);
         box-shadow: 0 3px 16px rgba(0,0,0,.3);
         opacity: 0; transform: translateY(4px);
         transition: opacity .2s, transform .2s;
         pointer-events: none;
+        max-width: min(80vw, 460px);
       }
       .toast.show { opacity: 1; transform: none; }
+      .toast.actionable { pointer-events: auto; }
       .toast.good { background: #DFF0E4; color: #14401f; border-color: transparent; }
+      .toast .msg { padding-right: 2px; }
+      .toast .act {
+        flex-shrink: 0; cursor: pointer; font-family: inherit;
+        font-size: 11.5px; font-weight: 700;
+        padding: 4px 11px; border-radius: 999px; border: none;
+        background: #F5F4F1; color: #0E0E10;
+        transition: opacity .15s;
+      }
+      .toast .act:hover { opacity: .88; }
+
+      /* Connect box - the paste target, anchored right by the input so
+         the user never has to hunt for where the code goes. */
+      .connect {
+        position: fixed; z-index: 2147483647;
+        width: min(86vw, 380px);
+        background: #0E0E10; color: #F5F4F1;
+        border: 1px solid rgba(245,244,241,.18);
+        border-radius: 12px; padding: 14px 14px 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,.45);
+        opacity: 0; transform: translateY(4px);
+        transition: opacity .18s, transform .18s;
+      }
+      .connect.show { opacity: 1; transform: none; }
+      .connect .ctitle { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+      .connect .chelp { font-size: 11.5px; color: #A8A6A0; line-height: 1.5; margin-bottom: 10px; }
+      .connect .chelp b { color: #F5F4F1; }
+      .connect .crow { display: flex; gap: 7px; }
+      .connect .cinput {
+        flex: 1; min-width: 0;
+        background: #1A1A20; color: #F5F4F1;
+        border: 1px solid rgba(245,244,241,.18); border-radius: 8px;
+        padding: 8px 10px; font-size: 12.5px; outline: none;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .connect .cinput:focus { border-color: #8FB4F2; }
+      .connect .cbtn {
+        flex-shrink: 0; cursor: pointer; font-family: inherit;
+        background: #F5F4F1; color: #0E0E10;
+        border: none; border-radius: 8px;
+        padding: 8px 14px; font-size: 12.5px; font-weight: 700;
+      }
+      .connect .cbtn:hover { opacity: .9; }
+      .connect .cerr { color: #E08A8A; font-size: 11.5px; line-height: 1.45; margin-top: 7px; }
+      .connect .cclose {
+        position: absolute; top: 8px; right: 10px;
+        background: none; border: none; color: #A8A6A0;
+        font-size: 17px; line-height: 1; cursor: pointer; padding: 2px;
+      }
+      .connect .cclose:hover { color: #F5F4F1; }
     </style>
 
     <button class="chip" id="chip" aria-label="Sharpen prompt with Deepclario"></button>
@@ -241,14 +305,46 @@
     state.doneTimer = setTimeout(showIdleChip, 4200)
   }
 
-  function toast(text, good) {
-    toastEl.textContent = text
-    toastEl.className = 'toast' + (good ? ' good' : '')
+  /**
+   * Toast with an optional action button. `action` = { label, url } or
+   * { label, onClick }. Never show a wall without a door: if the user is
+   * blocked (no account, out of rewrites), the way out is one click here,
+   * not "go find deepclario.com yourself".
+   */
+  function toast(text, opts) {
+    const o = opts || {}
+    const action = o.action
+    toastEl.innerHTML = ''
+
+    const msg = document.createElement('span')
+    msg.className = 'msg'
+    msg.textContent = text
+    toastEl.appendChild(msg)
+
+    if (action) {
+      const btn = document.createElement('button')
+      btn.className = 'act'
+      btn.textContent = action.label
+      btn.addEventListener('click', () => {
+        toastEl.classList.remove('show')
+        if (action.onClick) action.onClick()
+        else if (action.url) window.open(action.url, '_blank', 'noopener')
+      })
+      toastEl.appendChild(btn)
+    }
+
+    toastEl.className =
+      'toast' + (o.good ? ' good' : '') + (action ? ' actionable' : '')
     const el = findPromptEl()
     if (el) anchorTo(el, toastEl, 'right')
     requestAnimationFrame(() => toastEl.classList.add('show'))
+
     clearTimeout(state.toastTimer)
-    state.toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1800)
+    // Actionable toasts linger - the user needs time to reach the button.
+    state.toastTimer = setTimeout(
+      () => toastEl.classList.remove('show'),
+      action ? 7000 : 1800
+    )
   }
 
   /* ---------- The core action: fast-path streaming sharpen ---------- */
@@ -266,7 +362,9 @@
     await loadAuth()
 
     if (authState.tier === 'anon' && anonCount >= ANON_FREE_TRIES) {
-      toast('Free tries used - open Deepclario to connect')
+      toast('Free tries used. Connect a free account for 5 rewrites every 48h.', {
+        action: { label: 'Connect', onClick: openConnect },
+      })
       return
     }
 
@@ -319,13 +417,26 @@
     // Restore what the user had; never leave the box half-written.
     writePrompt(state.before)
     state.phase = 'idle'
-    const t =
-      msg.error === 'quota' ? 'Out of free rewrites - go Pro for unlimited'
-      : msg.error === 'rate_limited' ? 'Slow down a moment, then try again'
-      : msg.error === 'network' ? 'Network hiccup - try again'
-      : 'Something went wrong - try again'
-    toast(t)
     showIdleChip()
+
+    // Every blocking error gets a one-click way out.
+    if (msg.error === 'quota') {
+      toast('You are out of free rewrites. They reset within 48 hours.', {
+        action: { label: 'Go Pro', url: LINKS.pricing },
+      })
+    } else if (msg.error === 'pro_required') {
+      toast('Deep Rewrite is a Pro feature.', {
+        action: { label: 'See Pro', url: LINKS.pricing },
+      })
+    } else if (msg.error === 'rate_limited') {
+      toast('Too many requests. Wait a moment, then try again.', {
+        action: { label: 'Connect account', onClick: openConnect },
+      })
+    } else if (msg.error === 'network') {
+      toast('Network hiccup. Check your connection and try again.')
+    } else {
+      toast('Something went wrong on our end. Try again.')
+    }
   }
 
   function undoSharpen() {
@@ -334,6 +445,82 @@
     state.phase = 'idle'
     toast('Reverted')
     showIdleChip()
+  }
+
+  /* ---------- Connect an account ---------- */
+  // The token is a copy-paste code from deepclario.com/extension/connect.
+  // We open that page for the user AND show the paste box right here, so
+  // they never have to hunt for where the code goes. Paste is one step.
+
+  function openConnect() {
+    window.open(LINKS.connect, '_blank', 'noopener')
+    showConnectBox()
+  }
+
+  function saveToken(raw) {
+    const token = (raw || '').trim()
+    if (!token.startsWith('dc_')) return false
+    authState.token = token
+    // Tier is confirmed by the server on the next call; assume free until then.
+    authState.tier = 'free'
+    try { chrome.storage.local.set({ dc_token: token, dc_tier: 'free' }) } catch {}
+    return true
+  }
+
+  function disconnect() {
+    authState.token = null
+    authState.tier = 'anon'
+    try { chrome.storage.local.remove(['dc_token', 'dc_tier']) } catch {}
+    toast('Account disconnected')
+  }
+
+  function showConnectBox() {
+    hideConnectBox()
+    const el = findPromptEl()
+    if (!el) return
+
+    const box = document.createElement('div')
+    box.className = 'connect show'
+    box.id = 'connect'
+    box.innerHTML = `
+      <div class="ctitle">Paste your connection code</div>
+      <div class="chelp">We opened deepclario.com for you. Copy the <b>dc_…</b> code and paste it below.</div>
+      <div class="crow">
+        <input class="cinput" id="ctoken" type="text" placeholder="dc_…" autocomplete="off" spellcheck="false" />
+        <button class="cbtn" id="csave">Connect</button>
+      </div>
+      <div class="cerr" id="cerr"></div>
+      <button class="cclose" id="cclose" aria-label="Close">×</button>
+    `
+    root.appendChild(box)
+    anchorTo(el, box, 'above')
+    // Sit it a little higher than the chip so they don't overlap.
+    box.style.top = Math.max(8, el.getBoundingClientRect().top - box.offsetHeight - 12) + 'px'
+
+    const input = box.querySelector('#ctoken')
+    const err = box.querySelector('#cerr')
+    input.focus()
+
+    const submit = () => {
+      if (saveToken(input.value)) {
+        hideConnectBox()
+        toast('Account connected. Sharpen away.', { good: true })
+        showIdleChip()
+      } else {
+        err.textContent = 'That code should start with "dc_". Copy it again from the page we opened.'
+      }
+    }
+    box.querySelector('#csave').addEventListener('click', submit)
+    box.querySelector('#cclose').addEventListener('click', hideConnectBox)
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); submit() }
+      if (e.key === 'Escape') { e.preventDefault(); hideConnectBox() }
+    })
+  }
+
+  function hideConnectBox() {
+    const existing = root.querySelector('#connect')
+    if (existing) existing.remove()
   }
 
   /* ---------- Details panel (the old deep flow, on demand only) ---------- */
@@ -398,10 +585,20 @@
   let panelApi = null
   function buildPanel() {
     if (typeof window.createDetailsPanel !== 'function') return
-    panelApi = window.createDetailsPanel({ root, readPrompt, writePrompt, authState, prefs, TONES })
+    panelApi = window.createDetailsPanel({
+      root,
+      readPrompt,
+      writePrompt,
+      authState,
+      prefs,
+      TONES,
+      LINKS,
+      onConnect: openConnect,
+      onDisconnect: disconnect,
+    })
   }
   function openPanel(prompt) {
     if (panelApi) panelApi.open(prompt)
-    else window.open('https://deepclario.com/playground', '_blank', 'noopener')
+    else window.open(LINKS.playground, '_blank', 'noopener')
   }
 })()
