@@ -40,15 +40,26 @@ Output the rewritten prompt and nothing else.`
 /**
  * Streams the sharpened prompt as text deltas. Caller concatenates.
  * Throws on hard failure (route decides fallback).
+ *
+ * `choice` is the interpretation the user picked from the inline fork
+ * chips (see quick-fork.ts). When present it is ground truth: the rewrite
+ * must commit to that reading rather than hedging across all of them.
  */
 export async function* streamSharpen(params: {
   prompt: string
   tone: Tone
+  choice?: string
 }): AsyncGenerator<string, void, unknown> {
+  const user = params.choice
+    ? `<prompt>\n${params.prompt.trim()}\n</prompt>\n\n` +
+      `The user clarified what they want: ${params.choice.trim()}\n` +
+      `Treat that as ground truth. Commit to it fully - do not hedge or cover the other readings.`
+    : params.prompt.trim()
+
   yield* streamLLM({
     model: MODELS.sharpen,
     systemPrompt: systemPrompt(params.tone),
-    userMessage: params.prompt.trim(),
+    userMessage: user,
     maxOutputTokens: 700,
   })
 }

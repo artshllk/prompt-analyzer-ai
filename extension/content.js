@@ -199,6 +199,38 @@
       }
       .toast .act:hover { opacity: .88; }
 
+      /* Fork chips: the clarifying question, asked inline at the moment it
+         matters. No panel, no report - one question, one click. */
+      .forks {
+        position: fixed; z-index: 2147483646;
+        display: none; flex-direction: column; gap: 6px;
+        width: min(88vw, 520px);
+      }
+      .forks.show { display: flex; }
+      .forks .q {
+        display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        font-size: 12.5px; font-weight: 600; color: #F5F4F1;
+        background: #0E0E10; border: 1px solid rgba(245,244,241,.16);
+        border-radius: 9px; padding: 8px 10px 8px 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,.35);
+      }
+      .forks .qx {
+        background: none; border: none; color: #A8A6A0; cursor: pointer;
+        font-size: 15px; line-height: 1; padding: 2px 4px; flex-shrink: 0;
+      }
+      .forks .qx:hover { color: #F5F4F1; }
+      .fork {
+        text-align: left; cursor: pointer; font-family: inherit;
+        background: #1A1A20; color: #F5F4F1;
+        border: 1px solid rgba(245,244,241,.18); border-radius: 9px;
+        padding: 8px 11px;
+        box-shadow: 0 4px 20px rgba(0,0,0,.35);
+        transition: border-color .14s, background .14s;
+      }
+      .fork:hover { border-color: #8FB4F2; background: #21212a; }
+      .fork b { display: block; font-size: 12.5px; font-weight: 600; }
+      .fork span { display: block; color: #A8A6A0; font-size: 11.5px; margin-top: 1px; line-height: 1.4; }
+
       /* Connect box - the paste target, anchored right by the input so
          the user never has to hunt for where the code goes. */
       .connect {
@@ -241,11 +273,13 @@
     </style>
 
     <button class="chip" id="chip" aria-label="Sharpen prompt with Deepclario"></button>
+    <div class="forks" id="forks"></div>
     <div class="toast" id="toast"></div>
   `
 
   const $ = sel => root.querySelector(sel)
   const chip = $('#chip')
+  const forksEl = $('#forks')
   const toastEl = $('#toast')
 
   /* ---------- Positioning: anchor UI to the prompt box ---------- */
@@ -306,8 +340,9 @@
   function showDoneChip() {
     positionChip()
     chip.className = 'chip show state-done'
+    const tag = state.chosen ? `Sharpened · ${state.chosen}` : 'Sharpened'
     chip.innerHTML =
-      `<span class="mark">✓</span>Sharpened` +
+      `<span class="mark">✓</span>${escHtml(tag)}` +
       `<span class="why" id="why">why?</span>` +
       `<span class="why" id="undo">undo</span>`
     const why = $('#why')
@@ -315,6 +350,12 @@
     const undo = $('#undo')
     if (undo) undo.onclick = undoSharpen
     chip.onclick = null
+  }
+
+  function escHtml(s) {
+    const d = document.createElement('div')
+    d.innerText = s || ''
+    return d.innerHTML
   }
 
   /**
@@ -368,6 +409,10 @@
     /** Exactly what we wrote into the box. If the box still holds this, the
      *  user hasn't edited our output - so Sharpen stays off and "why?" is live. */
     after: '',
+    /** { question, options } when the prompt was genuinely ambiguous. */
+    fork: null,
+    /** The interpretation the user picked, if any. */
+    chosen: '',
     port: null,
     toastTimer: 0,
   }
@@ -402,10 +447,39 @@
     if (!prompt || prompt.length < 3) { toast('Type a prompt first'); return }
 
     state.before = prompt
+    state.fork = null
+    hideForks()
+    if (authState.tier === 'anon') bumpAnon()
+
+    // Ask whether the prompt is ambiguous IN PARALLEL with rewriting it.
+    // Serialising these would add 1-3s to every sharpen; this way the
+    // rewrite still lands in ~1s and the question (if there is one) shows
+    // up right after, offering to refine what the user already has.
+    chrome.runtime.sendMessage(
+      { type: 'DEEPCLARIO_FORK', prompt, token: authState.token },
+      resp => {
+        if (!resp || !resp.ok || !resp.data) return
+        const f = resp.data
+        if (!f.question || !f.options || f.options.length < 2) return
+        // Only offer it if this is still the prompt we sharpened.
+        if (state.before !== prompt) return
+        state.fork = f
+        if (state.phase === 'done') showForks(f)
+      }
+    )
+
+    streamSharpenInto(prompt, null)
+  }
+
+  /**
+   * Runs the streaming sharpen and writes it into the box live.
+   * `choice` is set when the user picked an interpretation from the chips -
+   * the server treats it as ground truth and does not re-charge quota.
+   */
+  function streamSharpenInto(prompt, choice) {
     state.phase = 'working'
     showWorkingChip()
 
-    // Stream the sharpened prompt straight into the box.
     const port = chrome.runtime.connect({ name: 'DEEPCLARIO_SHARPEN' })
     state.port = port
     let acc = ''
@@ -425,8 +499,76 @@
       }
     })
 
-    if (authState.tier === 'anon') bumpAnon()
-    port.postMessage({ type: 'START', prompt, tone: prefs.tone, token: authState.token })
+    port.postMessage({
+      type: 'START',
+      prompt,
+      tone: prefs.tone,
+      token: authState.token,
+      choice: choice || undefined,
+    })
+  }
+
+  /** The user picked an interpretation: re-sharpen committed to it. */
+  function chooseFork(option) {
+    hideForks()
+    state.fork = null
+    state.chosen = option.label
+    streamSharpenInto(state.before, `${option.label} - ${option.summary}`)
+  }
+
+  /**
+   * The clarifying question, inline. This is the whole point: the user gets
+   * the ONE question that changes their result, right where they are, as
+   * buttons. No panel, no report, nothing to opt into.
+   */
+  function showForks(fork) {
+    const el = findPromptEl()
+    if (!el) return
+    forksEl.innerHTML = ''
+
+    const q = document.createElement('div')
+    q.className = 'q'
+    const qt = document.createElement('span')
+    qt.textContent = fork.question
+    const qx = document.createElement('button')
+    qx.className = 'qx'
+    qx.textContent = '×'
+    qx.setAttribute('aria-label', 'Dismiss question')
+    qx.addEventListener('click', () => { state.fork = null; hideForks() })
+    q.appendChild(qt)
+    q.appendChild(qx)
+    forksEl.appendChild(q)
+
+    fork.options.forEach(o => {
+      const b = document.createElement('button')
+      b.className = 'fork'
+      const label = document.createElement('b')
+      label.textContent = o.label
+      const sum = document.createElement('span')
+      sum.textContent = o.summary
+      b.appendChild(label)
+      b.appendChild(sum)
+      b.addEventListener('click', () => chooseFork(o))
+      forksEl.appendChild(b)
+    })
+
+    forksEl.classList.add('show')
+    positionForks()
+  }
+
+  function positionForks() {
+    const el = findPromptEl()
+    if (!el || !forksEl.classList.contains('show')) return
+    const r = el.getBoundingClientRect()
+    forksEl.style.left = 'auto'
+    forksEl.style.right = Math.max(8, window.innerWidth - r.right) + 'px'
+    forksEl.style.top =
+      Math.max(8, r.top - forksEl.offsetHeight - 46) + 'px'
+  }
+
+  function hideForks() {
+    forksEl.classList.remove('show')
+    forksEl.innerHTML = ''
   }
 
   function finishSharpen(result) {
@@ -436,6 +578,10 @@
       state.after = clean
       state.phase = 'done'
       showDoneChip()
+      // If the parallel check found the prompt genuinely ambiguous, ask now -
+      // inline, as buttons. The user already has a usable rewrite; this
+      // offers to commit it to what they actually meant.
+      if (state.fork) showForks(state.fork)
     } else {
       // Empty stream: leave the user's prompt untouched.
       writePrompt(state.before)
@@ -447,6 +593,9 @@
   function resetToIdle() {
     state.phase = 'idle'
     state.after = ''
+    state.fork = null
+    state.chosen = ''
+    hideForks()
     showIdleChip()
   }
 
@@ -618,7 +767,13 @@
 
     if (!el || !text) {
       // Box empty (usually: they sent it). Nothing to sharpen or explain.
-      if (state.phase === 'done') { state.phase = 'idle'; state.after = '' }
+      if (state.phase === 'done') {
+        state.phase = 'idle'
+        state.after = ''
+        state.fork = null
+        state.chosen = ''
+      }
+      hideForks()
       hideChip()
       return
     }
@@ -638,8 +793,9 @@
   document.addEventListener('input', syncChip, true)
   window.addEventListener('scroll', () => {
     if (chip.classList.contains('show')) positionChip()
+    positionForks()
   }, true)
-  window.addEventListener('resize', syncChip)
+  window.addEventListener('resize', () => { syncChip(); positionForks() })
   setInterval(syncChip, 1200)
 
   /* ---------- Details panel builder (kept from the panel-first version) ---------- */

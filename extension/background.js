@@ -7,6 +7,30 @@
 const API_BASE = 'https://deepclario.com'
 const API_URL = API_BASE + '/api/anon/analyze'
 const SHARPEN_URL = API_BASE + '/api/anon/sharpen'
+const FORK_URL = API_BASE + '/api/anon/fork'
+
+// Quick fork check, fired in PARALLEL with the sharpen stream. If the
+// prompt is genuinely ambiguous, the content script shows the question as
+// inline chips right after the rewrite lands - so the user gets the
+// clarifying question at the moment it matters, without paying its latency
+// on every prompt. Costs no quota.
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type !== 'DEEPCLARIO_FORK') return
+
+  const headers = { 'Content-Type': 'application/json' }
+  if (msg.token) headers['Authorization'] = 'Bearer ' + msg.token
+
+  fetch(FORK_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ prompt: msg.prompt }),
+  })
+    .then(res => (res.ok ? res.json() : { question: '', options: [] }))
+    .then(data => sendResponse({ ok: true, data }))
+    .catch(() => sendResponse({ ok: false }))
+
+  return true
+})
 
 // Fast-path streaming sharpen. The content script owns a Port; we pipe
 // text deltas over it as they arrive so the prompt box fills in live.
@@ -29,6 +53,7 @@ chrome.runtime.onConnect.addListener(port => {
           prompt: msg.prompt,
           tone: msg.tone || 'professional',
           source: 'extension',
+          choice: msg.choice || undefined,
         }),
       })
 

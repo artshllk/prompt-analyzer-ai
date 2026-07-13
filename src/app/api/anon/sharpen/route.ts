@@ -21,6 +21,8 @@ interface SharpenBody {
   prompt: string
   tone?: Tone
   source?: string
+  /** The interpretation the user picked from the inline fork chips. */
+  choice?: string
 }
 
 const CORS_HEADERS = {
@@ -67,13 +69,18 @@ export async function POST(req: NextRequest) {
   const prompt = body.prompt?.trim()
   const tone: Tone = body.tone ?? 'professional'
   const source = body.source === 'extension' ? 'extension' : 'web'
+  const choice = body.choice?.trim() || undefined
 
   if (!prompt) return corsJson({ error: 'prompt_required' }, 400)
   if (prompt.length > 4000) return corsJson({ error: 'prompt_too_long' }, 400)
 
+  // Answering a clarifying question refines the SAME analysis - it must not
+  // cost a second credit. Only the first sharpen of a prompt is charged.
+  const isRefinement = !!choice
+
   // Rolling quota for signed-in free users (same 5/48h bucket as analyze -
   // a sharpen is a rewrite). Pro bypasses.
-  if (auth && auth.tier === 'free') {
+  if (auth && auth.tier === 'free' && !isRefinement) {
     const supabase = await createServiceClient()
     const { count } = await supabase
       .from('usage_events')
@@ -90,11 +97,12 @@ export async function POST(req: NextRequest) {
   }
 
   console.log(
-    `[anon-sharpen] source=${source} auth=${auth ? `${auth.tier}:${auth.userId.slice(0, 8)}` : 'anon'} ts=${new Date().toISOString()}`
+    `[anon-sharpen] source=${source} refine=${isRefinement} auth=${auth ? `${auth.tier}:${auth.userId.slice(0, 8)}` : 'anon'} ts=${new Date().toISOString()}`
   )
 
-  // Record usage for signed-in users, fire-and-forget.
-  if (auth) {
+  // Record usage for signed-in users, fire-and-forget. Refinements belong
+  // to the analysis the user already paid for.
+  if (auth && !isRefinement) {
     const supabase = await createServiceClient()
     supabase
       .from('usage_events')
@@ -106,7 +114,7 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        for await (const delta of streamSharpen({ prompt, tone })) {
+        for await (const delta of streamSharpen({ prompt, tone, choice })) {
           controller.enqueue(encoder.encode(delta))
         }
       } catch (err) {
