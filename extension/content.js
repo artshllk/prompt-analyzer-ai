@@ -161,6 +161,11 @@
       }
       .chip .why:hover { text-decoration: underline; }
       .chip #undo { color: #6b6a66; }
+      /* The offer to add missing details - the next step of the journey,
+         so it reads as an action, not as a footnote. */
+      .chip .add { color: #0E0E10; background: #8FB4F2; border-left: none;
+        border-radius: 999px; padding: 3px 9px; margin-left: 6px; font-weight: 700; }
+      .chip .add:hover { text-decoration: none; opacity: .88; }
       .chip.state-working { background: #E9E7E2; cursor: default; }
       .chip.state-done { background: #DFF0E4; }
       .chip .dots span {
@@ -237,6 +242,17 @@
       }
       .fork:hover b .n { background: #8FB4F2; color: #0E0E10; }
       .fork span { display: block; color: #A8A6A0; font-size: 11.5px; margin-top: 2px; margin-left: 22px; line-height: 1.4; }
+      .forks .hint {
+        font-size: 11px; color: #8a8985; padding: 0 2px 2px 2px; margin-top: -2px;
+      }
+      .forks .own {
+        background: #14141a; color: #F5F4F1;
+        border: 1px dashed rgba(245,244,241,.22); border-radius: 9px;
+        padding: 8px 11px; font-size: 12.5px; outline: none; font-family: inherit;
+        box-shadow: 0 4px 20px rgba(0,0,0,.35);
+      }
+      .forks .own:focus { border-color: #8FB4F2; border-style: solid; }
+      .forks .own::placeholder { color: #5a5a56; }
 
       /* Connect box - the paste target, anchored right by the input so
          the user never has to hunt for where the code goes. */
@@ -374,15 +390,36 @@
     positionChip()
     chip.className = 'chip show state-done'
     const tag = state.chosen ? `Sharpened · ${state.chosen}` : 'Sharpened'
+    const n = state.gaps ? state.gaps.length : 0
+    // If details are still missing, the chip OFFERS them - the journey stays
+    // inline. "why?" is only ever reading material, off to the side.
     chip.innerHTML =
       `<span class="mark">✓</span>${escHtml(tag)}` +
+      (n
+        ? `<span class="why add" id="addgaps">+ ${n} detail${n === 1 ? '' : 's'}</span>`
+        : '') +
       `<span class="why" id="why">why?</span>` +
       `<span class="why" id="undo">undo</span>`
+    const add = $('#addgaps')
+    if (add) add.onclick = openGaps
     const why = $('#why')
     if (why) why.onclick = openDetails
     const undo = $('#undo')
     if (undo) undo.onclick = undoSharpen
     chip.onclick = null
+  }
+
+  /** Mid-flow: walking the missing details, one question at a time. */
+  function showFillingChip() {
+    positionChip()
+    chip.className = 'chip show state-working'
+    const step = state.gapIndex + 1
+    chip.innerHTML =
+      `<span class="mark">+</span>Detail ${step} of ${state.gaps.length}` +
+      `<span class="why" id="skipall">skip</span>`
+    chip.onclick = null
+    const s = $('#skipall')
+    if (s) s.onclick = () => { hideForks(); applyGaps() }
   }
 
   function escHtml(s) {
@@ -438,8 +475,9 @@
   const state = {
     // idle    - nothing done yet, Sharpen offered
     // working - a call is in flight (fork check, or the rewrite streaming)
-    // asking  - the question is on screen, box UNTOUCHED, waiting on a click
+    // asking  - the interpretation question is up, box UNTOUCHED
     // done    - our rewrite is in the box
+    // filling - walking the missing details, one inline question at a time
     phase: 'idle',
     /** The user's prompt as it was BEFORE we touched it. What "why?" explains. */
     before: '',
@@ -450,6 +488,10 @@
     fork: null,
     /** The interpretation the user picked, if any. */
     chosen: '',
+    /** Details only the user knows, offered on the chip after the rewrite. */
+    gaps: null,
+    gapIndex: 0,
+    gapAnswers: {},
     port: null,
     toastTimer: 0,
   }
@@ -465,8 +507,8 @@
     // Never sharpen our own output - it compounds into mush. The box
     // already holds a sharpened prompt: offer the explanation instead.
     if (boxHoldsOurOutput()) {
-      toast('Already sharpened. Edit it, or see what changed.', {
-        action: { label: 'why?', onClick: openDetails },
+      toast('Already sharpened. Add the details only you know.', {
+        action: { label: 'Finish it', onClick: openDetails },
       })
       return
     }
@@ -585,6 +627,22 @@
    * buttons. No panel, no report, nothing to opt into.
    */
   function showForks(fork) {
+    renderChoices({
+      question: fork.question,
+      options: fork.options,
+      raw: true, // chooseFork wants the whole option, not just its label
+      onPick: chooseFork,
+      onSkip: skipQuestion,
+    })
+  }
+
+  /**
+   * The shared inline chooser: a question and tappable answers, anchored to
+   * the prompt box. Used for BOTH the interpretation question (before the
+   * rewrite) and the missing details (after it). Everything the user has to
+   * decide happens here, in their workflow - never in a panel.
+   */
+  function renderChoices(cfg) {
     const el = findPromptEl()
     if (!el) return
     forksEl.innerHTML = ''
@@ -592,33 +650,57 @@
     const q = document.createElement('div')
     q.className = 'q'
     const qt = document.createElement('span')
-    qt.textContent = fork.question
+    qt.textContent = cfg.question
     const qx = document.createElement('button')
     qx.className = 'qx'
     qx.textContent = '×'
-    qx.setAttribute('aria-label', 'Dismiss question')
-    qx.addEventListener('click', () => { state.fork = null; hideForks() })
+    qx.setAttribute('aria-label', 'Skip')
+    qx.addEventListener('click', () => { if (cfg.onSkip) cfg.onSkip() })
     q.appendChild(qt)
     q.appendChild(qx)
     forksEl.appendChild(q)
 
-    fork.options.forEach((o, i) => {
+    if (cfg.hint) {
+      const h = document.createElement('div')
+      h.className = 'hint'
+      h.textContent = cfg.hint
+      forksEl.appendChild(h)
+    }
+
+    ;(cfg.options || []).forEach((o, i) => {
       const b = document.createElement('button')
       b.className = 'fork'
       const label = document.createElement('b')
-      // Number hint: the keyboard shortcut that picks this option.
       const num = document.createElement('i')
       num.className = 'n'
       num.textContent = String(i + 1)
       label.appendChild(num)
       label.appendChild(document.createTextNode(o.label))
-      const sum = document.createElement('span')
-      sum.textContent = o.summary
       b.appendChild(label)
-      b.appendChild(sum)
-      b.addEventListener('click', () => chooseFork(o))
+      if (o.summary) {
+        const sum = document.createElement('span')
+        sum.textContent = o.summary
+        b.appendChild(sum)
+      }
+      b.addEventListener('click', () => cfg.onPick(cfg.raw ? o : o.label))
       forksEl.appendChild(b)
     })
+
+    // Their own words. The taps are a shortcut, never a cage.
+    if (cfg.typeable) {
+      const own = document.createElement('input')
+      own.className = 'own'
+      own.type = 'text'
+      own.placeholder = 'or type your own…'
+      own.addEventListener('keydown', e => {
+        e.stopPropagation()
+        if (e.key === 'Enter') {
+          const v = own.value.trim()
+          if (v && cfg.onType) cfg.onType(v)
+        }
+      })
+      forksEl.appendChild(own)
+    }
 
     forksEl.classList.add('show')
     positionForks()
@@ -647,6 +729,7 @@
       state.phase = 'done'
       hideForks()
       showDoneChip()
+      fetchGaps(clean)
     } else {
       // Empty stream: leave the user's prompt untouched.
       writePrompt(state.before)
@@ -655,11 +738,123 @@
     }
   }
 
+  /* ---------- Gaps: the details only the user knows ---------- */
+  // A rewrite cannot invent facts the user never gave. So after the rewrite,
+  // we quietly ask what is still missing and offer it ON THE CHIP - the
+  // whole journey stays inline, in their workflow. The right-hand panel is
+  // reading material, never a step in the flow.
+
+  function fetchGaps(sharpened) {
+    const forPrompt = state.before
+    chrome.runtime.sendMessage(
+      {
+        type: 'DEEPCLARIO_EXPLAIN',
+        original: forPrompt,
+        sharpened,
+        token: authState.token,
+      },
+      resp => {
+        // Stale (they moved on) or nothing worth asking - stay quiet.
+        if (!resp || !resp.ok || !resp.data) return
+        if (state.before !== forPrompt || state.phase !== 'done') return
+        const gaps = (resp.data.gaps || []).filter(g => g && g.question)
+        if (!gaps.length) return
+        state.gaps = gaps
+        state.gapAnswers = {}
+        showDoneChip()
+      }
+    )
+  }
+
+  /** Walk the gaps one at a time, as inline chips. */
+  function openGaps() {
+    if (!state.gaps || !state.gaps.length) return
+    state.phase = 'filling'
+    state.gapIndex = 0
+    showGap()
+  }
+
+  function showGap() {
+    const g = state.gaps[state.gapIndex]
+    if (!g) { applyGaps(); return }
+
+    showFillingChip()
+    renderChoices({
+      question: g.question,
+      hint: g.why,
+      options: (g.examples || []).map(ex => ({ label: ex, summary: '' })),
+      onPick: v => {
+        state.gapAnswers[g.label] = v
+        nextGap()
+      },
+      onType: v => {
+        state.gapAnswers[g.label] = v
+        nextGap()
+      },
+      onSkip: nextGap,
+      typeable: true,
+    })
+  }
+
+  function nextGap() {
+    state.gapIndex += 1
+    if (state.gapIndex >= state.gaps.length) applyGaps()
+    else showGap()
+  }
+
+  /** Fold whatever they answered into the prompt, in place. */
+  function applyGaps() {
+    hideForks()
+    const list = Object.keys(state.gapAnswers).map(label => ({
+      label,
+      answer: state.gapAnswers[label],
+    }))
+
+    if (!list.length) {
+      // They skipped everything. Leave the prompt exactly as it was.
+      state.gaps = null
+      state.phase = 'done'
+      showDoneChip()
+      return
+    }
+
+    state.phase = 'working'
+    showWorkingChip()
+
+    chrome.runtime.sendMessage(
+      {
+        type: 'DEEPCLARIO_EXPLAIN',
+        original: state.before,
+        sharpened: state.after,
+        answers: list,
+        token: authState.token,
+      },
+      resp => {
+        if (!resp || !resp.ok || !resp.data || !resp.data.prompt) {
+          state.phase = 'done'
+          showDoneChip()
+          toast('Could not add that. Your prompt is unchanged.')
+          return
+        }
+        const clean = resp.data.prompt.trim()
+        writePrompt(clean)
+        state.after = clean
+        state.gaps = null
+        state.phase = 'done'
+        showDoneChip()
+        toast('Added to your prompt', { good: true })
+      }
+    )
+  }
+
   function resetToIdle() {
     state.phase = 'idle'
     state.after = ''
     state.fork = null
     state.chosen = ''
+    state.gaps = null
+    state.gapIndex = 0
+    state.gapAnswers = {}
     hideForks()
     showIdleChip()
   }
@@ -813,6 +1008,25 @@
           return
         }
       }
+
+      // Same keys while filling in the missing details: 1/2/3 answers,
+      // Esc skips the rest. The whole flow stays on the keyboard.
+      if (state.phase === 'filling' && state.gaps) {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          hideForks()
+          applyGaps()
+          return
+        }
+        const g = state.gaps[state.gapIndex]
+        const n = parseInt(e.key, 10)
+        if (g && g.examples && n >= 1 && n <= g.examples.length) {
+          e.preventDefault()
+          state.gapAnswers[g.label] = g.examples[n - 1]
+          nextGap()
+          return
+        }
+      }
       // Esc undoes while our output is still untouched in the box.
       if (e.key === 'Escape' && boxHoldsOurOutput()) {
         e.preventDefault()
@@ -854,6 +1068,14 @@
       return
     }
 
+    if (state.phase === 'filling') {
+      // Mid-way through the missing details. If they edited our rewrite
+      // themselves, abandon the flow - it is their prompt again.
+      if (text !== state.after) { resetToIdle(); return }
+      positionForks()
+      return
+    }
+
     if (state.phase === 'done') {
       // Still holding our output? Keep the sticky Sharpened chip.
       if (text === state.after) { showDoneChip(); return }
@@ -889,6 +1111,8 @@
       LINKS,
       onConnect: openConnect,
       onDisconnect: disconnect,
+      // Deliberately no callback that changes the prompt. The panel is
+      // read-only: the whole journey happens inline, on the chip.
     })
     return true
   }

@@ -21,7 +21,13 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   fetch(EXPLAIN_URL, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ original: msg.original, sharpened: msg.sharpened }),
+    body: JSON.stringify({
+      original: msg.original,
+      sharpened: msg.sharpened,
+      // When present, the server folds these answers into the prompt and
+      // returns the improved version instead of a fresh analysis.
+      answers: msg.answers || undefined,
+    }),
   })
     .then(async res => {
       if (!res.ok) {

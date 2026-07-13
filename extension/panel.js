@@ -1,14 +1,14 @@
-// Deepclario extension - the "why?" panel.
+// Deepclario extension - the read-only "why" panel.
 //
-// ONE job: explain the sharpen that already happened. What was weak in the
-// original, what the rewrite changed, and - honestly - what it could NOT
-// fix, because a rewrite cannot invent facts the user never gave.
+// THE WHOLE USER JOURNEY LIVES ON THE INLINE CHIP. Sharpening, the
+// interpretation question, and filling in the missing details all happen
+// next to the prompt box, without ever leaving the chat. That is the
+// product.
 //
-// It produces no rewrite and asks no question. The question is asked inline,
-// before the rewrite (see content.js). A second question here, and a second
-// competing rewrite, is what made the old panel incoherent.
-//
-// Exposed as window.createDetailsPanel(ctx), built once by content.js.
+// This panel is NOT part of that journey. It is optional reading, for the
+// user who is curious WHY their prompt changed and wants to learn. It has
+// no buttons that alter the prompt - open it, read it, close it. If it ever
+// grows an action, the journey has leaked out of the workflow again.
 
 window.createDetailsPanel = function createDetailsPanel(ctx) {
   const { root, authState, LINKS, onConnect, onDisconnect } = ctx
@@ -18,84 +18,70 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
     <style>
       .dc-overlay {
         position: fixed; inset: 0; z-index: 2147483647;
-        background: rgba(0,0,0,.55); display: none;
+        background: rgba(0,0,0,.5); display: none;
       }
       .dc-overlay.open { display: block; }
       .dc-panel {
         position: fixed; top: 0; right: 0; height: 100%;
-        width: 440px; max-width: 92vw; background: #0E0E10;
+        width: 400px; max-width: 92vw; background: #0E0E10;
         color: #F5F4F1; border-left: 1px solid rgba(245,244,241,.14);
         transform: translateX(100%); transition: transform .3s cubic-bezier(.16,1,.3,1);
-        display: flex; flex-direction: column; overflow-y: auto;
+        display: flex; flex-direction: column;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
       }
       .dc-overlay.open .dc-panel { transform: translateX(0); }
-      .dc-pad { padding: 22px; }
+      .dc-head {
+        padding: 18px 20px 0; flex-shrink: 0;
+      }
+      .dc-body { padding: 0 20px 20px; overflow-y: auto; flex: 1; }
       .dc-row { display: flex; align-items: center; justify-content: space-between; }
-      .dc-eyebrow { font-size: 11px; letter-spacing:.16em; text-transform: uppercase; color: #A8A6A0; font-weight: 500; }
+      .dc-eyebrow { font-size: 10.5px; letter-spacing:.16em; text-transform: uppercase; color: #6b6a66; font-weight: 600; }
       .dc-x { background:none;border:none;color:#A8A6A0;cursor:pointer;font-size:20px;line-height:1;padding:4px; }
       .dc-x:hover { color:#F5F4F1; }
-      .dc-sub { color:#A8A6A0; font-size:13px; line-height:1.55; margin:0 0 14px; }
-      .dc-box { background:#1A1A20; border:1px solid rgba(245,244,241,.16); border-radius:10px; padding:12px; font-size:12.5px; line-height:1.55; white-space:pre-wrap; }
-      .dc-label { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#A8A6A0; margin:18px 0 8px; }
-      .dc-rule{height:1px;background:rgba(245,244,241,.12);margin:18px 0}
       .dc-dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:#F5F4F1;margin:0 2px;animation:dcd 1.2s infinite}
       .dc-dots span:nth-child(2){animation-delay:.18s}.dc-dots span:nth-child(3){animation-delay:.36s}
       @keyframes dcd{0%,100%{opacity:.25}50%{opacity:1}}
-      .dc-err{color:#C25E5E;font-size:13px;line-height:1.5}
-      .dc-acct{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 4px}
-      .dc-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.04em;color:#A8A6A0;border:1px solid rgba(245,244,241,.18)}
+      .dc-err{color:#E08A8A;font-size:13px;line-height:1.5}
+      .dc-muted { color:#A8A6A0; font-size:12.5px; line-height:1.55; }
+
+      /* Hero: the score, and the ONE line that matters. */
+      .dc-hero { padding: 18px 0 4px; }
+      .dc-scorerow { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+      .dc-num { font-size:26px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1; }
+      .dc-num.lo{color:#E08A8A} .dc-num.mid{color:#D9A45B} .dc-num.hi{color:#7FC79A}
+      .dc-bar { flex:1; height:4px; border-radius:2px; background:rgba(245,244,241,.10); overflow:hidden; }
+      .dc-bar i { display:block; height:100%; border-radius:2px; transition: width .5s cubic-bezier(.16,1,.3,1); }
+      .dc-bar i.lo{background:#E08A8A} .dc-bar i.mid{background:#D9A45B} .dc-bar i.hi{background:#7FC79A}
+      .dc-headline { font-size:15px; font-weight:600; line-height:1.4; margin:0; }
+
+      /* A gap: named, not asked. Answering happens on the chip, inline. */
+      .dc-gap {
+        border-top: 1px solid rgba(245,244,241,.10);
+        padding: 16px 0 14px;
+      }
+            .dc-q { font-size:13.5px; font-weight:600; margin:0 0 3px; display:flex; align-items:center; gap:6px; }
+      .dc-why { font-size:11.5px; color:#6b6a66; margin:0 0 10px; }
+
+
+      .dc-foot{padding:12px 20px;border-top:1px solid rgba(245,244,241,.08);display:flex;gap:14px;flex-wrap:wrap;flex-shrink:0}
+      .dc-foot a{color:#5a5a56;font-size:11px;text-decoration:none}
+      .dc-foot a:hover{color:#A8A6A0}
+      .dc-acct{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
+      .dc-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.04em;color:#6b6a66;border:1px solid rgba(245,244,241,.14)}
       .dc-badge.pro{background:#F5F4F1;color:#0E0E10;border-color:transparent}
-      .dc-link{background:none;border:none;color:#A8A6A0;font-size:11.5px;cursor:pointer;padding:2px 0;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
+      .dc-link{background:none;border:none;color:#6b6a66;font-size:11px;cursor:pointer;padding:2px 0;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
       .dc-link:hover{color:#F5F4F1}
-      .dc-foot{margin-top:auto;padding:14px 22px;border-top:1px solid rgba(245,244,241,.1);display:flex;gap:14px;flex-wrap:wrap}
-      .dc-foot a{color:#A8A6A0;font-size:11.5px;text-decoration:none}
-      .dc-foot a:hover{color:#F5F4F1;text-decoration:underline;text-underline-offset:3px}
-
-      /* Score: the one number, stated plainly. */
-      .dc-score { display:flex; align-items:baseline; gap:8px; margin-bottom:2px; }
-      .dc-score b { font-size:30px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1; }
-      .dc-score.lo b { color:#E08A8A } .dc-score.mid b { color:#D9A45B } .dc-score.hi b { color:#7FC79A }
-      .dc-score span { font-size:12px; color:#A8A6A0; }
-
-      /* Lists. Severity is carried by a dot, not by shouting. */
-      .dc-list { margin:0; padding:0; list-style:none; }
-      .dc-list li { font-size:12.5px; line-height:1.55; color:#C9C7C2; padding-left:18px; position:relative; margin-bottom:8px; }
-      .dc-list li:before {
-        content:''; position:absolute; left:2px; top:7px;
-        width:6px; height:6px; border-radius:50%; background:#6b6a66;
-      }
-      .dc-list li.critical:before { background:#E08A8A }
-      .dc-list li.moderate:before { background:#D9A45B }
-      .dc-list li em { font-style:normal; color:#F5F4F1; }
-      .dc-list.arrow li:before { content:'→'; background:none; width:auto; height:auto; top:0; color:#8FB4F2; font-size:11px; }
-      .dc-list.check li:before { content:'✓'; background:none; width:auto; height:auto; top:0; color:#7FC79A; font-size:11px; }
-
-      /* The honest bit: what we could NOT fix. */
-      .dc-honest {
-        background: rgba(217,164,91,.07);
-        border: 1px solid rgba(217,164,91,.28);
-        border-radius: 10px; padding: 12px 14px; margin-top: 8px;
-      }
-      .dc-honest .dc-label { margin-top: 0; color:#D9A45B; }
-      .dc-honest .dc-list li:before { background:#D9A45B; }
-      .dc-lesson {
-        margin-top: 18px; padding: 12px 14px;
-        background: rgba(143,180,242,.08);
-        border-left: 2px solid #8FB4F2; border-radius: 0 8px 8px 0;
-        font-size: 12.5px; line-height: 1.55; color:#F5F4F1;
-      }
     </style>
     <div class="dc-overlay" id="dc-overlay">
-      <div class="dc-panel" role="dialog" aria-label="Why this prompt changed">
-        <div class="dc-pad">
+      <div class="dc-panel" role="dialog" aria-label="Finish your prompt">
+        <div class="dc-head">
           <div class="dc-row">
             <span class="dc-eyebrow">Deepclario</span>
             <button class="dc-x" id="dc-close" aria-label="Close">×</button>
           </div>
           <div class="dc-acct" id="dc-acct"></div>
-          <div id="dc-stage"></div>
         </div>
+        <div class="dc-body" id="dc-stage"></div>
         <div class="dc-foot">
           <a href="${LINKS.playground}" target="_blank" rel="noopener">Open Deepclario →</a>
           <a href="${LINKS.pricing}" target="_blank" rel="noopener">Pro</a>
@@ -111,7 +97,8 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
   const stage = q('#dc-stage')
 
   const esc = s => { const d = document.createElement('div'); d.innerText = s || ''; return d.innerHTML }
-  const scoreClass = n => (n < 40 ? 'lo' : n < 70 ? 'mid' : 'hi')
+  const band = n => (n < 45 ? 'lo' : n < 70 ? 'mid' : 'hi')
+
 
   function close() { overlay.classList.remove('open') }
   overlay.addEventListener('click', e => { if (e.target === overlay) close() })
@@ -125,7 +112,7 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
     const tier = authState.tier
     const badge =
       tier === 'pro' ? '<span class="dc-badge pro">Pro</span>'
-      : tier === 'free' ? '<span class="dc-badge">Account connected</span>'
+      : tier === 'free' ? '<span class="dc-badge">Connected</span>'
       : '<span class="dc-badge">Not connected</span>'
     const action =
       tier === 'anon'
@@ -139,98 +126,79 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
   }
 
   function renderLoading() {
-    stage.innerHTML = `<div class="dc-rule"></div>
-      <div class="dc-dots" style="margin:16px 0"><span></span><span></span><span></span></div>
-      <p class="dc-sub">Looking at what your original prompt was missing.</p>`
+    stage.innerHTML = `
+      <div style="padding:28px 0">
+        <div class="dc-dots"><span></span><span></span><span></span></div>
+        <p class="dc-muted" style="margin-top:12px">Checking what only you can answer.</p>
+      </div>`
   }
 
   function renderError(kind) {
-    const msg = kind === 'rate_limited'
-      ? 'Too many requests right now. Try again in a moment.'
-      : 'Could not load the explanation. Try again.'
-    stage.innerHTML = `<div class="dc-rule"></div><p class="dc-err">${msg}</p>`
+    stage.innerHTML = `<p class="dc-err" style="padding-top:24px">${
+      kind === 'rate_limited'
+        ? 'Too many requests. Try again in a moment.'
+        : 'Could not load this. Try again.'
+    }</p>`
   }
 
   /**
-   * The explanation. No rewrite, no question - just an honest account of
-   * what was weak, what changed, and what we could not fix for them.
+   * Read-only. The score, one honest line, and what is still missing -
+   * stated, not asked. The user answers those questions on the chip, in
+   * their workflow; here they are just told what they are, so they learn
+   * what makes a prompt good.
    */
-  function renderExplanation(d, original) {
-    const findings = (d.audit && d.audit.findings) || []
-    const forecast = (d.audit && d.audit.failureForecast) || []
-    const changes = d.changes || []
-    const missing = d.stillMissing || []
+  function render(d) {
+    const gaps = d.gaps || []
+    const b = band(d.score)
 
-    const gapsBlock = findings.length
-      ? `<div class="dc-label">What was weak in yours</div>
-         <ul class="dc-list">${findings.map(f =>
-           `<li class="${esc(f.severity)}">${esc(f.note)}${
-             f.evidence ? ` <em>(&ldquo;${esc(f.evidence)}&rdquo;)</em>` : ''
-           }</li>`).join('')}</ul>`
-      : ''
+    const hero = `
+      <div class="dc-hero">
+        <div class="dc-scorerow">
+          <span class="dc-num ${b}">${d.score}</span>
+          <span class="dc-bar"><i class="${b}" style="width:${d.score}%"></i></span>
+        </div>
+        <p class="dc-headline">${esc(d.headline || 'This prompt is ready to send.')}</p>
+      </div>`
 
-    const forecastBlock = forecast.length
-      ? `<div class="dc-label">What would have happened</div>
-         <ul class="dc-list arrow">${forecast.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`
-      : ''
+    if (!gaps.length) {
+      stage.innerHTML = hero +
+        `<p class="dc-muted" style="margin-top:14px">Nothing important is missing. Send it.</p>`
+      return
+    }
 
-    const changesBlock = changes.length
-      ? `<div class="dc-label">What the rewrite did</div>
-         <ul class="dc-list check">${changes.map(c => `<li>${esc(c)}</li>`).join('')}</ul>`
-      : ''
+    // Stated as facts to learn from, not as a form to fill in. Filling them
+    // in happens on the chip - that is the journey, and it stays inline.
+    const list = gaps.map(g => `
+      <div class="dc-gap">
+        <p class="dc-q">${esc(g.label)}</p>
+        <p class="dc-why">${esc(g.why || g.question)}</p>
+      </div>`).join('')
 
-    // The honest part. A rewrite cannot invent facts the user never gave.
-    // Saying so out loud is the difference between a tool and a salesman.
-    const missingBlock = missing.length
-      ? `<div class="dc-honest">
-           <div class="dc-label">What we could not fix for you</div>
-           <ul class="dc-list">${missing.map(m => `<li>${esc(m)}</li>`).join('')}</ul>
-         </div>`
-      : ''
-
-    const lessonBlock = d.lesson
-      ? `<div class="dc-lesson">${esc(d.lesson)}</div>`
-      : ''
-
-    stage.innerHTML = `
-      <div class="dc-rule"></div>
-      <div class="dc-score ${scoreClass(d.score)}">
-        <b>${d.score}</b><span>/ 100 &nbsp;·&nbsp; your original</span>
-      </div>
-      <div class="dc-label" style="margin-top:14px">What you wrote</div>
-      <div class="dc-box" style="color:#A8A6A0">${esc(original)}</div>
-      ${gapsBlock}
-      ${forecastBlock}
-      ${changesBlock}
-      ${missingBlock}
-      ${lessonBlock}
-    `
+    stage.innerHTML = hero + `
+      <p class="dc-muted" style="margin:16px 0 2px">
+        These are the things an AI cannot guess for you. Deepclario asks you
+        for them next to your prompt box.
+      </p>
+      ${list}`
   }
 
   return {
-    /**
-     * @param original  the user's ORIGINAL prompt
-     * @param sharpened what we wrote into their box
-     */
     open(original, sharpened) {
       renderAccount()
       overlay.classList.add('open')
 
       if (!sharpened) {
-        stage.innerHTML = `<div class="dc-rule"></div>
-          <p class="dc-sub">Sharpen a prompt first, then come back here to see what changed and why.</p>`
+        stage.innerHTML = `<p class="dc-muted" style="padding-top:24px">Sharpen a prompt first, then come back to finish it.</p>`
         return
       }
 
       renderLoading()
+
       chrome.runtime.sendMessage(
         { type: 'DEEPCLARIO_EXPLAIN', original, sharpened, token: authState.token },
         resp => {
-          if (!resp || !resp.ok || !resp.data) {
-            renderError(resp && resp.error)
-            return
-          }
-          renderExplanation(resp.data, original)
+          if (!resp || !resp.ok || !resp.data) { renderError(resp && resp.error); return }
+          render(resp.data)
         }
       )
     },
