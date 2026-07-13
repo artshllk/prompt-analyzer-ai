@@ -3,6 +3,7 @@ import { streamSharpen } from '@/lib/engine/sharpen'
 import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
 import { createServiceClient } from '@/lib/supabase/server'
+import { recordExtensionSession } from '@/lib/db/sessions'
 import { REWRITE_FREE_LIMIT, REWRITE_WINDOW_HOURS, windowStart } from '@/lib/limits'
 import type { Tone } from '@/types/database'
 
@@ -29,6 +30,8 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  // Without this the extension cannot read X-Improvements-Left cross-origin.
+  'Access-Control-Expose-Headers': 'X-Improvements-Left',
 }
 
 function corsJson(body: unknown, status: number): NextResponse {
@@ -80,21 +83,58 @@ export async function POST(req: NextRequest) {
   // credit, whether or not a question was answered on the way.
 
   // Rolling quota for signed-in free users (same 5/48h bucket as analyze -
-  // a sharpen is a rewrite). Pro bypasses.
+  // a sharpen is a rewrite). Pro bypasses entirely.
+  //
+  // We compute headroom on EVERY call, not just when blocking, and hand it
+  // back on the response. The extension stays silent while there is plenty
+  // left and only speaks when the user is nearly out - a meter that is
+  // always on screen is nagging, not helping.
+  let remaining: number | null = null
+
   if (auth && auth.tier === 'free') {
     const supabase = await createServiceClient()
+    const since = windowStart(REWRITE_WINDOW_HOURS)
+
     const { count } = await supabase
       .from('usage_events')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', auth.userId)
       .eq('event_type', 'prompt_analyzed')
-      .gte('created_at', windowStart(REWRITE_WINDOW_HOURS))
-    if ((count ?? 0) >= REWRITE_FREE_LIMIT) {
+      .gte('created_at', since)
+
+    const used = count ?? 0
+
+    if (used >= REWRITE_FREE_LIMIT) {
+      // Blocked. Say WHEN it comes back - a wall with a clock on it is a
+      // wait; a wall without one is just a dead end.
+      const { data: oldest } = await supabase
+        .from('usage_events')
+        .select('created_at')
+        .eq('user_id', auth.userId)
+        .eq('event_type', 'prompt_analyzed')
+        .gte('created_at', since)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+
+      const reset = oldest?.created_at
+        ? new Date(new Date(oldest.created_at).getTime() + REWRITE_WINDOW_HOURS * 3_600_000)
+        : new Date(Date.now() + REWRITE_WINDOW_HOURS * 3_600_000)
+
       return corsJson(
-        { error: 'rate_limited_quota', used: count, limit: REWRITE_FREE_LIMIT, windowHours: REWRITE_WINDOW_HOURS },
+        {
+          error: 'rate_limited_quota',
+          used,
+          limit: REWRITE_FREE_LIMIT,
+          windowHours: REWRITE_WINDOW_HOURS,
+          resetAt: reset.toISOString(),
+        },
         402
       )
     }
+
+    // This call is about to spend one, so report what is left AFTER it.
+    remaining = Math.max(0, REWRITE_FREE_LIMIT - used - 1)
   }
 
   console.log(
@@ -113,8 +153,10 @@ export async function POST(req: NextRequest) {
   const encoder = new TextEncoder()
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
+      let full = ''
       try {
         for await (const delta of streamSharpen({ prompt, tone, choice })) {
+          full += delta
           controller.enqueue(encoder.encode(delta))
         }
       } catch (err) {
@@ -123,10 +165,29 @@ export async function POST(req: NextRequest) {
         // back. Mid-stream, the partial result is still usable.
       } finally {
         controller.close()
+
+        // Persist the session once we have the finished text. This is the
+        // ONLY place history is written now that the playground is going -
+        // without it, /history and /insights are empty forever. Awaited
+        // inside the stream (not the request) so it never delays a token,
+        // and it can never break the rewrite: recordExtensionSession
+        // swallows its own errors.
+        if (auth && full.trim()) {
+          await recordExtensionSession({
+            userId: auth.userId,
+            originalPrompt: prompt,
+            finalPrompt: full.trim(),
+            tone,
+            choice,
+          })
+        }
       }
     },
   })
 
+  // Headroom rides on a header: the body is a plain-text stream, so there
+  // is nowhere else to put it. `-1` means unlimited (Pro), and the client
+  // treats a missing header the same way - silence beats a wrong number.
   return new NextResponse(stream, {
     status: 200,
     headers: {
@@ -134,6 +195,7 @@ export async function POST(req: NextRequest) {
       'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'no-cache, no-transform',
       'X-Accel-Buffering': 'no',
+      'X-Improvements-Left': remaining === null ? '-1' : String(remaining),
     },
   })
 }

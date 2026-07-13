@@ -84,7 +84,9 @@
 
   const TONES = ['professional', 'friendly', 'persuasive', 'concise', 'creative']
   let authState = { token: null, tier: 'anon' }
-  let prefs = { tone: 'professional', deep: false }
+  // proSeen: the "unlimited" confirmation is shown once, ever. After that
+  // Pro users never see a word about limits again - that IS the benefit.
+  let prefs = { tone: 'professional', deep: false, proSeen: false }
   let anonCount = 0
   const ANON_FREE_TRIES = 2
 
@@ -92,12 +94,13 @@
     return new Promise(resolve => {
       try {
         chrome.storage.local.get(
-          ['dc_token', 'dc_tier', 'dc_tone', 'dc_deep', 'dc_anon_count'],
+          ['dc_token', 'dc_tier', 'dc_tone', 'dc_deep', 'dc_anon_count', 'dc_pro_seen'],
           v => {
             authState.token = v?.dc_token || null
             authState.tier = v?.dc_tier || (authState.token ? 'free' : 'anon')
             if (TONES.includes(v?.dc_tone)) prefs.tone = v.dc_tone
             prefs.deep = v?.dc_deep === true
+            prefs.proSeen = v?.dc_pro_seen === true
             anonCount = Number.isFinite(v?.dc_anon_count) ? v.dc_anon_count : 0
             resolve()
           }
@@ -492,9 +495,16 @@
     gaps: null,
     gapIndex: 0,
     gapAnswers: {},
+    /** Improvements left after the last one. -1 = unlimited. null = unknown. */
+    left: null,
     port: null,
     toastTimer: 0,
   }
+
+  // Say nothing until the user is genuinely close to running out. A counter
+  // that is always on screen is nagging; one that appears at the end is
+  // useful. This is the only number we ever show.
+  const WARN_AT = 2
 
   /** True while the box still contains our unedited output. */
   function boxHoldsOurOutput() {
@@ -516,7 +526,9 @@
     await loadAuth()
 
     if (authState.tier === 'anon' && anonCount >= ANON_FREE_TRIES) {
-      toast('Free tries used. Connect a free account for 5 rewrites every 48h.', {
+      // Don't quote the exact limit here: it dates instantly, and a number
+      // is not the reason to sign up. Say what they get.
+      toast('Connect a free account to keep improving prompts.', {
         action: { label: 'Connect', onClick: openConnect },
       })
       return
@@ -588,7 +600,11 @@
     let firstDelta = true
 
     port.onMessage.addListener(msg => {
-      if (msg.type === 'DELTA') {
+      if (msg.type === 'META') {
+        // How much headroom is left. -1 means unlimited (Pro), null means
+        // we don't know - in both cases we say nothing.
+        state.left = typeof msg.left === 'number' ? msg.left : null
+      } else if (msg.type === 'DELTA') {
         if (firstDelta) { acc = ''; firstDelta = false }
         acc += msg.text
         writePrompt(acc)
@@ -729,6 +745,7 @@
       state.phase = 'done'
       hideForks()
       showDoneChip()
+      noteHeadroom()
       fetchGaps(clean)
     } else {
       // Empty stream: leave the user's prompt untouched.
@@ -736,6 +753,43 @@
       resetToIdle()
       toast('Could not sharpen that. Try again.')
     }
+  }
+
+  /**
+   * The only place we ever mention limits.
+   *
+   * Silent while there is plenty left. A quiet, factual line when the user
+   * is nearly out. No meter, no bar, no colour alarm, no upsell - they have
+   * not hit anything yet, and nagging someone who is still working is how
+   * you lose them. The upgrade ask comes later, when it is actually
+   * relevant (see onSharpenError -> quota).
+   */
+  function noteHeadroom() {
+    const left = state.left
+
+    // Pro (-1): confirm the benefit exactly once, ever, then never again.
+    if (left === -1) {
+      if (!prefs.proSeen) {
+        prefs.proSeen = true
+        try { chrome.storage.local.set({ dc_pro_seen: true }) } catch {}
+        toast('Pro: unlimited improvements.', { good: true })
+      }
+      return
+    }
+
+    // Unknown, anonymous, or plenty left: say nothing.
+    if (typeof left !== 'number' || left > WARN_AT) return
+
+    if (left <= 0) {
+      // They just spent the last one. Tell them now rather than letting them
+      // discover it by being blocked next time.
+      toast('That was your last free improvement.', {
+        action: { label: 'Get unlimited', url: LINKS.pricing },
+      })
+      return
+    }
+
+    toast(`${left} improvement${left === 1 ? '' : 's'} left`)
   }
 
   /* ---------- Gaps: the details only the user knows ---------- */
@@ -866,8 +920,11 @@
 
     // Every blocking error gets a one-click way out.
     if (msg.error === 'quota') {
-      toast('You are out of free rewrites. They reset within 48 hours.', {
-        action: { label: 'Go Pro', url: LINKS.pricing },
+      // The conversion moment. Be clear about what happened, say when it
+      // comes back so it reads as a wait rather than a wall, and offer one
+      // clean way out. No guilt, no countdown pressure, no second button.
+      toast(`You have used all your free improvements. ${resetPhrase(msg.resetAt)}`, {
+        action: { label: 'Get unlimited', url: LINKS.pricing },
       })
     } else if (msg.error === 'pro_required') {
       toast('Deep Rewrite is a Pro feature.', {
@@ -882,6 +939,25 @@
     } else {
       toast('Something went wrong on our end. Try again.')
     }
+  }
+
+  /**
+   * "They come back at 4:15pm" beats "resets in 47.3 hours" - nobody wants
+   * to do arithmetic to find out when they can work again. Falls back to
+   * saying nothing rather than guessing wrong.
+   */
+  function resetPhrase(iso) {
+    if (!iso) return ''
+    const t = new Date(iso)
+    if (isNaN(t.getTime())) return ''
+    const hours = (t.getTime() - Date.now()) / 3_600_000
+    if (hours <= 0) return 'Try again now.'
+    if (hours < 12) {
+      const time = t.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+      return `They come back at ${time}.`
+    }
+    if (hours < 36) return 'They come back tomorrow.'
+    return `They come back in ${Math.round(hours / 24)} days.`
   }
 
   function undoSharpen() {

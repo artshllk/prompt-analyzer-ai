@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { explainSharpen, applyAnswers } from '@/lib/engine/explain'
 import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
+import { attachDiagnosis, updateFinalPrompt } from '@/lib/db/sessions'
 
 /**
  * Explain a sharpen that already happened: what was weak in the original,
@@ -72,11 +73,35 @@ export async function POST(req: NextRequest) {
   if (answers.length > 0) {
     const updated = await applyAnswers({ prompt: sharpened, answers })
     if (!updated) return corsJson({ error: 'ai_unavailable' }, 503)
+
+    // They filled in the details only they knew, so the prompt improved
+    // again. History must show what they actually ended up with, not the
+    // intermediate version.
+    if (auth) {
+      void updateFinalPrompt({
+        userId: auth.userId,
+        originalPrompt: original,
+        finalPrompt: updated,
+      })
+    }
+
     return corsJson({ prompt: updated }, 200)
   }
 
   const result = await explainSharpen({ original, sharpened })
   if (!result) return corsJson({ error: 'ai_unavailable' }, 503)
+
+  // The fast path could not score the prompt without slowing down. This
+  // call did the diagnosis, so backfill the session with it - that is what
+  // makes History teachable and gives Insights something to aggregate.
+  if (auth) {
+    void attachDiagnosis({
+      userId: auth.userId,
+      originalPrompt: original,
+      score: result.score,
+      gaps: result.gaps,
+    })
+  }
 
   return corsJson(result, 200)
 }

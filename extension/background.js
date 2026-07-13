@@ -91,14 +91,25 @@ chrome.runtime.onConnect.addListener(port => {
 
       if (!res.ok) {
         let error = 'server_error'
+        let resetAt = null
         if (res.status === 429) error = 'rate_limited'
         else if (res.status === 402) {
           const body = await res.json().catch(() => ({}))
           error = body.error === 'pro_required' ? 'pro_required' : 'quota'
+          // Carry WHEN it comes back, so the user gets a wait, not a wall.
+          resetAt = body.resetAt || null
         }
-        port.postMessage({ type: 'ERROR', error, status: res.status })
+        port.postMessage({ type: 'ERROR', error, status: res.status, resetAt })
         return
       }
+
+      // How many improvements are left after this one. -1 = unlimited (Pro).
+      // Missing header -> null -> the content script says nothing at all.
+      const leftHeader = res.headers.get('X-Improvements-Left')
+      port.postMessage({
+        type: 'META',
+        left: leftHeader === null ? null : parseInt(leftHeader, 10),
+      })
 
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
