@@ -10,7 +10,7 @@
 // content.js. It builds its own panel inside the existing shadow root.
 
 window.createDetailsPanel = function createDetailsPanel(ctx) {
-  const { root, writePrompt, authState, prefs, LINKS, onConnect, onDisconnect } = ctx
+  const { root, writePrompt, authState, prefs, LINKS, onConnect, onDisconnect, onReplace, onRestore } = ctx
 
   const wrap = document.createElement('div')
   wrap.innerHTML = `
@@ -86,6 +86,8 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
   const stage = q('#dc-stage')
   let history = []
   let currentPrompt = ''
+  /** The sharpened prompt already in the user's box, if the fast path ran. */
+  let sharpened = null
 
   const esc = s => { const d = document.createElement('div'); d.innerText = s || ''; return d.innerHTML }
   const scoreClass = n => (n < 30 ? 'lo' : n < 60 ? 'mid' : 'hi')
@@ -134,7 +136,9 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
   function renderLoading() {
     stage.innerHTML = `<div class="dc-rule"></div>
       <div class="dc-dots" style="margin:16px 0"><span></span><span></span><span></span></div>
-      <p class="dc-sub">Reading your prompt: what's clear, what's missing, and how it could be misread.</p>`
+      <p class="dc-sub">${sharpened
+        ? 'Looking at what your original prompt was missing.'
+        : "Reading your prompt: what's clear, what's missing, and how it could be misread."}</p>`
   }
 
   // Errors are not dead ends: each one offers the action that resolves it.
@@ -195,34 +199,77 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
   }
 
   function renderAlreadyGood(d) {
+    // In explain-mode the user already has our sharpened text, so offer a
+    // way back to their original rather than pretending nothing happened.
+    const undoRow = sharpened
+      ? `<div class="dc-actions"><button class="dc-btn ghost" id="dc-restore">Restore my original</button></div>`
+      : ''
     stage.innerHTML = `
       <div class="dc-rule"></div>
       <div class="dc-eyebrow" style="color:#8FB4F2;margin-bottom:8px">Already strong · ${d.scoreBeforeImprovement ?? ''}/100</div>
       <p class="dc-sub" style="color:#F5F4F1">${esc(d.message)}</p>
       ${d.tweaks && d.tweaks.length ? `<div class="dc-label">If you want to tune it</div><ul class="dc-forecast">${d.tweaks.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
+      ${undoRow}
       <p class="dc-sub" style="margin-top:14px;font-size:12px">No credit used. We only charge for real rewrites.</p>
     `
+    const r = q('#dc-restore')
+    if (r) r.addEventListener('click', () => {
+      if (onRestore) onRestore()
+      else writePrompt(currentPrompt)
+      close()
+    })
   }
 
+  /**
+   * Two modes:
+   *  - explain  (sharpened != null): the user already has our fast rewrite
+   *    in their box and clicked "why?". We show the DIAGNOSIS of their
+   *    original - what was missing, what would have gone wrong - and offer
+   *    the deeper rewrite as an option. We never silently swap their text.
+   *  - rewrite  (sharpened == null): they opened the panel cold, so the
+   *    deep rewrite IS the result.
+   */
   function renderDone(d) {
+    const explaining = !!sharpened
     const b = d.scoreBeforeImprovement ?? 0
     const a = d.clarityScoreAfter ?? 0
+
+    const gaps = d.audit && d.audit.findings && d.audit.findings.length
+      ? `<div class="dc-label">What your prompt was missing</div><ul class="dc-forecast">${d.audit.findings
+          .map(f => `<li>${esc(f.note)}</li>`).join('')}</ul>`
+      : ''
     const forecast = d.audit && d.audit.failureForecast && d.audit.failureForecast.length
-      ? `<div class="dc-label">Run as-is, this happens</div><ul class="dc-forecast">${d.audit.failureForecast.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`
+      ? `<div class="dc-label">Left as-is, this happens</div><ul class="dc-forecast">${d.audit.failureForecast
+          .map(f => `<li>${esc(f)}</li>`).join('')}</ul>`
       : ''
     const critique = d.critique
       ? `<div class="dc-label" style="color:#8FB4F2">What the critic caught</div><p class="dc-sub" style="margin:0">${esc(d.critique)}</p>`
       : ''
+
+    const head = explaining
+      ? `<div class="dc-eyebrow" style="margin-bottom:8px">Your original scored ${b}/100</div>
+         <div class="dc-label" style="margin-top:0">Your original prompt</div>
+         <div class="dc-box" style="color:#A8A6A0">${esc(currentPrompt)}</div>
+         ${gaps}
+         ${forecast}
+         <div class="dc-rule"></div>
+         <div class="dc-label" style="margin-top:0">Want to go deeper?</div>
+         <p class="dc-sub" style="margin:0 0 4px">This is a fuller rewrite than the quick sharpen already in your box. It scores ${a}/100.</p>
+         <div class="dc-box">${esc(d.improvedPrompt)}</div>
+         ${critique}`
+      : `<div class="dc-eyebrow" style="margin-bottom:8px">Clarity ${b} → ${a}</div>
+         ${gaps}
+         ${forecast}
+         <div class="dc-label">Improved prompt</div>
+         <div class="dc-box">${esc(d.improvedPrompt)}</div>
+         ${d.explanation ? `<p class="dc-sub" style="margin:10px 0 0">${esc(d.explanation)}</p>` : ''}
+         ${critique}`
+
     stage.innerHTML = `
       <div class="dc-rule"></div>
-      <div class="dc-eyebrow" style="margin-bottom:8px">Clarity ${b} → ${a}</div>
-      <div class="dc-label" style="margin-top:0">Improved prompt</div>
-      <div class="dc-box">${esc(d.improvedPrompt)}</div>
-      ${d.explanation ? `<p class="dc-sub" style="margin:10px 0 0">${esc(d.explanation)}</p>` : ''}
-      ${forecast}
-      ${critique}
+      ${head}
       <div class="dc-actions">
-        <button class="dc-btn" id="dc-replace">Use this in chat</button>
+        <button class="dc-btn" id="dc-replace">${explaining ? 'Use this instead' : 'Use this in chat'}</button>
         <button class="dc-btn ghost" id="dc-copy">Copy</button>
       </div>
       ${authState.tier !== 'pro' && !d.critique ? `
@@ -237,14 +284,25 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
       setTimeout(() => { e.target.textContent = 'Copy' }, 1500)
     })
     q('#dc-replace').addEventListener('click', () => {
-      writePrompt(d.improvedPrompt)
+      // Tell content.js what we wrote, so its "sharpened" state tracks the
+      // deep rewrite and the sticky chip / undo keep working.
+      if (onReplace) onReplace(d.improvedPrompt)
+      else writePrompt(d.improvedPrompt)
       close()
     })
   }
 
   return {
-    open(prompt) {
+    /**
+     * @param prompt      the user's ORIGINAL prompt (never our own output)
+     * @param alreadyHave the sharpened text already sitting in their box,
+     *                    if any. When present we show it as the current
+     *                    result and diagnose the original around it, rather
+     *                    than producing a second, competing rewrite.
+     */
+    open(prompt, alreadyHave) {
       currentPrompt = prompt
+      sharpened = alreadyHave || null
       history = []
       renderAccount()
       overlay.classList.add('open')

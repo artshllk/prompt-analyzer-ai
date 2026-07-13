@@ -155,11 +155,12 @@
         padding: 1px 5px; margin-left: 2px;
       }
       .chip .why {
-        font-size: 11px; font-weight: 600; color: #3763b6;
-        margin-left: 4px; padding-left: 8px; border-left: 1px solid rgba(14,14,16,.2);
+        font-size: 11px; font-weight: 600; color: #2f5fae;
+        margin-left: 2px; padding-left: 8px; border-left: 1px solid rgba(14,14,16,.2);
         cursor: pointer;
       }
       .chip .why:hover { text-decoration: underline; }
+      .chip #undo { color: #6b6a66; }
       .chip.state-working { background: #E9E7E2; cursor: default; }
       .chip.state-done { background: #DFF0E4; }
       .chip .dots span {
@@ -293,16 +294,27 @@
     chip.onclick = null
   }
 
+  /**
+   * The sharpened state is STICKY: it stays until the text in the box
+   * actually changes. No timer. Two reasons:
+   *  - "why?" must remain reachable. A 4s window meant the explanation
+   *    vanished before the user finished reading the new prompt.
+   *  - Re-sharpening our own output compounds it into mush. While the box
+   *    holds our result, Sharpen is off; Undo and why? are what's offered.
+   * Edit the text (or send it) and we return to idle, ready to sharpen.
+   */
   function showDoneChip() {
     positionChip()
     chip.className = 'chip show state-done'
     chip.innerHTML =
-      `<span class="mark">✓</span>Sharpened<span class="kbd">Esc to undo</span><span class="why" id="why">why?</span>`
+      `<span class="mark">✓</span>Sharpened` +
+      `<span class="why" id="why">why?</span>` +
+      `<span class="why" id="undo">undo</span>`
     const why = $('#why')
     if (why) why.onclick = openDetails
+    const undo = $('#undo')
+    if (undo) undo.onclick = undoSharpen
     chip.onclick = null
-    clearTimeout(state.doneTimer)
-    state.doneTimer = setTimeout(showIdleChip, 4200)
   }
 
   /**
@@ -351,14 +363,32 @@
 
   const state = {
     phase: 'idle', // idle | working | done
+    /** The user's prompt as it was BEFORE we touched it. What "why?" explains. */
     before: '',
+    /** Exactly what we wrote into the box. If the box still holds this, the
+     *  user hasn't edited our output - so Sharpen stays off and "why?" is live. */
+    after: '',
     port: null,
-    doneTimer: 0,
     toastTimer: 0,
+  }
+
+  /** True while the box still contains our unedited output. */
+  function boxHoldsOurOutput() {
+    return state.phase === 'done' && !!state.after && readPrompt() === state.after
   }
 
   async function onSharpen() {
     if (state.phase === 'working') return
+
+    // Never sharpen our own output - it compounds into mush. The box
+    // already holds a sharpened prompt: offer the explanation instead.
+    if (boxHoldsOurOutput()) {
+      toast('Already sharpened. Edit it, or see what changed.', {
+        action: { label: 'why?', onClick: openDetails },
+      })
+      return
+    }
+
     await loadAuth()
 
     if (authState.tier === 'anon' && anonCount >= ANON_FREE_TRIES) {
@@ -400,24 +430,30 @@
   }
 
   function finishSharpen(result) {
-    state.phase = 'done'
-    if (result && result.trim()) {
-      writePrompt(result.trim())
+    const clean = (result || '').trim()
+    if (clean) {
+      writePrompt(clean)
+      state.after = clean
+      state.phase = 'done'
       showDoneChip()
     } else {
       // Empty stream: leave the user's prompt untouched.
       writePrompt(state.before)
-      state.phase = 'idle'
-      toast('Could not sharpen that - try again')
-      showIdleChip()
+      resetToIdle()
+      toast('Could not sharpen that. Try again.')
     }
+  }
+
+  function resetToIdle() {
+    state.phase = 'idle'
+    state.after = ''
+    showIdleChip()
   }
 
   function onSharpenError(msg) {
     // Restore what the user had; never leave the box half-written.
     writePrompt(state.before)
-    state.phase = 'idle'
-    showIdleChip()
+    resetToIdle()
 
     // Every blocking error gets a one-click way out.
     if (msg.error === 'quota') {
@@ -442,9 +478,8 @@
   function undoSharpen() {
     if (state.phase !== 'done') return
     writePrompt(state.before)
-    state.phase = 'idle'
-    toast('Reverted')
-    showIdleChip()
+    resetToIdle()
+    toast('Reverted to your original')
   }
 
   /* ---------- Connect an account ---------- */
@@ -530,11 +565,17 @@
 
   let panelLoaded = false
   function openDetails() {
-    // Lazily inject the full panel module the first time it's needed, so
-    // the default inline path stays lightweight. The panel reuses the same
-    // analyze pipeline (forks, diagnosis, Deep Rewrite).
+    // Lazily inject the full panel the first time it's needed, so the
+    // default inline path stays lightweight.
     if (!panelLoaded) { buildPanel(); panelLoaded = true }
-    openPanel(state.before || readPrompt())
+
+    // CRITICAL: always diagnose the user's ORIGINAL prompt, never our own
+    // output. Analyzing the sharpened text produced nonsense like
+    // "clarity 88 -> 88" plus a second, competing rewrite - it answered a
+    // question nobody asked. We pass the original, and tell the panel what
+    // we already wrote so it can show the real before/after.
+    const original = state.before || readPrompt()
+    openPanel(original, boxHoldsOurOutput() ? state.after : null)
   }
 
   /* ---------- Triggers ---------- */
@@ -545,38 +586,61 @@
     e => {
       const el = findPromptEl()
       const inBox = el && (document.activeElement === el || el.contains(document.activeElement))
+
       if (e.altKey && (e.key === 'i' || e.key === 'I')) {
         if (readPrompt()) { e.preventDefault(); onSharpen() }
-      } else if (e.key === 'Escape' && state.phase === 'done') {
-        e.preventDefault(); undoSharpen()
-      } else if (inBox && state.phase === 'done' && (e.key === 'Enter' || e.key === 'Tab')) {
-        // Accept: just let the done state settle back to idle. The
-        // sharpened text is already in the box, so Enter sends it.
-        state.phase = 'idle'
-        showIdleChip()
+        return
+      }
+      // Esc undoes while our output is still untouched in the box.
+      if (e.key === 'Escape' && boxHoldsOurOutput()) {
+        e.preventDefault()
+        undoSharpen()
+        return
+      }
+      // Enter sends the sharpened prompt - the box empties, so we go idle.
+      if (inBox && e.key === 'Enter' && !e.shiftKey && state.phase === 'done') {
+        setTimeout(syncChip, 60)
       }
     },
     true
   )
 
-  // Show/hide the idle chip as the user focuses the prompt box and types.
+  /**
+   * Single source of truth for what the chip shows. Called on focus,
+   * input, resize, and on a timer (these SPAs swap the input element on
+   * navigation, so one-time binds aren't enough).
+   */
   function syncChip() {
-    if (state.phase === 'working' || state.phase === 'done') return
+    if (state.phase === 'working') return
+
     const el = findPromptEl()
-    if (el && readPrompt()) showIdleChip()
-    else hideChip()
+    const text = readPrompt()
+
+    if (!el || !text) {
+      // Box empty (usually: they sent it). Nothing to sharpen or explain.
+      if (state.phase === 'done') { state.phase = 'idle'; state.after = '' }
+      hideChip()
+      return
+    }
+
+    if (state.phase === 'done') {
+      // Still holding our output? Keep the sticky Sharpened chip.
+      if (text === state.after) { showDoneChip(); return }
+      // They edited it. It's their prompt again - offer to sharpen.
+      resetToIdle()
+      return
+    }
+
+    showIdleChip()
   }
 
   document.addEventListener('focusin', syncChip, true)
-  document.addEventListener('input', () => { if (state.phase === 'idle') syncChip() }, true)
+  document.addEventListener('input', syncChip, true)
   window.addEventListener('scroll', () => {
     if (chip.classList.contains('show')) positionChip()
   }, true)
   window.addEventListener('resize', syncChip)
-
-  // Re-evaluate periodically: these SPAs swap the input element on
-  // navigation, so a one-time bind isn't enough.
-  setInterval(syncChip, 1500)
+  setInterval(syncChip, 1200)
 
   /* ---------- Details panel builder (kept from the panel-first version) ---------- */
   // Defined lazily; only the deep-details path uses it. Injected the first
@@ -595,10 +659,25 @@
       LINKS,
       onConnect: openConnect,
       onDisconnect: disconnect,
+      // The panel wrote a deeper rewrite into the box. Track it as our
+      // output so the sticky chip, undo, and re-sharpen guard all hold.
+      onReplace: text => {
+        const clean = (text || '').trim()
+        if (!clean) return
+        writePrompt(clean)
+        state.after = clean
+        state.phase = 'done'
+        showDoneChip()
+      },
+      // They restored their original from the panel.
+      onRestore: () => {
+        writePrompt(state.before)
+        resetToIdle()
+      },
     })
   }
-  function openPanel(prompt) {
-    if (panelApi) panelApi.open(prompt)
+  function openPanel(prompt, alreadyHave) {
+    if (panelApi) panelApi.open(prompt, alreadyHave)
     else window.open(LINKS.playground, '_blank', 'noopener')
   }
 })()
