@@ -74,13 +74,14 @@ export async function POST(req: NextRequest) {
   if (!prompt) return corsJson({ error: 'prompt_required' }, 400)
   if (prompt.length > 4000) return corsJson({ error: 'prompt_too_long' }, 400)
 
-  // Answering a clarifying question refines the SAME analysis - it must not
-  // cost a second credit. Only the first sharpen of a prompt is charged.
-  const isRefinement = !!choice
+  // The clarifying question is asked BEFORE any rewrite (see the extension's
+  // ask-first flow), so a call carrying a `choice` is still the one and only
+  // rewrite of that prompt - it charges like any other. Every sharpen = one
+  // credit, whether or not a question was answered on the way.
 
   // Rolling quota for signed-in free users (same 5/48h bucket as analyze -
   // a sharpen is a rewrite). Pro bypasses.
-  if (auth && auth.tier === 'free' && !isRefinement) {
+  if (auth && auth.tier === 'free') {
     const supabase = await createServiceClient()
     const { count } = await supabase
       .from('usage_events')
@@ -97,12 +98,11 @@ export async function POST(req: NextRequest) {
   }
 
   console.log(
-    `[anon-sharpen] source=${source} refine=${isRefinement} auth=${auth ? `${auth.tier}:${auth.userId.slice(0, 8)}` : 'anon'} ts=${new Date().toISOString()}`
+    `[anon-sharpen] source=${source} answered=${!!choice} auth=${auth ? `${auth.tier}:${auth.userId.slice(0, 8)}` : 'anon'} ts=${new Date().toISOString()}`
   )
 
-  // Record usage for signed-in users, fire-and-forget. Refinements belong
-  // to the analysis the user already paid for.
-  if (auth && !isRefinement) {
+  // Record usage for signed-in users, fire-and-forget.
+  if (auth) {
     const supabase = await createServiceClient()
     supabase
       .from('usage_events')

@@ -228,8 +228,15 @@
         transition: border-color .14s, background .14s;
       }
       .fork:hover { border-color: #8FB4F2; background: #21212a; }
-      .fork b { display: block; font-size: 12.5px; font-weight: 600; }
-      .fork span { display: block; color: #A8A6A0; font-size: 11.5px; margin-top: 1px; line-height: 1.4; }
+      .fork b { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; }
+      .fork b .n {
+        flex-shrink: 0; font-style: normal; font-size: 9.5px; font-weight: 700;
+        width: 15px; height: 15px; border-radius: 4px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: rgba(245,244,241,.10); color: #A8A6A0;
+      }
+      .fork:hover b .n { background: #8FB4F2; color: #0E0E10; }
+      .fork span { display: block; color: #A8A6A0; font-size: 11.5px; margin-top: 2px; margin-left: 22px; line-height: 1.4; }
 
       /* Connect box - the paste target, anchored right by the input so
          the user never has to hunt for where the code goes. */
@@ -329,6 +336,32 @@
   }
 
   /**
+   * Two moments, one chip: checking whether the prompt is ambiguous, and
+   * then waiting for the user to pick an answer. The box is untouched in
+   * both - nothing has been rewritten yet.
+   */
+  function showAskingChip() {
+    positionChip()
+    chip.className = 'chip show state-working'
+    chip.innerHTML =
+      state.phase === 'asking'
+        ? `<span class="mark">?</span>One quick question` +
+          `<span class="why" id="skip">skip</span>`
+        : `<span class="dots"><span></span><span></span><span></span></span>Reading your prompt`
+    chip.onclick = null
+    const skip = $('#skip')
+    if (skip) skip.onclick = skipQuestion
+  }
+
+  /** They don't want to answer: rewrite anyway, with our best guess. */
+  function skipQuestion() {
+    if (state.phase !== 'asking') return
+    hideForks()
+    state.fork = null
+    streamSharpenInto(state.before, null)
+  }
+
+  /**
    * The sharpened state is STICKY: it stays until the text in the box
    * actually changes. No timer. Two reasons:
    *  - "why?" must remain reachable. A 4s window meant the explanation
@@ -403,7 +436,11 @@
   /* ---------- The core action: fast-path streaming sharpen ---------- */
 
   const state = {
-    phase: 'idle', // idle | working | done
+    // idle    - nothing done yet, Sharpen offered
+    // working - a call is in flight (fork check, or the rewrite streaming)
+    // asking  - the question is on screen, box UNTOUCHED, waiting on a click
+    // done    - our rewrite is in the box
+    phase: 'idle',
     /** The user's prompt as it was BEFORE we touched it. What "why?" explains. */
     before: '',
     /** Exactly what we wrote into the box. If the box still holds this, the
@@ -448,27 +485,45 @@
 
     state.before = prompt
     state.fork = null
+    state.chosen = ''
     hideForks()
-    if (authState.tier === 'anon') bumpAnon()
 
-    // Ask whether the prompt is ambiguous IN PARALLEL with rewriting it.
-    // Serialising these would add 1-3s to every sharpen; this way the
-    // rewrite still lands in ~1s and the question (if there is one) shows
-    // up right after, offering to refine what the user already has.
+    // ASK FIRST, then rewrite ONCE.
+    //
+    // We used to rewrite immediately and ask afterwards, to save latency.
+    // That was wrong: the user watched a rewrite land, got asked a
+    // question, then watched it get rewritten AGAIN. The first rewrite was
+    // built on a guess and thrown away - it flickered, and it made the tool
+    // look like it didn't know what it was doing. A question that arrives
+    // after the answer is worthless.
+    //
+    // So the fork check now GATES the rewrite. An ambiguous prompt waits
+    // ~1.5s and sees a question; a clear prompt goes straight to the
+    // rewrite. Either way the box is written exactly once.
+    state.phase = 'working'
+    showAskingChip()
+
     chrome.runtime.sendMessage(
       { type: 'DEEPCLARIO_FORK', prompt, token: authState.token },
       resp => {
-        if (!resp || !resp.ok || !resp.data) return
-        const f = resp.data
-        if (!f.question || !f.options || f.options.length < 2) return
-        // Only offer it if this is still the prompt we sharpened.
-        if (state.before !== prompt) return
-        state.fork = f
-        if (state.phase === 'done') showForks(f)
+        // Prompt changed under us (user kept typing) - abandon quietly.
+        if (state.before !== prompt || state.phase !== 'working') return
+
+        const f = resp && resp.ok ? resp.data : null
+        const ambiguous = f && f.question && Array.isArray(f.options) && f.options.length >= 2
+
+        if (ambiguous) {
+          // Ask. The box stays untouched until they answer.
+          state.fork = f
+          state.phase = 'asking'
+          showAskingChip()
+          showForks(f)
+          return
+        }
+        // Clear enough: rewrite it, once.
+        streamSharpenInto(prompt, null)
       }
     )
-
-    streamSharpenInto(prompt, null)
   }
 
   /**
@@ -479,6 +534,11 @@
   function streamSharpenInto(prompt, choice) {
     state.phase = 'working'
     showWorkingChip()
+
+    // Count the anonymous try here, not when Sharpen was pressed: a user
+    // who gets a question and walks away never got a rewrite, so they
+    // shouldn't have spent a try on it.
+    if (authState.tier === 'anon') bumpAnon()
 
     const port = chrome.runtime.connect({ name: 'DEEPCLARIO_SHARPEN' })
     state.port = port
@@ -508,7 +568,10 @@
     })
   }
 
-  /** The user picked an interpretation: re-sharpen committed to it. */
+  /**
+   * They answered. NOW we rewrite - once, committed to what they meant.
+   * The box has been untouched until this moment.
+   */
   function chooseFork(option) {
     hideForks()
     state.fork = null
@@ -539,11 +602,16 @@
     q.appendChild(qx)
     forksEl.appendChild(q)
 
-    fork.options.forEach(o => {
+    fork.options.forEach((o, i) => {
       const b = document.createElement('button')
       b.className = 'fork'
       const label = document.createElement('b')
-      label.textContent = o.label
+      // Number hint: the keyboard shortcut that picks this option.
+      const num = document.createElement('i')
+      num.className = 'n'
+      num.textContent = String(i + 1)
+      label.appendChild(num)
+      label.appendChild(document.createTextNode(o.label))
       const sum = document.createElement('span')
       sum.textContent = o.summary
       b.appendChild(label)
@@ -577,11 +645,8 @@
       writePrompt(clean)
       state.after = clean
       state.phase = 'done'
+      hideForks()
       showDoneChip()
-      // If the parallel check found the prompt genuinely ambiguous, ask now -
-      // inline, as buttons. The user already has a usable rewrite; this
-      // offers to commit it to what they actually meant.
-      if (state.fork) showForks(state.fork)
     } else {
       // Empty stream: leave the user's prompt untouched.
       writePrompt(state.before)
@@ -740,6 +805,22 @@
         if (readPrompt()) { e.preventDefault(); onSharpen() }
         return
       }
+      // While a question is up: 1/2/3 picks an answer, Esc skips it.
+      // Keeps the whole flow on the keyboard - never forces a reach for
+      // the mouse mid-thought.
+      if (state.phase === 'asking' && state.fork) {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          skipQuestion()
+          return
+        }
+        const n = parseInt(e.key, 10)
+        if (n >= 1 && n <= state.fork.options.length) {
+          e.preventDefault()
+          chooseFork(state.fork.options[n - 1])
+          return
+        }
+      }
       // Esc undoes while our output is still untouched in the box.
       if (e.key === 'Escape' && boxHoldsOurOutput()) {
         e.preventDefault()
@@ -767,14 +848,17 @@
 
     if (!el || !text) {
       // Box empty (usually: they sent it). Nothing to sharpen or explain.
-      if (state.phase === 'done') {
-        state.phase = 'idle'
-        state.after = ''
-        state.fork = null
-        state.chosen = ''
-      }
-      hideForks()
+      if (state.phase !== 'idle') resetToIdle()
       hideChip()
+      return
+    }
+
+    if (state.phase === 'asking') {
+      // A question is on screen and the box is untouched. If they edited
+      // the prompt instead of answering, the question is stale - drop it.
+      if (text !== state.before) { resetToIdle(); return }
+      showAskingChip()
+      positionForks()
       return
     }
 
