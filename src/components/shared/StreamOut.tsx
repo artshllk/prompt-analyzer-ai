@@ -38,7 +38,9 @@ export function StreamOut({
 
   // Keep onDone in a ref so its identity doesn't restart the animation.
   const onDoneRef = useRef(onDone)
-  onDoneRef.current = onDone
+  useEffect(() => {
+    onDoneRef.current = onDone
+  }, [onDone])
 
   useEffect(() => {
     setCount(0)

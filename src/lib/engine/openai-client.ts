@@ -52,6 +52,86 @@ function parseJSON<T>(raw: string): T | null {
   }
 }
 
+/**
+ * Streaming plain-text completion. Unlike callLLM (which returns parsed
+ * JSON), this yields raw text chunks as they arrive - for the fast-path
+ * sharpen flow where perceived latency is everything and the output is a
+ * bare prompt, not structured data.
+ *
+ * Yields incremental content deltas. The caller concatenates them. Throws
+ * on a hard failure so the route can fall back or surface an error.
+ */
+export async function* streamLLM(req: {
+  systemPrompt: string
+  userMessage: string
+  model?: string
+  maxOutputTokens?: number
+}): AsyncGenerator<string, void, unknown> {
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) throw new Error('OPENAI_API_KEY is not set')
+
+  const model = req.model ?? MODEL
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+
+  try {
+    const res = await fetch(OPENAI_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model,
+        stream: true,
+        ...(model.startsWith('gpt-5')
+          ? { max_completion_tokens: (req.maxOutputTokens ?? 700) * 2 + 400 }
+          : { temperature: 0.4, max_tokens: req.maxOutputTokens ?? 700 }),
+        messages: [
+          { role: 'system', content: req.systemPrompt },
+          { role: 'user', content: req.userMessage },
+        ],
+      }),
+    })
+
+    if (!res.ok || !res.body) {
+      const detail = await res.text().catch(() => '')
+      console.error(`[openai] ${model} stream error ${res.status}: ${detail.slice(0, 200)}`)
+      throw new Error(`OpenAI stream ${res.status}`)
+    }
+
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+
+      // SSE frames are separated by double newlines; each data: line is JSON.
+      const frames = buffer.split('\n\n')
+      buffer = frames.pop() ?? ''
+      for (const frame of frames) {
+        const line = frame.trim()
+        if (!line.startsWith('data:')) continue
+        const payload = line.slice(5).trim()
+        if (payload === '[DONE]') return
+        try {
+          const json = JSON.parse(payload)
+          const delta = json.choices?.[0]?.delta?.content
+          if (delta) yield delta as string
+        } catch {
+          // partial/keepalive frame - ignore
+        }
+      }
+    }
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 export async function callLLM<T>(req: LLMRequest): Promise<T | null> {
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {

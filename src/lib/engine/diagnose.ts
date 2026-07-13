@@ -63,9 +63,15 @@ Silently imagine completing this prompt. If materially different plausible readi
 - Never fork on a distinction the prompt already settles. "Help me write what to say in the call tomorrow" already names the artifact (a call script) and the occasion; forking on script-vs-general-advice would ignore what was said. Re-read the prompt before forking: is this choice actually open?
 
 # 5. QUESTION (required whenever forks materially diverge AND confidence < 75 AND no prior answer already resolved them)
-Ask ONE question that is answered by picking a fork. The question text should read naturally ("I can read this a few ways - which is closest?" adapted to the prompt). Never ask anything a fork click doesn't answer. Never ask for information already given in the prompt or prior answers. If prior answers exist, treat them as ground truth and do not re-ask.
+Ask ONE short question that is answered by picking a fork. Never ask anything a fork click doesn't answer. Never ask for information already given in the prompt or prior answers. If prior answers exist, treat them as ground truth and do not re-ask.
 When you emit forks and no prior answers exist, you MUST also emit the question - forks without a question are useless to the user.
-- question.text and targets_gap must also be plain, everyday words - short sentences, no business or technical jargon ("materially change," "conversion goal," "positioning"), written so a non-native or non-expert reader gets it on first read. Say what's different in concrete terms instead of naming the abstract category.
+
+How to write the question - this is user-facing copy and it must feel human:
+- ONE short, natural question, the way a thoughtful colleague would ask it. Usually under 12 words. Examples of the register: "What kind of image do you have in mind?" / "Who is this email going to?" / "Is this to fix a bug or to make it faster?"
+- Write it fresh for THIS prompt. Never open with a stock phrase. Banned openers: "I can read this a few ways", "This could mean a few things", "Quick question", or any other reusable template. If your question would fit a different prompt unchanged, rewrite it.
+- Do NOT list or summarize the fork options inside the question. The options are shown as buttons right below it; repeating them reads twice as long and half as smart. Never write "which is closest: A, B, or C".
+- Plain, everyday English: short words, no business or technical jargon, no em dashes, no semicolons. A reader with medium English must get it on first read.
+- targets_gap: one short plain sentence on what the answer decides. Same language rules.
 
 # 6. ALREADY GOOD
 If the prompt is genuinely strong - clear goal, sufficient context, bounded format, checkable success - set already_good = true and say specifically what it does right, plus 1-2 marginal tweaks. Do not invent problems to seem useful. An honest "this is already good" is a feature.
@@ -93,17 +99,26 @@ function buildUserMessage(input: AnalyzeInput): string {
 }
 
 export async function diagnose(input: AnalyzeInput): Promise<DiagnoseResponse | null> {
-  const result = await callLLM<DiagnoseResponse>({
+  const request = {
     model: MODELS.diagnose,
     systemPrompt: SYSTEM_PROMPT.replace('{{RUBRICS}}', rubricDigest()),
     userMessage: buildUserMessage(input),
     temperature: 0.3,
     maxOutputTokens: 1200,
     responseSchema: DIAGNOSE_SCHEMA as unknown as Record<string, unknown>,
-  })
+  }
+
+  // Diagnose is the pipeline's front door - if it fails, the user sees an
+  // error. Unlike rewrite/critic it has no cross-provider fallback, so a
+  // single retry absorbs the occasional transient failure.
+  let result = await callLLM<DiagnoseResponse>(request)
+  if (!result || !result.score || !result.audit) {
+    console.error(`[engine.diagnose] first attempt ${!result ? 'llm_failed' : 'missing_score_or_audit'}, retrying once`)
+    result = await callLLM<DiagnoseResponse>(request)
+  }
 
   if (!result || !result.score || !result.audit) {
-    console.error(`[engine.diagnose] ${!result ? 'llm_failed' : 'missing_score_or_audit'}`)
+    console.error(`[engine.diagnose] ${!result ? 'llm_failed' : 'missing_score_or_audit'} after retry`)
     return null
   }
   return result
