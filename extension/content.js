@@ -1,10 +1,10 @@
 // Deepclario extension - content script (in-workflow, inline-first).
 //
 // The product is not a panel. It is a quiet layer over ChatGPT / Claude /
-// Gemini: press one shortcut and the prompt in the box is sharpened in
+// Gemini: press one shortcut and the prompt in the box is improved in
 // place, streamed in live. No destination, no paste-back.
 //
-//   Alt+I / ⌥I on a Mac (or the small ✦ chip by the input) → sharpen.
+//   Alt+I (⌥I on a Mac), or the small ✦ chip by the input → improve.
 //   Enter sends it. Esc undoes.
 //   "+ N details" on the chip → the questions only you can answer, inline.
 //   "compare" → the one thing the chip cannot do: show your original beside
@@ -1099,23 +1099,33 @@
 
   // Global hotkey. Unclaimed on all three sites.
   //
-  // MUST match on e.code, not e.key. On macOS, Option is Alt - but Option+I is
-  // a DEAD KEY: the OS swallows it to compose an accent, and the browser
-  // reports e.key as "ˆ", never "i". Checking e.key meant the shortcut simply
-  // did not exist on a Mac. e.code reports the physical key ("KeyI") whatever
-  // character the OS decides to produce, so it works on every platform and
-  // every keyboard layout. The e.key check stays as a fallback for anything
-  // that does not send a code.
+  // MUST match on e.code, not e.key. On macOS, Option+I is a DEAD KEY: the OS
+  // swallows it to compose an accent, so the browser reports e.key as "ˆ",
+  // never "i". Checking e.key meant the shortcut did not exist on a Mac at all.
+  // e.code reports the physical key whatever character the OS produces, so one
+  // check covers Windows, Mac, Linux and every keyboard layout. The e.key
+  // check stays as a fallback for anything that does not send a code.
   window.addEventListener(
     'keydown',
     e => {
       const el = findPromptEl()
       const inBox = el && (document.activeElement === el || el.contains(document.activeElement))
 
-      const isSharpenKey =
-        e.altKey && (e.code === 'KeyI' || e.key === 'i' || e.key === 'I')
+      // Alt+I on Windows/Linux, Option+I on a Mac. One check for everyone:
+      // e.code is the PHYSICAL key, so it does not care which character the
+      // OS or the keyboard layout produces.
+      //
+      // The ctrl/meta exclusions are not paranoia. On German, Polish, Spanish
+      // and other European layouts, AltGr (the right Alt key) types @ € { } -
+      // and browsers report AltGr as ctrlKey AND altKey together. Without this,
+      // a German user typing an @ would fire the shortcut by accident.
+      const isImproveKey =
+        e.altKey &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        (e.code === 'KeyI' || e.key === 'i' || e.key === 'I')
 
-      if (isSharpenKey) {
+      if (isImproveKey) {
         if (readPrompt()) { e.preventDefault(); onSharpen() }
         return
       }
