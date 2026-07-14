@@ -241,7 +241,7 @@ const DIFFERENCES = [
   {
     title: 'It asks before it rewrites',
     body:
-      '"Help me write a JavaScript array" could mean three different things. Instead of guessing, it asks you one short question and gives you the answers to tap. Then it rewrites, once, for what you actually meant.',
+      '"Help me write a song" could mean a love song, a sad song, or something fun. Instead of guessing, it asks you one short question and gives you the answers to tap. Then it rewrites, once, for what you actually meant.',
   },
   {
     title: 'It remembers your answers',

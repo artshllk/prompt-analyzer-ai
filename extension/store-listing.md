@@ -20,7 +20,7 @@ Type your prompt in ChatGPT, Claude, or Gemini and press Alt+I (Option+I on a Ma
 
 WHAT MAKES IT DIFFERENT
 
-• It asks before it rewrites. "Help me write a JavaScript array" could mean three different things. Instead of guessing, it asks you one short question and gives you the answers to tap. Then it rewrites, once, for what you actually meant.
+• It asks before it rewrites. "Help me write a song" could mean a love song, a sad song, or something fun. Instead of guessing, it asks you one short question and gives you answers to tap. Then it rewrites, once, for what you actually meant.
 
 • It knows the job. A coding prompt gets what an engineer would ask for: the code, the error, what "working" looks like. A cold email gets what a good copywriter would: a subject line, one reader, one clear ask. It does not use the same template for everything.
 
