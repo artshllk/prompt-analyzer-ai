@@ -12,6 +12,11 @@ import { Hotkey } from '@/components/shared/Hotkey'
  * showing is not the rewrite (everyone claims that) - it is that it ASKS
  * first. That is the whole difference, so it is what the picture is of.
  *
+ * The example is deliberately NOT a coding one. This is for people who are not
+ * prompt engineers; leading with "help me write a javascript array" tells most
+ * of them the product is not for them. "Help me write a song" needs no
+ * explanation - anyone can see instantly why that question has to be asked.
+ *
  * CSS/HTML mock, not a screenshot: always crisp, always on-brand, and it can
  * animate the one beat that matters.
  */
@@ -54,13 +59,13 @@ export function ExtensionHeroVisual() {
               color: 'var(--color-paper)',
             }}
           >
-            What kind of array do you need?
+            What kind of song do you want?
           </div>
 
           <div className="space-y-1.5">
             {[
-              ['Simple list', 'Numbers or words, like [1, 2, 3]'],
-              ['Object list', 'Items with fields, like { name: … }'],
+              ['Love song', 'About feelings for someone, sweet or emotional.'],
+              ['Sad song', 'About loss, hurt, or hard times.'],
             ].map(([label, sub], i) => (
               <motion.div
                 key={label}
@@ -134,7 +139,7 @@ export function ExtensionHeroVisual() {
             }}
           >
             <p className="text-[13.5px]" style={{ color: 'var(--color-paper)' }}>
-              help me write a javascript array
+              help me write a song
             </p>
             <div className="mt-3 flex items-center justify-between">
               <span className="text-[11px]" style={{ color: 'var(--color-paper-mute)' }}>

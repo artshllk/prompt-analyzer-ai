@@ -299,7 +299,7 @@
       .connect .cclose:hover { color: #F5F4F1; }
     </style>
 
-    <button class="chip" id="chip" aria-label="Improve prompt with Deepclario"></button>
+    <button type="button" class="chip" id="chip" aria-label="Improve prompt with Deepclario"></button>
     <div class="forks" id="forks"></div>
     <div class="toast" id="toast"></div>
   `
@@ -485,6 +485,7 @@
 
     if (action) {
       const btn = document.createElement('button')
+      btn.type = 'button'
       btn.className = 'act'
       btn.textContent = action.label
       btn.addEventListener('click', () => {
@@ -704,6 +705,7 @@
     const qt = document.createElement('span')
     qt.textContent = cfg.question
     const qx = document.createElement('button')
+    qx.type = 'button'
     qx.className = 'qx'
     qx.textContent = '×'
     qx.setAttribute('aria-label', 'Skip')
@@ -721,6 +723,7 @@
 
     ;(cfg.options || []).forEach((o, i) => {
       const b = document.createElement('button')
+      b.type = 'button'
       b.className = 'fork'
       const label = document.createElement('b')
       const num = document.createElement('i')
@@ -746,10 +749,20 @@
       own.placeholder = 'or type your own…'
       own.addEventListener('keydown', e => {
         e.stopPropagation()
+
+        // preventDefault is NOT optional here. Without it, pressing Enter to
+        // submit your typed answer let the keystroke through to ChatGPT, which
+        // SENT the prompt - the user never asked for that, and their half
+        // finished prompt was gone. stopPropagation alone does not help: it
+        // stops the event bubbling, but not the browser's default action, and
+        // the host page listens on document anyway.
         if (e.key === 'Enter') {
+          e.preventDefault()
           const v = own.value.trim()
           if (v && cfg.onType) cfg.onType(v)
         }
+        // Esc closes our question, it must never reach the host page either.
+        if (e.key === 'Escape') e.preventDefault()
       })
       forksEl.appendChild(own)
     }
@@ -1148,6 +1161,17 @@
         if (readPrompt()) { e.preventDefault(); onSharpen() }
         return
       }
+      // If the user is typing INTO one of our own fields ("or type your own",
+      // the connect box), the number shortcuts must not fire. Otherwise typing
+      // "2 people" as an answer silently picks option 2 and throws the rest
+      // away. Our UI lives in a shadow root, so activeElement on the document
+      // is the host element itself.
+      const typingInOurUI =
+        document.activeElement === host &&
+        root.activeElement &&
+        root.activeElement.tagName === 'INPUT'
+      if (typingInOurUI) return
+
       // While a question is up: 1/2/3 picks an answer, Esc skips it.
       // Keeps the whole flow on the keyboard - never forces a reach for
       // the mouse mid-thought.
@@ -1189,9 +1213,14 @@
         undoSharpen()
         return
       }
-      // Enter sends the sharpened prompt - the box empties, so we go idle.
-      if (inBox && e.key === 'Enter' && !e.shiftKey && state.phase === 'done') {
-        setTimeout(syncChip, 60)
+      // The user sent the prompt. The host clears its own box, but on its own
+      // schedule (React re-render), so a single 60ms check was a guess that
+      // often fired too early: we would still see text, stay in 'done', and
+      // leave our questions hovering over a prompt that had already been sent.
+      // Check a few times instead.
+      if (inBox && e.key === 'Enter' && !e.shiftKey && state.phase !== 'idle') {
+        hideForks()
+        for (const ms of [60, 200, 500, 1000]) setTimeout(syncChip, ms)
       }
     },
     true
