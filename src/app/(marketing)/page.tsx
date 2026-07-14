@@ -10,6 +10,7 @@ import { EarlyDays } from "@/components/marketing/EarlyDays";
 import { FAQSection } from "@/components/marketing/FAQSection";
 import { HeroRefinement } from "@/components/marketing/refinement/HeroRefinement";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { SplashScreen } from "@/components/marketing/SplashScreen";
 import { Reveal } from "@/components/ui/Reveal";
 import { defaultOGImage } from "@/lib/og-image";
 // { /* CUT - redundant with demo + steps */ }
@@ -103,6 +104,7 @@ export default function LandingPage() {
         className="editorial grain min-h-screen relative"
         style={{ background: "var(--color-ink)", color: "var(--color-paper)" }}
       >
+        <SplashScreen />
         <MarketingNav current="home" />
 
         {/* Hero - two-column on desktop: copy left, animated centerpiece
@@ -123,7 +125,9 @@ export default function LandingPage() {
                     headline gets the blur resolve; everything else is the
                     plain fade + rise. */}
                 <Reveal>
-                  <p className="eyebrow mb-6">For ChatGPT, Claude &amp; Gemini users</p>
+                  <p className="eyebrow mb-6">
+                    For ChatGPT, Claude &amp; Gemini users
+                  </p>
                 </Reveal>
                 <Reveal delay={0.08} blur>
                   <h1
@@ -431,7 +435,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-
         {/* Footer */}
         <footer
           className="px-6 md:px-10 py-16"
@@ -527,48 +530,77 @@ export default function LandingPage() {
    not "never leave our servers". */
 const TRUST_POINTS = [
   {
-    title: 'Never used to train AI',
-    body: 'Your prompts are only used to generate your rewrite. We never use them to train models or sell them.',
+    title: "Never used to train AI",
+    body: "Your prompts are only used to generate your rewrite. We never use them to train models or sell them.",
   },
   {
-    title: 'Delete everything anytime',
-    body: 'Remove your account and all your data from Settings. Everything is gone within 24 hours.',
+    title: "Delete everything anytime",
+    body: "Remove your account and all your data from Settings. Everything is gone within 24 hours.",
   },
   {
-    title: 'Payments by Paddle',
-    body: 'Card details never touch our servers. VAT and sales tax are handled automatically.',
+    title: "Payments by Paddle",
+    body: "Card details never touch our servers. VAT and sales tax are handled automatically.",
   },
-]
+];
 
 const STEPS = [
-  { title: 'We read your prompt', description: 'Paste rough notes, a one-liner, or a request you have not finished writing. No prompt-engineering degree required.' },
-  { title: 'We ask one question if something is missing', description: 'Deepclario spots the gap a careful reader would catch and asks one quick question. Answer it, and the rewrite fills in the rest.' },
-  { title: 'You get a rewrite ready to send', description: 'Copy the improved prompt into your AI chat and get the answer you wanted on the first try. No five-prompt rewrite spiral.' },
-]
+  {
+    title: "We read your prompt",
+    description:
+      "Paste rough notes, a one-liner, or a request you have not finished writing. No prompt-engineering degree required.",
+  },
+  {
+    title: "We ask one question if something is missing",
+    description:
+      "Deepclario spots the gap a careful reader would catch and asks one quick question. Answer it, and the rewrite fills in the rest.",
+  },
+  {
+    title: "You get a rewrite ready to send",
+    description:
+      "Copy the improved prompt into your AI chat and get the answer you wanted on the first try. No five-prompt rewrite spiral.",
+  },
+];
 
-function Step({ index, title, description }: { index: number; title: string; description: string }) {
+function Step({
+  index,
+  title,
+  description,
+}: {
+  index: number;
+  title: string;
+  description: string;
+}) {
   return (
     <>
       <div className="grid grid-cols-12 gap-4 md:gap-8 py-8 md:py-10 group">
         <div className="col-span-2 md:col-span-1">
-          <p className="font-serif text-2xl md:text-3xl tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
+          <p
+            className="font-serif text-2xl md:text-3xl tabular-nums"
+            style={{ color: "var(--color-paper-mute)" }}
+          >
             0{index + 1}
           </p>
         </div>
         <div className="col-span-10 md:col-span-4">
-          <h3 className="font-serif text-2xl md:text-3xl" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
+          <h3
+            className="font-serif text-2xl md:text-3xl"
+            style={{ color: "var(--color-paper)", fontWeight: 400 }}
+          >
             {title}
           </h3>
         </div>
         <div className="col-span-12 md:col-span-7">
-          <p className="text-base md:text-lg leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
+          <p
+            className="text-base md:text-lg leading-[1.6]"
+            style={{ color: "var(--color-paper-mute)" }}
+          >
             {description}
           </p>
         </div>
       </div>
       <div className="rule" />
     </>
-  )
+  );
 }
 
 function FooterCol({
@@ -582,8 +614,8 @@ function FooterCol({
     <div className="md:col-span-2">
       <p className="eyebrow mb-4">{title}</p>
       <ul className="space-y-2.5">
-        {links.map((l) => (
-          <li key={l.href}>
+        {links.map((l, index) => (
+          <li key={index}>
             <Link
               href={l.href}
               className="text-sm transition-opacity hover:opacity-100 opacity-80"
