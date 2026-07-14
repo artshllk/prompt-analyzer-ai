@@ -75,9 +75,9 @@ export default async function ExtensionPage() {
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <AddToChrome />
-            <span className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
+            {/* <span className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
               Free · Chrome, Brave, Edge, Arc
-            </span>
+            </span> */}
           </div>
         </div>
 

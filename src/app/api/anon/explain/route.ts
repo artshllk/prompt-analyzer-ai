@@ -3,6 +3,7 @@ import { explainSharpen, applyAnswers } from '@/lib/engine/explain'
 import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
 import { attachDiagnosis, updateFinalPrompt } from '@/lib/db/sessions'
+import { rememberAnswers, recallMemory } from '@/lib/db/memory'
 
 /**
  * Explain a sharpen that already happened: what was weak in the original,
@@ -74,6 +75,12 @@ export async function POST(req: NextRequest) {
     const updated = await applyAnswers({ prompt: sharpened, answers })
     if (!updated) return corsJson({ error: 'ai_unavailable' }, 503)
 
+    // Remember what they said. This is the whole of memory: the engine asks
+    // what is missing, they tell us, and until now we folded it into the
+    // prompt and threw it away - so the next vague prompt asked the same
+    // question cold, as if we had never met.
+    if (auth) void rememberAnswers(auth.userId, answers)
+
     // They filled in the details only they knew, so the prompt improved
     // again. History must show what they actually ended up with, not the
     // intermediate version.
@@ -88,7 +95,16 @@ export async function POST(req: NextRequest) {
     return corsJson({ prompt: updated }, 200)
   }
 
-  const result = await explainSharpen({ original, sharpened })
+  // What this user keeps telling us. Only memories they have given more than
+  // once: a single answer is a fact about one prompt, not a habit, and
+  // offering it back would be presumptuous.
+  const memory = auth
+    ? (await recallMemory(auth.userId))
+        .filter(m => m.timesUsed >= 2)
+        .map(m => ({ label: m.label, answer: m.answer }))
+    : []
+
+  const result = await explainSharpen({ original, sharpened, memory })
   if (!result) return corsJson({ error: 'ai_unavailable' }, 503)
 
   // The fast path could not score the prompt without slowing down. This

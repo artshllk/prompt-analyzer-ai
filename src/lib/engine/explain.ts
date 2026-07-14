@@ -99,7 +99,26 @@ Return JSON matching the schema.`
 export async function explainSharpen(params: {
   original: string
   sharpened: string
+  /**
+   * What this user has told us before, strongest habits first. When a gap
+   * comes up that they have answered before, their usual answer is offered
+   * first - so the engine stops asking the same question cold, forever.
+   */
+  memory?: Array<{ label: string; answer: string }>
 }): Promise<Explanation | null> {
+  const memory = params.memory ?? []
+
+  const memoryBlock = memory.length
+    ? [
+        '',
+        '<what_this_user_usually_says>',
+        ...memory.map(m => `${m.label}: ${m.answer}`),
+        '</what_this_user_usually_says>',
+        '',
+        'If you raise a gap this user has answered before, put their usual answer FIRST in examples, worded exactly as they said it. Do not skip the gap just because you know their habit - a habit is not a rule, and this prompt may be the exception. Offer it, do not assume it.',
+      ].join('\n')
+    : ''
+
   const res = await callLLM<Explanation>({
     model: MODELS.diagnose,
     systemPrompt: SYSTEM_PROMPT,
@@ -111,6 +130,7 @@ export async function explainSharpen(params: {
       '<the_improved_prompt_they_now_have>',
       params.sharpened.trim(),
       '</the_improved_prompt_they_now_have>',
+      memoryBlock,
     ].join('\n'),
     maxOutputTokens: 700,
     responseSchema: SCHEMA as unknown as Record<string, unknown>,

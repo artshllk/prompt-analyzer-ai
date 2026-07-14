@@ -179,9 +179,38 @@ export type Database = {
         Update: { email?: string }
         Relationships: []
       }
+      /** What the user keeps answering when we ask what a prompt is missing. Migration 008. */
+      user_memory: {
+        Row: {
+          id: string
+          user_id: string
+          label: string
+          answer: string
+          times_used: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          label: string
+          answer: string
+          id?: string
+          times_used?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: { answer?: string; times_used?: number; updated_at?: string }
+        Relationships: []
+      }
     }
     Views: Record<never, never>
-    Functions: Record<never, never>
+    Functions: {
+      /** Atomic insert-or-increment for user memory. Migration 009. */
+      bump_memory: {
+        Args: { p_user_id: string; p_label: string; p_answer: string }
+        Returns: undefined
+      }
+    }
     Enums: Record<never, never>
   }
 }
