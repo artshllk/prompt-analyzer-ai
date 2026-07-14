@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { Hotkey } from '@/components/shared/Hotkey'
 
 /**
  * The hero shot: a chat box with the Deepclario chip beside it, and the
@@ -120,7 +121,7 @@ export function ExtensionHeroVisual() {
               className="rounded px-1 py-px text-[9px] font-bold opacity-60"
               style={{ border: '1px solid rgba(14,14,16,.3)' }}
             >
-              Alt+I
+              <Hotkey plain />
             </span>
           </motion.span>
 

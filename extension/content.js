@@ -4,7 +4,7 @@
 // Gemini: press one shortcut and the prompt in the box is sharpened in
 // place, streamed in live. No destination, no paste-back.
 //
-//   Alt+I (or the small ✦ chip by the input) → sharpen the current prompt.
+//   Alt+I / ⌥I on a Mac (or the small ✦ chip by the input) → sharpen.
 //   Enter sends it. Esc undoes.
 //   "+ N details" on the chip → the questions only you can answer, inline.
 //   "compare" → the one thing the chip cannot do: show your original beside
@@ -335,8 +335,14 @@
 
   /* ---------- Chip states ---------- */
 
+  // On a Mac the Alt key is labelled Option and printed as ⌥. Telling a Mac
+  // user to press "Alt+I" sends them hunting for a key that is not on their
+  // keyboard, so show them the symbol that is.
+  const IS_MAC = /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent || '')
+  const HOTKEY_LABEL = IS_MAC ? '⌥I' : 'Alt+I'
+
   const IDLE_HTML =
-    `<span class="mark">✦</span>Sharpen<span class="kbd">Alt+I</span>`
+    `<span class="mark">✦</span>Sharpen<span class="kbd">${HOTKEY_LABEL}</span>`
 
   /**
    * Guard against re-rendering the chip when nothing changed.
@@ -1091,14 +1097,25 @@
 
   /* ---------- Triggers ---------- */
 
-  // Global hotkey. Alt+I is unclaimed on all three sites.
+  // Global hotkey. Unclaimed on all three sites.
+  //
+  // MUST match on e.code, not e.key. On macOS, Option is Alt - but Option+I is
+  // a DEAD KEY: the OS swallows it to compose an accent, and the browser
+  // reports e.key as "ˆ", never "i". Checking e.key meant the shortcut simply
+  // did not exist on a Mac. e.code reports the physical key ("KeyI") whatever
+  // character the OS decides to produce, so it works on every platform and
+  // every keyboard layout. The e.key check stays as a fallback for anything
+  // that does not send a code.
   window.addEventListener(
     'keydown',
     e => {
       const el = findPromptEl()
       const inBox = el && (document.activeElement === el || el.contains(document.activeElement))
 
-      if (e.altKey && (e.key === 'i' || e.key === 'I')) {
+      const isSharpenKey =
+        e.altKey && (e.code === 'KeyI' || e.key === 'i' || e.key === 'I')
+
+      if (isSharpenKey) {
         if (readPrompt()) { e.preventDefault(); onSharpen() }
         return
       }

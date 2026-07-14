@@ -375,7 +375,7 @@ function EmptyState() {
   const steps = [
     'Install the extension.',
     'Open ChatGPT, Claude, or Gemini and type a rough prompt.',
-    'Press Alt+I. It gets sharpened right there in the box.',
+    'Press Alt+I (Option+I on a Mac). It gets sharpened right there in the box.',
   ]
   return (
     <section className="grid md:grid-cols-12 gap-6 md:gap-12">

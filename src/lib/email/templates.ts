@@ -52,7 +52,7 @@ export function welcomeEmail(userId: string, fullName: string | null): EmailCont
 
 Thanks for signing up.
 
-Deepclario lives inside ChatGPT, Claude and Gemini. Install it, type your next prompt as roughly as you like, and press Alt+I. It sharpens it right there in the box. You never leave the chat.
+Deepclario lives inside ChatGPT, Claude and Gemini. Install it, type your next prompt as roughly as you like, and press Alt+I (Option+I on a Mac). It sharpens it right there in the box. You never leave the chat.
 
 Install it here: ${appUrl('/extension')}
 
@@ -80,7 +80,7 @@ Most people get stuck on what to try first. So here is one:
 
 "Write a cover letter for a job I want"
 
-Type that into ChatGPT and press Alt+I. We will ask which job and what makes you a fit, because that is what was missing. That question is the whole product.
+Type that into ChatGPT and press Alt+I (Option+I on a Mac). We will ask which job and what makes you a fit, because that is what was missing. That question is the whole product.
 
 Get the extension: ${appUrl('/extension')}
 

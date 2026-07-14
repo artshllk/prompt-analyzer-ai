@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { CHROME_STORE_URL } from '@/lib/constants'
 import { ExtensionHeroVisual } from '@/components/extension/ExtensionHeroVisual'
 import { defaultOGImage } from '@/lib/og-image'
+import { Hotkey } from '@/components/shared/Hotkey'
 
 /**
  * The extension page.
@@ -78,8 +79,8 @@ export default async function ExtensionPage() {
             <span className="accent">Get a better prompt.</span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed max-w-md" style={{ color: 'var(--color-paper-mute)' }}>
-            Type your prompt in ChatGPT, Claude, or Gemini. Press Alt and I. It
-            gets sharpened right there in the box. You never leave the chat.
+            Type your prompt in ChatGPT, Claude, or Gemini. Press <Hotkey />.
+            It gets sharpened right there in the box. You never leave the chat.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -146,11 +147,11 @@ export default async function ExtensionPage() {
         <p className="eyebrow mb-8 text-center">Set up in under a minute</p>
         <div className="grid sm:grid-cols-3 gap-8 sm:gap-6 max-w-3xl mx-auto">
           {[
-            ['Add it to Chrome', 'One click from the store.'],
-            ['Open ChatGPT', 'Or Claude, or Gemini.'],
-            ['Press Alt + I', 'Your prompt gets sharpened in the box.'],
-          ].map(([title, sub], i) => (
-            <div key={title}>
+            { title: <>Add it to Chrome</>, sub: 'One click from the store.' },
+            { title: <>Open ChatGPT</>, sub: 'Or Claude, or Gemini.' },
+            { title: <>Press <Hotkey /></>, sub: 'Your prompt gets sharpened in the box.' },
+          ].map(({ title, sub }, i) => (
+            <div key={i}>
               <p
                 className="font-serif text-xl mb-2 tabular-nums"
                 style={{ color: 'var(--color-accent)' }}
