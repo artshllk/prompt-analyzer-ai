@@ -80,11 +80,11 @@ export default async function DashboardPage({
           </div>
           <div className="md:col-span-3 flex md:justify-end">
             <Link
-              href="/playground"
+              href="/extension"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
               style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
             >
-              New rewrite
+              Open the extension
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
                 <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -142,7 +142,7 @@ export default async function DashboardPage({
                 <SpotlightCard session={latest} />
               ) : (
                 <Link
-                  href="/playground"
+                  href="/extension"
                   className="block rounded-2xl p-6 md:p-7 row-hover transition-colors"
                   style={{ border: '1px solid var(--color-rule-strong)', background: 'var(--color-ink-card)' }}
                 >
@@ -365,44 +365,57 @@ function SpotlightCard({ session }: { session: SessionWithDetails }) {
 
 /* ===== Empty state ===== */
 
+/**
+ * Nothing here yet. The old version offered sample prompts that deep-linked
+ * into the playground - there is no playground now, so this onboards onto the
+ * extension instead. Installing it IS the first step; there is nothing to do
+ * on this site until you have.
+ */
 function EmptyState() {
-  // Server-rendered, so this rotates the trio on each page load.
-  const samples = pickThree()
+  const steps = [
+    'Install the extension.',
+    'Open ChatGPT, Claude, or Gemini and type a rough prompt.',
+    'Press Alt+I. It gets sharpened right there in the box.',
+  ]
   return (
     <section className="grid md:grid-cols-12 gap-6 md:gap-12">
       <div className="md:col-span-4">
         <p className="eyebrow mb-4">Start here</p>
       </div>
       <div className="md:col-span-8 space-y-8">
-        <p className="font-serif text-2xl md:text-[2rem] leading-tight tracking-tight" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
-          Paste a rough prompt. Watch it get sharper.
+        <p
+          className="font-serif text-2xl md:text-[2rem] leading-tight tracking-tight"
+          style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+        >
+          Deepclario works inside ChatGPT, Claude, and Gemini. You never leave the chat.
         </p>
 
-        <div>
-          <p className="eyebrow mb-3">Try one of these</p>
-          <ul className="space-y-px">
-            <li className="rule-strong" />
-            {samples.map(s => (
-              <li key={s}>
-                <Link
-                  href={`/playground?example=${encodeURIComponent(s)}`}
-                  className="block px-4 -mx-4 py-4 text-base md:text-lg row-hover rounded-md"
-                  style={{ color: 'var(--color-paper)' }}
+        <ol className="space-y-px">
+          <li className="rule-strong" />
+          {steps.map((s, i) => (
+            <li key={s}>
+              <div className="flex items-baseline gap-4 py-4">
+                <span
+                  className="shrink-0 tabular-nums text-sm"
+                  style={{ color: 'var(--color-accent)' }}
                 >
-                  &ldquo;{s}&rdquo;
-                </Link>
-                <div className="rule" />
-              </li>
-            ))}
-          </ul>
-        </div>
+                  {i + 1}
+                </span>
+                <span className="text-base md:text-lg" style={{ color: 'var(--color-paper)' }}>
+                  {s}
+                </span>
+              </div>
+              <div className="rule" />
+            </li>
+          ))}
+        </ol>
 
         <Link
-          href="/playground"
+          href="/extension"
           className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
           style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
         >
-          Use my own prompt
+          Get the extension
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
             <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>

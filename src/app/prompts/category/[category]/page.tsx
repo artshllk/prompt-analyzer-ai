@@ -165,7 +165,7 @@ export default async function CategoryHubPage({
             asks what is missing, and rewrites it for your specific task. Free, no account needed.
           </p>
           <Link
-            href="/playground"
+            href="/extension"
             className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] transition-all btn-paper"
             style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
           >

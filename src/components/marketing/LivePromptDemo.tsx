@@ -148,12 +148,12 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
       if (res.status === 429) {
         setState({
           kind: 'error',
-          message: 'Slow down a moment - we limit free rewrites by IP. Try again in a minute, or open the playground for unlimited use.',
+          message: 'Slow down a moment - we limit free rewrites by IP. Try again in a minute, or install the extension.',
         })
         return
       }
       if (!res.ok) {
-        setState({ kind: 'error', message: 'Something went sideways on our end. Try again, or open the playground.' })
+        setState({ kind: 'error', message: 'Something went sideways on our end. Try again in a moment.' })
         return
       }
 
@@ -166,11 +166,11 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
 
       if (data.type === 'clarifying') {
         // Defensive cap: if the engine somehow keeps asking past MAX_TURNS,
-        // tell the user we've hit the demo limit and push them to the playground.
+        // tell the user we've hit the demo limit and push them to the extension.
         if (qaHistory.length >= MAX_TURNS) {
           setState({
             kind: 'error',
-            message: 'We need more context than we can ask for here. Continue in the playground for the full conversation.',
+            message: 'We need more context than we can ask for here. Install the extension to keep going.',
           })
           return
         }
@@ -254,7 +254,7 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
               </span>
             </h2>
             <p className="text-base md:text-lg leading-[1.65] mb-3" style={{ color: 'var(--color-paper-mute)' }}>
-              A real prompt, your prompt analyzed by the same engine running in the playground.
+              A real prompt, analyzed by the same engine that runs inside your chat.
             </p>
           </>
         )}
@@ -646,11 +646,11 @@ function DonePanel({
           Copy rewrite
         </button>
         <Link
-          href="/playground"
+          href="/extension"
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all btn-outline"
           style={{ border: '1px solid var(--color-rule-strong)', color: 'var(--color-paper)' }}
         >
-          Open playground
+          Get the extension
         </Link>
         <button
           onClick={onReset}

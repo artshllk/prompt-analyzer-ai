@@ -132,11 +132,11 @@ export default async function ExtensionPage() {
           The same engine runs on the web. Paste a prompt, get the same rewrite.
         </p>
         <Link
-          href="/playground"
+          href="/extension"
           className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all btn-outline"
           style={{ border: '1px solid var(--color-rule-strong)', color: 'var(--color-paper)' }}
         >
-          Open the playground
+          Open Deepclario
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
             <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>

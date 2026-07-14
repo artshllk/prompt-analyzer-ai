@@ -52,9 +52,9 @@ export function welcomeEmail(userId: string, fullName: string | null): EmailCont
 
 Thanks for signing up.
 
-Here is the fastest way to see what Deepclario does: paste the roughest prompt you have into the playground. Something half-written is perfect. We will fix what is missing and ask you one question a good teammate would ask.
+Deepclario lives inside ChatGPT, Claude and Gemini. Install it, type your next prompt as roughly as you like, and press Alt+I. It sharpens it right there in the box. You never leave the chat.
 
-Try it now: ${appUrl('/playground')}
+Install it here: ${appUrl('/extension')}
 
 That's it. No setup, nothing to learn.
 
@@ -80,9 +80,9 @@ Most people get stuck on what to try first. So here is one:
 
 "Write a cover letter for a job I want"
 
-Paste that in and watch what happens. We will ask which job and what makes you a fit, because that is what was missing. That question is the whole product.
+Type that into ChatGPT and press Alt+I. We will ask which job and what makes you a fit, because that is what was missing. That question is the whole product.
 
-Paste it in: ${appUrl('/playground')}
+Get the extension: ${appUrl('/extension')}
 
 Art
 
@@ -101,7 +101,7 @@ You ran your first prompt through Deepclario this week. Nice.
 
 One tip: when we ask you a question before rewriting, give a real answer instead of skipping past it. A one-line answer usually adds 20 or more clarity points, because it fills the exact gap the AI would otherwise guess at.
 
-Try it on your next prompt: ${appUrl('/playground')}
+Try it on your next prompt: ${appUrl('/extension')}
 
 Art
 
@@ -190,7 +190,7 @@ export function tipEmail(userId: string, fullName: string | null, weekNumber: nu
 
 ${tip.body}
 
-Try it on a real prompt: ${appUrl('/playground')}
+Try it on a real prompt: ${appUrl('/extension')}
 
 Art
 
@@ -211,7 +211,7 @@ export function winbackEmail(
   const f = footer(userId, 'all')
   const reminder = bestLift
     ? `If you just forgot, here is your best result from before, as a reminder of what this does: your prompt went from clarity ${bestLift.before} to ${bestLift.after} in one pass.`
-    : `If you just forgot, the playground is still there, thirty seconds away: ${appUrl('/playground')}`
+    : `If you just forgot, it takes thirty seconds to install: ${appUrl('/extension')}`
   return {
     subject: 'Still stuck on rough prompts?',
     unsubscribeUrl: f.url,

@@ -15,12 +15,13 @@ import { MarketingMobileMenu } from './MarketingMobileMenu'
  * arrival).
  */
 
+// The detector is unrouted, not deleted - its code and its 11 blog posts stay.
+// It is off the nav because the product story is now one thing: the extension.
 type NavKey = 'home' | 'detector' | 'prompts' | 'extension' | 'pricing' | 'faq' | 'blog'
 
 const LINKS: { key: NavKey; href: string; label: string }[] = [
-  { key: 'detector', href: '/detector', label: 'Detector' },
-  { key: 'prompts', href: '/prompts', label: 'Prompts' },
   { key: 'extension', href: '/extension', label: 'Extension' },
+  { key: 'prompts', href: '/prompts', label: 'Prompts' },
   { key: 'pricing', href: '/pricing', label: 'Pricing' },
   { key: 'faq', href: '/faq', label: 'FAQ' },
   { key: 'blog', href: '/blog', label: 'Blog' },

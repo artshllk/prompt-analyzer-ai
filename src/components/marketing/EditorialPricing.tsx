@@ -127,7 +127,7 @@ export function EditorialPricing({
             Enough to try everything.
           </p>
           <Link
-            href="/playground"
+            href="/extension"
             className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-outline"
             style={{
               border: "1px solid var(--color-rule-strong)",

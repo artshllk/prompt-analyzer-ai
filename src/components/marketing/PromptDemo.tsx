@@ -170,7 +170,7 @@ export function PromptDemo() {
             </div>
             <div className="mt-3 text-center">
               <a
-                href="/playground"
+                href="/extension"
                 className="inline-block px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all"
               >
                 Try it with your own prompt →

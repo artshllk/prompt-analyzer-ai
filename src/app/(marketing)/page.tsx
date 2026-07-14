@@ -464,7 +464,7 @@ export default function LandingPage() {
             <FooterCol
               title="Product"
               links={[
-                { href: "/playground", label: "Playground" },
+                { href: "/extension", label: "Extension" },
                 { href: "/prompts", label: "Prompt library" },
                 { href: "/detector", label: "AI text detector" },
                 { href: "/extension", label: "Browser extension" },

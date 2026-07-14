@@ -23,7 +23,7 @@ export function PostFooter({ slug }: { slug: string }) {
         Written by <span style={{ color: 'var(--color-paper)' }}>Art, founder of Deepclario</span>.
         Deepclario turns rough prompts into great ones.{' '}
         <Link
-          href="/playground"
+          href="/extension"
           className="underline underline-offset-4 transition-opacity hover:opacity-80"
           style={{ color: 'var(--color-paper)' }}
         >

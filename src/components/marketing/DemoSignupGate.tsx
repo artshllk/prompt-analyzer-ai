@@ -109,7 +109,7 @@ export function DemoSignupGate({ used, limit, onEmailCaptured }: Props) {
                 Get 3 more with my email
               </button>
               <Link
-                href="/login?signup=1&redirectTo=/playground"
+                href="/login?signup=1&redirectTo=/extension"
                 className="text-sm transition-opacity hover:opacity-100 opacity-80 underline underline-offset-4"
                 style={{ color: 'var(--color-paper)' }}
               >
@@ -229,7 +229,7 @@ export function DemoSignupGate({ used, limit, onEmailCaptured }: Props) {
               48 hours, a free account takes 10 seconds.
             </p>
             <Link
-              href="/login?signup=1&redirectTo=/playground"
+              href="/login?signup=1&redirectTo=/extension"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
               style={{
                 background: 'var(--color-paper)',

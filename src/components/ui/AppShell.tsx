@@ -146,12 +146,15 @@ function SidebarProfile() {
 // Settings is a regular nav item - the previous footer block (Settings +
 // Sign out) read as a generic dashboard template. Sign out now lives on
 // the Settings page itself, where account actions belong.
+// The account area is now: where your work lives, and what it taught you.
+// The prompt improving itself happens in the extension, inside ChatGPT /
+// Claude / Gemini - not here. Insights is no longer Pro-gated: charging
+// someone to see what they keep getting wrong makes the lesson feel like a
+// hostage, and it works far better as a reason to come back.
 const NAV_ITEMS: { href: string; label: string; isPro?: boolean }[] = [
-  { href: "/playground", label: "Playground" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/history", label: "History" },
-  { href: "/insights", label: "Insights", isPro: true },
-  { href: "/detector", label: "Detector" },
+  { href: "/insights", label: "Insights" },
   { href: "/extension", label: "Extension" },
 ];
 
