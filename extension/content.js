@@ -830,10 +830,19 @@
   }
 
   /* ---------- Gaps: the details only the user knows ---------- */
-  // A rewrite cannot invent facts the user never gave. So after the rewrite,
-  // we quietly ask what is still missing and offer it ON THE CHIP - the
-  // whole journey stays inline, in their workflow. The right-hand panel is
-  // reading material, never a step in the flow.
+  // A rewrite cannot invent facts the user never gave - your goal, your
+  // deadline, who reads it. So after the rewrite lands we ask for those.
+  //
+  // AFTER, not before. Asking three questions up front means three chances to
+  // abandon before the user has seen a single result, and questions like "how
+  // long should it be?" are vague when asked cold against a one-line prompt -
+  // they only become obvious once you can see a draft that lacks a length.
+  // Only the ambiguity question (quick-fork) is worth blocking on, because
+  // getting THAT wrong aims the whole rewrite at the wrong target.
+  //
+  // They now appear on their own, one at a time, rather than hiding behind a
+  // "+ 2 details" link nobody clicked. Esc skips them, and the rewrite in the
+  // box is already usable if you never answer at all.
 
   function fetchGaps(sharpened) {
     const forPrompt = state.before
@@ -852,7 +861,11 @@
         if (!gaps.length) return
         state.gaps = gaps
         state.gapAnswers = {}
-        showDoneChip()
+
+        // Don't wait to be asked. The details used to sit behind a chip link,
+        // which meant they were mostly ignored - and they are the part that
+        // makes the prompt actually yours.
+        openGaps()
       }
     )
   }
@@ -860,6 +873,12 @@
   /** Walk the gaps one at a time, as inline chips. */
   function openGaps() {
     if (!state.gaps || !state.gaps.length) return
+
+    // Only ask if our rewrite is still sitting in the box, untouched. If they
+    // already hit Enter, or started editing it themselves, questions popping
+    // up would be an interruption rather than an offer.
+    if (!boxHoldsOurOutput()) return
+
     state.phase = 'filling'
     state.gapIndex = 0
     showGap()
