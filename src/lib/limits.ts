@@ -14,7 +14,88 @@
  * import from client components too.
  */
 
-/** Rewrites (prompt analysis) for signed-in free users. */
+/* ---------------------------------------------------------------------
+ * Free-tier usage window (the current policy)
+ *
+ * Free users improve freely for USAGE_WINDOW_HOURS, then wait
+ * USAGE_COOLDOWN_HOURS before a fresh window opens. Repeating.
+ *
+ * Why a window rather than a credit count: it matches how people actually
+ * work - a focused session, then away for hours - and it is how the chat
+ * products gate their own free tiers. Someone sharpening three prompts
+ * never touches it. Someone hammering the tool does, which is exactly who
+ * should feel it. It also gives Pro a clean, honest pitch: never wait.
+ *
+ * SOFT_CAP is an abuse guard, not a product limit. It should be high
+ * enough that a genuine user never sees it.
+ * ------------------------------------------------------------------- */
+
+export const USAGE_WINDOW_HOURS = 2
+export const USAGE_COOLDOWN_HOURS = 3
+export const USAGE_SOFT_CAP = 25
+
+/** Warn the user only when this few improvements remain. Silence above it. */
+export const USAGE_WARN_AT = 2
+
+export type UsageDecision =
+  | { allow: true; opensWindow: boolean; remaining: number }
+  | { allow: false; retryAt: string }
+
+/**
+ * The whole gating policy, as one pure function. Pure so it can be tested
+ * without a database, and so the rule lives in exactly one place.
+ *
+ * @param windowStartedAt when the current window opened (null = none)
+ * @param usedInWindow    improvements already made inside it
+ * @param now             injectable for tests
+ */
+export function decideUsage(
+  windowStartedAt: string | null,
+  usedInWindow: number,
+  now: Date = new Date()
+): UsageDecision {
+  const t = now.getTime()
+
+  // No window yet: this improvement opens one.
+  if (!windowStartedAt) {
+    return { allow: true, opensWindow: true, remaining: USAGE_SOFT_CAP - 1 }
+  }
+
+  const started = new Date(windowStartedAt).getTime()
+  if (isNaN(started)) {
+    // Corrupt value - fail open and reset rather than locking someone out.
+    return { allow: true, opensWindow: true, remaining: USAGE_SOFT_CAP - 1 }
+  }
+
+  const windowEnds = started + USAGE_WINDOW_HOURS * 3_600_000
+  const cooldownEnds = windowEnds + USAGE_COOLDOWN_HOURS * 3_600_000
+
+  // Inside the window: allowed, unless they are hammering it.
+  if (t < windowEnds) {
+    if (usedInWindow >= USAGE_SOFT_CAP) {
+      return { allow: false, retryAt: new Date(cooldownEnds).toISOString() }
+    }
+    return {
+      allow: true,
+      opensWindow: false,
+      remaining: USAGE_SOFT_CAP - usedInWindow - 1,
+    }
+  }
+
+  // Window closed, cooling down.
+  if (t < cooldownEnds) {
+    return { allow: false, retryAt: new Date(cooldownEnds).toISOString() }
+  }
+
+  // Cooldown served: a fresh window opens now.
+  return { allow: true, opensWindow: true, remaining: USAGE_SOFT_CAP - 1 }
+}
+
+/**
+ * Legacy credit quota. Still referenced by the website playground routes,
+ * which are on their way out. Do not build anything new on these.
+ * @deprecated use decideUsage()
+ */
 export const REWRITE_FREE_LIMIT = 5
 export const REWRITE_WINDOW_HOURS = 48
 

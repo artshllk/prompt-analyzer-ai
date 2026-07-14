@@ -1,6 +1,165 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import type { SessionWithDetails } from '@/types'
 import type { Tone, SessionStatus } from '@/types/database'
+
+/**
+ * Record a completed extension sharpen as a session.
+ *
+ * The extension authenticates with a bearer token, not a cookie, so it
+ * cannot use the cookie-scoped helpers below - hence the service client.
+ *
+ * This exists because History and Insights read `prompt_sessions`, and
+ * until now ONLY the website playground wrote to it. With the playground
+ * gone, the extension is the sole source of history: if it does not write
+ * here, the account area is empty forever.
+ *
+ * Fire-and-forget: a failed write must never break the user's rewrite.
+ */
+export async function recordExtensionSession(params: {
+  userId: string
+  originalPrompt: string
+  finalPrompt: string
+  tone: Tone
+  /** The interpretation they picked, when the prompt was ambiguous. */
+  choice?: string
+}): Promise<void> {
+  try {
+    const supabase = await createServiceClient()
+
+    const { data, error } = await supabase
+      .from('prompt_sessions')
+      .insert({
+        user_id: params.userId,
+        original_prompt: params.originalPrompt,
+        final_prompt: params.finalPrompt,
+        tone: params.tone,
+        status: 'completed',
+        clarify_turns: params.choice ? 1 : 0,
+        // The fast path deliberately does not score - that is what keeps it
+        // under a second. The score arrives later, when the user opens the
+        // why? panel (which runs the diagnosis), and backfills these.
+        clarity_score_before: null,
+        clarity_score_after: null,
+      })
+      .select('id')
+      .single()
+
+    if (error || !data) {
+      console.error('[sessions] extension session insert failed:', error?.message)
+      return
+    }
+
+    // The chosen interpretation is the one thing the user actively decided.
+    // Storing it as the clarification exchange keeps History honest about
+    // what was asked and what they said.
+    if (params.choice) {
+      await supabase.from('clarification_exchanges').insert({
+        session_id: data.id,
+        turn: 1,
+        ai_question: 'Which reading did you mean?',
+        user_answer: params.choice,
+        // The fast path has no confidence score - it does not run the
+        // diagnosis. Null rather than a made-up number.
+        confidence_before: null,
+        confidence_after: null,
+      })
+    }
+
+    await supabase.from('prompt_improvements').insert({
+      session_id: data.id,
+      improved_prompt: params.finalPrompt,
+      explanation: '',
+      improvement_tags: [],
+    })
+  } catch (err) {
+    console.error('[sessions] recordExtensionSession threw:', (err as Error).message)
+  }
+}
+
+/**
+ * Backfill a session with what the diagnosis learned.
+ *
+ * The fast path does not score (that is what keeps it fast), so sessions
+ * land with null scores. When the user opens the why? panel we DO run the
+ * diagnosis - so we attach the score and the gaps to the session they were
+ * looking at. This is what turns History from a log into something you can
+ * learn from, and it is what Insights aggregates over.
+ *
+ * Matches the newest completed session for this exact original prompt.
+ * Fire-and-forget.
+ */
+export async function attachDiagnosis(params: {
+  userId: string
+  originalPrompt: string
+  score: number
+  /** What the diagnosis found was still missing. */
+  gaps: unknown
+}): Promise<void> {
+  try {
+    const supabase = await createServiceClient()
+
+    const { data: session } = await supabase
+      .from('prompt_sessions')
+      .select('id')
+      .eq('user_id', params.userId)
+      .eq('original_prompt', params.originalPrompt)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (!session) return
+
+    await supabase
+      .from('prompt_sessions')
+      .update({ clarity_score_before: params.score })
+      .eq('id', session.id)
+
+    await supabase
+      .from('prompt_improvements')
+      .update({ analysis: { gaps: params.gaps } })
+      .eq('session_id', session.id)
+  } catch (err) {
+    console.error('[sessions] attachDiagnosis threw:', (err as Error).message)
+  }
+}
+
+/**
+ * The user answered the missing-detail questions, so the prompt improved
+ * again. History must show what they actually walked away with.
+ * Fire-and-forget.
+ */
+export async function updateFinalPrompt(params: {
+  userId: string
+  originalPrompt: string
+  finalPrompt: string
+}): Promise<void> {
+  try {
+    const supabase = await createServiceClient()
+
+    const { data: session } = await supabase
+      .from('prompt_sessions')
+      .select('id')
+      .eq('user_id', params.userId)
+      .eq('original_prompt', params.originalPrompt)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (!session) return
+
+    await supabase
+      .from('prompt_sessions')
+      .update({ final_prompt: params.finalPrompt })
+      .eq('id', session.id)
+
+    await supabase
+      .from('prompt_improvements')
+      .update({ improved_prompt: params.finalPrompt })
+      .eq('session_id', session.id)
+  } catch (err) {
+    console.error('[sessions] updateFinalPrompt threw:', (err as Error).message)
+  }
+}
 
 export async function createSession(params: {
   userId: string

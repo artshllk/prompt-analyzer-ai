@@ -124,7 +124,7 @@ export function HeroDemoModal() {
     <>
       <button
         ref={triggerRef}
-        onClick={() => isSignedIn ? router.push('/playground') : setOpen(true)}
+        onClick={() => isSignedIn ? router.push('/extension') : setOpen(true)}
         className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-[15px] transition-all btn-paper"
         style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
       >

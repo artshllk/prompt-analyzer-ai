@@ -3,158 +3,122 @@ import { createClient } from '@/lib/supabase/server'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
+/**
+ * Insights: what YOU keep getting wrong.
+ *
+ * The old version reported score deltas ("your average clarity rose 4
+ * points"). Two problems with that. It was vanity - a number about the tool,
+ * not about the user - and it was about to break entirely: it required both
+ * clarity scores to be non-null, but extension sessions land with null scores
+ * by design (the fast path does not score; that is what keeps it under a
+ * second). Now that the extension is the only thing writing history, the old
+ * route would have silently shown almost nothing.
+ *
+ * So it now reports the thing the engine actually knows and the user can act
+ * on: the gaps. "You leave out who it is for in 7 of 10 prompts" is a lesson.
+ * "Your average score is 78" is trivia.
+ *
+ * Free for everyone. Charging people to learn from their own mistakes would
+ * be a strange thing to do.
+ */
 export async function GET() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('tier')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.tier !== 'pro') {
-    return NextResponse.json({ error: 'pro_required' }, { status: 403 })
-  }
-
   const now = new Date()
-  const weekStart = new Date(now.getTime() - 7 * DAY_MS)
   const monthStart = new Date(now.getTime() - 30 * DAY_MS)
-  const prevWeekStart = new Date(now.getTime() - 14 * DAY_MS)
+  const weekStart = new Date(now.getTime() - 7 * DAY_MS)
 
-  // Pull recent sessions (last 30 days) + linked improvements
   const { data: sessions } = await supabase
     .from('prompt_sessions')
-    .select('id, original_prompt, clarity_score_before, clarity_score_after, clarify_turns, created_at, status, tone')
+    .select('id, original_prompt, final_prompt, clarity_score_before, clarify_turns, created_at')
     .eq('user_id', user.id)
     .eq('status', 'completed')
     .gte('created_at', monthStart.toISOString())
     .order('created_at', { ascending: false })
 
-  const completed = (sessions ?? []).filter(
-    s => s.clarity_score_after != null && s.clarity_score_before != null
-  )
+  const all = sessions ?? []
+  const week = all.filter(s => new Date(s.created_at) >= weekStart)
 
-  const week = completed.filter(s => new Date(s.created_at) >= weekStart)
-  const prevWeek = completed.filter(s => {
-    const d = new Date(s.created_at)
-    return d >= prevWeekStart && d < weekStart
-  })
+  // The gaps the diagnosis found, stored on the improvement row when the user
+  // opened the why? panel. This is the raw material for every real insight.
+  const ids = all.map(s => s.id)
+  const gapCounts: Record<string, number> = {}
+  let diagnosed = 0
 
-  const weekScores = avgScores(week)
-  const prevWeekScores = avgScores(prevWeek)
-  const monthScores = avgScores(completed)
-
-  // Improvement tags from linked rows
-  const sessionIds = completed.map(s => s.id)
-  let tagCounts: Record<string, number> = {}
-  if (sessionIds.length > 0) {
+  if (ids.length > 0) {
     const { data: improvements } = await supabase
       .from('prompt_improvements')
-      .select('improvement_tags, session_id')
-      .in('session_id', sessionIds)
-    tagCounts = countTags(improvements ?? [])
+      .select('session_id, analysis')
+      .in('session_id', ids)
+
+    for (const row of improvements ?? []) {
+      const analysis = row.analysis as { gaps?: Array<{ label?: string }> } | null
+      const gaps = analysis?.gaps
+      if (!Array.isArray(gaps) || gaps.length === 0) continue
+      diagnosed += 1
+      for (const g of gaps) {
+        const label = (g?.label ?? '').trim()
+        if (label) gapCounts[label] = (gapCounts[label] ?? 0) + 1
+      }
+    }
   }
 
-  // Daily activity for streak + sparkline (last 14 days)
-  const dailyActivity: { date: string; count: number; avgAfter: number }[] = []
+  // "You leave out X in 7 of 10 prompts" - a habit, stated plainly.
+  const habits = Object.entries(gapCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .map(([label, count]) => ({
+      label,
+      count,
+      outOf: diagnosed,
+    }))
+
+  // Activity for the sparkline / streak (last 14 days).
+  const dailyActivity: { date: string; count: number }[] = []
   for (let i = 13; i >= 0; i--) {
     const d = new Date(now.getTime() - i * DAY_MS)
     d.setHours(0, 0, 0, 0)
     const next = new Date(d.getTime() + DAY_MS)
-    const dayItems = completed.filter(s => {
-      const t = new Date(s.created_at).getTime()
-      return t >= d.getTime() && t < next.getTime()
-    })
     dailyActivity.push({
       date: d.toISOString().slice(0, 10),
-      count: dayItems.length,
-      avgAfter: dayItems.length
-        ? Math.round(dayItems.reduce((a, b) => a + (b.clarity_score_after ?? 0), 0) / dayItems.length)
-        : 0,
+      count: all.filter(s => {
+        const t = new Date(s.created_at).getTime()
+        return t >= d.getTime() && t < next.getTime()
+      }).length,
     })
   }
 
-  // Streak - consecutive days from today backwards with at least 1 prompt
   let streak = 0
   for (let i = dailyActivity.length - 1; i >= 0; i--) {
     if (dailyActivity[i].count > 0) streak++
     else break
   }
 
-  // Best prompt this week (highest after score)
-  const bestThisWeek = [...week].sort(
-    (a, b) => (b.clarity_score_after ?? 0) - (a.clarity_score_after ?? 0)
-  )[0] ?? null
+  // How often the prompt was ambiguous enough that we had to ask. A high rate
+  // is itself the lesson: you are starting from a topic, not a request.
+  const askedCount = all.filter(s => (s.clarify_turns ?? 0) > 0).length
 
-  // Biggest improvement this week (largest delta)
-  const biggestLift = [...week].sort((a, b) => {
-    const da = (a.clarity_score_after ?? 0) - (a.clarity_score_before ?? 0)
-    const db = (b.clarity_score_after ?? 0) - (b.clarity_score_before ?? 0)
-    return db - da
-  })[0] ?? null
+  // Only sessions the user actually opened the panel on have a score.
+  const scored = all.filter(s => s.clarity_score_before != null)
+  const avgStartingScore = scored.length
+    ? Math.round(
+        scored.reduce((a, s) => a + (s.clarity_score_before ?? 0), 0) / scored.length
+      )
+    : null
 
   return NextResponse.json({
-    week: {
-      promptsCount: week.length,
-      avgBefore: weekScores.before,
-      avgAfter: weekScores.after,
-      avgLift: weekScores.lift,
-    },
-    prevWeek: {
-      promptsCount: prevWeek.length,
-      avgAfter: prevWeekScores.after,
-    },
-    month: {
-      promptsCount: completed.length,
-      avgAfter: monthScores.after,
-    },
+    week: { promptsCount: week.length },
+    month: { promptsCount: all.length },
     dailyActivity,
     streak,
-    topTags: Object.entries(tagCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
-      .map(([tag, count]) => ({ tag, count })),
-    bestThisWeek: bestThisWeek
-      ? {
-          id: bestThisWeek.id,
-          prompt: bestThisWeek.original_prompt.slice(0, 140),
-          before: bestThisWeek.clarity_score_before,
-          after: bestThisWeek.clarity_score_after,
-        }
-      : null,
-    biggestLift: biggestLift
-      ? {
-          id: biggestLift.id,
-          prompt: biggestLift.original_prompt.slice(0, 140),
-          before: biggestLift.clarity_score_before,
-          after: biggestLift.clarity_score_after,
-          delta: (biggestLift.clarity_score_after ?? 0) - (biggestLift.clarity_score_before ?? 0),
-        }
-      : null,
+    /** The headline: the habits that keep costing them a good answer. */
+    habits,
+    /** How many prompts were vague enough to need a question first. */
+    askedCount,
+    askedRate: all.length ? Math.round((askedCount / all.length) * 100) : 0,
+    /** Null until they have opened the why? panel at least once. */
+    avgStartingScore,
   })
-}
-
-type CompletedSession = {
-  clarity_score_before: number | null
-  clarity_score_after: number | null
-}
-
-function avgScores(items: CompletedSession[]) {
-  if (!items.length) return { before: 0, after: 0, lift: 0 }
-  const before = Math.round(items.reduce((a, b) => a + (b.clarity_score_before ?? 0), 0) / items.length)
-  const after = Math.round(items.reduce((a, b) => a + (b.clarity_score_after ?? 0), 0) / items.length)
-  return { before, after, lift: after - before }
-}
-
-function countTags(rows: { improvement_tags: string[] | null }[]) {
-  const counts: Record<string, number> = {}
-  rows.forEach(r => {
-    ;(r.improvement_tags ?? []).forEach(tag => {
-      counts[tag] = (counts[tag] ?? 0) + 1
-    })
-  })
-  return counts
 }

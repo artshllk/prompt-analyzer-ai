@@ -1,66 +1,90 @@
-// Deepclario extension - the details panel.
+// Deepclario extension - the compare view.
 //
-// This is the DEEP path, opened only when the user clicks "why?" on the
-// sharpen chip. It runs the full analyze pipeline (clarity score,
-// interpretation forks, diagnosis, Deep Rewrite) - the same intelligence
-// the website playground uses. The fast inline sharpen (content.js) never
-// touches this; the default experience carries none of its weight.
+// ONE job, and it is the one job the chip cannot do: the prompt box holds a
+// single version at a time. Once we sharpen it, the user's own words are gone
+// from the screen, and "undo" on the chip only survives until the state
+// resets. So this shows the two side by side and gives them a way back.
 //
-// Exposed as window.createDetailsPanel(ctx) and called lazily by
-// content.js. It builds its own panel inside the existing shadow root.
+// It used to be a "why?" report - the score, the gaps, what would have gone
+// wrong. That was a dead end. You read it, you nod, you close it, and nothing
+// changed. Worse, it listed the same gaps the chip was already asking about,
+// so the user met the same information twice in two places.
+//
+// The improving journey lives entirely on the inline chip, next to the prompt
+// box. This is the only other surface, and it earns its place because the box
+// is a single slot.
 
 window.createDetailsPanel = function createDetailsPanel(ctx) {
-  const { root, writePrompt, authState, prefs, TONES } = ctx
+  const { root, authState, LINKS, onConnect, onDisconnect, onRestore } = ctx
 
   const wrap = document.createElement('div')
   wrap.innerHTML = `
     <style>
       .dc-overlay {
         position: fixed; inset: 0; z-index: 2147483647;
-        background: rgba(0,0,0,.55); display: none;
+        background: rgba(0,0,0,.5); display: none;
       }
       .dc-overlay.open { display: block; }
       .dc-panel {
         position: fixed; top: 0; right: 0; height: 100%;
-        width: 440px; max-width: 92vw; background: #0E0E10;
+        width: 430px; max-width: 94vw; background: #0E0E10;
         color: #F5F4F1; border-left: 1px solid rgba(245,244,241,.14);
-        transform: translateX(100%); transition: transform .32s cubic-bezier(.16,1,.3,1);
-        display: flex; flex-direction: column; overflow-y: auto;
+        transform: translateX(100%); transition: transform .28s cubic-bezier(.16,1,.3,1);
+        display: flex; flex-direction: column;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
       }
       .dc-overlay.open .dc-panel { transform: translateX(0); }
-      .dc-pad { padding: 22px; }
+      .dc-head { padding: 18px 20px 14px; flex-shrink: 0; }
+      .dc-body { padding: 0 20px 20px; overflow-y: auto; flex: 1; }
       .dc-row { display: flex; align-items: center; justify-content: space-between; }
-      .dc-eyebrow { font-size: 11px; letter-spacing:.16em; text-transform: uppercase; color: #A8A6A0; font-weight: 500; }
+      .dc-eyebrow { font-size: 10.5px; letter-spacing:.16em; text-transform: uppercase; color: #6b6a66; font-weight: 600; }
       .dc-x { background:none;border:none;color:#A8A6A0;cursor:pointer;font-size:20px;line-height:1;padding:4px; }
       .dc-x:hover { color:#F5F4F1; }
-      .dc-h2 { font-size: 20px; margin: 14px 0 6px; font-weight: 600; }
-      .dc-sub { color:#A8A6A0; font-size:13px; line-height:1.55; margin:0 0 16px; }
-      .dc-box { background:#1A1A20; border:1px solid rgba(245,244,241,.18); border-radius:12px; padding:14px; font-size:13.5px; line-height:1.6; white-space:pre-wrap; }
-      .dc-label { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#A8A6A0; margin:16px 0 8px; }
-      .dc-btn { display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;cursor:pointer;background:#F5F4F1;color:#0E0E10;font-size:13px;font-weight:600;border:none; }
-      .dc-btn:hover{opacity:.92} .dc-btn.ghost{background:transparent;color:#F5F4F1;border:1px solid rgba(245,244,241,.18)}
-      .dc-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-      .dc-rule{height:1px;background:rgba(245,244,241,.14);margin:18px 0}
-      .dc-fork{display:block;width:100%;text-align:left;cursor:pointer;background:#1A1A20;color:#F5F4F1;border:1px solid rgba(245,244,241,.18);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-family:inherit}
-      .dc-fork:hover{border-color:#8FB4F2}
-      .dc-fork b{display:block} .dc-fork span{display:block;color:#A8A6A0;font-size:12px;margin-top:2px}
-      .dc-dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:#F5F4F1;margin:0 2px;animation:dcd 1.2s infinite}
-      .dc-dots span:nth-child(2){animation-delay:.18s}.dc-dots span:nth-child(3){animation-delay:.36s}
-      @keyframes dcd{0%,100%{opacity:.25}50%{opacity:1}}
-      .dc-forecast{margin:8px 0 0;padding:0;list-style:none}
-      .dc-forecast li{font-size:12.5px;color:#A8A6A0;line-height:1.5;padding-left:16px;position:relative;margin-bottom:5px}
-      .dc-forecast li:before{content:'→';position:absolute;left:0;color:#8FB4F2}
-      .dc-err{color:#C25E5E;font-size:13.5px;line-height:1.5}
+
+      /* The two versions. Theirs is live; yours is the one you can take back. */
+      .dc-block { margin-bottom: 18px; }
+      .dc-label { font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; margin:0 0 8px; font-weight:600; }
+      .dc-text {
+        font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+        background: #16161c; border: 1px solid rgba(245,244,241,.12);
+        border-radius: 10px; padding: 13px 14px;
+      }
+      .dc-text.mine { color: #A8A6A0; }
+      .dc-text.theirs { color: #F5F4F1; border-color: rgba(143,180,242,.35); }
+
+      .dc-act {
+        margin-top: 8px; background: none; border: none; cursor: pointer;
+        color: #8FB4F2; font-size: 11.5px; font-weight: 600; font-family: inherit;
+        text-decoration: underline; text-underline-offset: 3px; padding: 4px 0;
+      }
+      .dc-act:hover { opacity: .8; }
+      .dc-act.quiet { color: #6b6a66; font-weight: 400; }
+      .dc-act.quiet:hover { color: #F5F4F1; }
+
+      .dc-foot{margin-top:auto;padding:12px 20px;border-top:1px solid rgba(245,244,241,.08);display:flex;gap:14px;flex-wrap:wrap;flex-shrink:0}
+      .dc-foot a{color:#5a5a56;font-size:11px;text-decoration:none}
+      .dc-foot a:hover{color:#A8A6A0}
+      .dc-acct{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
+      .dc-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.04em;color:#6b6a66;border:1px solid rgba(245,244,241,.14)}
+      .dc-badge.pro{background:#F5F4F1;color:#0E0E10;border-color:transparent}
+      .dc-link{background:none;border:none;color:#6b6a66;font-size:11px;cursor:pointer;padding:2px 0;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
+      .dc-link:hover{color:#F5F4F1}
+      .dc-muted { color:#A8A6A0; font-size:12.5px; line-height:1.55; }
     </style>
     <div class="dc-overlay" id="dc-overlay">
-      <div class="dc-panel" role="dialog" aria-label="Deepclario details">
-        <div class="dc-pad">
+      <div class="dc-panel" role="dialog" aria-label="Compare prompts">
+        <div class="dc-head">
           <div class="dc-row">
-            <span class="dc-eyebrow">Deepclario</span>
+            <span class="dc-eyebrow">Compare</span>
             <button class="dc-x" id="dc-close" aria-label="Close">×</button>
           </div>
-          <div id="dc-stage"></div>
+          <div class="dc-acct" id="dc-acct"></div>
+        </div>
+        <div class="dc-body" id="dc-stage"></div>
+        <div class="dc-foot">
+          <a href="${LINKS.app}" target="_blank" rel="noopener">Open Deepclario →</a>
+          <a href="${LINKS.pricing}" target="_blank" rel="noopener">Pro</a>
+          <a href="${LINKS.privacy}" target="_blank" rel="noopener">Privacy</a>
         </div>
       </div>
     </div>
@@ -70,130 +94,73 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
   const q = sel => wrap.querySelector(sel)
   const overlay = q('#dc-overlay')
   const stage = q('#dc-stage')
-  let history = []
-  let currentPrompt = ''
-
   const esc = s => { const d = document.createElement('div'); d.innerText = s || ''; return d.innerHTML }
-  const scoreClass = n => (n < 30 ? 'lo' : n < 60 ? 'mid' : 'hi')
 
   function close() { overlay.classList.remove('open') }
   overlay.addEventListener('click', e => { if (e.target === overlay) close() })
   q('#dc-close').addEventListener('click', close)
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) close()
+  })
 
-  function analyze(prompt, prior) {
-    renderLoading()
-    const deep = authState.tier === 'pro' && prefs.deep
-    chrome.runtime.sendMessage(
-      { type: 'DEEPCLARIO_ANALYZE', prompt, priorAnswers: prior, token: authState.token, tone: prefs.tone, deep },
-      resp => {
-        if (!resp || !resp.ok) { renderError(resp); return }
-        const d = resp.data
-        if (d.type === 'clarifying' && prior.length < 3) renderClarify(d)
-        else if (d.type === 'already_good') renderAlreadyGood(d)
-        else if (d.type === 'improved') renderDone(d)
-        else renderError({ error: 'server_error' })
-      }
-    )
-  }
-
-  function renderLoading() {
-    stage.innerHTML = `<div class="dc-rule"></div>
-      <div class="dc-dots" style="margin:16px 0"><span></span><span></span><span></span></div>
-      <p class="dc-sub">Reading your prompt: what's clear, what's missing, and how it could be misread.</p>`
-  }
-
-  function renderError(resp) {
-    const kind = resp?.error || 'network'
-    const msg = kind === 'quota'
-      ? 'You are out of free rewrites. <a href="https://deepclario.com/pricing" target="_blank" rel="noopener" style="color:#8FB4F2">Go Pro</a> for unlimited.'
-      : kind === 'rate_limited'
-      ? 'Slow down a moment, then try again.'
-      : kind === 'pro_required'
-      ? 'Deep Rewrite is a Pro feature.'
-      : 'Something went sideways. Try again.'
-    stage.innerHTML = `<div class="dc-rule"></div><p class="dc-err">${msg}</p>`
-  }
-
-  function renderClarify(d) {
-    const s = d.scoreBeforeImprovement ?? 0
-    const forks = (d.options && d.options.length)
-      ? d.options.map((o, i) =>
-          `<button class="dc-fork" data-i="${i}"><b>${esc(o.label)}</b><span>${esc(o.summary)}</span></button>`
-        ).join('')
-      : ''
-    stage.innerHTML = `
-      <div class="dc-rule"></div>
-      <div class="dc-eyebrow" style="margin-bottom:8px">Clarity ${s}/100 · one quick question</div>
-      <div class="dc-h2" style="font-size:17px">${esc(d.question)}</div>
-      ${forks}
-      <div class="dc-label">Or answer in your words</div>
-      <textarea id="dc-ans" class="dc-box" style="width:100%;min-height:64px;font-family:inherit" placeholder="Type your answer..."></textarea>
-      <div class="dc-actions"><button class="dc-btn" id="dc-send">Send</button></div>
-    `
-    wrap.querySelectorAll('.dc-fork').forEach(b => {
-      b.addEventListener('click', () => {
-        const o = d.options[+b.dataset.i]
-        history.push({ question: d.question, answer: `${o.label} - ${o.summary}`, turn: history.length + 1 })
-        analyze(currentPrompt, history)
-      })
-    })
-    q('#dc-send').addEventListener('click', () => {
-      const a = q('#dc-ans').value.trim()
-      if (!a) return
-      history.push({ question: d.question, answer: a, turn: history.length + 1 })
-      analyze(currentPrompt, history)
-    })
-  }
-
-  function renderAlreadyGood(d) {
-    stage.innerHTML = `
-      <div class="dc-rule"></div>
-      <div class="dc-eyebrow" style="color:#8FB4F2;margin-bottom:8px">Already strong · ${d.scoreBeforeImprovement ?? ''}/100</div>
-      <p class="dc-sub" style="color:#F5F4F1">${esc(d.message)}</p>
-      ${d.tweaks && d.tweaks.length ? `<div class="dc-label">If you want to tune it</div><ul class="dc-forecast">${d.tweaks.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
-      <p class="dc-sub" style="margin-top:14px;font-size:12px">No credit used. We only charge for real rewrites.</p>
-    `
-  }
-
-  function renderDone(d) {
-    const b = d.scoreBeforeImprovement ?? 0
-    const a = d.clarityScoreAfter ?? 0
-    const forecast = d.audit && d.audit.failureForecast && d.audit.failureForecast.length
-      ? `<div class="dc-label">Run as-is, this happens</div><ul class="dc-forecast">${d.audit.failureForecast.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`
-      : ''
-    const critique = d.critique
-      ? `<div class="dc-label" style="color:#8FB4F2">What the critic caught</div><p class="dc-sub" style="margin:0">${esc(d.critique)}</p>`
-      : ''
-    stage.innerHTML = `
-      <div class="dc-rule"></div>
-      <div class="dc-eyebrow" style="margin-bottom:8px">Clarity ${b} → ${a}</div>
-      <div class="dc-label" style="margin-top:0">Improved prompt</div>
-      <div class="dc-box">${esc(d.improvedPrompt)}</div>
-      ${d.explanation ? `<p class="dc-sub" style="margin:10px 0 0">${esc(d.explanation)}</p>` : ''}
-      ${forecast}
-      ${critique}
-      <div class="dc-actions">
-        <button class="dc-btn" id="dc-replace">Use this in chat</button>
-        <button class="dc-btn ghost" id="dc-copy">Copy</button>
-      </div>
-    `
-    q('#dc-copy').addEventListener('click', e => {
-      navigator.clipboard.writeText(d.improvedPrompt)
-      e.target.textContent = 'Copied'
-      setTimeout(() => { e.target.textContent = 'Copy' }, 1500)
-    })
-    q('#dc-replace').addEventListener('click', () => {
-      writePrompt(d.improvedPrompt)
-      close()
-    })
+  function renderAccount() {
+    const acct = q('#dc-acct')
+    const tier = authState.tier
+    const badge =
+      tier === 'pro' ? '<span class="dc-badge pro">Pro</span>'
+      : tier === 'free' ? '<span class="dc-badge">Connected</span>'
+      : '<span class="dc-badge">Not connected</span>'
+    const action =
+      tier === 'anon'
+        ? '<button class="dc-link" id="dc-connect">Connect account</button>'
+        : '<button class="dc-link" id="dc-disconnect">Disconnect</button>'
+    acct.innerHTML = badge + action
+    const c = q('#dc-connect')
+    if (c) c.addEventListener('click', () => { close(); onConnect() })
+    const d = q('#dc-disconnect')
+    if (d) d.addEventListener('click', () => { onDisconnect(); renderAccount() })
   }
 
   return {
-    open(prompt) {
-      currentPrompt = prompt
-      history = []
+    /**
+     * @param original  what the user typed
+     * @param sharpened what is in their box now (null if we have not run yet)
+     */
+    open(original, sharpened) {
+      renderAccount()
       overlay.classList.add('open')
-      analyze(prompt, [])
+
+      if (!sharpened) {
+        stage.innerHTML =
+          `<p class="dc-muted">Sharpen a prompt first, then come back to compare.</p>`
+        return
+      }
+
+      stage.innerHTML = `
+        <div class="dc-block">
+          <p class="dc-label" style="color:#8FB4F2">In your box now</p>
+          <div class="dc-text theirs">${esc(sharpened)}</div>
+          <button class="dc-act quiet" id="dc-copy">Copy</button>
+        </div>
+        <div class="dc-block">
+          <p class="dc-label" style="color:#6b6a66">What you wrote</p>
+          <div class="dc-text mine">${esc(original)}</div>
+          <button class="dc-act" id="dc-restore">Use mine instead</button>
+        </div>
+      `
+
+      // The escape hatch. The box holds one version at a time, so after we
+      // overwrite it their own words survive only here.
+      q('#dc-restore').addEventListener('click', () => {
+        onRestore()
+        close()
+      })
+
+      q('#dc-copy').addEventListener('click', e => {
+        navigator.clipboard.writeText(sharpened)
+        e.target.textContent = 'Copied'
+        setTimeout(() => { e.target.textContent = 'Copy' }, 1500)
+      })
     },
   }
 }

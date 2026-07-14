@@ -77,7 +77,7 @@ export function EarlyDays() {
                 <span style={{ color: 'var(--color-paper)' }}>
                   Deepclario is new, so you will not find made-up reviews here.
                 </span>{' '}
-                The example above is a real rewrite from the playground. Try it with
+                The example above is a real rewrite. Try it with
                 your own prompt and judge the result yourself. If anything feels off,
                 reply to any of our emails. I read every one.
               </p>
@@ -87,7 +87,7 @@ export function EarlyDays() {
             </div>
             <div className="md:col-span-3">
               <Link
-                href="/playground"
+                href="/extension"
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] transition-all btn-paper"
                 style={{
                   background: 'var(--color-paper)',

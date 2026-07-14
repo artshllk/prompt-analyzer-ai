@@ -57,7 +57,7 @@ export function AccountGateModal({ open }: AccountGateModalProps) {
           Create a free account to keep going.
         </p>
         <Link
-          href="/login?signup=1&redirectTo=/playground"
+          href="/login?signup=1&redirectTo=/extension"
           className="inline-flex items-center justify-center px-7 py-3 rounded-full text-[15px] btn-paper transition-all"
           style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
         >

@@ -1,9 +1,13 @@
 /**
  * Where to land after sign-in. An explicit destination (?redirectTo= /
- * ?next=) always wins; otherwise brand-new users go straight to the
- * playground (the fastest path to a first rewrite) and returning users
- * get the dashboard. "New" uses the same one-hour window as the welcome
- * email in src/app/auth/callback/route.ts, so magic links clicked a
+ * ?next=) always wins; otherwise brand-new users go to /extension and
+ * returning users get the dashboard.
+ *
+ * New users used to land on the playground - the fastest path to a first
+ * rewrite. There is no playground now: the product lives inside ChatGPT,
+ * Claude and Gemini. Installing the extension IS the first step, so that is
+ * where a new account starts. "New" uses the same one-hour window as the
+ * welcome email in src/app/auth/callback/route.ts, so magic links clicked a
  * while after signup still count.
  */
 
@@ -17,5 +21,5 @@ export function postSignInDestination(
   if (requested !== DEFAULT_SIGNIN_DEST) return requested
   if (!createdAt) return requested
   const isNew = Date.now() - new Date(createdAt).getTime() < NEW_USER_WINDOW_MS
-  return isNew ? '/playground' : requested
+  return isNew ? '/extension' : requested
 }

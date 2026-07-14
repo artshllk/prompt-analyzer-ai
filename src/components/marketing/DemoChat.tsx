@@ -526,7 +526,7 @@ function Gate() {
         Create a free account to keep going.
       </p>
       <Link
-        href="/login?signup=1&redirectTo=/playground"
+        href="/login?signup=1&redirectTo=/extension"
         className="inline-flex items-center justify-center px-7 py-3 rounded-full text-[15px] btn-paper transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink) focus:ring-(--color-paper)"
         style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
       >

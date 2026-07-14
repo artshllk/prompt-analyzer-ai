@@ -17,7 +17,7 @@ export function NavAuthButton() {
   if (isSignedIn) {
     return (
       <Link
-        href="/playground"
+        href="/extension"
         className="inline-flex items-center px-4 py-2 rounded-full text-sm transition-all btn-paper"
         style={{
           background: 'var(--color-paper)',
@@ -25,7 +25,7 @@ export function NavAuthButton() {
           fontWeight: 500,
         }}
       >
-        Go to Playground
+        Open Deepclario
       </Link>
     )
   }

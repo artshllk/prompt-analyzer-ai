@@ -5,8 +5,64 @@
 // host_permissions for deepclario.com, so this fetch is unrestricted.
 
 const API_BASE = 'https://deepclario.com'
-const API_URL = API_BASE + '/api/anon/analyze'
 const SHARPEN_URL = API_BASE + '/api/anon/sharpen'
+const FORK_URL = API_BASE + '/api/anon/fork'
+const EXPLAIN_URL = API_BASE + '/api/anon/explain'
+
+// Explain a sharpen that already happened. Produces no rewrite and asks no
+// question - it is purely "here is what was weak, here is what changed, and
+// here is what I could not fix for you". Costs no quota.
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type !== 'DEEPCLARIO_EXPLAIN') return
+
+  const headers = { 'Content-Type': 'application/json' }
+  if (msg.token) headers['Authorization'] = 'Bearer ' + msg.token
+
+  fetch(EXPLAIN_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      original: msg.original,
+      sharpened: msg.sharpened,
+      // When present, the server folds these answers into the prompt and
+      // returns the improved version instead of a fresh analysis.
+      answers: msg.answers || undefined,
+    }),
+  })
+    .then(async res => {
+      if (!res.ok) {
+        sendResponse({ ok: false, error: res.status === 429 ? 'rate_limited' : 'server_error' })
+        return
+      }
+      sendResponse({ ok: true, data: await res.json() })
+    })
+    .catch(() => sendResponse({ ok: false, error: 'network' }))
+
+  return true
+})
+
+// Quick fork check, fired in PARALLEL with the sharpen stream. If the
+// prompt is genuinely ambiguous, the content script shows the question as
+// inline chips right after the rewrite lands - so the user gets the
+// clarifying question at the moment it matters, without paying its latency
+// on every prompt. Costs no quota.
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type !== 'DEEPCLARIO_FORK') return
+
+  const headers = { 'Content-Type': 'application/json' }
+  if (msg.token) headers['Authorization'] = 'Bearer ' + msg.token
+
+  fetch(FORK_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ prompt: msg.prompt }),
+  })
+    .then(res => (res.ok ? res.json() : { question: '', options: [] }))
+    .then(data => sendResponse({ ok: true, data }))
+    .catch(() => sendResponse({ ok: false }))
+
+  return true
+})
 
 // Fast-path streaming sharpen. The content script owns a Port; we pipe
 // text deltas over it as they arrive so the prompt box fills in live.
@@ -29,19 +85,31 @@ chrome.runtime.onConnect.addListener(port => {
           prompt: msg.prompt,
           tone: msg.tone || 'professional',
           source: 'extension',
+          choice: msg.choice || undefined,
         }),
       })
 
       if (!res.ok) {
         let error = 'server_error'
+        let resetAt = null
         if (res.status === 429) error = 'rate_limited'
         else if (res.status === 402) {
           const body = await res.json().catch(() => ({}))
           error = body.error === 'pro_required' ? 'pro_required' : 'quota'
+          // Carry WHEN it comes back, so the user gets a wait, not a wall.
+          resetAt = body.resetAt || null
         }
-        port.postMessage({ type: 'ERROR', error, status: res.status })
+        port.postMessage({ type: 'ERROR', error, status: res.status, resetAt })
         return
       }
+
+      // How many improvements are left after this one. -1 = unlimited (Pro).
+      // Missing header -> null -> the content script says nothing at all.
+      const leftHeader = res.headers.get('X-Improvements-Left')
+      port.postMessage({
+        type: 'META',
+        left: leftHeader === null ? null : parseInt(leftHeader, 10),
+      })
 
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
@@ -58,54 +126,8 @@ chrome.runtime.onConnect.addListener(port => {
   })
 })
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-  if (msg?.type !== 'DEEPCLARIO_ANALYZE') return
-
-  const headers = { 'Content-Type': 'application/json' }
-  if (msg.token) {
-    // Server validates and falls back to anonymous if invalid - we never
-    // need to gatekeep here.
-    headers['Authorization'] = 'Bearer ' + msg.token
-  }
-
-  fetch(API_URL, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      prompt: msg.prompt,
-      tone: msg.tone || 'professional',
-      priorAnswers: msg.priorAnswers || [],
-      source: 'extension',
-      deep: msg.deep === true,
-    }),
-  })
-    .then(async res => {
-      if (res.status === 429) {
-        sendResponse({ ok: false, error: 'rate_limited' })
-        return
-      }
-      if (res.status === 402) {
-        // Two distinct 402s: quota exhausted (rate_limited_quota, with
-        // used/limit/windowHours) or Deep Rewrite without Pro
-        // (pro_required). Forward the body so the panel can say which.
-        const body = await res.json().catch(() => ({}))
-        sendResponse({
-          ok: false,
-          error: body.error === 'pro_required' ? 'pro_required' : 'quota',
-          limit: body.limit,
-          windowHours: body.windowHours,
-        })
-        return
-      }
-      if (!res.ok) {
-        sendResponse({ ok: false, error: 'server_error', status: res.status })
-        return
-      }
-      const data = await res.json()
-      sendResponse({ ok: true, data })
-    })
-    .catch(() => sendResponse({ ok: false, error: 'network' }))
-
-  // Keep the message channel open for the async response.
-  return true
-})
+// The old DEEPCLARIO_ANALYZE handler is gone. The extension no longer calls
+// the heavy analyze pipeline: it asks its clarifying question inline BEFORE
+// the rewrite (fork), rewrites once (sharpen), and explains afterwards
+// (explain). Routing 'why?' through analyze is what made the panel ask a
+// SECOND question and produce a competing rewrite.

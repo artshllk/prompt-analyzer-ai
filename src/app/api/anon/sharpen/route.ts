@@ -3,7 +3,8 @@ import { streamSharpen } from '@/lib/engine/sharpen'
 import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
 import { createServiceClient } from '@/lib/supabase/server'
-import { REWRITE_FREE_LIMIT, REWRITE_WINDOW_HOURS, windowStart } from '@/lib/limits'
+import { recordExtensionSession } from '@/lib/db/sessions'
+import { decideUsage, USAGE_WINDOW_HOURS, USAGE_COOLDOWN_HOURS } from '@/lib/limits'
 import type { Tone } from '@/types/database'
 
 /**
@@ -21,12 +22,16 @@ interface SharpenBody {
   prompt: string
   tone?: Tone
   source?: string
+  /** The interpretation the user picked from the inline fork chips. */
+  choice?: string
 }
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  // Without this the extension cannot read X-Improvements-Left cross-origin.
+  'Access-Control-Expose-Headers': 'X-Improvements-Left',
 }
 
 function corsJson(body: unknown, status: number): NextResponse {
@@ -67,30 +72,98 @@ export async function POST(req: NextRequest) {
   const prompt = body.prompt?.trim()
   const tone: Tone = body.tone ?? 'professional'
   const source = body.source === 'extension' ? 'extension' : 'web'
+  const choice = body.choice?.trim() || undefined
 
   if (!prompt) return corsJson({ error: 'prompt_required' }, 400)
   if (prompt.length > 4000) return corsJson({ error: 'prompt_too_long' }, 400)
 
-  // Rolling quota for signed-in free users (same 5/48h bucket as analyze -
-  // a sharpen is a rewrite). Pro bypasses.
+  // The clarifying question is asked BEFORE any rewrite (see the extension's
+  // ask-first flow), so a call carrying a `choice` is still the one and only
+  // rewrite of that prompt - it charges like any other. Every sharpen = one
+  // credit, whether or not a question was answered on the way.
+
+  // Free-tier usage window. Improve freely for USAGE_WINDOW_HOURS, then wait
+  // USAGE_COOLDOWN_HOURS. Pro bypasses entirely.
+  //
+  // Headroom is computed on EVERY call, not just when blocking, and handed
+  // back on the response - the extension stays silent while there is plenty
+  // left and only speaks when the user is nearly out. A meter that is always
+  // on screen is nagging, not helping.
+  //
+  // The policy itself lives in decideUsage() (pure, unit-tested); this route
+  // only does the IO around it.
+  let remaining: number | null = null
+
   if (auth && auth.tier === 'free') {
     const supabase = await createServiceClient()
-    const { count } = await supabase
-      .from('usage_events')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', auth.userId)
-      .eq('event_type', 'prompt_analyzed')
-      .gte('created_at', windowStart(REWRITE_WINDOW_HOURS))
-    if ((count ?? 0) >= REWRITE_FREE_LIMIT) {
+
+    const { data: profile, error: profileErr } = await supabase
+      .from('profiles')
+      .select('window_started_at')
+      .eq('id', auth.userId)
+      .maybeSingle()
+
+    // If migration 007 has not run, this column does not exist and every
+    // call would silently open a fresh window - i.e. no gating at all. Fail
+    // open (never lock users out over our own deploy mistake) but shout, so
+    // it cannot go unnoticed in production.
+    if (profileErr) {
+      console.error(
+        `[anon-sharpen] USAGE GATE DISABLED - profiles.window_started_at read failed: ${profileErr.message}. Has migration 007 run?`
+      )
+    }
+
+    const windowOpenedAt = profile?.window_started_at ?? null
+
+    // Only count usage inside the current window.
+    let usedInWindow = 0
+    if (windowOpenedAt) {
+      const { count } = await supabase
+        .from('usage_events')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', auth.userId)
+        .eq('event_type', 'prompt_analyzed')
+        .gte('created_at', windowOpenedAt)
+      usedInWindow = count ?? 0
+    }
+
+    const decision = decideUsage(windowOpenedAt, usedInWindow)
+
+    if (!decision.allow) {
       return corsJson(
-        { error: 'rate_limited_quota', used: count, limit: REWRITE_FREE_LIMIT, windowHours: REWRITE_WINDOW_HOURS },
+        {
+          error: 'rate_limited_quota',
+          // A wall with a clock on it is a wait; without one it is a dead end.
+          resetAt: decision.retryAt,
+          windowHours: USAGE_WINDOW_HOURS,
+          cooldownHours: USAGE_COOLDOWN_HOURS,
+        },
         402
       )
     }
+
+    // A fresh window opens on this improvement. Stamp it before we spend it,
+    // so a crash mid-stream cannot hand out a free extra window.
+    //
+    // Backdate by a second: the usage_events row for THIS request is written
+    // a few milliseconds after this update, and the next request counts
+    // events with created_at >= window_started_at. Stamping the window at
+    // exactly "now" risks that first event landing on the wrong side of the
+    // boundary (clock skew, or the fire-and-forget insert racing us), which
+    // would quietly hand the user a free extra improvement every cycle.
+    if (decision.opensWindow) {
+      const openedAt = new Date(Date.now() - 1000).toISOString()
+      await supabase
+        .from('profiles')
+        .update({ window_started_at: openedAt })
+        .eq('id', auth.userId)
+    }
+
+    remaining = decision.remaining
   }
 
   console.log(
-    `[anon-sharpen] source=${source} auth=${auth ? `${auth.tier}:${auth.userId.slice(0, 8)}` : 'anon'} ts=${new Date().toISOString()}`
+    `[anon-sharpen] source=${source} answered=${!!choice} auth=${auth ? `${auth.tier}:${auth.userId.slice(0, 8)}` : 'anon'} ts=${new Date().toISOString()}`
   )
 
   // Record usage for signed-in users, fire-and-forget.
@@ -105,8 +178,10 @@ export async function POST(req: NextRequest) {
   const encoder = new TextEncoder()
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
+      let full = ''
       try {
-        for await (const delta of streamSharpen({ prompt, tone })) {
+        for await (const delta of streamSharpen({ prompt, tone, choice })) {
+          full += delta
           controller.enqueue(encoder.encode(delta))
         }
       } catch (err) {
@@ -115,10 +190,29 @@ export async function POST(req: NextRequest) {
         // back. Mid-stream, the partial result is still usable.
       } finally {
         controller.close()
+
+        // Persist the session once we have the finished text. This is the
+        // ONLY place history is written now that the playground is going -
+        // without it, /history and /insights are empty forever. Awaited
+        // inside the stream (not the request) so it never delays a token,
+        // and it can never break the rewrite: recordExtensionSession
+        // swallows its own errors.
+        if (auth && full.trim()) {
+          await recordExtensionSession({
+            userId: auth.userId,
+            originalPrompt: prompt,
+            finalPrompt: full.trim(),
+            tone,
+            choice,
+          })
+        }
       }
     },
   })
 
+  // Headroom rides on a header: the body is a plain-text stream, so there
+  // is nowhere else to put it. `-1` means unlimited (Pro), and the client
+  // treats a missing header the same way - silence beats a wrong number.
   return new NextResponse(stream, {
     status: 200,
     headers: {
@@ -126,6 +220,7 @@ export async function POST(req: NextRequest) {
       'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'no-cache, no-transform',
       'X-Accel-Buffering': 'no',
+      'X-Improvements-Left': remaining === null ? '-1' : String(remaining),
     },
   })
 }
