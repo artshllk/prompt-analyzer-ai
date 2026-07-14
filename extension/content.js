@@ -5,9 +5,10 @@
 // place, streamed in live. No destination, no paste-back.
 //
 //   Alt+I (or the small ✦ chip by the input) → sharpen the current prompt.
-//   Tab / Enter while the "before" is shown → accept. Esc → undo.
-//   "why?" on the chip → opens the details panel (the old full flow) for
-//   the diagnosis, forks, and Deep Rewrite.
+//   Enter sends it. Esc undoes.
+//   "+ N details" on the chip → the questions only you can answer, inline.
+//   "compare" → the one thing the chip cannot do: show your original beside
+//   the rewrite, and hand your own words back. The box holds one version.
 //
 // Everything lives in a Shadow DOM so the host site's CSS can't touch us
 // and ours can't leak out.
@@ -78,7 +79,7 @@
     connect: SITE + '/extension/connect',
     pricing: SITE + '/pricing',
     signup: SITE + '/login',
-    playground: SITE + '/playground',
+    app: SITE + '/dashboard',
     privacy: SITE + '/privacy',
   }
 
@@ -337,18 +338,42 @@
   const IDLE_HTML =
     `<span class="mark">✦</span>Sharpen<span class="kbd">Alt+I</span>`
 
+  /**
+   * Guard against re-rendering the chip when nothing changed.
+   *
+   * syncChip() runs on a 1.2s interval AND on every input event. Every chip
+   * renderer sets innerHTML, which destroys the buttons inside and builds new
+   * ones - so a click on "why?" could land on an element that had just been
+   * replaced out from under the pointer. That is why it used to take two or
+   * three clicks to open the panel.
+   *
+   * Returns true when the caller should actually re-render.
+   */
+  function chipChanged(signature) {
+    if (chip.dataset.sig === signature) return false
+    chip.dataset.sig = signature
+    return true
+  }
+
   function showIdleChip() {
     if (state.phase === 'working') return
     if (!positionChip()) return
+    if (!chipChanged('idle')) return
     chip.className = 'chip show'
     chip.innerHTML = IDLE_HTML
     chip.onclick = onSharpen
   }
 
-  function hideChip() { chip.classList.remove('show') }
+  // Clear the signature: otherwise re-showing the same state after a hide
+  // would be skipped as "unchanged" and the chip would never come back.
+  function hideChip() {
+    chip.classList.remove('show')
+    delete chip.dataset.sig
+  }
 
   function showWorkingChip() {
     positionChip()
+    if (!chipChanged('working')) return
     chip.className = 'chip show state-working'
     chip.innerHTML = `<span class="dots"><span></span><span></span><span></span></span>Sharpening`
     chip.onclick = null
@@ -361,6 +386,7 @@
    */
   function showAskingChip() {
     positionChip()
+    if (!chipChanged(`asking|${state.phase}`)) return
     chip.className = 'chip show state-working'
     chip.innerHTML =
       state.phase === 'asking'
@@ -394,6 +420,9 @@
     chip.className = 'chip show state-done'
     const tag = state.chosen ? `Sharpened · ${state.chosen}` : 'Sharpened'
     const n = state.gaps ? state.gaps.length : 0
+
+    if (!chipChanged(`done|${tag}|${n}`)) return
+
     // If details are still missing, the chip OFFERS them - the journey stays
     // inline. "why?" is only ever reading material, off to the side.
     chip.innerHTML =
@@ -401,7 +430,7 @@
       (n
         ? `<span class="why add" id="addgaps">+ ${n} detail${n === 1 ? '' : 's'}</span>`
         : '') +
-      `<span class="why" id="why">why?</span>` +
+      `<span class="why" id="why">compare</span>` +
       `<span class="why" id="undo">undo</span>`
     const add = $('#addgaps')
     if (add) add.onclick = openGaps
@@ -415,6 +444,7 @@
   /** Mid-flow: walking the missing details, one question at a time. */
   function showFillingChip() {
     positionChip()
+    if (!chipChanged(`filling|${state.gapIndex}`)) return
     chip.className = 'chip show state-working'
     const step = state.gapIndex + 1
     chip.innerHTML =
@@ -1191,8 +1221,14 @@
       LINKS,
       onConnect: openConnect,
       onDisconnect: disconnect,
-      // Deliberately no callback that changes the prompt. The panel is
-      // read-only: the whole journey happens inline, on the chip.
+      // The one action the panel has: hand the user their own words back.
+      // The prompt box holds a single version, so once we overwrite it their
+      // original survives nowhere else on screen.
+      onRestore: () => {
+        writePrompt(state.before)
+        resetToIdle()
+        toast('Your original is back')
+      },
     })
     return true
   }
@@ -1204,6 +1240,6 @@
 
   function openPanel(original, sharpened) {
     if (buildPanel()) panelApi.open(original, sharpened)
-    else window.open(LINKS.playground, '_blank', 'noopener')
+    else window.open(LINKS.app, "_blank", "noopener")
   }
 })()
