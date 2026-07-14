@@ -7,20 +7,42 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 /**
  * Home page splash: the same choreography as the post-signup WelcomeMoment
  * (ambient accent glow, logo resolving out of a blur, display-type wordmark),
- * but shown on every visit to `/` rather than once per user.
+ * shown when someone lands on `/`, but at most once per COOLDOWN_MS so a
+ * returning visitor within the window skips straight to the page.
  *
  * `visible` starts true - not flipped on inside an effect - so the overlay
  * is there from the very first paint (including SSR). Flipping it on later
- * left a frame where the bare page showed before hydration caught up.
- * Reduced motion is turned off via useLayoutEffect, which runs before the
- * browser paints, so those users never see the overlay flash on either.
+ * left a frame where the bare page showed before hydration caught up. The
+ * useLayoutEffect below runs before the browser paints, so the cases that
+ * should NOT show it (reduced motion, or seen recently) hide the overlay
+ * before it ever appears rather than flashing it on and off.
  */
+const SEEN_KEY = "dc:splash-seen";
+const COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
+
+function seenRecently(): boolean {
+  try {
+    const last = Number(localStorage.getItem(SEEN_KEY));
+    return Number.isFinite(last) && Date.now() - last < COOLDOWN_MS;
+  } catch {
+    return false;
+  }
+}
+
 export function SplashScreen() {
   const reduce = useReducedMotion();
   const [visible, setVisible] = useState(true);
 
   useLayoutEffect(() => {
-    if (reduce) setVisible(false);
+    if (reduce || seenRecently()) {
+      setVisible(false);
+      return;
+    }
+    // Stamp the time the moment we commit to showing it, so a second tab
+    // or a quick reload inside the window won't replay it.
+    try {
+      localStorage.setItem(SEEN_KEY, String(Date.now()));
+    } catch {}
   }, [reduce]);
 
   useEffect(() => {
