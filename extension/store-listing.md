@@ -1,4 +1,4 @@
-# Chrome Web Store listing — Deepclario
+# Chrome Web Store listing - Deepclario
 
 Everything the store asks for. Copy each block into the matching field.
 
@@ -6,7 +6,7 @@ Everything the store asks for. Copy each block into the matching field.
 
 ## TITLE (45 char max)
 
-Deepclario — Better AI prompts, one key
+Deepclario - Better AI prompts, one key
 
 ## SUMMARY / SHORT DESCRIPTION (132 char max)
 

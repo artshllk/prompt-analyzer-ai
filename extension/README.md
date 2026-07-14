@@ -28,7 +28,7 @@ It reuses the existing public endpoint `https://deepclario.com/api/anon/analyze`
 
 Works in Chrome, Edge, Brave, Arc (anything Chromium).
 
-## Publish to the Chrome Web Store (your steps, ~1–3 day review)
+## Publish to the Chrome Web Store (your steps, ~1 to 3 day review)
 
 This part is gated by Google, not by code:
 
@@ -49,7 +49,7 @@ This part is gated by Google, not by code:
 5. Justify permissions in the form:
    - `host_permissions: deepclario.com` → "calls our analysis API"
    - content scripts on the 3 chat sites → "injects the Improve button"
-6. Submit. Review is typically **1–3 business days** for a new publisher.
+6. Submit. Review is typically **1 to 3 business days** for a new publisher.
 
 ## Privacy / data handling (state this in the listing)
 

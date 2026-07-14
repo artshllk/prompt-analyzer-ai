@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Deepclario \u2014 Better AI prompts, one key",
+  "name": "Deepclario - Better AI prompts, one key",
   "version": "0.7.0",
   "description": "Press one key and your prompt gets improved right in the ChatGPT, Claude, or Gemini box. It asks first when it isn't sure.",
   "icons": {
@@ -9,7 +9,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "Deepclario \u2014 Improve prompt",
+    "default_title": "Deepclario - Improve prompt",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
