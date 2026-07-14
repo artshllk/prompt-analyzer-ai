@@ -4,7 +4,7 @@ import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib
 import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
 import { createServiceClient } from '@/lib/supabase/server'
 import { recordExtensionSession } from '@/lib/db/sessions'
-import { REWRITE_FREE_LIMIT, REWRITE_WINDOW_HOURS, windowStart } from '@/lib/limits'
+import { decideUsage, USAGE_WINDOW_HOURS, USAGE_COOLDOWN_HOURS } from '@/lib/limits'
 import type { Tone } from '@/types/database'
 
 /**
@@ -82,59 +82,84 @@ export async function POST(req: NextRequest) {
   // rewrite of that prompt - it charges like any other. Every sharpen = one
   // credit, whether or not a question was answered on the way.
 
-  // Rolling quota for signed-in free users (same 5/48h bucket as analyze -
-  // a sharpen is a rewrite). Pro bypasses entirely.
+  // Free-tier usage window. Improve freely for USAGE_WINDOW_HOURS, then wait
+  // USAGE_COOLDOWN_HOURS. Pro bypasses entirely.
   //
-  // We compute headroom on EVERY call, not just when blocking, and hand it
-  // back on the response. The extension stays silent while there is plenty
-  // left and only speaks when the user is nearly out - a meter that is
-  // always on screen is nagging, not helping.
+  // Headroom is computed on EVERY call, not just when blocking, and handed
+  // back on the response - the extension stays silent while there is plenty
+  // left and only speaks when the user is nearly out. A meter that is always
+  // on screen is nagging, not helping.
+  //
+  // The policy itself lives in decideUsage() (pure, unit-tested); this route
+  // only does the IO around it.
   let remaining: number | null = null
 
   if (auth && auth.tier === 'free') {
     const supabase = await createServiceClient()
-    const since = windowStart(REWRITE_WINDOW_HOURS)
 
-    const { count } = await supabase
-      .from('usage_events')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', auth.userId)
-      .eq('event_type', 'prompt_analyzed')
-      .gte('created_at', since)
+    const { data: profile, error: profileErr } = await supabase
+      .from('profiles')
+      .select('window_started_at')
+      .eq('id', auth.userId)
+      .maybeSingle()
 
-    const used = count ?? 0
+    // If migration 007 has not run, this column does not exist and every
+    // call would silently open a fresh window - i.e. no gating at all. Fail
+    // open (never lock users out over our own deploy mistake) but shout, so
+    // it cannot go unnoticed in production.
+    if (profileErr) {
+      console.error(
+        `[anon-sharpen] USAGE GATE DISABLED - profiles.window_started_at read failed: ${profileErr.message}. Has migration 007 run?`
+      )
+    }
 
-    if (used >= REWRITE_FREE_LIMIT) {
-      // Blocked. Say WHEN it comes back - a wall with a clock on it is a
-      // wait; a wall without one is just a dead end.
-      const { data: oldest } = await supabase
+    const windowOpenedAt = profile?.window_started_at ?? null
+
+    // Only count usage inside the current window.
+    let usedInWindow = 0
+    if (windowOpenedAt) {
+      const { count } = await supabase
         .from('usage_events')
-        .select('created_at')
+        .select('id', { count: 'exact', head: true })
         .eq('user_id', auth.userId)
         .eq('event_type', 'prompt_analyzed')
-        .gte('created_at', since)
-        .order('created_at', { ascending: true })
-        .limit(1)
-        .maybeSingle()
+        .gte('created_at', windowOpenedAt)
+      usedInWindow = count ?? 0
+    }
 
-      const reset = oldest?.created_at
-        ? new Date(new Date(oldest.created_at).getTime() + REWRITE_WINDOW_HOURS * 3_600_000)
-        : new Date(Date.now() + REWRITE_WINDOW_HOURS * 3_600_000)
+    const decision = decideUsage(windowOpenedAt, usedInWindow)
 
+    if (!decision.allow) {
       return corsJson(
         {
           error: 'rate_limited_quota',
-          used,
-          limit: REWRITE_FREE_LIMIT,
-          windowHours: REWRITE_WINDOW_HOURS,
-          resetAt: reset.toISOString(),
+          // A wall with a clock on it is a wait; without one it is a dead end.
+          resetAt: decision.retryAt,
+          windowHours: USAGE_WINDOW_HOURS,
+          cooldownHours: USAGE_COOLDOWN_HOURS,
         },
         402
       )
     }
 
-    // This call is about to spend one, so report what is left AFTER it.
-    remaining = Math.max(0, REWRITE_FREE_LIMIT - used - 1)
+    // A fresh window opens on this improvement. Stamp it before we spend it,
+    // so a crash mid-stream cannot hand out a free extra window.
+    //
+    // Backdate by a second: the usage_events row for THIS request is written
+    // a few milliseconds after this update, and the next request counts
+    // events with created_at >= window_started_at. Stamping the window at
+    // exactly "now" risks that first event landing on the wrong side of the
+    // boundary (clock skew, or the fire-and-forget insert racing us), which
+    // would quietly hand the user a free extra improvement every cycle.
+    if (decision.opensWindow) {
+      const openedAt = new Date(Date.now() - 1000).toISOString()
+      await supabase
+        .from('profiles')
+        .update({ window_started_at: openedAt })
+        .eq('id', auth.userId)
+    }
+
+    remaining = decision.remaining
   }
 
   console.log(

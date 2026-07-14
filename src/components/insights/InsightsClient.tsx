@@ -3,31 +3,49 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
+/**
+ * Insights: the habits that keep costing you a good answer.
+ *
+ * The old version reported score deltas ("average moved from 42 to 78").
+ * That is trivia about the tool. This reports what the user actually keeps
+ * leaving out - "you don't say who it is for, in 7 of 10 prompts" - which is
+ * something they can fix tomorrow.
+ */
+
 interface InsightsData {
-  week: { promptsCount: number; avgBefore: number; avgAfter: number; avgLift: number }
-  prevWeek: { promptsCount: number; avgAfter: number }
-  month: { promptsCount: number; avgAfter: number }
-  dailyActivity: { date: string; count: number; avgAfter: number }[]
+  week: { promptsCount: number }
+  month: { promptsCount: number }
+  dailyActivity: { date: string; count: number }[]
   streak: number
-  topTags: { tag: string; count: number }[]
-  bestThisWeek: { id: string; prompt: string; before: number; after: number } | null
-  biggestLift: { id: string; prompt: string; before: number; after: number; delta: number } | null
+  /** The gaps that came up most: what they keep leaving out. */
+  habits: { label: string; count: number; outOf: number }[]
+  askedCount: number
+  askedRate: number
+  avgStartingScore: number | null
 }
 
-const TAG_LABELS: Record<string, { label: string; tip: string }> = {
-  context: { label: 'adding context', tip: 'Try giving the model the background up front - who the audience is, what came before, why it matters.' },
-  role: { label: 'assigning a role', tip: 'Start with "Act as a..." to anchor the response in a specific perspective.' },
-  format: { label: 'specifying format', tip: 'Tell the model exactly how to structure the output - bullets, paragraphs, length, sections.' },
-  constraints: { label: 'adding constraints', tip: 'Length limits, tone rules, words to avoid. Constraints focus the output.' },
-  examples: { label: 'including examples', tip: 'One example of what good looks like beats five adjectives every time.' },
-  action: { label: 'a clearer action verb', tip: 'Replace fuzzy verbs with explicit ones - "rewrite", "summarize", "list".' },
-  specificity: { label: 'more specificity', tip: 'Replace vague nouns and adjectives with concrete details and numbers.' },
+/** Plain-English advice per gap. Falls back to the label if we have no tip. */
+const HABIT_TIPS: Record<string, string> = {
+  goal: 'Say what you actually want out of it, not just the topic.',
+  audience: 'Name who reads it. The same request changes completely depending on who it is for.',
+  reader: 'Name who reads it. The same request changes completely depending on who it is for.',
+  length: 'Say how long. Otherwise the model picks for you, and it usually picks wrong.',
+  format: 'Say what shape you want back: a list, a table, a draft, a plan.',
+  tone: 'Say how it should sound. "Plain and direct" is a real instruction.',
+  limits: 'Say what to avoid. Constraints do more work than adjectives.',
+  days: 'Say how much time you actually have.',
+  context: 'Give the background the model cannot guess: what came before, why it matters.',
+  deadline: 'Say when it is due. It changes what a good answer looks like.',
+  examples: 'One example of what good looks like beats five adjectives.',
 }
 
-function scoreColor(score: number): string {
-  if (score < 30) return '#C25E5E'
-  if (score < 60) return 'var(--color-paper-mute)'
-  return 'var(--color-paper)'
+function tipFor(label: string): string | null {
+  const key = label.toLowerCase().trim()
+  if (HABIT_TIPS[key]) return HABIT_TIPS[key]
+  for (const k of Object.keys(HABIT_TIPS)) {
+    if (key.includes(k)) return HABIT_TIPS[k]
+  }
+  return null
 }
 
 export function InsightsClient() {
@@ -79,143 +97,82 @@ export function InsightsClient() {
     )
   }
 
-  const noData = data.week.promptsCount === 0 && data.month.promptsCount === 0
-  if (noData) return <EmptyState />
-  if (data.week.promptsCount < 3) return <BuildingState count={data.week.promptsCount} />
+  if (data.month.promptsCount === 0) return <EmptyState />
 
-  const wowDelta = data.week.avgAfter - data.prevWeek.avgAfter
-  const trendArrow = wowDelta > 0 ? '↑' : wowDelta < 0 ? '↓' : '→'
-
-  const topTag = data.topTags[0]
-  const tagInfo = topTag ? TAG_LABELS[topTag.tag] : null
+  const top = data.habits[0]
+  const topTip = top ? tipFor(top.label) : null
 
   return (
     <div className="space-y-12">
-      {/* Headline pull-quote */}
+      {/* The headline: the one habit worth fixing. */}
       <section className="grid md:grid-cols-12 gap-6 md:gap-12">
         <div className="md:col-span-3">
-          <p className="eyebrow">Your week</p>
+          <p className="eyebrow">What you keep leaving out</p>
         </div>
         <div className="md:col-span-9">
-          <p
-            className="font-serif tracking-tight text-2xl md:text-[2.4rem] leading-tight"
-            style={{ color: 'var(--color-paper)' }}
-          >
-            You analyzed <span style={{ color: 'var(--color-paper)' }}>{data.week.promptsCount}</span> {plural('prompt', data.week.promptsCount)}.
-            Average score moved from{' '}
-            <span style={{ color: scoreColor(data.week.avgBefore) }}>{data.week.avgBefore}</span>
-            {' to '}
-            <span style={{ color: scoreColor(data.week.avgAfter) }}>{data.week.avgAfter}</span>.
-          </p>
-          {data.prevWeek.promptsCount > 0 && (
-            <p className="mt-4 text-base" style={{ color: 'var(--color-paper-mute)' }}>
-              <span style={{ color: wowDelta > 0 ? 'var(--color-paper)' : wowDelta < 0 ? '#C25E5E' : 'var(--color-paper-mute)' }}>
-                {trendArrow} {Math.abs(wowDelta)} {plural('point', Math.abs(wowDelta))}
-              </span>{' '}
-              vs. last week ({data.prevWeek.avgAfter} avg).
+          {top ? (
+            <>
+              <p
+                className="font-serif tracking-tight text-2xl md:text-[2.4rem] leading-tight"
+                style={{ color: 'var(--color-paper)' }}
+              >
+                You leave out{' '}
+                <span style={{ fontStyle: 'italic' }}>{top.label.toLowerCase()}</span>{' '}
+                in{' '}
+                <span className="tabular-nums">{top.count}</span> of{' '}
+                <span className="tabular-nums">{top.outOf}</span> prompts.
+              </p>
+              {topTip && (
+                <div className="mt-6 pl-5" style={{ borderLeft: '1px solid var(--color-rule-strong)' }}>
+                  <p
+                    className="font-serif text-base md:text-lg leading-[1.55]"
+                    style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+                  >
+                    {topTip}
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <p
+              className="font-serif tracking-tight text-xl md:text-2xl leading-tight"
+              style={{ color: 'var(--color-paper-mute)' }}
+            >
+              Open &ldquo;why?&rdquo; on a sharpened prompt and we&rsquo;ll start spotting your
+              patterns here.
             </p>
           )}
         </div>
       </section>
 
-      {/* Streak - restrained, no fire emoji */}
-      {data.streak > 0 && (
-        <section>
-          <div className="rule-strong" />
-          <div className="grid grid-cols-12 gap-3 md:gap-6 py-6 items-baseline">
-            <div className="col-span-5 md:col-span-3">
-              <p className="eyebrow">Streak</p>
-            </div>
-            <div className="col-span-7 md:col-span-9">
-              <p className="text-base md:text-lg" style={{ color: 'var(--color-paper)' }}>
-                <span className="font-serif text-2xl md:text-3xl tabular-nums mr-2" style={{ fontWeight: 400 }}>
-                  {data.streak}
-                </span>
-                {data.streak === 1 ? 'day' : 'days'} in a row.{' '}
-                <span style={{ color: 'var(--color-paper-mute)' }}>
-                  {data.streak >= 7
-                    ? 'You have improved a prompt every day this week.'
-                    : `Run one today to make it ${data.streak + 1}.`}
-                </span>
-              </p>
-            </div>
-          </div>
-          <div className="rule" />
-        </section>
-      )}
-
-      {/* Takeaway */}
-      {tagInfo && topTag && (
+      {/* The rest of the habits. */}
+      {data.habits.length > 1 && (
         <section className="grid md:grid-cols-12 gap-6 md:gap-12">
           <div className="md:col-span-3">
-            <p className="eyebrow" style={{ color: 'var(--color-accent)' }}>This week&rsquo;s takeaway</p>
-          </div>
-          <div className="md:col-span-9">
-            <p className="text-base md:text-lg leading-[1.55] mb-3" style={{ color: 'var(--color-paper)' }}>
-              Your prompts most often needed{' '}
-              <span className="font-serif" style={{ fontStyle: 'italic' }}>
-                {tagInfo.label}
-              </span>
-              .
-            </p>
-            <p className="text-sm md:text-base mb-6" style={{ color: 'var(--color-paper-mute)' }}>
-              Out of {data.week.promptsCount} {plural('prompt', data.week.promptsCount)}, this fix came up{' '}
-              <span style={{ color: 'var(--color-paper)' }}>{topTag.count} {plural('time', topTag.count)}</span>.
-            </p>
-            <div className="pl-5" style={{ borderLeft: '1px solid var(--color-rule-strong)' }}>
-              <p className="font-serif text-base md:text-lg leading-[1.55]" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
-                {tagInfo.tip}
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Daily activity */}
-      <section>
-        <div className="rule-strong" />
-        <div className="py-7">
-          <div className="flex items-baseline justify-between mb-5">
-            <p className="eyebrow">Daily activity</p>
-            <p className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>
-              Last 14 days &middot; taller bar = more prompts
-            </p>
-          </div>
-          <DailyBars data={data.dailyActivity} />
-        </div>
-        <div className="rule-strong" />
-      </section>
-
-      {/* What we added most */}
-      {data.topTags.length > 0 && (
-        <section className="grid md:grid-cols-12 gap-6 md:gap-12">
-          <div className="md:col-span-3">
-            <p className="eyebrow">What we added most</p>
+            <p className="eyebrow">The rest</p>
             <p className="text-xs mt-2" style={{ color: 'var(--color-paper-mute)' }}>
-              The categories of fixes you&rsquo;d benefit from doing yourself first.
+              Things an AI cannot guess for you.
             </p>
           </div>
           <div className="md:col-span-9 space-y-4">
-            {data.topTags.map((t, i) => {
-              const max = data.topTags[0].count
-              const pct = Math.max(8, Math.round((t.count / max) * 100))
-              const info = TAG_LABELS[t.tag]
+            {data.habits.slice(1).map(h => {
+              const pct = Math.max(8, Math.round((h.count / data.habits[0].count) * 100))
               return (
-                <div key={t.tag} className="flex items-center gap-4">
-                  <span className="text-sm md:text-base shrink-0 w-44 capitalize" style={{ color: 'var(--color-paper)' }}>
-                    {info?.label ?? t.tag.replace(/_/g, ' ')}
+                <div key={h.label} className="flex items-center gap-4">
+                  <span
+                    className="text-sm md:text-base shrink-0 w-40"
+                    style={{ color: 'var(--color-paper)' }}
+                  >
+                    {h.label}
                   </span>
                   <div className="flex-1 h-px" style={{ background: 'var(--color-rule-strong)' }}>
-                    <div
-                      className="h-px"
-                      style={{
-                        width: `${pct}%`,
-                        background: i === 0 ? 'var(--color-paper)' : 'var(--color-paper-mute)',
-                      }}
-                    />
+                    <div className="h-px" style={{ width: `${pct}%`, background: 'var(--color-paper-mute)' }} />
                   </div>
-                  <span className="font-serif text-base tabular-nums w-10 text-right" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
-                    {t.count}
+                  <span
+                    className="font-serif text-base tabular-nums w-16 text-right"
+                    style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+                  >
+                    {h.count}/{h.outOf}
                   </span>
                 </div>
               )
@@ -224,36 +181,49 @@ export function InsightsClient() {
         </section>
       )}
 
-      {/* Highlights */}
-      {(data.bestThisWeek || data.biggestLift) && (
-        <section className="grid md:grid-cols-12 gap-y-10 md:gap-x-12">
-          {data.bestThisWeek && (
-            <div className="md:col-span-6">
-              <Highlight
-                label="Top score this week"
-                color="var(--color-paper)"
-                primary={data.bestThisWeek.after}
-                secondary={`from ${data.bestThisWeek.before}`}
-                prompt={data.bestThisWeek.prompt}
-              />
+      {/* How often the prompt was too vague to act on. */}
+      {data.month.promptsCount >= 3 && (
+        <section>
+          <div className="rule-strong" />
+          <div className="grid grid-cols-12 gap-3 md:gap-6 py-6 items-baseline">
+            <div className="col-span-5 md:col-span-3">
+              <p className="eyebrow">Started too vague</p>
             </div>
-          )}
-          {data.biggestLift && (
-            <div className="md:col-span-6">
-              <Highlight
-                label="Biggest lift"
-                color="var(--color-accent)"
-                primary={`+${data.biggestLift.delta}`}
-                secondary={`${data.biggestLift.before} → ${data.biggestLift.after}`}
-                prompt={data.biggestLift.prompt}
-              />
+            <div className="col-span-7 md:col-span-9">
+              <p className="text-base md:text-lg" style={{ color: 'var(--color-paper)' }}>
+                <span className="font-serif text-2xl md:text-3xl tabular-nums mr-2" style={{ fontWeight: 400 }}>
+                  {data.askedRate}%
+                </span>
+                <span style={{ color: 'var(--color-paper-mute)' }}>
+                  of your prompts needed a question before they could be improved.
+                  {data.askedRate >= 50
+                    ? ' Most of the time you are starting from a topic, not a request.'
+                    : ' Most of the time you say enough to act on.'}
+                </span>
+              </p>
             </div>
-          )}
+          </div>
+          <div className="rule" />
         </section>
       )}
 
-      {/* Practice nudge */}
-      <section className="grid md:grid-cols-12 gap-6 md:gap-12 pt-6" style={{ borderTop: '1px solid var(--color-rule-strong)' }}>
+      {/* Activity */}
+      <section>
+        <div className="rule-strong" />
+        <div className="py-7">
+          <div className="flex items-baseline justify-between mb-5">
+            <p className="eyebrow">Daily activity</p>
+            <p className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>
+              Last 14 days &middot; {data.streak > 0 ? `${data.streak} day streak` : 'no streak yet'}
+            </p>
+          </div>
+          <DailyBars data={data.dailyActivity} />
+        </div>
+        <div className="rule-strong" />
+      </section>
+
+      {/* Practice nudge - points at the extension, which is where the work happens. */}
+      <section className="grid md:grid-cols-12 gap-6 md:gap-12 pt-6">
         <div className="md:col-span-3">
           <p className="eyebrow">Try this week</p>
         </div>
@@ -262,22 +232,19 @@ export function InsightsClient() {
             className="font-serif tracking-tight text-xl md:text-2xl leading-tight mb-4"
             style={{ color: 'var(--color-paper)' }}
           >
-            Take a prompt you used this week and rewrite it before pasting into Deepclario.
-            {tagInfo && ` Focus on ${tagInfo.label}.`}
+            {top
+              ? `Before you hit sharpen, add ${top.label.toLowerCase()} yourself. Then see what is left.`
+              : 'Write your next prompt, then sharpen it and see what you missed.'}
           </p>
           <p className="text-base leading-[1.55] mb-6" style={{ color: 'var(--color-paper-mute)' }}>
-            The fastest way to internalize the pattern is to attempt the fix yourself, then compare.
+            The fastest way to get better is to try the fix yourself first, then compare.
           </p>
           <Link
-            href="/playground"
+            href="/extension"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
-            style={{
-              background: 'var(--color-paper)',
-              color: 'var(--color-ink)',
-              fontWeight: 500,
-            }}
+            style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
           >
-            Open the playground
+            Open the extension
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
               <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -288,65 +255,20 @@ export function InsightsClient() {
   )
 }
 
-function Highlight({
-  label,
-  color,
-  primary,
-  secondary,
-  prompt,
-}: {
-  label: string
-  color: string
-  primary: number | string
-  secondary: string
-  prompt: string
-}) {
+function DailyBars({ data }: { data: { date: string; count: number }[] }) {
+  const max = Math.max(1, ...data.map(d => d.count))
   return (
-    <div>
-      <p className="eyebrow mb-3" style={{ color }}>{label}</p>
-      <div className="flex items-baseline gap-3 mb-4">
-        <span className="font-serif text-4xl md:text-5xl tabular-nums" style={{ color, fontWeight: 400 }}>{primary}</span>
-        <span className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>{secondary}</span>
-      </div>
-      <p
-        className="font-serif tracking-tight text-base md:text-lg leading-normal line-clamp-3"
-        style={{ color: 'var(--color-paper-mute)' }}
-      >
-        &ldquo;{prompt}&rdquo;
-      </p>
-    </div>
-  )
-}
-
-function DailyBars({ data }: { data: { date: string; count: number; avgAfter: number }[] }) {
-  const max = Math.max(...data.map(d => d.count), 1)
-  return (
-    <div className="flex items-end gap-1.5 h-24">
+    <div className="flex items-end gap-1.5 h-20">
       {data.map(d => {
-        const h = d.count === 0 ? 4 : Math.max(8, Math.round((d.count / max) * 100))
-        const day = new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' })[0]
+        const h = d.count === 0 ? 2 : Math.max(6, Math.round((d.count / max) * 76))
         return (
-          <div key={d.date} className="flex-1 flex flex-col items-center gap-2 group relative">
+          <div key={d.date} className="flex-1 flex flex-col justify-end" title={`${d.date}: ${d.count}`}>
             <div
-              className="w-full transition-all"
               style={{
-                height: `${h}%`,
-                background: d.count === 0 ? 'var(--color-rule-strong)' : 'var(--color-paper)',
+                height: `${h}px`,
+                background: d.count > 0 ? 'var(--color-paper)' : 'var(--color-rule-strong)',
               }}
             />
-            <span className="text-[10px]" style={{ color: 'var(--color-paper-mute)' }}>{day}</span>
-            {d.count > 0 && (
-              <div
-                className="absolute -top-9 left-1/2 -translate-x-1/2 hidden group-hover:block whitespace-nowrap z-10 px-2 py-1 text-[11px]"
-                style={{
-                  background: 'var(--color-ink-card)',
-                  color: 'var(--color-paper)',
-                  border: '1px solid var(--color-rule-strong)',
-                }}
-              >
-                {d.count} {plural('prompt', d.count)} · avg {d.avgAfter}
-              </div>
-            )}
           </div>
         )
       })}
@@ -356,71 +278,26 @@ function DailyBars({ data }: { data: { date: string; count: number; avgAfter: nu
 
 function EmptyState() {
   return (
-    <section className="grid md:grid-cols-12 gap-6 md:gap-12 py-8">
-      <div className="md:col-span-4">
-        <p className="eyebrow">Empty</p>
-      </div>
-      <div className="md:col-span-8">
-        <p className="font-serif tracking-tight text-2xl md:text-3xl leading-tight mb-6" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
-          Insights start once you have run a few prompts.
-        </p>
-        <p className="text-base md:text-lg leading-[1.6] mb-8 max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
-          Analyze a few prompts and Deepclario will start spotting patterns - what you skip most often, which fixes lift your scores fastest, and how you trend week over week.
-        </p>
-        <Link
-          href="/playground"
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
-          style={{
-            background: 'var(--color-paper)',
-            color: 'var(--color-ink)',
-            fontWeight: 500,
-          }}
-        >
-          Analyze your first prompt
-          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-            <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </Link>
-      </div>
+    <section className="py-12">
+      <div className="rule-strong" />
+      <p
+        className="py-8 font-serif tracking-tight text-xl md:text-2xl leading-tight"
+        style={{ color: 'var(--color-paper)' }}
+      >
+        Nothing here yet. Sharpen a few prompts and we&rsquo;ll show you what you keep
+        leaving out.
+      </p>
+      <Link
+        href="/extension"
+        className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper mb-8"
+        style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+      >
+        Get the extension
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+          <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </Link>
+      <div className="rule-strong" />
     </section>
   )
-}
-
-function BuildingState({ count }: { count: number }) {
-  const remaining = 3 - count
-  return (
-    <section className="grid md:grid-cols-12 gap-6 md:gap-12 py-8">
-      <div className="md:col-span-4">
-        <p className="eyebrow">Warming up</p>
-      </div>
-      <div className="md:col-span-8">
-        <p className="font-serif tracking-tight text-2xl md:text-3xl leading-tight mb-6" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
-          Insights are warming up.
-        </p>
-        <p className="text-base md:text-lg leading-[1.6] mb-8 max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
-          You&rsquo;ve analyzed {count} {plural('prompt', count)} this week. Run{' '}
-          <span style={{ color: 'var(--color-paper)' }}>{remaining} more</span>{' '}
-          and we&rsquo;ll start showing your patterns and weekly takeaways.
-        </p>
-        <Link
-          href="/playground"
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
-          style={{
-            background: 'var(--color-paper)',
-            color: 'var(--color-ink)',
-            fontWeight: 500,
-          }}
-        >
-          Analyze another prompt
-          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-            <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </Link>
-      </div>
-    </section>
-  )
-}
-
-function plural(word: string, n: number) {
-  return n === 1 ? word : `${word}s`
 }

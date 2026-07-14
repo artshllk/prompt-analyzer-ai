@@ -780,16 +780,17 @@
     // Unknown, anonymous, or plenty left: say nothing.
     if (typeof left !== 'number' || left > WARN_AT) return
 
+    // Below here they are close to the soft cap - meaning they are on a real
+    // tear, not casually out of credits. Frame it as the pause it actually
+    // is, so the message stays true when the cooldown lands.
     if (left <= 0) {
-      // They just spent the last one. Tell them now rather than letting them
-      // discover it by being blocked next time.
-      toast('That was your last free improvement.', {
+      toast('That was your last one before a short break.', {
         action: { label: 'Get unlimited', url: LINKS.pricing },
       })
       return
     }
 
-    toast(`${left} improvement${left === 1 ? '' : 's'} left`)
+    toast(`${left} more before a short break`)
   }
 
   /* ---------- Gaps: the details only the user knows ---------- */
@@ -920,10 +921,13 @@
 
     // Every blocking error gets a one-click way out.
     if (msg.error === 'quota') {
-      // The conversion moment. Be clear about what happened, say when it
-      // comes back so it reads as a wait rather than a wall, and offer one
-      // clean way out. No guilt, no countdown pressure, no second button.
-      toast(`You have used all your free improvements. ${resetPhrase(msg.resetAt)}`, {
+      // The conversion moment, and the easiest one to get wrong.
+      //
+      // This is a COOLDOWN, not exhaustion - they get more in a few hours.
+      // Saying "you're out" reads as punishment; saying "you can improve
+      // again at 4pm" reads as a pause, which is the truth and lands far
+      // better. One clean way out, no guilt, no second button.
+      toast(`Free improving is paused for a few hours. ${resetPhrase(msg.resetAt)}`, {
         action: { label: 'Get unlimited', url: LINKS.pricing },
       })
     } else if (msg.error === 'pro_required') {
@@ -954,10 +958,10 @@
     if (hours <= 0) return 'Try again now.'
     if (hours < 12) {
       const time = t.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-      return `They come back at ${time}.`
+      return `You can improve again at ${time}.`
     }
-    if (hours < 36) return 'They come back tomorrow.'
-    return `They come back in ${Math.round(hours / 24)} days.`
+    if (hours < 36) return 'You can improve again tomorrow.'
+    return `You can improve again in ${Math.round(hours / 24)} days.`
   }
 
   function undoSharpen() {

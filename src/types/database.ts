@@ -15,6 +15,8 @@ export type ProfileRow = {
   preferred_tone: Tone
   use_case_tags: string[]
   tier: Tier
+  /** Start of the current free-tier usage window. Null = none open. Migration 007. */
+  window_started_at: string | null
   paddle_customer_id: string | null
   paddle_subscription_id: string | null
   subscription_status: SubscriptionStatus | null
