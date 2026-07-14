@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Deepclario - Improve your AI prompts",
   "version": "0.7.0",
-  "description": "Sharpen the prompt you're about to send to ChatGPT, Claude, or Gemini in one keystroke, right in the box. Never leave your chat.",
+  "description": "Improve the prompt you're about to send to ChatGPT, Claude, or Gemini in one keystroke, right in the box. Never leave your chat.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

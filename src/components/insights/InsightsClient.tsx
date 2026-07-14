@@ -138,7 +138,7 @@ export function InsightsClient() {
               className="font-serif tracking-tight text-xl md:text-2xl leading-tight"
               style={{ color: 'var(--color-paper-mute)' }}
             >
-              Open &ldquo;why?&rdquo; on a sharpened prompt and we&rsquo;ll start spotting your
+              Open Compare on an improved prompt and we&rsquo;ll start spotting your
               patterns here.
             </p>
           )}
@@ -233,8 +233,8 @@ export function InsightsClient() {
             style={{ color: 'var(--color-paper)' }}
           >
             {top
-              ? `Before you hit sharpen, add ${top.label.toLowerCase()} yourself. Then see what is left.`
-              : 'Write your next prompt, then sharpen it and see what you missed.'}
+              ? `Before you hit improve, add ${top.label.toLowerCase()} yourself. Then see what is left.`
+              : 'Write your next prompt, then improve it and see what you missed.'}
           </p>
           <p className="text-base leading-[1.55] mb-6" style={{ color: 'var(--color-paper-mute)' }}>
             The fastest way to get better is to try the fix yourself first, then compare.
@@ -284,7 +284,7 @@ function EmptyState() {
         className="py-8 font-serif tracking-tight text-xl md:text-2xl leading-tight"
         style={{ color: 'var(--color-paper)' }}
       >
-        Nothing here yet. Sharpen a few prompts and we&rsquo;ll show you what you keep
+        Nothing here yet. Improve a few prompts and we&rsquo;ll show you what you keep
         leaving out.
       </p>
       <Link

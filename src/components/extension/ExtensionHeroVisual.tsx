@@ -116,7 +116,7 @@ export function ExtensionHeroVisual() {
               boxShadow: '0 3px 14px rgba(0,0,0,.35)',
             }}
           >
-            ✦ Sharpen
+            ✦ Improve
             <span
               className="rounded px-1 py-px text-[9px] font-bold opacity-60"
               style={{ border: '1px solid rgba(14,14,16,.3)' }}

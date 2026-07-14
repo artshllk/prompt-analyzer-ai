@@ -299,7 +299,7 @@
       .connect .cclose:hover { color: #F5F4F1; }
     </style>
 
-    <button class="chip" id="chip" aria-label="Sharpen prompt with Deepclario"></button>
+    <button class="chip" id="chip" aria-label="Improve prompt with Deepclario"></button>
     <div class="forks" id="forks"></div>
     <div class="toast" id="toast"></div>
   `
@@ -342,7 +342,7 @@
   const HOTKEY_LABEL = IS_MAC ? '⌥I' : 'Alt+I'
 
   const IDLE_HTML =
-    `<span class="mark">✦</span>Sharpen<span class="kbd">${HOTKEY_LABEL}</span>`
+    `<span class="mark">✦</span>Improve<span class="kbd">${HOTKEY_LABEL}</span>`
 
   /**
    * Guard against re-rendering the chip when nothing changed.
@@ -381,7 +381,7 @@
     positionChip()
     if (!chipChanged('working')) return
     chip.className = 'chip show state-working'
-    chip.innerHTML = `<span class="dots"><span></span><span></span><span></span></span>Sharpening`
+    chip.innerHTML = `<span class="dots"><span></span><span></span><span></span></span>Improving`
     chip.onclick = null
   }
 
@@ -424,7 +424,7 @@
   function showDoneChip() {
     positionChip()
     chip.className = 'chip show state-done'
-    const tag = state.chosen ? `Sharpened · ${state.chosen}` : 'Sharpened'
+    const tag = state.chosen ? `Improved · ${state.chosen}` : 'Improved'
     const n = state.gaps ? state.gaps.length : 0
 
     if (!chipChanged(`done|${tag}|${n}`)) return
@@ -553,7 +553,7 @@
     // Never sharpen our own output - it compounds into mush. The box
     // already holds a sharpened prompt: offer the explanation instead.
     if (boxHoldsOurOutput()) {
-      toast('Already sharpened. Add the details only you know.', {
+      toast('Already improved. Add the details only you know.', {
         action: { label: 'Finish it', onClick: openDetails },
       })
       return
@@ -787,7 +787,7 @@
       // Empty stream: leave the user's prompt untouched.
       writePrompt(state.before)
       resetToIdle()
-      toast('Could not sharpen that. Try again.')
+      toast('Could not improve that. Try again.')
     }
   }
 
@@ -1064,7 +1064,7 @@
     const submit = () => {
       if (saveToken(input.value)) {
         hideConnectBox()
-        toast('Account connected. Sharpen away.', { good: true })
+        toast('Account connected. Go ahead.', { good: true })
         showIdleChip()
       } else {
         err.textContent = 'That code should start with "dc_". Copy it again from the page we opened.'

@@ -31,12 +31,12 @@ import { Hotkey } from '@/components/shared/Hotkey'
 export const metadata: Metadata = {
   title: 'Deepclario extension - better prompts inside ChatGPT',
   description:
-    'Press one key and your prompt gets sharpened right in the box, inside ChatGPT, Claude, or Gemini. It asks first when your prompt could mean two things, and it remembers your answers. No copy-paste, no new tab.',
+    'Press one key and your prompt gets improved right in the box, inside ChatGPT, Claude, or Gemini. It asks first when your prompt could mean two things, and it remembers your answers. No copy-paste, no new tab.',
   alternates: { canonical: 'https://deepclario.com/extension' },
   openGraph: {
     title: 'Deepclario - browser extension',
     description:
-      'One key. Your prompt gets sharpened right where you type, inside ChatGPT, Claude, and Gemini.',
+      'One key. Your prompt gets improved right where you type, inside ChatGPT, Claude, and Gemini.',
     url: 'https://deepclario.com/extension',
     type: 'website',
     images: defaultOGImage('Deepclario - browser extension'),
@@ -80,7 +80,7 @@ export default async function ExtensionPage() {
           </h1>
           <p className="mt-6 text-lg leading-relaxed max-w-md" style={{ color: 'var(--color-paper-mute)' }}>
             Type your prompt in ChatGPT, Claude, or Gemini. Press <Hotkey />.
-            It gets sharpened right there in the box. You never leave the chat.
+            It gets improved right there in the box. You never leave the chat.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -149,7 +149,7 @@ export default async function ExtensionPage() {
           {[
             { title: <>Add it to Chrome</>, sub: 'One click from the store.' },
             { title: <>Open ChatGPT</>, sub: 'Or Claude, or Gemini.' },
-            { title: <>Press <Hotkey /></>, sub: 'Your prompt gets sharpened in the box.' },
+            { title: <>Press <Hotkey /></>, sub: 'Your prompt gets improved in the box.' },
           ].map(({ title, sub }, i) => (
             <div key={i}>
               <p
