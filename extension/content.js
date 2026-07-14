@@ -1,10 +1,10 @@
 // Deepclario extension - content script (in-workflow, inline-first).
 //
 // The product is not a panel. It is a quiet layer over ChatGPT / Claude /
-// Gemini: press one shortcut and the prompt in the box is sharpened in
+// Gemini: press one shortcut and the prompt in the box is improved in
 // place, streamed in live. No destination, no paste-back.
 //
-//   Alt+I / ⌥I on a Mac (or the small ✦ chip by the input) → sharpen.
+//   Alt+I (⌥I on a Mac), or the small ✦ chip by the input → improve.
 //   Enter sends it. Esc undoes.
 //   "+ N details" on the chip → the questions only you can answer, inline.
 //   "compare" → the one thing the chip cannot do: show your original beside
@@ -299,7 +299,7 @@
       .connect .cclose:hover { color: #F5F4F1; }
     </style>
 
-    <button class="chip" id="chip" aria-label="Sharpen prompt with Deepclario"></button>
+    <button class="chip" id="chip" aria-label="Improve prompt with Deepclario"></button>
     <div class="forks" id="forks"></div>
     <div class="toast" id="toast"></div>
   `
@@ -342,7 +342,7 @@
   const HOTKEY_LABEL = IS_MAC ? '⌥I' : 'Alt+I'
 
   const IDLE_HTML =
-    `<span class="mark">✦</span>Sharpen<span class="kbd">${HOTKEY_LABEL}</span>`
+    `<span class="mark">✦</span>Improve<span class="kbd">${HOTKEY_LABEL}</span>`
 
   /**
    * Guard against re-rendering the chip when nothing changed.
@@ -381,7 +381,7 @@
     positionChip()
     if (!chipChanged('working')) return
     chip.className = 'chip show state-working'
-    chip.innerHTML = `<span class="dots"><span></span><span></span><span></span></span>Sharpening`
+    chip.innerHTML = `<span class="dots"><span></span><span></span><span></span></span>Improving`
     chip.onclick = null
   }
 
@@ -424,7 +424,7 @@
   function showDoneChip() {
     positionChip()
     chip.className = 'chip show state-done'
-    const tag = state.chosen ? `Sharpened · ${state.chosen}` : 'Sharpened'
+    const tag = state.chosen ? `Improved · ${state.chosen}` : 'Improved'
     const n = state.gaps ? state.gaps.length : 0
 
     if (!chipChanged(`done|${tag}|${n}`)) return
@@ -553,7 +553,7 @@
     // Never sharpen our own output - it compounds into mush. The box
     // already holds a sharpened prompt: offer the explanation instead.
     if (boxHoldsOurOutput()) {
-      toast('Already sharpened. Add the details only you know.', {
+      toast('Already improved. Add the details only you know.', {
         action: { label: 'Finish it', onClick: openDetails },
       })
       return
@@ -787,7 +787,7 @@
       // Empty stream: leave the user's prompt untouched.
       writePrompt(state.before)
       resetToIdle()
-      toast('Could not sharpen that. Try again.')
+      toast('Could not improve that. Try again.')
     }
   }
 
@@ -830,10 +830,19 @@
   }
 
   /* ---------- Gaps: the details only the user knows ---------- */
-  // A rewrite cannot invent facts the user never gave. So after the rewrite,
-  // we quietly ask what is still missing and offer it ON THE CHIP - the
-  // whole journey stays inline, in their workflow. The right-hand panel is
-  // reading material, never a step in the flow.
+  // A rewrite cannot invent facts the user never gave - your goal, your
+  // deadline, who reads it. So after the rewrite lands we ask for those.
+  //
+  // AFTER, not before. Asking three questions up front means three chances to
+  // abandon before the user has seen a single result, and questions like "how
+  // long should it be?" are vague when asked cold against a one-line prompt -
+  // they only become obvious once you can see a draft that lacks a length.
+  // Only the ambiguity question (quick-fork) is worth blocking on, because
+  // getting THAT wrong aims the whole rewrite at the wrong target.
+  //
+  // They now appear on their own, one at a time, rather than hiding behind a
+  // "+ 2 details" link nobody clicked. Esc skips them, and the rewrite in the
+  // box is already usable if you never answer at all.
 
   function fetchGaps(sharpened) {
     const forPrompt = state.before
@@ -852,7 +861,11 @@
         if (!gaps.length) return
         state.gaps = gaps
         state.gapAnswers = {}
-        showDoneChip()
+
+        // Don't wait to be asked. The details used to sit behind a chip link,
+        // which meant they were mostly ignored - and they are the part that
+        // makes the prompt actually yours.
+        openGaps()
       }
     )
   }
@@ -860,6 +873,12 @@
   /** Walk the gaps one at a time, as inline chips. */
   function openGaps() {
     if (!state.gaps || !state.gaps.length) return
+
+    // Only ask if our rewrite is still sitting in the box, untouched. If they
+    // already hit Enter, or started editing it themselves, questions popping
+    // up would be an interruption rather than an offer.
+    if (!boxHoldsOurOutput()) return
+
     state.phase = 'filling'
     state.gapIndex = 0
     showGap()
@@ -1064,7 +1083,7 @@
     const submit = () => {
       if (saveToken(input.value)) {
         hideConnectBox()
-        toast('Account connected. Sharpen away.', { good: true })
+        toast('Account connected. Go ahead.', { good: true })
         showIdleChip()
       } else {
         err.textContent = 'That code should start with "dc_". Copy it again from the page we opened.'
@@ -1099,23 +1118,33 @@
 
   // Global hotkey. Unclaimed on all three sites.
   //
-  // MUST match on e.code, not e.key. On macOS, Option is Alt - but Option+I is
-  // a DEAD KEY: the OS swallows it to compose an accent, and the browser
-  // reports e.key as "ˆ", never "i". Checking e.key meant the shortcut simply
-  // did not exist on a Mac. e.code reports the physical key ("KeyI") whatever
-  // character the OS decides to produce, so it works on every platform and
-  // every keyboard layout. The e.key check stays as a fallback for anything
-  // that does not send a code.
+  // MUST match on e.code, not e.key. On macOS, Option+I is a DEAD KEY: the OS
+  // swallows it to compose an accent, so the browser reports e.key as "ˆ",
+  // never "i". Checking e.key meant the shortcut did not exist on a Mac at all.
+  // e.code reports the physical key whatever character the OS produces, so one
+  // check covers Windows, Mac, Linux and every keyboard layout. The e.key
+  // check stays as a fallback for anything that does not send a code.
   window.addEventListener(
     'keydown',
     e => {
       const el = findPromptEl()
       const inBox = el && (document.activeElement === el || el.contains(document.activeElement))
 
-      const isSharpenKey =
-        e.altKey && (e.code === 'KeyI' || e.key === 'i' || e.key === 'I')
+      // Alt+I on Windows/Linux, Option+I on a Mac. One check for everyone:
+      // e.code is the PHYSICAL key, so it does not care which character the
+      // OS or the keyboard layout produces.
+      //
+      // The ctrl/meta exclusions are not paranoia. On German, Polish, Spanish
+      // and other European layouts, AltGr (the right Alt key) types @ € { } -
+      // and browsers report AltGr as ctrlKey AND altKey together. Without this,
+      // a German user typing an @ would fire the shortcut by accident.
+      const isImproveKey =
+        e.altKey &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        (e.code === 'KeyI' || e.key === 'i' || e.key === 'I')
 
-      if (isSharpenKey) {
+      if (isImproveKey) {
         if (readPrompt()) { e.preventDefault(); onSharpen() }
         return
       }

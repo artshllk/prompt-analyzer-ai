@@ -132,7 +132,7 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
 
       if (!sharpened) {
         stage.innerHTML =
-          `<p class="dc-muted">Sharpen a prompt first, then come back to compare.</p>`
+          `<p class="dc-muted">Improve a prompt first, then come back to compare.</p>`
         return
       }
 

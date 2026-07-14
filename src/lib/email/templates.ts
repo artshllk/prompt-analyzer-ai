@@ -52,7 +52,7 @@ export function welcomeEmail(userId: string, fullName: string | null): EmailCont
 
 Thanks for signing up.
 
-Deepclario lives inside ChatGPT, Claude and Gemini. Install it, type your next prompt as roughly as you like, and press Alt+I (Option+I on a Mac). It sharpens it right there in the box. You never leave the chat.
+Deepclario lives inside ChatGPT, Claude and Gemini. Install it, type your next prompt as roughly as you like, and press Alt+I (Option+I on a Mac). It improves it right there in the box. You never leave the chat.
 
 Install it here: ${appUrl('/extension')}
 

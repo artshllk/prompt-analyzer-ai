@@ -4,11 +4,11 @@ Paste into the store listing's description field.
 
 ---
 
-Deepclario sharpens the prompt you are about to send to ChatGPT, Claude, or Gemini in one keystroke, right in the chat box. You never leave your workflow. No copy-paste, no new tab, no panel to fill in.
+Deepclario improves the prompt you are about to send to ChatGPT, Claude, or Gemini in one keystroke, right in the chat box. You never leave your workflow. No copy-paste, no new tab, no panel to fill in.
 
 WHAT IT DOES
 
-• Press Alt+I, or Option+I on a Mac (or click the small ✦ Sharpen chip by the input) and your prompt is rewritten in place, streamed in live in about a second.
+• Press Alt+I, or Option+I on a Mac (or click the small ✦ Improve chip by the input) and your prompt is rewritten in place, streamed in live in about a second.
 • Not happy with it? Press Esc to undo instantly.
 • When your prompt could mean two things, it asks you one short question first, with answers you can tap. Then it rewrites once, for what you actually meant.
 • It remembers your answers. Tell it once who you write for and it stops asking.
@@ -18,10 +18,10 @@ HOW TO USE IT
 
 1. Open ChatGPT, Claude, or Gemini.
 2. Type your rough prompt in the chat box.
-3. Press Alt+I (Option+I on a Mac). Your prompt is sharpened in place.
+3. Press Alt+I (Option+I on a Mac). Your prompt is improved in place.
 4. Press Enter to send, or Esc to undo.
 
-Nothing runs on its own. Your prompt is only sent to Deepclario when you press Sharpen.
+Nothing runs on its own. Your prompt is only sent to Deepclario when you press Improve.
 
 WHERE IT WORKS
 

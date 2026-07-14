@@ -113,7 +113,7 @@ export default async function HistoryPage({
               className="font-serif text-2xl md:text-3xl leading-tight tracking-tight mb-6"
               style={{ color: 'var(--color-paper)', fontWeight: 400 }}
             >
-              Sharpen a prompt in ChatGPT, Claude, or Gemini and it will show up here.
+              Improve a prompt in ChatGPT, Claude, or Gemini and it will show up here.
             </p>
             <Link
               href="/extension"
