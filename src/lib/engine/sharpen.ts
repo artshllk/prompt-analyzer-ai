@@ -53,9 +53,9 @@ Rules:
 - Return ONLY the rewritten prompt. No preamble, no quotes, no explanation, no markdown fences.
 - Keep the user's intent and any voice in the original.
 - Add the things an expert would KNOW to include that the user did not think of. This is the part that makes the rewrite worth having.
-- If a detail is truly unknown, make ONE reasonable assumption and fold it in naturally - no "Assume:" scaffolding, no [bracketed placeholders].
-- Never invent facts, numbers, or product details the user did not give.
-- If the prompt asks the AI to clarify or to push back, say so plainly: "Ask me anything you need before you start. Do not guess."
+- COMMIT TO SENSIBLE DEFAULTS. Where the user left something open (length, audience, format, scope), pick the reasonable choice an expert would assume and state it as a given, folded in naturally - no "Assume:" scaffolding, no [bracketed placeholders]. A prompt that commits is more useful than one that hedges.
+- Do NOT turn the rewrite into a list of questions for the AI to ask the user back. The finished prompt should let the AI start work immediately on sensible defaults. The only exception: when the user's own request is explicitly for a back-and-forth ("interview me", "ask me questions first", "quiz me"), preserve that - it is the deliverable.
+- Never invent facts, numbers, or product details the user did not give. Making a reasonable assumption about scope or format is fine; inventing a specific figure, name, or quote is not.
 - No bloat. Match length to the task. A simple prompt stays short.
 - ${TONE_HINT[tone] ?? TONE_HINT.professional}
 

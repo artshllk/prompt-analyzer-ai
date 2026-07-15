@@ -87,7 +87,9 @@
   let authState = { token: null, tier: 'anon' }
   // proSeen: the "unlimited" confirmation is shown once, ever. After that
   // Pro users never see a word about limits again - that IS the benefit.
-  let prefs = { tone: 'professional', deep: false, proSeen: false }
+  // introSeen: the one-time first-run explainer. Shown once, dismissible,
+  // then never again.
+  let prefs = { tone: 'professional', deep: false, proSeen: false, introSeen: false }
   let anonCount = 0
   const ANON_FREE_TRIES = 2
 
@@ -95,13 +97,14 @@
     return new Promise(resolve => {
       try {
         chrome.storage.local.get(
-          ['dc_token', 'dc_tier', 'dc_tone', 'dc_deep', 'dc_anon_count', 'dc_pro_seen'],
+          ['dc_token', 'dc_tier', 'dc_tone', 'dc_deep', 'dc_anon_count', 'dc_pro_seen', 'dc_intro_seen'],
           v => {
             authState.token = v?.dc_token || null
             authState.tier = v?.dc_tier || (authState.token ? 'free' : 'anon')
             if (TONES.includes(v?.dc_tone)) prefs.tone = v.dc_tone
             prefs.deep = v?.dc_deep === true
             prefs.proSeen = v?.dc_pro_seen === true
+            prefs.introSeen = v?.dc_intro_seen === true
             anonCount = Number.isFinite(v?.dc_anon_count) ? v.dc_anon_count : 0
             resolve()
           }
@@ -297,6 +300,42 @@
         font-size: 17px; line-height: 1; cursor: pointer; padding: 2px;
       }
       .connect .cclose:hover { color: #F5F4F1; }
+
+      /* First-run explainer. Same dark card as the connect box, shown once.
+         Tells a brand-new user what the chip actually does before they guess. */
+      .intro {
+        position: fixed; z-index: 2147483647;
+        width: min(86vw, 340px);
+        background: #0E0E10; color: #F5F4F1;
+        border: 1px solid rgba(245,244,241,.18);
+        border-radius: 12px; padding: 14px 14px 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,.45);
+        opacity: 0; transform: translateY(4px);
+        transition: opacity .18s, transform .18s;
+        pointer-events: none;
+      }
+      .intro.show { opacity: 1; transform: none; pointer-events: auto; }
+      .intro .ititle { font-size: 13px; font-weight: 700; margin-bottom: 5px; }
+      .intro .ibody { font-size: 11.5px; color: #A8A6A0; line-height: 1.55; }
+      .intro .ibody b { color: #F5F4F1; font-weight: 600; }
+      .intro .ikbd {
+        font-size: 10px; font-weight: 600;
+        border: 1px solid rgba(245,244,241,.28); border-radius: 5px;
+        padding: 1px 5px; color: #F5F4F1;
+      }
+      .intro .igot {
+        margin-top: 11px; cursor: pointer; font-family: inherit;
+        background: #F5F4F1; color: #0E0E10;
+        border: none; border-radius: 8px;
+        padding: 7px 13px; font-size: 12px; font-weight: 700;
+      }
+      .intro .igot:hover { opacity: .9; }
+      .intro .iclose {
+        position: absolute; top: 8px; right: 10px;
+        background: none; border: none; color: #A8A6A0;
+        font-size: 17px; line-height: 1; cursor: pointer; padding: 2px;
+      }
+      .intro .iclose:hover { color: #F5F4F1; }
     </style>
 
     <button type="button" class="chip" id="chip" aria-label="Improve prompt with Deepclario"></button>
@@ -368,6 +407,56 @@
     chip.className = 'chip show'
     chip.innerHTML = IDLE_HTML
     chip.onclick = onSharpen
+    maybeShowIntro()
+  }
+
+  /**
+   * One-time, dismissible first-run explainer. The chip alone does not tell a
+   * newcomer what pressing it will do, and the flow that follows (a question,
+   * a rewrite, an offer of details) moves too fast to infer from. So the very
+   * first time the idle chip appears, we say it plainly, once. Dismiss with
+   * the button, the ×, or Esc; after that it never shows again.
+   */
+  function maybeShowIntro() {
+    if (prefs.introSeen) return
+    if (root.querySelector('#intro')) return // already on screen
+    // Do not stack on top of a question or the connect box.
+    if (forksEl.classList.contains('show') || root.querySelector('#connect')) return
+    const el = findPromptEl()
+    if (!el) return
+
+    // Persist immediately: showing it once is the whole contract, even if the
+    // user navigates away before clicking. Never nag twice.
+    prefs.introSeen = true
+    try { chrome.storage.local.set({ dc_intro_seen: true }) } catch {}
+
+    const box = document.createElement('div')
+    box.className = 'intro'
+    box.id = 'intro'
+    box.innerHTML =
+      `<div class="ititle">Improve any prompt in place</div>` +
+      `<div class="ibody">Press <span class="ikbd">${HOTKEY_LABEL}</span> or click <b>Improve</b>. ` +
+      `Deepclario asks one quick question only when it needs to, then rewrites your prompt right here. ` +
+      `You can <b>compare</b> or <b>undo</b> after.</div>` +
+      `<button type="button" class="igot" id="igot">Got it</button>` +
+      `<button type="button" class="iclose" id="iclose" aria-label="Dismiss">×</button>`
+    root.appendChild(box)
+    anchorTo(el, box, 'above')
+    box.style.top =
+      Math.max(8, el.getBoundingClientRect().top - box.offsetHeight - 12) + 'px'
+    requestAnimationFrame(() => box.classList.add('show'))
+
+    const close = () => {
+      box.classList.remove('show')
+      setTimeout(() => box.remove(), 200)
+      document.removeEventListener('keydown', onKey, true)
+    }
+    const onKey = e => {
+      if (e.key === 'Escape') { e.preventDefault(); close() }
+    }
+    box.querySelector('#igot').addEventListener('click', close)
+    box.querySelector('#iclose').addEventListener('click', close)
+    document.addEventListener('keydown', onKey, true)
   }
 
   // Clear the signature: otherwise re-showing the same state after a hide
@@ -387,8 +476,16 @@
 
   /**
    * Two moments, one chip: checking whether the prompt is ambiguous, and
-   * then waiting for the user to pick an answer. The box is untouched in
-   * both - nothing has been rewritten yet.
+   * then waiting for the user to pick an answer. The box is untouched in both.
+   *
+   * LABEL STABILITY: while we are still deciding whether to ask (phase
+   * 'working'), the chip shows the SAME "Improving" busy state as the rewrite
+   * itself - identical markup - so the fork check and the streaming rewrite
+   * read as one continuous step the user simply waits through. The label only
+   * changes to "One quick question" at the one moment the user's options
+   * actually change: when a real question with tappable answers is on screen.
+   * Before, this flashed "Reading your prompt" for a few hundred ms and then
+   * "Improving", two labels nobody could read and nobody could act on.
    */
   function showAskingChip() {
     positionChip()
@@ -398,7 +495,7 @@
       state.phase === 'asking'
         ? `<span class="mark">?</span>One quick question` +
           `<span class="why" id="skip">skip</span>`
-        : `<span class="dots"><span></span><span></span><span></span></span>Reading your prompt`
+        : `<span class="dots"><span></span><span></span><span></span></span>Improving`
     chip.onclick = null
     const skip = $('#skip')
     if (skip) skip.onclick = e => { e.stopPropagation(); skipQuestion() }
@@ -549,9 +646,21 @@
   // useful. This is the only number we ever show.
   const WARN_AT = 2
 
-  /** True while the box still contains our unedited output. */
+  /**
+   * True while the box still contains our unedited output.
+   *
+   * This is the re-improve guard: while it holds, Improve is off, because
+   * sharpening our own already-sharpened text compounds it into mush. It
+   * must cover EVERY phase where our output is sitting in the box, not just
+   * 'done'. After a rewrite the flow can be in 'filling' (walking the detail
+   * questions) with our text in the box the whole time - and 'filling' used
+   * to fall through this guard, so pressing Improve again mid-details
+   * re-improved our own output. Both 'done' and 'filling' hold state.after;
+   * 'working'/'asking' still hold the user's original, so they stay out.
+   */
   function boxHoldsOurOutput() {
-    return state.phase === 'done' && !!state.after && readPrompt() === state.after
+    if (state.phase !== 'done' && state.phase !== 'filling') return false
+    return !!state.after && readPrompt() === state.after
   }
 
   async function onSharpen() {
@@ -830,6 +939,12 @@
   function noteHeadroom() {
     const left = state.left
 
+    // Anonymous users have no headroom to report - they are not on a plan,
+    // so there is no count and nothing to confirm. Say nothing, whatever the
+    // header happened to carry. (The server now omits the header for anon, so
+    // left is already null here; this is the belt-and-braces client guard.)
+    if (authState.tier === 'anon') return
+
     // Pro (-1): confirm the benefit exactly once, ever, then never again.
     if (left === -1) {
       if (!prefs.proSeen) {
@@ -867,9 +982,12 @@
   // Only the ambiguity question (quick-fork) is worth blocking on, because
   // getting THAT wrong aims the whole rewrite at the wrong target.
   //
-  // They now appear on their own, one at a time, rather than hiding behind a
-  // "+ 2 details" link nobody clicked. Esc skips them, and the rewrite in the
-  // box is already usable if you never answer at all.
+  // The details are OFFERED, never forced. When they arrive, the finished
+  // "Improved" chip grows a "+ N details" button; clicking it walks them one
+  // at a time. We deliberately do not auto-open them: jumping straight into
+  // "Detail 1 of N" hid compare and undo, so the user never got to see or
+  // reverse the rewrite first. The rewrite in the box is already usable if
+  // they never add a single detail.
 
   function fetchGaps(sharpened) {
     const forPrompt = state.before
@@ -889,10 +1007,13 @@
         state.gaps = gaps
         state.gapAnswers = {}
 
-        // Don't wait to be asked. The details used to sit behind a chip link,
-        // which meant they were mostly ignored - and they are the part that
-        // makes the prompt actually yours.
-        openGaps()
+        // Land on the finished state and OFFER the details there - never
+        // hijack into them. Auto-jumping straight into "Detail 1 of N" hid
+        // compare and undo, so the user never got to see or reverse the
+        // rewrite before being asked more questions. The done chip already
+        // renders "+ N details" as a real button (wired to openGaps); the
+        // user chooses to add them, or sends the prompt as it is.
+        showDoneChip()
       }
     )
   }

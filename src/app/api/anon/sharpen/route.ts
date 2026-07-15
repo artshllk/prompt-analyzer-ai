@@ -92,9 +92,20 @@ export async function POST(req: NextRequest) {
   //
   // The policy itself lives in decideUsage() (pure, unit-tested); this route
   // only does the IO around it.
+  //
+  // Three distinct outcomes, and the header must tell them apart:
+  //   Pro       -> -1  (unlimited; the extension confirms this once)
+  //   free      ->  N  (improvements left this window)
+  //   anonymous -> header omitted entirely (we genuinely do not know)
+  // `remaining` stays null ONLY for the anonymous case, which is the signal
+  // further down to leave the header off. It used to stay null for Pro too,
+  // so Pro and anon both sent -1: not-connected users were told "Pro:
+  // unlimited improvements", and Pro was indistinguishable from anon.
   let remaining: number | null = null
 
-  if (auth && auth.tier === 'free') {
+  if (auth && auth.tier === 'pro') {
+    remaining = -1
+  } else if (auth && auth.tier === 'free') {
     const supabase = await createServiceClient()
 
     const { data: profile, error: profileErr } = await supabase
@@ -211,16 +222,20 @@ export async function POST(req: NextRequest) {
   })
 
   // Headroom rides on a header: the body is a plain-text stream, so there
-  // is nowhere else to put it. `-1` means unlimited (Pro), and the client
-  // treats a missing header the same way - silence beats a wrong number.
-  return new NextResponse(stream, {
-    status: 200,
-    headers: {
-      ...CORS_HEADERS,
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Cache-Control': 'no-cache, no-transform',
-      'X-Accel-Buffering': 'no',
-      'X-Improvements-Left': remaining === null ? '-1' : String(remaining),
-    },
-  })
+  // is nowhere else to put it. `-1` means unlimited (Pro); a real count
+  // means free tier. For anonymous users (remaining === null) we OMIT the
+  // header entirely - the client reads a missing header as "unknown" and
+  // stays silent, which is the truth. Sending -1 here was the bug that told
+  // brand-new users they had Pro's unlimited improvements.
+  const headers: Record<string, string> = {
+    ...CORS_HEADERS,
+    'Content-Type': 'text/plain; charset=utf-8',
+    'Cache-Control': 'no-cache, no-transform',
+    'X-Accel-Buffering': 'no',
+  }
+  if (remaining !== null) {
+    headers['X-Improvements-Left'] = String(remaining)
+  }
+
+  return new NextResponse(stream, { status: 200, headers })
 }
