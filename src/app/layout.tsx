@@ -107,6 +107,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-full">
+        {/* Runs before first paint. Decides the home-page splash's fate
+            synchronously so a returning visitor within the cooldown never
+            sees it flash: if the last-shown stamp is under 10 minutes old
+            (or reduced motion is on), inject a style that hides the splash
+            before it can paint. Otherwise stamp "now" so the timer starts
+            from this visit. Keeping this out of React avoids the pre-
+            hydration paint that made the splash reappear on every refresh. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var k='dc:splash-seen',w=600000,n=Date.now(),l=+localStorage.getItem(k)||0,rm=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;if(rm||n-l<w){var s=document.createElement('style');s.textContent='[data-dc-splash]{display:none!important}';document.head.appendChild(s);}else{localStorage.setItem(k,String(n));}}catch(e){}})();`,
+          }}
+        />
         <PaddleProvider>{children}</PaddleProvider>
         <Analytics />
       </body>

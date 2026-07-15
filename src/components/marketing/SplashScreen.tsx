@@ -1,55 +1,30 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 /**
  * Home page splash: the same choreography as the post-signup WelcomeMoment
  * (ambient accent glow, logo resolving out of a blur, display-type wordmark),
- * shown when someone lands on `/`, but at most once per COOLDOWN_MS so a
+ * shown when someone lands on `/`, but at most once per 10 minutes so a
  * returning visitor within the window skips straight to the page.
  *
- * `visible` starts true - not flipped on inside an effect - so the overlay
- * is there from the very first paint (including SSR). Flipping it on later
- * left a frame where the bare page showed before hydration caught up. The
- * useLayoutEffect below runs before the browser paints, so the cases that
- * should NOT show it (reduced motion, or seen recently) hide the overlay
- * before it ever appears rather than flashing it on and off.
+ * The cooldown and reduced-motion decisions live in a blocking inline
+ * script in the root layout, NOT here: it runs before first paint and, when
+ * the splash should be suppressed, hides the `data-dc-splash` element via an
+ * injected style so it never paints. Doing it in React instead left the
+ * server-rendered overlay painting for a frame on every refresh. This
+ * component just renders the overlay and auto-dismisses it; when the script
+ * has hidden it, the timer below flips state harmlessly behind display:none.
  */
-const SEEN_KEY = "dc:splash-seen";
-const COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
-
-function seenRecently(): boolean {
-  try {
-    const last = Number(localStorage.getItem(SEEN_KEY));
-    return Number.isFinite(last) && Date.now() - last < COOLDOWN_MS;
-  } catch {
-    return false;
-  }
-}
-
 export function SplashScreen() {
-  const reduce = useReducedMotion();
   const [visible, setVisible] = useState(true);
 
-  useLayoutEffect(() => {
-    if (reduce || seenRecently()) {
-      setVisible(false);
-      return;
-    }
-    // Stamp the time the moment we commit to showing it, so a second tab
-    // or a quick reload inside the window won't replay it.
-    try {
-      localStorage.setItem(SEEN_KEY, String(Date.now()));
-    } catch {}
-  }, [reduce]);
-
   useEffect(() => {
-    if (reduce) return;
     const hide = setTimeout(() => setVisible(false), 2200);
     return () => clearTimeout(hide);
-  }, [reduce]);
+  }, []);
 
   useEffect(() => {
     if (!visible) return;
@@ -71,6 +46,7 @@ export function SplashScreen() {
         <motion.div
           role="status"
           aria-label="Deepclario"
+          data-dc-splash
           className="fixed inset-0 z-100 flex items-center justify-center cursor-pointer"
           style={{ background: "var(--color-ink)" }}
           exit={{
