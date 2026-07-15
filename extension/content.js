@@ -677,7 +677,9 @@
     hideForks()
     state.fork = null
     state.chosen = option.label
-    streamSharpenInto(state.before, `${option.label} - ${option.summary}`)
+    // A typed answer has no summary - do not tack on a trailing " - " for it.
+    const choice = option.summary ? `${option.label} - ${option.summary}` : option.label
+    streamSharpenInto(state.before, choice)
   }
 
   /**
@@ -691,6 +693,12 @@
       options: fork.options,
       raw: true, // chooseFork wants the whole option, not just its label
       onPick: chooseFork,
+      // The blocking question is the highest-stakes one - it aims the whole
+      // rewrite. If none of the readings fit, the user must be able to say so
+      // in their own words, not be forced to pick the closest wrong one. Route
+      // a typed answer through the same path as a tap.
+      onType: text => chooseFork({ label: text, summary: '' }),
+      typeable: true,
       onSkip: skipQuestion,
     })
   }
