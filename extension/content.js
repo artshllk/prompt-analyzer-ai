@@ -401,7 +401,7 @@
         : `<span class="dots"><span></span><span></span><span></span></span>Reading your prompt`
     chip.onclick = null
     const skip = $('#skip')
-    if (skip) skip.onclick = skipQuestion
+    if (skip) skip.onclick = e => { e.stopPropagation(); skipQuestion() }
   }
 
   /** They don't want to answer: rewrite anyway, with our best guess. */
@@ -438,12 +438,18 @@
         : '') +
       `<span class="why" id="why">compare</span>` +
       `<span class="why" id="undo">undo</span>`
-    const add = $('#addgaps')
-    if (add) add.onclick = openGaps
-    const why = $('#why')
-    if (why) why.onclick = openDetails
-    const undo = $('#undo')
-    if (undo) undo.onclick = undoSharpen
+    // These sit INSIDE the chip, which is itself a button. A click on any of
+    // them also bubbles to the chip - and after undo/compare reset us to idle,
+    // the chip's own handler is onSharpen again. That is the bug: clicking
+    // "undo" reverted the prompt AND immediately re-improved it, because the
+    // one click fired both. stopPropagation keeps each action to itself.
+    const bind = (el, fn) => {
+      if (!el) return
+      el.onclick = e => { e.stopPropagation(); fn() }
+    }
+    bind($('#addgaps'), openGaps)
+    bind($('#why'), openDetails)
+    bind($('#undo'), undoSharpen)
     chip.onclick = null
   }
 
@@ -458,7 +464,7 @@
       `<span class="why" id="skipall">skip</span>`
     chip.onclick = null
     const s = $('#skipall')
-    if (s) s.onclick = () => { hideForks(); applyGaps() }
+    if (s) s.onclick = e => { e.stopPropagation(); hideForks(); applyGaps() }
   }
 
   function escHtml(s) {
