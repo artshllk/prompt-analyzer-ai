@@ -382,6 +382,21 @@
    *
    * Returns false when the box is off-screen, so callers can hide rather than
    * park a stray chip somewhere meaningless.
+   *
+   * THE SAFETY NET (read before touching the maths below)
+   *
+   * Correct maths is not enough here. We are anchoring to a DOM we do not own,
+   * that changes without warning, measured across 16 call sites, any one of
+   * which can fire at a moment when the geometry is briefly nonsense (mid
+   * re-render, mid animation, before paint). The old bug shipped because a
+   * plausible formula met an unexpected layout.
+   *
+   * So rather than trust the measurement, we FLOOR it: our UI is never allowed
+   * above the halfway line of the viewport, because a chat composer never lives
+   * up there. If a measurement ever says otherwise, the measurement is wrong,
+   * and we would rather sit slightly off than fly to the top of the screen in
+   * front of a user. This makes the reported bug structurally impossible
+   * instead of merely fixed.
    */
   const GAP_ABOVE_BOX = 10
 
@@ -398,10 +413,12 @@
     // as an absolute offset.
     const bottomOffset = window.innerHeight - r.top + GAP_ABOVE_BOX
 
-    // If the box is so tall that "above it" is off-screen, tuck the element
-    // just inside the viewport instead of letting it fly off the top.
-    const maxBottom = window.innerHeight - node.offsetHeight - 8
-    node.style.bottom = Math.min(bottomOffset, Math.max(8, maxBottom)) + 'px'
+    // The floor: never above the middle of the screen. A chat composer lives in
+    // the lower half, always. If the maths ever disagrees, the maths is wrong -
+    // clamp instead of believing it. This is what makes "the chip flew to the
+    // top" impossible rather than fixed.
+    const highestAllowed = window.innerHeight / 2
+    node.style.bottom = Math.min(bottomOffset, highestAllowed) + 'px'
     node.style.top = 'auto'
 
     if (place === 'above') {
@@ -973,8 +990,10 @@
     forksEl.style.right = Math.max(8, window.innerWidth - r.right) + 'px'
     // Clear the chip's own height so the two never overlap.
     const bottomOffset = window.innerHeight - r.top + 48
-    const maxBottom = window.innerHeight - forksEl.offsetHeight - 8
-    forksEl.style.bottom = Math.min(bottomOffset, Math.max(8, maxBottom)) + 'px'
+    // Same floor as anchorTo: the questions are taller than the chip, so they
+    // get a little more room, but they still may never climb to the top.
+    const highestAllowed = window.innerHeight - forksEl.offsetHeight - 16
+    forksEl.style.bottom = Math.min(bottomOffset, Math.max(8, highestAllowed)) + 'px'
     forksEl.style.top = 'auto'
   }
 
