@@ -98,6 +98,12 @@ chrome.runtime.onConnect.addListener(port => {
           error = body.error === 'pro_required' ? 'pro_required' : 'quota'
           // Carry WHEN it comes back, so the user gets a wait, not a wall.
           resetAt = body.resetAt || null
+        } else if (res.status === 400) {
+          // The server tells us exactly what was wrong with the input. We used
+          // to throw that away and report 'server_error', so a user-side
+          // problem ("your prompt is too long") was blamed on our service.
+          const body = await res.json().catch(() => ({}))
+          if (body.error) error = body.error
         }
         port.postMessage({ type: 'ERROR', error, status: res.status, resetAt })
         return

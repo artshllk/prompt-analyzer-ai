@@ -83,6 +83,21 @@
     privacy: SITE + '/privacy',
   }
 
+  // Must match the server's limit (src/app/api/anon/sharpen/route.ts). If the
+  // two ever drift, the background worker still maps the server's 400 to a
+  // proper message - this is the fast path, not the only guard.
+  const MAX_PROMPT_CHARS = 4000
+
+  /**
+   * Say it in the user's terms. "4000 characters" means nothing to anyone; a
+   * rough word count does. And give them the actual way forward, because
+   * "try again" on a prompt that is too long is advice that can never work.
+   */
+  function tooLongMessage(len) {
+    const words = Math.round(len / 5.5 / 50) * 50 // ~5.5 chars/word, to nearest 50
+    return `That prompt is too long to improve (roughly ${words.toLocaleString()} words). Improve one section at a time.`
+  }
+
   const TONES = ['professional', 'friendly', 'persuasive', 'concise', 'creative']
   let authState = { token: null, tier: 'anon' }
   // proSeen: the "unlimited" confirmation is shown once, ever. After that
@@ -350,25 +365,59 @@
 
   /* ---------- Positioning: anchor UI to the prompt box ---------- */
 
+  /**
+   * Anchor one of our floating elements just above the prompt box.
+   *
+   * This used to set `top: r.top - 40`, which broke badly on long prompts. The
+   * composer grows UPWARD: its bottom edge is nailed to the page, and its top
+   * edge climbs as you type. So with a big paste, r.top approached 0, r.top-40
+   * went negative, and the Math.max(8, ...) clamp parked the chip hard against
+   * the top of the screen. It was not misbehaving - it was faithfully tracking
+   * an edge that had moved out from under it.
+   *
+   * Now we position with the `bottom` property, measured from the composer's
+   * TOP edge. Anchoring this way means the element rides just above the box at
+   * any height, because we are no longer expressing the position as a distance
+   * from a viewport edge that the box can outgrow.
+   *
+   * Returns false when the box is off-screen, so callers can hide rather than
+   * park a stray chip somewhere meaningless.
+   */
+  const GAP_ABOVE_BOX = 10
+
   function anchorTo(el, node, place) {
     const r = el.getBoundingClientRect()
+
+    // Composer scrolled out of view (or collapsed): nothing to anchor to.
+    if (r.bottom <= 0 || r.top >= window.innerHeight || r.width === 0) {
+      return false
+    }
+
+    // Distance from the viewport bottom up to the composer's top edge. Stays
+    // correct however tall the box gets, because it is not derived from r.top
+    // as an absolute offset.
+    const bottomOffset = window.innerHeight - r.top + GAP_ABOVE_BOX
+
+    // If the box is so tall that "above it" is off-screen, tuck the element
+    // just inside the viewport instead of letting it fly off the top.
+    const maxBottom = window.innerHeight - node.offsetHeight - 8
+    node.style.bottom = Math.min(bottomOffset, Math.max(8, maxBottom)) + 'px'
+    node.style.top = 'auto'
+
     if (place === 'above') {
-      node.style.left = r.left + 'px'
-      node.style.top = Math.max(8, r.top - 42) + 'px'
-      node.style.bottom = 'auto'
+      node.style.left = Math.max(8, r.left) + 'px'
+      node.style.right = 'auto'
     } else {
-      // below-right of the input's top-right, tucked just inside
       node.style.left = 'auto'
       node.style.right = Math.max(8, window.innerWidth - r.right + 6) + 'px'
-      node.style.top = Math.max(8, r.top - 40) + 'px'
-      node.style.bottom = 'auto'
     }
+    return true
   }
 
   function positionChip() {
     const el = findPromptEl()
     if (!el) { chip.classList.remove('show'); return false }
-    anchorTo(el, chip, 'right')
+    if (!anchorTo(el, chip, 'right')) { chip.classList.remove('show'); return false }
     return true
   }
 
@@ -441,9 +490,9 @@
       `<button type="button" class="igot" id="igot">Got it</button>` +
       `<button type="button" class="iclose" id="iclose" aria-label="Dismiss">×</button>`
     root.appendChild(box)
+    // anchorTo positions from the composer's top edge via `bottom`, so it
+    // stays correct at any box height. Do not override it with a `top`.
     anchorTo(el, box, 'above')
-    box.style.top =
-      Math.max(8, el.getBoundingClientRect().top - box.offsetHeight - 12) + 'px'
     requestAnimationFrame(() => box.classList.add('show'))
 
     const close = () => {
@@ -689,6 +738,16 @@
     const prompt = readPrompt()
     if (!prompt || prompt.length < 3) { toast('Type a prompt first'); return }
 
+    // Fail here, not after a round trip. The server rejects anything over
+    // MAX_PROMPT_CHARS, and we used to let the request go anyway - so the user
+    // waited for the network to tell us a fact we already knew, and got back
+    // "Something went wrong on our end", which is both untrue and unactionable
+    // (retrying the same long prompt fails identically, forever).
+    if (prompt.length > MAX_PROMPT_CHARS) {
+      toast(tooLongMessage(prompt.length))
+      return
+    }
+
     state.before = prompt
     state.fork = null
     state.chosen = ''
@@ -894,14 +953,29 @@
     positionForks()
   }
 
+  /**
+   * The question chips sit above the chip, which sits above the composer.
+   * Same rule as anchorTo: measure from the composer's top edge using
+   * `bottom`, never as an absolute `top` that a growing box can push
+   * off-screen.
+   */
   function positionForks() {
     const el = findPromptEl()
     if (!el || !forksEl.classList.contains('show')) return
     const r = el.getBoundingClientRect()
+
+    if (r.bottom <= 0 || r.top >= window.innerHeight) {
+      forksEl.classList.remove('show')
+      return
+    }
+
     forksEl.style.left = 'auto'
     forksEl.style.right = Math.max(8, window.innerWidth - r.right) + 'px'
-    forksEl.style.top =
-      Math.max(8, r.top - forksEl.offsetHeight - 46) + 'px'
+    // Clear the chip's own height so the two never overlap.
+    const bottomOffset = window.innerHeight - r.top + 48
+    const maxBottom = window.innerHeight - forksEl.offsetHeight - 8
+    forksEl.style.bottom = Math.min(bottomOffset, Math.max(8, maxBottom)) + 'px'
+    forksEl.style.top = 'auto'
   }
 
   function hideForks() {
@@ -1141,6 +1215,10 @@
       toast('Too many requests. Wait a moment, then try again.', {
         action: { label: 'Connect account', onClick: openConnect },
       })
+    } else if (msg.error === 'prompt_too_long') {
+      // Backstop for when the client cap and the server cap drift apart. This
+      // is a user-side problem, so it must never be reported as our outage.
+      toast(tooLongMessage(state.before ? state.before.length : MAX_PROMPT_CHARS + 1))
     } else if (msg.error === 'network') {
       toast('Network hiccup. Check your connection and try again.')
     } else {
@@ -1221,8 +1299,6 @@
     `
     root.appendChild(box)
     anchorTo(el, box, 'above')
-    // Sit it a little higher than the chip so they don't overlap.
-    box.style.top = Math.max(8, el.getBoundingClientRect().top - box.offsetHeight - 12) + 'px'
 
     const input = box.querySelector('#ctoken')
     const err = box.querySelector('#cerr')
@@ -1415,6 +1491,38 @@
   }, true)
   window.addEventListener('resize', () => { syncChip(); positionForks() })
   setInterval(syncChip, 1200)
+
+  /**
+   * Reposition the moment the composer changes SIZE.
+   *
+   * The box growing is precisely the event our UI needs to react to, and we
+   * were not listening for it - we relied on the 1.2s interval and scroll
+   * events, so a paste made the chip visibly lag or land wrong until the next
+   * poll. A ResizeObserver fires exactly when the geometry changes.
+   *
+   * These SPAs swap the composer element out on navigation, so re-target the
+   * observer whenever the element we are watching is no longer the live one.
+   */
+  let observedEl = null
+  const boxResizeObserver =
+    typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(() => {
+          if (chip.classList.contains('show')) positionChip()
+          positionForks()
+        })
+      : null
+
+  function watchPromptBox() {
+    if (!boxResizeObserver) return
+    const el = findPromptEl()
+    if (el === observedEl) return
+    if (observedEl) boxResizeObserver.unobserve(observedEl)
+    observedEl = el
+    if (el) boxResizeObserver.observe(el)
+  }
+
+  watchPromptBox()
+  setInterval(watchPromptBox, 1200)
 
   /* ---------- Panel wiring ---------- */
   // Built ONCE, eagerly, at startup. It used to be built lazily on the
