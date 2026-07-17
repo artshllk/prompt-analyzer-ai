@@ -47,9 +47,9 @@ WHERE IT WORKS
 
 FREE AND PRO
 
-• Try it a couple of times without an account.
-• A free account gives you 2 hours of improving, then a 3 hour break, over and over.
-• Pro removes the break. Improve as much as you like, no waiting.
+• Try it 5 times without an account.
+• A free account gives you 10 improvements a day.
+• Pro removes the daily limit. Improve as much as you like.
 
 PRIVACY
 

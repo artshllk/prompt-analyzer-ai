@@ -3,13 +3,13 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { issueTokenForCurrentUser } from '@/lib/db/api-tokens'
-import { ConnectTokenView } from './connect-token-view'
+import { USAGE_DAILY_LIMIT } from '@/lib/limits'
+import { ConnectApproveView } from './connect-approve-view'
 
 export const metadata: Metadata = {
   title: 'Connect the extension to your Deepclario account',
   description:
-    'Generate a one-time code to link the Deepclario browser extension to your account. Unlimited prompts on Pro, and your full usage tracked centrally.',
+    'Connect the Deepclario browser extension to your account in one click, so it uses your plan when you improve a prompt.',
   alternates: { canonical: 'https://deepclario.com/extension/connect' },
   robots: { index: false, follow: false },
 }
@@ -30,9 +30,10 @@ export default async function ExtensionConnectPage() {
     .eq('id', user.id)
     .single()
 
-  // Issue a fresh token on every visit. Old tokens remain valid (the user
-  // may have multiple browsers), and can be revoked from settings later.
-  const issued = await issueTokenForCurrentUser('Browser extension')
+  // No token is issued here. It used to be minted on every page load, which
+  // meant a refresh created another live credential the user never asked for
+  // and might never see. The token is now created by the Approve click, in
+  // /api/extension/issue-token - so it exists because someone chose it.
 
   return (
     <div className="editorial grain min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
@@ -66,32 +67,16 @@ export default async function ExtensionConnectPage() {
           {profile?.tier === 'pro' ? (
             <span style={{ color: 'var(--color-paper)' }}>Pro · unlimited</span>
           ) : (
-            <>Free · 5 rewrites / 48h</>
+            <>Free · {USAGE_DAILY_LIMIT} improvements a day</>
           )}
         </p>
 
-        {issued ? (
-          <ConnectTokenView token={issued.token} />
-        ) : (
-          <div className="mt-10 p-6 rounded-2xl" style={{ background: 'var(--color-ink-card)', border: '1px solid var(--color-rule)' }}>
-            <p style={{ color: 'var(--color-paper)' }}>
-              We could not issue a token right now. Please refresh the page or try again in a minute.
-            </p>
-          </div>
-        )}
-
-        <section className="mt-16">
-          <p className="eyebrow mb-4">How to paste it</p>
-          <ol className="space-y-3 text-base leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
-            <li>1. Open ChatGPT, Claude, or Gemini in another tab.</li>
-            <li>2. Click the ✦ <span style={{ color: 'var(--color-paper)' }}>Improve prompt</span> button bottom-right.</li>
-            <li>3. In the panel, click <span style={{ color: 'var(--color-paper)' }}>Connect account</span> and paste the code.</li>
-          </ol>
-        </section>
+        <ConnectApproveView email={profile?.email ?? user.email ?? 'your account'} />
 
         <section className="mt-16 pt-10" style={{ borderTop: '1px solid var(--color-rule)' }}>
-          <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-            The code is shown once. If you lose it, just refresh this page to generate a new one - old codes keep working until revoked.
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
+            Connecting creates a code that only your extension holds. You can revoke it
+            any time from Settings, and doing so signs that extension out.
           </p>
         </section>
       </main>
