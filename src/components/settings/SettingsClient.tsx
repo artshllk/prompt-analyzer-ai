@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { markSignedOut } from '@/lib/auth/local-hints'
-import { USAGE_WINDOW_HOURS, USAGE_COOLDOWN_HOURS } from '@/lib/limits'
+import { USAGE_DAILY_LIMIT } from '@/lib/limits'
 import { MemorySection } from './MemorySection'
 
 interface SettingsClientProps {
@@ -119,8 +119,8 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
         <p className="text-sm leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
           Connect the Deepclario extension to this account so it uses your plan{' '}
           {isPro
-            ? '(unlimited improving, no waiting)'
-            : `(${USAGE_WINDOW_HOURS}h of improving, then a ${USAGE_COOLDOWN_HOURS}h break)`}{' '}
+            ? '(unlimited improvements, no daily limit)'
+            : `(${USAGE_DAILY_LIMIT} free improvements a day)`}{' '}
           instead of the public free quota.
         </p>
         <a
