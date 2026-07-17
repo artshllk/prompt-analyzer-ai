@@ -88,6 +88,10 @@
   // proper message - this is the fast path, not the only guard.
   const MAX_PROMPT_CHARS = 4000
 
+  // Free improvements per rolling 24h. Must match USAGE_DAILY_LIMIT in
+  // src/lib/limits.ts. Used only for copy - the server is the gate.
+  const DAILY_LIMIT = 10
+
   /**
    * Say it in the user's terms. "4000 characters" means nothing to anyone; a
    * rough word count does. And give them the actual way forward, because
@@ -102,25 +106,39 @@
   let authState = { token: null, tier: 'anon' }
   // proSeen: the "unlimited" confirmation is shown once, ever. After that
   // Pro users never see a word about limits again - that IS the benefit.
-  // introSeen: the one-time first-run explainer. Shown once, dismissible,
-  // then never again.
-  let prefs = { tone: 'professional', deep: false, proSeen: false, introSeen: false }
+  let prefs = { tone: 'professional', deep: false, proSeen: false }
   let anonCount = 0
-  const ANON_FREE_TRIES = 2
+  // The storage listener that waits for the connect page's token. Held so it
+  // can be torn down: it is armed only while a connect is in flight.
+  let connectWatcher = null
+  // Free tries before we ask for an account.
+  //
+  // Was 2. Two is enough to be curious and not enough to be convinced: try
+  // one might be a bad prompt or a confusing question, try two is when an
+  // opinion starts forming, and try three is where someone actually wants
+  // this. Asking at curiosity converts worse than asking at desire, and an
+  // improve costs us about a cent - five of them is a very cheap signup.
+  const ANON_FREE_TRIES = 5
 
   function loadAuth() {
     return new Promise(resolve => {
       try {
         chrome.storage.local.get(
-          ['dc_token', 'dc_tier', 'dc_tone', 'dc_deep', 'dc_anon_count', 'dc_pro_seen', 'dc_intro_seen'],
+          ['dc_token', 'dc_tier', 'dc_tone', 'dc_deep', 'dc_anon_count', 'dc_pro_seen'],
           v => {
             authState.token = v?.dc_token || null
             authState.tier = v?.dc_tier || (authState.token ? 'free' : 'anon')
             if (TONES.includes(v?.dc_tone)) prefs.tone = v.dc_tone
             prefs.deep = v?.dc_deep === true
             prefs.proSeen = v?.dc_pro_seen === true
-            prefs.introSeen = v?.dc_intro_seen === true
             anonCount = Number.isFinite(v?.dc_anon_count) ? v.dc_anon_count : 0
+            // Machines that ran an older build still hold a dc_intro_seen
+            // key. Nothing reads it now, and a stray boolean costs nothing
+            // to leave alone - cheaper than a cleanup write on every load.
+            // The popup shows "N free tries left" and has no way to know the
+            // ceiling on its own. Publish it here so the two can never
+            // disagree after we change the number.
+            try { chrome.storage.local.set({ dc_anon_max: ANON_FREE_TRIES }) } catch {}
             resolve()
           }
         )
@@ -316,41 +334,6 @@
       }
       .connect .cclose:hover { color: #F5F4F1; }
 
-      /* First-run explainer. Same dark card as the connect box, shown once.
-         Tells a brand-new user what the chip actually does before they guess. */
-      .intro {
-        position: fixed; z-index: 2147483647;
-        width: min(86vw, 340px);
-        background: #0E0E10; color: #F5F4F1;
-        border: 1px solid rgba(245,244,241,.18);
-        border-radius: 12px; padding: 14px 14px 12px;
-        box-shadow: 0 8px 32px rgba(0,0,0,.45);
-        opacity: 0; transform: translateY(4px);
-        transition: opacity .18s, transform .18s;
-        pointer-events: none;
-      }
-      .intro.show { opacity: 1; transform: none; pointer-events: auto; }
-      .intro .ititle { font-size: 13px; font-weight: 700; margin-bottom: 5px; }
-      .intro .ibody { font-size: 11.5px; color: #A8A6A0; line-height: 1.55; }
-      .intro .ibody b { color: #F5F4F1; font-weight: 600; }
-      .intro .ikbd {
-        font-size: 10px; font-weight: 600;
-        border: 1px solid rgba(245,244,241,.28); border-radius: 5px;
-        padding: 1px 5px; color: #F5F4F1;
-      }
-      .intro .igot {
-        margin-top: 11px; cursor: pointer; font-family: inherit;
-        background: #F5F4F1; color: #0E0E10;
-        border: none; border-radius: 8px;
-        padding: 7px 13px; font-size: 12px; font-weight: 700;
-      }
-      .intro .igot:hover { opacity: .9; }
-      .intro .iclose {
-        position: absolute; top: 8px; right: 10px;
-        background: none; border: none; color: #A8A6A0;
-        font-size: 17px; line-height: 1; cursor: pointer; padding: 2px;
-      }
-      .intro .iclose:hover { color: #F5F4F1; }
     </style>
 
     <button type="button" class="chip" id="chip" aria-label="Improve prompt with Deepclario"></button>
@@ -473,56 +456,6 @@
     chip.className = 'chip show'
     chip.innerHTML = IDLE_HTML
     chip.onclick = onSharpen
-    maybeShowIntro()
-  }
-
-  /**
-   * One-time, dismissible first-run explainer. The chip alone does not tell a
-   * newcomer what pressing it will do, and the flow that follows (a question,
-   * a rewrite, an offer of details) moves too fast to infer from. So the very
-   * first time the idle chip appears, we say it plainly, once. Dismiss with
-   * the button, the ×, or Esc; after that it never shows again.
-   */
-  function maybeShowIntro() {
-    if (prefs.introSeen) return
-    if (root.querySelector('#intro')) return // already on screen
-    // Do not stack on top of a question or the connect box.
-    if (forksEl.classList.contains('show') || root.querySelector('#connect')) return
-    const el = findPromptEl()
-    if (!el) return
-
-    // Persist immediately: showing it once is the whole contract, even if the
-    // user navigates away before clicking. Never nag twice.
-    prefs.introSeen = true
-    try { chrome.storage.local.set({ dc_intro_seen: true }) } catch {}
-
-    const box = document.createElement('div')
-    box.className = 'intro'
-    box.id = 'intro'
-    box.innerHTML =
-      `<div class="ititle">Improve any prompt in place</div>` +
-      `<div class="ibody">Press <span class="ikbd">${HOTKEY_LABEL}</span> or click <b>Improve</b>. ` +
-      `Deepclario asks one quick question only when it needs to, then rewrites your prompt right here. ` +
-      `You can <b>compare</b> or <b>undo</b> after.</div>` +
-      `<button type="button" class="igot" id="igot">Got it</button>` +
-      `<button type="button" class="iclose" id="iclose" aria-label="Dismiss">×</button>`
-    root.appendChild(box)
-    // anchorTo positions from the composer's top edge via `bottom`, so it
-    // stays correct at any box height. Do not override it with a `top`.
-    anchorTo(el, box, 'above')
-    requestAnimationFrame(() => box.classList.add('show'))
-
-    const close = () => {
-      box.classList.remove('show')
-      setTimeout(() => box.remove(), 200)
-      document.removeEventListener('keydown', onKey, true)
-    }
-    const onKey = e => {
-      if (e.key === 'Escape') { e.preventDefault(); close() }
-    }
-    box.querySelector('#igot').addEventListener('click', close)
-    box.querySelector('#iclose').addEventListener('click', close)
-    document.addEventListener('keydown', onKey, true)
   }
 
   // Clear the signature: otherwise re-showing the same state after a hide
@@ -744,10 +677,11 @@
     await loadAuth()
 
     if (authState.tier === 'anon' && anonCount >= ANON_FREE_TRIES) {
-      // Don't quote the exact limit here: it dates instantly, and a number
-      // is not the reason to sign up. Say what they get.
-      toast('Connect a free account to keep improving prompts.', {
-        action: { label: 'Connect', onClick: openConnect },
+      // They have used the free tries and liked it enough to come back, so
+      // this is the moment to ask. Name what they get, not what they lost -
+      // and name it as a number, because "10 a day" is the offer.
+      toast(`Sign in free for ${DAILY_LIMIT} improvements a day.`, {
+        action: { label: 'Sign in', onClick: openConnect },
       })
       return
     }
@@ -1051,17 +985,17 @@
     // Unknown, anonymous, or plenty left: say nothing.
     if (typeof left !== 'number' || left > WARN_AT) return
 
-    // Below here they are close to the soft cap - meaning they are on a real
-    // tear, not casually out of credits. Frame it as the pause it actually
-    // is, so the message stays true when the cooldown lands.
+    // Nearly out for today. Say the number and nothing else - they are
+    // mid-task, and this is information, not an interruption. The upgrade
+    // ask waits until they actually hit the limit.
     if (left <= 0) {
-      toast('That was your last one before a short break.', {
+      toast('That was your last free improvement today.', {
         action: { label: 'Get unlimited', url: LINKS.pricing },
       })
       return
     }
 
-    toast(`${left} more before a short break`)
+    toast(`${left} free improvement${left === 1 ? '' : 's'} left today`)
   }
 
   /* ---------- Gaps: the details only the user knows ---------- */
@@ -1219,11 +1153,11 @@
     if (msg.error === 'quota') {
       // The conversion moment, and the easiest one to get wrong.
       //
-      // This is a COOLDOWN, not exhaustion - they get more in a few hours.
-      // Saying "you're out" reads as punishment; saying "you can improve
-      // again at 4pm" reads as a pause, which is the truth and lands far
+      // Name the limit, then say when the next one is back. "You're out"
+      // reads as punishment; "that was today's 10, the next is back at 4pm"
+      // is the same fact as a pause, which is the truth and lands far
       // better. One clean way out, no guilt, no second button.
-      toast(`Free improving is paused for a few hours. ${resetPhrase(msg.resetAt)}`, {
+      toast(`That was your ${DAILY_LIMIT} free improvements for today. ${resetPhrase(msg.resetAt)}`, {
         action: { label: 'Get unlimited', url: LINKS.pricing },
       })
     } else if (msg.error === 'pro_required') {
@@ -1278,7 +1212,62 @@
 
   function openConnect() {
     window.open(LINKS.connect, '_blank', 'noopener')
-    showConnectBox()
+
+    // Do not open the paste box. The connect page hands the token straight to
+    // the background worker when the user clicks Approve, and storage tells
+    // us the moment it lands - so the normal path needs no box at all.
+    // Showing one up front would be telling the user to do a job we are
+    // already doing for them.
+    //
+    // The box still exists for the cases the handoff cannot cover (page
+    // cannot see the extension, so it offers a code instead). This toast is
+    // its only door: without it the fallback would be unreachable, which is
+    // the same as not having one.
+    watchForConnect()
+    toast('Approve it in the tab we opened. You will come back signed in.', {
+      action: { label: 'Got a code instead?', onClick: showConnectBox },
+    })
+  }
+
+  /**
+   * Wait for the token to arrive from the connect page.
+   *
+   * chrome.storage fires in every context, so the background worker writing
+   * the token IS the signal - no polling, no message plumbing between the
+   * page and this script. We only listen while a connect is plausibly in
+   * flight, and stop after ten minutes so an abandoned attempt does not
+   * leave a listener attached for the life of the tab.
+   */
+  function watchForConnect() {
+    if (connectWatcher) return
+
+    const onChange = (changes, area) => {
+      if (area !== 'local' || !changes.dc_token) return
+      const token = changes.dc_token.newValue
+      if (!token) return
+
+      stopWatchingForConnect()
+      authState.token = token
+      authState.tier = 'free'
+      hideConnectBox()
+
+      // Say it plainly. The user approved in another tab and came back here;
+      // without this they would have to guess whether it worked.
+      toast('Connected. Your account is in use.', { good: true })
+      syncChip()
+    }
+
+    try {
+      chrome.storage.onChanged.addListener(onChange)
+      connectWatcher = onChange
+      setTimeout(stopWatchingForConnect, 10 * 60 * 1000)
+    } catch {}
+  }
+
+  function stopWatchingForConnect() {
+    if (!connectWatcher) return
+    try { chrome.storage.onChanged.removeListener(connectWatcher) } catch {}
+    connectWatcher = null
   }
 
   function saveToken(raw) {
@@ -1308,7 +1297,7 @@
     box.id = 'connect'
     box.innerHTML = `
       <div class="ctitle">Paste your connection code</div>
-      <div class="chelp">We opened deepclario.com for you. Copy the <b>dc_…</b> code and paste it below.</div>
+      <div class="chelp">Only needed if the site could not connect you automatically. Paste the <b>dc_…</b> code from deepclario.com.</div>
       <div class="crow">
         <input class="cinput" id="ctoken" type="text" placeholder="dc_…" autocomplete="off" spellcheck="false" />
         <button class="cbtn" id="csave">Connect</button>

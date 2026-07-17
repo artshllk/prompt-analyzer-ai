@@ -9,6 +9,54 @@ const SHARPEN_URL = API_BASE + '/api/anon/sharpen'
 const FORK_URL = API_BASE + '/api/anon/fork'
 const EXPLAIN_URL = API_BASE + '/api/anon/explain'
 
+// Sign-in handoff from the website.
+//
+// The connect page, once the user clicks Approve, sends the fresh token
+// straight here - so the flow is "click Approve, you're in" rather than
+// "copy a code, find the box, paste it". The manual code path still exists
+// as the fallback for anyone this cannot reach (locked-down browsers, a
+// different profile, the page failing to see the extension).
+//
+// Only deepclario.com can reach this listener: externally_connectable in
+// the manifest is the real gate, and Chrome fills in sender.origin itself
+// so a page cannot lie about who it is. We re-check the origin anyway
+// rather than trust the manifest alone - this hands over a credential, and
+// one wrong entry in that matches list should not be the only thing
+// standing between a hostile page and the user's account.
+chrome.runtime.onMessageExternal.addListener((msg, sender, sendResponse) => {
+  if (msg?.type !== 'DEEPCLARIO_CONNECT') return
+
+  if (sender.origin !== API_BASE) {
+    sendResponse({ ok: false, error: 'bad_origin' })
+    return
+  }
+
+  const token = typeof msg.token === 'string' ? msg.token.trim() : ''
+  if (!token.startsWith('dc_')) {
+    sendResponse({ ok: false, error: 'bad_token' })
+    return
+  }
+
+  // Tier is left for the server to confirm on the next call. Storing what
+  // the page claimed would let a stale page assert "pro".
+  chrome.storage.local.set({ dc_token: token, dc_tier: 'free' }, () => {
+    sendResponse({ ok: true })
+  })
+
+  return true
+})
+
+// The page asks this before showing its buttons, to find out whether the
+// extension is installed and can be handed a token directly. No answer
+// (extension missing, or too old to know this message) means the page shows
+// the manual code instead - the fallback must be what happens by default
+// when anything here is uncertain.
+chrome.runtime.onMessageExternal.addListener((msg, sender, sendResponse) => {
+  if (msg?.type !== 'DEEPCLARIO_PING') return
+  if (sender.origin !== API_BASE) return
+  sendResponse({ ok: true, version: chrome.runtime.getManifest().version })
+})
+
 // Explain a sharpen that already happened. Produces no rewrite and asks no
 // question - it is purely "here is what was weak, here is what changed, and
 // here is what I could not fix for you". Costs no quota.
