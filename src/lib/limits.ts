@@ -15,80 +15,76 @@
  */
 
 /* ---------------------------------------------------------------------
- * Free-tier usage window (the current policy)
+ * Free-tier daily limit (the current policy)
  *
- * Free users improve freely for USAGE_WINDOW_HOURS, then wait
- * USAGE_COOLDOWN_HOURS before a fresh window opens. Repeating.
+ * Free users get USAGE_DAILY_LIMIT improvements per rolling 24 hours.
+ * That is the whole rule.
  *
- * Why a window rather than a credit count: it matches how people actually
- * work - a focused session, then away for hours - and it is how the chat
- * products gate their own free tiers. Someone sharpening three prompts
- * never touches it. Someone hammering the tool does, which is exactly who
- * should feel it. It also gives Pro a clean, honest pitch: never wait.
+ * This replaced a 2h-window / 3h-cooldown model. The window was clever and
+ * unexplainable, which is a bad trade. Three things were wrong with it:
+ * the clock started invisibly on your first improve, so someone who
+ * improved once at 9am and came back at 11:30 had silently lost a window
+ * they never used; the 25 cap was so high that almost nobody reached the
+ * generous half, so in practice users only ever met the cooldown; and it
+ * punished the day-one exploration burst, which is the exact behaviour we
+ * want from a new user.
  *
- * SOFT_CAP is an abuse guard, not a product limit. It should be high
- * enough that a genuine user never sees it.
+ * A rolling daily count fixes all three. It fits in one line - "10 free
+ * improvements a day" - which means a user can plan around it, and it
+ * gives a hard, predictable cost ceiling per account.
+ *
+ * Why 10 and not 3-5: one task is not one improve. A real user doing a
+ * real piece of work runs improve, tweaks, answers the questions, runs it
+ * again. That is ~3 improves for one finished thing. At 5/day they get one
+ * and a half tasks; at 3/day they hit a wall inside their first task,
+ * before the product has proved itself. 10 is roughly 3 real tasks - long
+ * enough to form the habit that makes someone pay.
+ *
+ * Rolling, not calendar: credits come back gradually as individual
+ * improvements age past 24h, so there is no midnight cliff and no timezone
+ * question. The trade is that "resets at" is the moment the OLDEST
+ * improvement in the window expires, which returns exactly one credit.
  * ------------------------------------------------------------------- */
 
-export const USAGE_WINDOW_HOURS = 2
-export const USAGE_COOLDOWN_HOURS = 3
-export const USAGE_SOFT_CAP = 25
+export const USAGE_DAILY_LIMIT = 10
+export const USAGE_WINDOW_HOURS = 24
 
 /** Warn the user only when this few improvements remain. Silence above it. */
 export const USAGE_WARN_AT = 2
 
 export type UsageDecision =
-  | { allow: true; opensWindow: boolean; remaining: number }
+  | { allow: true; remaining: number }
   | { allow: false; retryAt: string }
 
 /**
  * The whole gating policy, as one pure function. Pure so it can be tested
  * without a database, and so the rule lives in exactly one place.
  *
- * @param windowStartedAt when the current window opened (null = none)
- * @param usedInWindow    improvements already made inside it
- * @param now             injectable for tests
+ * @param usedInWindow improvements made in the last USAGE_WINDOW_HOURS
+ * @param oldestAt     when the oldest of those happened (null = none).
+ *                     Only read when blocking, to say when a credit is back.
+ * @param now          injectable for tests
  */
 export function decideUsage(
-  windowStartedAt: string | null,
   usedInWindow: number,
+  oldestAt: string | null = null,
   now: Date = new Date()
 ): UsageDecision {
-  const t = now.getTime()
-
-  // No window yet: this improvement opens one.
-  if (!windowStartedAt) {
-    return { allow: true, opensWindow: true, remaining: USAGE_SOFT_CAP - 1 }
+  if (usedInWindow < USAGE_DAILY_LIMIT) {
+    return { allow: true, remaining: USAGE_DAILY_LIMIT - usedInWindow - 1 }
   }
 
-  const started = new Date(windowStartedAt).getTime()
-  if (isNaN(started)) {
-    // Corrupt value - fail open and reset rather than locking someone out.
-    return { allow: true, opensWindow: true, remaining: USAGE_SOFT_CAP - 1 }
-  }
+  // Out of credits. The next one returns when the oldest improvement in the
+  // window ages out of it.
+  const oldest = oldestAt ? new Date(oldestAt).getTime() : NaN
+  const retryAt = isNaN(oldest)
+    ? // No usable timestamp: a full window from now is the safe, honest
+      // answer. Never guess earlier - a promise that expires late is worse
+      // than one that expires early.
+      now.getTime() + USAGE_WINDOW_HOURS * 3_600_000
+    : oldest + USAGE_WINDOW_HOURS * 3_600_000
 
-  const windowEnds = started + USAGE_WINDOW_HOURS * 3_600_000
-  const cooldownEnds = windowEnds + USAGE_COOLDOWN_HOURS * 3_600_000
-
-  // Inside the window: allowed, unless they are hammering it.
-  if (t < windowEnds) {
-    if (usedInWindow >= USAGE_SOFT_CAP) {
-      return { allow: false, retryAt: new Date(cooldownEnds).toISOString() }
-    }
-    return {
-      allow: true,
-      opensWindow: false,
-      remaining: USAGE_SOFT_CAP - usedInWindow - 1,
-    }
-  }
-
-  // Window closed, cooling down.
-  if (t < cooldownEnds) {
-    return { allow: false, retryAt: new Date(cooldownEnds).toISOString() }
-  }
-
-  // Cooldown served: a fresh window opens now.
-  return { allow: true, opensWindow: true, remaining: USAGE_SOFT_CAP - 1 }
+  return { allow: false, retryAt: new Date(retryAt).toISOString() }
 }
 
 /**
