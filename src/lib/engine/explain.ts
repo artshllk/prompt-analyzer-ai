@@ -171,11 +171,14 @@ export async function applyAnswers(params: {
     model: MODELS.diagnose,
     systemPrompt: `Fold the user's answers into their prompt.
 
+These answers were collected by our tool, BEFORE the prompt is sent to the AI. So the detail is now known up front - the prompt must read as if the user always had it.
+
 Rules:
 - Return ONLY the updated prompt. No preamble, no explanation, no fences.
 - Work each answer in naturally, where it belongs. Do not bolt them on as a list at the end.
-- Change nothing else. Keep the rest of the prompt exactly as it is.
-- Never invent detail beyond what they told you.
+- REMOVE anything now made obsolete by an answer. If the prompt told the AI to ASK the user for a detail ("ask up to 3 questions first", "if you need my industry, ask"), or to leave a PLACEHOLDER for it ("[INDUSTRY]", "[ACHIEVEMENT]", "use placeholders where you must"), and the user has now given that detail, delete that instruction and drop the placeholder in favour of the real answer. It is contradictory to state a fact and still tell the AI to ask for it.
+- Leave untouched only the parts that no answer bears on. Do not otherwise rewrite, reorder, or restyle the prompt.
+- Never invent detail beyond what they told you. If a placeholder or "ask the user" line covers something they did NOT answer, leave it as it is.
 
 Return JSON: {"prompt": "..."}`,
     userMessage: [

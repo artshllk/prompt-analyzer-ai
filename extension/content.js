@@ -37,6 +37,43 @@
     return null
   }
 
+  /**
+   * The rectangle our floating UI anchors to - and it MUST be stable when the
+   * text scrolls inside the composer.
+   *
+   * findPromptEl() returns the contenteditable/textarea that HOLDS the text. On
+   * a long prompt that element grows past the composer's max height and its
+   * content starts scrolling. Its getBoundingClientRect().top is the top of the
+   * whole content, so as you scroll down it slides up above the visible box and
+   * goes negative - and a chip anchored to it climbs higher and higher off the
+   * top of the composer. That was the reported "the button keeps going higher
+   * as I scroll" bug: it was faithfully tracking text that had scrolled away.
+   *
+   * The fix: anchor to the composer's stable outer box instead - the nearest
+   * ancestor that actually CLIPS the text (the scroll viewport). Its top edge
+   * does not move when the content scrolls inside it, so the chip stays put.
+   * We find it by walking up for the first ancestor whose content overflows its
+   * own box (scrollHeight > clientHeight) with a clipping overflow, which is by
+   * definition the scroll container. Fall back to the text element itself when
+   * there is no such ancestor (short prompt, nothing scrolls - top is stable
+   * anyway).
+   */
+  function anchorEl(promptEl) {
+    const el = promptEl || findPromptEl()
+    if (!el) return null
+
+    let node = el.parentElement
+    for (let i = 0; node && i < 6; i++) {
+      const cs = getComputedStyle(node)
+      const scrolls = /(auto|scroll)/.test(cs.overflowY)
+      if (scrolls && node.scrollHeight > node.clientHeight + 1) {
+        return node
+      }
+      node = node.parentElement
+    }
+    return el
+  }
+
   function readPrompt() {
     const el = findPromptEl()
     if (!el) return ''
@@ -374,16 +411,47 @@
    * re-render, mid animation, before paint). The old bug shipped because a
    * plausible formula met an unexpected layout.
    *
-   * So rather than trust the measurement, we FLOOR it: our UI is never allowed
-   * above the halfway line of the viewport, because a chat composer never lives
-   * up there. If a measurement ever says otherwise, the measurement is wrong,
-   * and we would rather sit slightly off than fly to the top of the screen in
-   * front of a user. This makes the reported bug structurally impossible
-   * instead of merely fixed.
+   * So rather than trust the measurement blindly, we cap how far up the chip
+   * can go: never more than MAX_RISE above the viewport's bottom edge. A
+   * composer with a handful of lines legitimately sits well above the
+   * viewport's vertical middle - a new chat's composer starts near the
+   * middle of the screen even with ONE line of text - so clamping at 50% of
+   * the viewport height (the previous floor) was not a rare-garbage-value
+   * safety net, it was firing on ordinary multi-line prompts and dragging
+   * the chip back down onto the text. That was the reported "still
+   * overlapping" bug: the maths above was already correct, this clamp was
+   * silently overriding it. MAX_RISE is generous enough to clear a very
+   * tall composer while still being a real backstop against a garbage
+   * r.top of 0 or negative.
    */
+  const MAX_RISE = 640
   const GAP_ABOVE_BOX = 10
 
-  function anchorTo(el, node, place) {
+  // The gap used to clear the TEXT itself (see positionChip). Must be taller
+  // than one line of prompt text so the chip clears the first line even when
+  // the composer frame has no padding above the text (ChatGPT: the <form> can
+  // be flush with the textarea, so "above the frame" landed ON the text - the
+  // original report). One line of the host's input text is roughly 20-24px;
+  // this comfortably clears it with room to spare.
+  const GAP_ABOVE_TEXT = 40
+
+  /**
+   * Anchor `node` just above `el`'s top edge. Placements:
+   *
+   *   'above'  - left-aligned to `el`.
+   *   'right'  - right-aligned to `el`.
+   *
+   * `el` is always the prompt TEXT element (findPromptEl), not an outer
+   * "frame" ancestor - some sites' composer frame has no padding above the
+   * text, so an ancestor's top edge can be flush with the text's top edge.
+   * That let the chip land ON the last typed line (the reported bug). The
+   * text element's own top is the one measurement every site agrees on:
+   * exactly where the first line starts. `gap` must then be taller than one
+   * line of text to actually clear it - see GAP_ABOVE_TEXT.
+   *
+   * Returns false when the anchor is off-screen, so callers can hide.
+   */
+  function anchorTo(el, node, place, gap) {
     const r = el.getBoundingClientRect()
 
     // Composer scrolled out of view (or collapsed): nothing to anchor to.
@@ -391,17 +459,15 @@
       return false
     }
 
-    // Distance from the viewport bottom up to the composer's top edge. Stays
-    // correct however tall the box gets, because it is not derived from r.top
-    // as an absolute offset.
-    const bottomOffset = window.innerHeight - r.top + GAP_ABOVE_BOX
+    // Distance from the viewport bottom up to the anchor's top - stays correct
+    // however tall the box gets, because it is not derived from r.top as an
+    // absolute offset.
+    const bottomOffset = window.innerHeight - r.top + (gap != null ? gap : GAP_ABOVE_BOX)
 
-    // The floor: never above the middle of the screen. A chat composer lives in
-    // the lower half, always. If the maths ever disagrees, the maths is wrong -
-    // clamp instead of believing it. This is what makes "the chip flew to the
-    // top" impossible rather than fixed.
-    const highestAllowed = window.innerHeight / 2
-    node.style.bottom = Math.min(bottomOffset, highestAllowed) + 'px'
+    // The floor: never more than MAX_RISE above the viewport's bottom edge -
+    // a real backstop against a garbage/zero r.top, not a tight clamp that
+    // fights an ordinary multi-line composer. See MAX_RISE above.
+    node.style.bottom = Math.min(bottomOffset, MAX_RISE) + 'px'
     node.style.top = 'auto'
 
     if (place === 'above') {
@@ -415,9 +481,16 @@
   }
 
   function positionChip() {
-    const el = findPromptEl()
+    const el = anchorEl()
     if (!el) { chip.classList.remove('show'); return false }
-    if (!anchorTo(el, chip, 'right')) { chip.classList.remove('show'); return false }
+    // Anchor to the composer's STABLE box (the scroll container when the text
+    // overflows, else the text element) so the chip does not climb away when a
+    // long prompt is scrolled. GAP_ABOVE_TEXT is taller than one line, so it
+    // clears the top line even when the box has no padding above the text.
+    if (!anchorTo(el, chip, 'right', GAP_ABOVE_TEXT)) {
+      chip.classList.remove('show')
+      return false
+    }
     return true
   }
 
@@ -600,8 +673,8 @@
 
     toastEl.className =
       'toast' + (o.good ? ' good' : '') + (action ? ' actionable' : '')
-    const el = findPromptEl()
-    if (el) anchorTo(el, toastEl, 'right')
+    const el = anchorEl()
+    if (el) anchorTo(el, toastEl, 'right', GAP_ABOVE_TEXT)
     requestAnimationFrame(() => toastEl.classList.add('show'))
 
     clearTimeout(state.toastTimer)
@@ -646,20 +719,25 @@
   const WARN_AT = 2
 
   /**
-   * True while the box still contains our unedited output.
+   * True while our rewrite owns the box - the "we have improved, and have not
+   * been sent or reset since" state.
    *
    * This is the re-improve guard: while it holds, Improve is off, because
    * sharpening our own already-sharpened text compounds it into mush. It
-   * must cover EVERY phase where our output is sitting in the box, not just
-   * 'done'. After a rewrite the flow can be in 'filling' (walking the detail
-   * questions) with our text in the box the whole time - and 'filling' used
-   * to fall through this guard, so pressing Improve again mid-details
-   * re-improved our own output. Both 'done' and 'filling' hold state.after;
+   * covers 'done' and 'filling' - both phases where our output is in the box.
    * 'working'/'asking' still hold the user's original, so they stay out.
+   *
+   * It is now phase-based, NOT a string compare against state.after. The old
+   * `readPrompt() === state.after` check was fragile: readPrompt() trims, and
+   * the host's rich editor re-normalizes whitespace and blocks the instant we
+   * write, so the readback stopped matching our stored string on its own. That
+   * made the guard flicker off and let re-improve (and a reset to idle) sneak
+   * back in. The state is LOCKED until send now: if we are in 'done'/'filling'
+   * with a stored rewrite, the box holds our output, full stop.
    */
   function boxHoldsOurOutput() {
     if (state.phase !== 'done' && state.phase !== 'filling') return false
-    return !!state.after && readPrompt() === state.after
+    return !!state.after
   }
 
   async function onSharpen() {
@@ -905,13 +983,17 @@
   }
 
   /**
-   * The question chips sit above the chip, which sits above the composer.
-   * Same rule as anchorTo: measure from the composer's top edge using
+   * The question chips stack ABOVE the "Improve" chip, which itself sits
+   * above the text (see positionChip/GAP_ABOVE_TEXT). So the forks need to
+   * clear the text by GAP_ABOVE_TEXT, PLUS the chip's own height and the gap
+   * between the two - otherwise the two would overlap each other.
+   *
+   * Same rule as anchorTo: measure from the text element's top edge using
    * `bottom`, never as an absolute `top` that a growing box can push
    * off-screen.
    */
   function positionForks() {
-    const el = findPromptEl()
+    const el = anchorEl()
     if (!el || !forksEl.classList.contains('show')) return
     const r = el.getBoundingClientRect()
 
@@ -922,8 +1004,9 @@
 
     forksEl.style.left = 'auto'
     forksEl.style.right = Math.max(8, window.innerWidth - r.right) + 'px'
-    // Clear the chip's own height so the two never overlap.
-    const bottomOffset = window.innerHeight - r.top + 48
+    // Clear the text, the chip's height, and the gap between chip and forks.
+    const chipH = chip.offsetHeight || 32
+    const bottomOffset = window.innerHeight - r.top + GAP_ABOVE_TEXT + chipH + 8
     // Same floor as anchorTo: the questions are taller than the chip, so they
     // get a little more room, but they still may never climb to the top.
     const highestAllowed = window.innerHeight - forksEl.offsetHeight - 16
@@ -1306,7 +1389,7 @@
       <button class="cclose" id="cclose" aria-label="Close">×</button>
     `
     root.appendChild(box)
-    anchorTo(el, box, 'above')
+    anchorTo(anchorEl(el) || el, box, 'above', GAP_ABOVE_TEXT)
 
     const input = box.querySelector('#ctoken')
     const err = box.querySelector('#cerr')
@@ -1473,18 +1556,32 @@
     }
 
     if (state.phase === 'filling') {
-      // Mid-way through the missing details. If they edited our rewrite
-      // themselves, abandon the flow - it is their prompt again.
-      if (text !== state.after) { resetToIdle(); return }
+      // Mid-way through the missing details, our rewrite in the box. The
+      // details flow is LOCKED like 'done': editing the text does not tear it
+      // down (the host's own re-normalization of a contenteditable would count
+      // as an "edit" and yank the questions away mid-answer). Only sending the
+      // prompt - which empties the box, handled above - ends it.
       positionForks()
       return
     }
 
     if (state.phase === 'done') {
-      // Still holding our output? Keep the sticky Sharpened chip.
-      if (text === state.after) { showDoneChip(); return }
-      // They edited it. It's their prompt again - offer to sharpen.
-      resetToIdle()
+      // LOCKED until send. Once we improve, the chip shows compare/undo only
+      // and stays put; it does NOT flip back to "Improve" when the text
+      // changes. This is deliberate:
+      //
+      //  - Re-improving our own output compounds it into mush, so offering
+      //    "Improve" again here is a trap, not a feature.
+      //  - The old code reset to idle whenever readPrompt() !== state.after.
+      //    But readPrompt() trims and the host's rich editor (ProseMirror on
+      //    ChatGPT/Gemini) re-normalizes whitespace and block structure right
+      //    after we write - so the readback stopped matching our stored string
+      //    through no user action, and the chip flashed straight past
+      //    compare/undo back to Improve. That was the reported bug.
+      //
+      // The box going empty (they sent it) is caught by the !text branch above
+      // and resets us cleanly. Undo is the user's explicit way back to idle.
+      showDoneChip()
       return
     }
 
@@ -1510,8 +1607,16 @@
    *
    * These SPAs swap the composer element out on navigation, so re-target the
    * observer whenever the element we are watching is no longer the live one.
+   *
+   * We observe the prompt element AND a few of its ancestors. On ChatGPT the
+   * composer grows on a WRAPPER (the form / container), not on the textarea
+   * itself - the inner element's box can stay the same height while the outer
+   * shell climbs upward. Watching only the inner element meant its top edge
+   * moved but no resize fired, so the chip stayed put until the next 1.2s poll:
+   * exactly the "button remains in the same place when ChatGPT expands" bug.
+   * Observing the ancestors catches the growth wherever it actually happens.
    */
-  let observedEl = null
+  let observedEls = []
   const boxResizeObserver =
     typeof ResizeObserver !== 'undefined'
       ? new ResizeObserver(() => {
@@ -1523,10 +1628,27 @@
   function watchPromptBox() {
     if (!boxResizeObserver) return
     const el = findPromptEl()
-    if (el === observedEl) return
-    if (observedEl) boxResizeObserver.unobserve(observedEl)
-    observedEl = el
-    if (el) boxResizeObserver.observe(el)
+
+    // Collect the prompt element plus up to 3 ancestors - far enough to reach
+    // the growing composer shell, not so far we watch the whole page.
+    const targets = []
+    let node = el
+    for (let i = 0; node && i < 4; i++) {
+      targets.push(node)
+      node = node.parentElement
+    }
+
+    // Same set as last time? Nothing to re-target.
+    if (
+      targets.length === observedEls.length &&
+      targets.every((t, i) => t === observedEls[i])
+    ) {
+      return
+    }
+
+    for (const old of observedEls) boxResizeObserver.unobserve(old)
+    observedEls = targets
+    for (const t of targets) boxResizeObserver.observe(t)
   }
 
   watchPromptBox()
