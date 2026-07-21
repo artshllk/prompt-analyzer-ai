@@ -92,9 +92,24 @@
     return (text || '').trim()
   }
 
+  /**
+   * True only while OUR write is executing.
+   *
+   * Both write paths below dispatch their `input` event synchronously, before
+   * writePrompt returns: `dispatchEvent` by definition, and `execCommand` as
+   * part of the editing command. So a plain synchronous flag separates our
+   * writes from the user's typing exactly, with no timing window to tune and
+   * nothing to get wrong on a slow machine.
+   *
+   * This is what replaced comparing text to text. See the comment on
+   * state.userEdited.
+   */
+  let selfWriting = false
+
   function writePrompt(text) {
     const el = findPromptEl()
     if (!el) return false
+    selfWriting = true
     try {
       el.focus()
       if ('value' in el && el.tagName === 'TEXTAREA') {
@@ -115,6 +130,8 @@
       return true
     } catch {
       return false
+    } finally {
+      selfWriting = false
     }
   }
 
@@ -768,7 +785,22 @@
     toastEl.className =
       'toast' + (o.good ? ' good' : '') + (action ? ' actionable' : '')
     const el = findPromptEl()
-    if (el) anchorTo(el, toastEl, 'right')
+    if (el && anchorTo(el, toastEl, 'right')) {
+      // Stack ABOVE the chip, never on top of it.
+      //
+      // The toast and the chip are anchored to the same point by the same
+      // function, and the toast is later in the shadow root, so it paints
+      // over the chip. finishSharpen calls showDoneChip and then noteHeadroom
+      // back to back, so a user near their limit got "2 free improvements
+      // left today" covering compare and undo for 1.8s - the toast's own
+      // lifetime. That looked exactly like the chip vanishing and returning.
+      if (chip.classList.contains('show')) {
+        const base = parseFloat(toastEl.style.bottom) || 0
+        const lift = base + chip.offsetHeight + 8
+        const ceiling = window.innerHeight - toastEl.offsetHeight - 8
+        toastEl.style.bottom = Math.max(8, Math.min(lift, ceiling)) + 'px'
+      }
+    }
     requestAnimationFrame(() => toastEl.classList.add('show'))
 
     clearTimeout(state.toastTimer)
@@ -790,9 +822,45 @@
     phase: 'idle',
     /** The user's prompt as it was BEFORE we touched it. What "why?" explains. */
     before: '',
-    /** Exactly what we wrote into the box. If the box still holds this, the
-     *  user hasn't edited our output - so Sharpen stays off and "why?" is live. */
+    /** Exactly what we wrote into the box. Used by compare and by the gap
+     *  calls. NOT used to decide whether the user has edited it - see
+     *  userEdited for why that comparison could never work. */
     after: '',
+    /**
+     * Has the user typed in the box since we wrote our rewrite into it?
+     *
+     * THIS REPLACED A STRING COMPARISON, AND THAT IS THE WHOLE BUG.
+     *
+     * The old test was `readPrompt() === state.after`: the text we wrote,
+     * compared against the text read back out. It reads like an identity
+     * check. It is not, because the two sides are produced by different
+     * systems and neither of them is us.
+     *
+     * We write with execCommand('insertText'), which hands the string to the
+     * host editor. ProseMirror (ChatGPT, Claude) and Quill (Gemini) then
+     * normalise it into their own document model: newlines become paragraph
+     * nodes, whitespace collapses, empty lines become trailing-break nodes,
+     * and input rules can turn "1. " or "- " into real list nodes. We then
+     * read it back with innerText, which re-derives a string from RENDERED
+     * LAYOUT, not from what we inserted. Block boundaries and list markers
+     * come back with different whitespace than we sent.
+     *
+     * So for any rewrite with structure - and our rewrites are structured by
+     * design, with paragraphs, bullets and Assume lines - the two strings
+     * differ the moment the host finishes rendering. The comparison was
+     * reporting "the user edited this" about text the user had never touched.
+     *
+     * The 1.2s poll (setInterval(syncChip)) is what made it look like a timer
+     * bug: the mismatch appears as soon as the host re-renders, but nothing
+     * looks for it until the next tick, so Compare sat there for a second or
+     * two and then vanished. Every previous fix moved the timing around. The
+     * comparison was the thing that was wrong.
+     *
+     * An edit is now an EVENT, not a diff. The only thing that can set this
+     * is an input event on the host's box that did not come from our own
+     * write, which is precisely the definition of "the user typed".
+     */
+    userEdited: false,
     /** { question, options } when the prompt was genuinely ambiguous. */
     fork: null,
     /** The interpretation the user picked, if any. */
@@ -826,7 +894,7 @@
    */
   function boxHoldsOurOutput() {
     if (state.phase !== 'done' && state.phase !== 'filling') return false
-    return !!state.after && readPrompt() === state.after
+    return !!state.after && !state.userEdited
   }
 
   async function onSharpen() {
@@ -869,6 +937,10 @@
     state.before = prompt
     state.fork = null
     state.chosen = ''
+    // We have just taken a snapshot of what they typed, so their typing up to
+    // this moment is accounted for. Anything after this is a genuine edit, and
+    // during 'asking' that is what makes the question stale.
+    state.userEdited = false
     hideForks()
 
     // ASK FIRST, then rewrite ONCE.
@@ -1111,6 +1183,11 @@
       writePrompt(clean)
       state.after = clean
       state.phase = 'done'
+      // The box now holds OUR text, untouched. Clearing here is what makes
+      // the flag mean "edited since we wrote", not "typed at some point" -
+      // the user necessarily typed before pressing Improve, and without this
+      // the done chip would dismiss itself on the very next tick.
+      state.userEdited = false
       hideForks()
       showDoneChip()
       noteHeadroom()
@@ -1295,6 +1372,8 @@
         state.after = clean
         state.gaps = null
         state.phase = 'done'
+        // Same reason as finishSharpen: our text, freshly written, unedited.
+        state.userEdited = false
         showDoneChip()
         toast('Added to your prompt', { good: true })
       }
@@ -1309,6 +1388,10 @@
     state.gaps = null
     state.gapIndex = 0
     state.gapAnswers = {}
+    // The box is the user's again, so nothing is pending an edit. Leaving
+    // this set would make the NEXT rewrite think it had already been edited
+    // and dismiss its own chip instantly.
+    state.userEdited = false
     hideForks()
     showIdleChip()
   }
@@ -1632,10 +1715,16 @@
       return
     }
 
+    // Every branch below asks the same question - "has the user taken this
+    // prompt back off us?" - and every branch used to answer it by comparing
+    // strings the host is free to rewrite underneath us. They all read the
+    // edit FLAG now. Nothing here dismisses the chip on a timer, because
+    // nothing here is allowed to guess at intent from text.
+
     if (state.phase === 'asking') {
-      // A question is on screen and the box is untouched. If they edited
-      // the prompt instead of answering, the question is stale - drop it.
-      if (text !== state.before) { resetToIdle(); return }
+      // A question is on screen and the box is untouched. If they typed
+      // instead of answering, the question is stale - drop it.
+      if (state.userEdited) { resetToIdle(); return }
       showAskingChip()
       positionForks()
       return
@@ -1644,15 +1733,16 @@
     if (state.phase === 'filling') {
       // Mid-way through the missing details. If they edited our rewrite
       // themselves, abandon the flow - it is their prompt again.
-      if (text !== state.after) { resetToIdle(); return }
+      if (state.userEdited) { resetToIdle(); return }
       positionForks()
       return
     }
 
     if (state.phase === 'done') {
-      // Still holding our output? Keep the sticky Sharpened chip.
-      if (text === state.after) { showDoneChip(); return }
-      // They edited it. It's their prompt again - offer to sharpen.
+      // The sticky done chip, carrying compare and undo. It stays until the
+      // user types, sends, or dismisses it. It does NOT expire.
+      if (!state.userEdited) { showDoneChip(); return }
+      // They edited it. It's their prompt again - offer to improve.
       resetToIdle()
       return
     }
@@ -1690,8 +1780,28 @@
     })
   }
 
+  /**
+   * The one place an edit is recorded. An input event on the host page that
+   * did not come from our own write IS the user typing - there is nothing to
+   * infer and nothing to compare.
+   *
+   * Two events must not count:
+   *  - our own writes, caught by the synchronous selfWriting flag
+   *  - typing inside OUR shadow UI (the "or type your own" box, the connect
+   *    field). Those retarget to the host element on the way out, and this
+   *    listener is on document in the CAPTURE phase, so it sees them before
+   *    the host's own stopPropagation can. Without this check, answering a
+   *    gap question would count as editing the prompt and kill the chip.
+   */
   document.addEventListener('focusin', syncChip, true)
-  document.addEventListener('input', syncChip, true)
+  document.addEventListener(
+    'input',
+    e => {
+      if (!selfWriting && e.target !== host) state.userEdited = true
+      syncChip()
+    },
+    true
+  )
   // Capture, so we also hear the composer's OWN inner scroller, not just the
   // page. Scroll events do not bubble; capture from window still sees them.
   window.addEventListener('scroll', reposition, true)
