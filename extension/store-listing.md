@@ -6,11 +6,23 @@ Everything the store asks for. Copy each block into the matching field.
 
 ## TITLE (45 char max)
 
-Deepclario - Better AI prompts, one key
+Deepclario: AI Prompt Improver
+
+<!-- Must match manifest.json "name" exactly. 30 chars.
+     "AI Prompt Improver" is the phrase people actually type into the store
+     search box; "Deepclario" is not, and neither was "one key", which named
+     the mechanism instead of the payoff. Platform names stay OUT of the title
+     on purpose: the store's trademark rule restricts third-party brands in the
+     NAME field, and a rejection before launch costs weeks. They are free to use
+     in the summary and description below, which is where they earn their keep. -->
 
 ## SUMMARY / SHORT DESCRIPTION (132 char max)
 
-Press one key and your prompt gets improved right in the ChatGPT, Claude, or Gemini box. It asks first when it isn't sure.
+Improve your prompt right inside ChatGPT, Claude, or Gemini. It asks what you meant before it rewrites, instead of guessing.
+
+<!-- Must match manifest.json "description" exactly. 123 of 132 chars.
+     Carries the two things the title cannot: where it works, and the one thing
+     no other prompt tool does, which is ask before rewriting. -->
 
 ## DESCRIPTION
 
