@@ -29,8 +29,56 @@
     'form textarea',
   ]
 
+  /**
+   * THE ONLY PLACE SITE-SPECIFIC KNOWLEDGE LIVES.
+   *
+   * Everything else in this file is structural, on purpose: a selector table is
+   * a bet that three companies will not touch their composer, and they touch it
+   * constantly. So this table is a HINT, never a requirement. Each entry is
+   * tried first and falls through to the generic path if it misses, and the
+   * generic path alone is enough to position correctly. If ChatGPT renames a
+   * class tomorrow, we get slightly less precise placement, not a broken chip.
+   *
+   *   editable - tried before READ_SELECTORS. Narrows the match so a stray
+   *              contenteditable (a title field, Claude's project instructions)
+   *              cannot win over the real composer.
+   *   shell    - the rounded box the user perceives as "the input", which is a
+   *              different element from the text inside it. See composerRect().
+   */
+  const PLATFORM_SITES = [
+    ['chatgpt.com', {
+      editable: ['#prompt-textarea', 'form div.ProseMirror[contenteditable="true"]'],
+      shell: ['form[data-type="unified-composer"]', 'main form'],
+    }],
+    ['chat.openai.com', {
+      editable: ['#prompt-textarea', 'form div.ProseMirror[contenteditable="true"]'],
+      shell: ['form[data-type="unified-composer"]', 'main form'],
+    }],
+    ['claude.ai', {
+      editable: ['div.ProseMirror[contenteditable="true"]'],
+      shell: ['div[data-testid="chat-input-container"]', 'fieldset', 'form'],
+    }],
+    ['gemini.google.com', {
+      editable: [
+        'rich-textarea div.ql-editor[contenteditable="true"]',
+        'rich-textarea textarea',
+        'div.ql-editor[contenteditable="true"]',
+      ],
+      shell: ['input-container', 'div.input-area-container'],
+    }],
+  ]
+
+  const SITE_CFG = (function () {
+    const h = location.hostname
+    for (const [host, cfg] of PLATFORM_SITES) {
+      if (h === host || h.endsWith('.' + host)) return cfg
+    }
+    return null
+  })()
+
   function findPromptEl() {
-    for (const sel of READ_SELECTORS) {
+    const list = SITE_CFG ? SITE_CFG.editable.concat(READ_SELECTORS) : READ_SELECTORS
+    for (const sel of list) {
       const el = document.querySelector(sel)
       if (el) return el
     }
@@ -349,63 +397,172 @@
   /* ---------- Positioning: anchor UI to the prompt box ---------- */
 
   /**
-   * Anchor one of our floating elements just above the prompt box.
+   * WHAT WE ANCHOR TO, AND WHY IT KEPT DRIFTING.
    *
-   * This used to set `top: r.top - 40`, which broke badly on long prompts. The
-   * composer grows UPWARD: its bottom edge is nailed to the page, and its top
-   * edge climbs as you type. So with a big paste, r.top approached 0, r.top-40
-   * went negative, and the Math.max(8, ...) clamp parked the chip hard against
-   * the top of the screen. It was not misbehaving - it was faithfully tracking
-   * an edge that had moved out from under it.
+   * Two shipped fixes have now missed this, so it is worth being exact.
    *
-   * Now we position with the `bottom` property, measured from the composer's
-   * TOP edge. Anchoring this way means the element rides just above the box at
-   * any height, because we are no longer expressing the position as a distance
-   * from a viewport edge that the box can outgrow.
+   * findPromptEl() returns the EDITABLE - ChatGPT's #prompt-textarea, Claude's
+   * ProseMirror, Gemini's .ql-editor. On all three, the editable is the SCROLL
+   * CONTENT inside a wrapper that has a max-height and overflow-y: auto. Type
+   * past that max-height and the wrapper stops growing while the editable does
+   * not. The visible box is finished moving; the editable's top edge keeps
+   * climbing, past the visible top of the box, past 0, into negative numbers.
+   *
+   * Both previous attempts measured that edge:
+   *
+   *   v1  top:    r.top - 40                    -> chip flew to the top
+   *   v2  bottom: innerHeight - r.top + 10      -> chip rises 1px per 1px typed
+   *
+   * v2 is v1 rotated. Both are linear in r.top, and r.top is the single edge in
+   * this layout that moves without bound. Expressing the offset from the bottom
+   * of the viewport changed which edge of OUR element is the reference; it did
+   * not change what we measured. That is why the bug survived the rewrite.
+   *
+   * So: stop measuring the editable. composerRect() returns the box the user
+   * can actually SEE - the editable's rect intersected with every ancestor that
+   * clips it, then grown out to the composer shell. Its top edge stops moving
+   * the moment the composer hits its max-height, which is precisely the moment
+   * the user perceives the box as having stopped growing.
+   *
+   * Nothing below is site-specific. The clip walk DERIVES at runtime what a
+   * per-site selector would hardcode, so it cannot go stale when any of the
+   * three redesigns. PLATFORM_SITES only sharpens it.
    *
    * Returns false when the box is off-screen, so callers can hide rather than
    * park a stray chip somewhere meaningless.
-   *
-   * THE SAFETY NET (read before touching the maths below)
-   *
-   * Correct maths is not enough here. We are anchoring to a DOM we do not own,
-   * that changes without warning, measured across 16 call sites, any one of
-   * which can fire at a moment when the geometry is briefly nonsense (mid
-   * re-render, mid animation, before paint). The old bug shipped because a
-   * plausible formula met an unexpected layout.
-   *
-   * So rather than trust the measurement, we FLOOR it: our UI is never allowed
-   * above the halfway line of the viewport, because a chat composer never lives
-   * up there. If a measurement ever says otherwise, the measurement is wrong,
-   * and we would rather sit slightly off than fly to the top of the screen in
-   * front of a user. This makes the reported bug structurally impossible
-   * instead of merely fixed.
    */
   const GAP_ABOVE_BOX = 10
 
-  function anchorTo(el, node, place) {
-    const r = el.getBoundingClientRect()
+  // How far up from the editable we will look for the composer shell.
+  const SHELL_MAX_STEPS = 6
+  // A shell is the editable plus its own chrome (toolbar row, padding,
+  // attachment previews). Past this we have walked out into the page.
+  const SHELL_MAX_EXTRA = 220
+  const SHELL_MAX_FRACTION = 0.66
 
-    // Composer scrolled out of view (or collapsed): nothing to anchor to.
-    if (r.bottom <= 0 || r.top >= window.innerHeight || r.width === 0) {
-      return false
+  /**
+   * The part of `el` that is actually on screen: its own rect, intersected with
+   * every ancestor that clips it. This is the whole fix in one function - for a
+   * composer that has hit its max-height, the intersection is the wrapper, and
+   * the wrapper's top edge does not move however much more you type.
+   */
+  function visibleRect(el) {
+    const r = el.getBoundingClientRect()
+    let top = r.top, bottom = r.bottom, left = r.left, right = r.right
+
+    let p = el.parentElement
+    for (let i = 0; p && i < 30; i++, p = p.parentElement) {
+      // Skip html/body. Their boxes are the DOCUMENT, not the viewport - on a
+      // scrolled page documentElement's rect has a negative top and the full
+      // content height, so intersecting with it would be meaningless. Whatever
+      // they clip, the viewport clamp in anchorTo already covers.
+      if (p === document.body || p === document.documentElement) continue
+      const cs = getComputedStyle(p)
+      if (cs.overflowX === 'visible' && cs.overflowY === 'visible') continue
+      const pr = p.getBoundingClientRect()
+      if (pr.width === 0 || pr.height === 0) continue
+      if (pr.top > top) top = pr.top
+      if (pr.bottom < bottom) bottom = pr.bottom
+      if (pr.left > left) left = pr.left
+      if (pr.right < right) right = pr.right
+    }
+    return { top, bottom, left, right, width: right - left, height: bottom - top }
+  }
+
+  /**
+   * The composer SHELL: the rounded box, not the text inside it. We anchor to
+   * this rather than to the editable because the two are not the same element
+   * on any of the three sites - the shell also holds the send button, the tool
+   * row and (ChatGPT, Claude) the attachment previews that render ABOVE the
+   * text. Anchoring 10px above the editable would drop the chip on top of them.
+   */
+  function shellElement(el, base) {
+    if (SITE_CFG) {
+      for (const sel of SITE_CFG.shell || []) {
+        const named = el.closest(sel)
+        // Reject a hint that has gone stale and now matches half the page. The
+        // generic walk below is a better answer than a confidently wrong one.
+        if (named && named.getBoundingClientRect().height <= window.innerHeight * SHELL_MAX_FRACTION) {
+          return named
+        }
+      }
     }
 
-    // Distance from the viewport bottom up to the composer's top edge. Stays
-    // correct however tall the box gets, because it is not derived from r.top
-    // as an absolute offset.
-    const bottomOffset = window.innerHeight - r.top + GAP_ABOVE_BOX
+    base = base || visibleRect(el)
+    let best = el
+    let node = el.parentElement
+    for (let i = 0; node && i < SHELL_MAX_STEPS; i++, node = node.parentElement) {
+      const r = node.getBoundingClientRect()
+      if (r.width === 0 || r.height === 0) continue
+      if (r.height > window.innerHeight * SHELL_MAX_FRACTION) break
+      if (r.height > base.height + SHELL_MAX_EXTRA) break
+      best = node
+    }
+    return best
+  }
 
-    // The floor: never above the middle of the screen. A chat composer lives in
-    // the lower half, always. If the maths ever disagrees, the maths is wrong -
-    // clamp instead of believing it. This is what makes "the chip flew to the
-    // top" impossible rather than fixed.
-    const highestAllowed = window.innerHeight / 2
-    node.style.bottom = Math.min(bottomOffset, highestAllowed) + 'px'
+  // One measurement per frame. Every floating element asks for this rect in the
+  // same rAF pass, and they must all agree; re-reading also forces a style
+  // recalc per clipping ancestor for no gain.
+  let rectCache = { el: null, at: -1, rect: null }
+
+  function composerRect(el) {
+    const now = performance.now()
+    if (rectCache.el === el && now - rectCache.at < 16) return rectCache.rect
+
+    let out = null
+    const v = visibleRect(el)
+    if (v.width > 0 && v.height > 0) {
+      const shell = shellElement(el, v)
+      if (shell === el) {
+        out = v
+      } else {
+        const s = visibleRect(shell)
+        const top = Math.min(v.top, s.top)
+        const bottom = Math.max(v.bottom, s.bottom)
+        const left = Math.min(v.left, s.left)
+        const right = Math.max(v.right, s.right)
+        out = { top, bottom, left, right, width: right - left, height: bottom - top }
+      }
+    }
+
+    rectCache = { el, at: now, rect: out }
+    return out
+  }
+
+  function anchorTo(el, node, place) {
+    const r = composerRect(el)
+    if (!r) return false
+
+    // Scrolled out of view, collapsed, or a mid-render measurement of a node
+    // that is briefly nonsense. Hide instead of parking the UI somewhere it
+    // does not belong.
+    if (r.bottom <= 0 || r.top >= window.innerHeight || r.width <= 0) return false
+
+    // Measured from the composer's VISIBLE top edge, which stops moving once
+    // the box reaches its max-height - unlike the editable's top edge, which
+    // never stops. This is the line the whole bug lived on.
+    const wanted = window.innerHeight - r.top + GAP_ABOVE_BOX
+
+    // The safety net, and it is deliberately NOT the old one.
+    //
+    // The old net refused to position anything above the viewport midline, on
+    // the grounds that "a chat composer never lives up there". That is false:
+    // on the new-chat screens all three sites CENTRE the composer, so a few
+    // lines of typing legitimately carries its top above the midline - and the
+    // clamp then pinned the chip at the midline, on top of the box. It also
+    // masked the real bug, turning an obvious flight to the top into a subtle
+    // drift that stops somewhere arbitrary.
+    //
+    // The correct net makes no claim about the host's layout at all. It only
+    // says our own element must stay fully on screen, which is true everywhere.
+    const h = node.offsetHeight || 34
+    node.style.bottom = Math.max(8, Math.min(wanted, window.innerHeight - h - 8)) + 'px'
     node.style.top = 'auto'
 
     if (place === 'above') {
-      node.style.left = Math.max(8, r.left) + 'px'
+      const w = node.offsetWidth || 0
+      node.style.left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)) + 'px'
       node.style.right = 'auto'
     } else {
       node.style.left = 'auto'
@@ -456,6 +613,9 @@
     chip.className = 'chip show'
     chip.innerHTML = IDLE_HTML
     chip.onclick = onSharpen
+    // Re-anchor AFTER the content changed. positionChip() above measured the
+    // chip we are replacing, and these states are not the same size.
+    reposition()
   }
 
   // Clear the signature: otherwise re-showing the same state after a hide
@@ -471,6 +631,7 @@
     chip.className = 'chip show state-working'
     chip.innerHTML = `<span class="dots"><span></span><span></span><span></span></span>Improving`
     chip.onclick = null
+    reposition()
   }
 
   /**
@@ -498,6 +659,7 @@
     chip.onclick = null
     const skip = $('#skip')
     if (skip) skip.onclick = e => { e.stopPropagation(); skipQuestion() }
+    reposition()
   }
 
   /** They don't want to answer: rewrite anyway, with our best guess. */
@@ -547,6 +709,10 @@
     bind($('#why'), openDetails)
     bind($('#undo'), undoSharpen)
     chip.onclick = null
+    // The widest state we render, and the one that wraps to two lines on a
+    // narrow window. Re-anchor now that it exists, so the questions above it
+    // stack off its real height.
+    reposition()
   }
 
   /** Mid-flow: walking the missing details, one question at a time. */
@@ -561,6 +727,7 @@
     chip.onclick = null
     const s = $('#skipall')
     if (s) s.onclick = e => { e.stopPropagation(); hideForks(); applyGaps() }
+    reposition()
   }
 
   function escHtml(s) {
@@ -905,29 +1072,31 @@
   }
 
   /**
-   * The question chips sit above the chip, which sits above the composer.
-   * Same rule as anchorTo: measure from the composer's top edge using
-   * `bottom`, never as an absolute `top` that a growing box can push
-   * off-screen.
+   * The question chips sit above the chip, which sits above the composer. Same
+   * rect as anchorTo - the VISIBLE composer, never the editable.
    */
   function positionForks() {
     const el = findPromptEl()
     if (!el || !forksEl.classList.contains('show')) return
-    const r = el.getBoundingClientRect()
+    const r = composerRect(el)
 
-    if (r.bottom <= 0 || r.top >= window.innerHeight) {
+    if (!r || r.bottom <= 0 || r.top >= window.innerHeight) {
       forksEl.classList.remove('show')
       return
     }
 
     forksEl.style.left = 'auto'
     forksEl.style.right = Math.max(8, window.innerWidth - r.right) + 'px'
-    // Clear the chip's own height so the two never overlap.
-    const bottomOffset = window.innerHeight - r.top + 48
-    // Same floor as anchorTo: the questions are taller than the chip, so they
-    // get a little more room, but they still may never climb to the top.
-    const highestAllowed = window.innerHeight - forksEl.offsetHeight - 16
-    forksEl.style.bottom = Math.min(bottomOffset, Math.max(8, highestAllowed)) + 'px'
+
+    // Clear the chip by its MEASURED height, not a hardcoded 48. The done chip
+    // ("Improved · X", "+ 2 details", "compare", "undo") wraps to two lines on a
+    // narrow window, and 48 then put the questions on top of it.
+    const chipH = chip.classList.contains('show') ? chip.offsetHeight + 8 : 0
+    const wanted = window.innerHeight - r.top + GAP_ABOVE_BOX + chipH
+
+    // Same net as anchorTo: stay fully on screen, claim nothing about the host.
+    const maxBottom = window.innerHeight - forksEl.offsetHeight - 8
+    forksEl.style.bottom = Math.max(8, Math.min(wanted, maxBottom)) + 'px'
     forksEl.style.top = 'auto'
   }
 
@@ -1491,42 +1660,81 @@
     showIdleChip()
   }
 
+  /**
+   * ONE batched pass that re-anchors everything we have floating.
+   *
+   * Batched into a frame for two reasons. It stops us reading layout and
+   * writing styles synchronously inside a ResizeObserver callback, which is
+   * what produces "ResizeObserver loop completed with undelivered
+   * notifications" and a frame of thrash on every keystroke. And it means the
+   * chip, the questions and the connect box all position from ONE measurement
+   * of the composer (see the rectCache), so they cannot disagree with each
+   * other mid-resize.
+   *
+   * The connect box is included because it was anchored once, at creation, and
+   * never again - leave it open and type, and it stayed where the box used to
+   * be.
+   */
+  let repositionFrame = 0
+  function reposition() {
+    if (repositionFrame) return
+    repositionFrame = requestAnimationFrame(() => {
+      repositionFrame = 0
+      if (chip.classList.contains('show')) positionChip()
+      positionForks()
+      const box = root.querySelector('#connect')
+      if (box) {
+        const el = findPromptEl()
+        if (el) anchorTo(el, box, 'above')
+      }
+    })
+  }
+
   document.addEventListener('focusin', syncChip, true)
   document.addEventListener('input', syncChip, true)
-  window.addEventListener('scroll', () => {
-    if (chip.classList.contains('show')) positionChip()
-    positionForks()
-  }, true)
-  window.addEventListener('resize', () => { syncChip(); positionForks() })
+  // Capture, so we also hear the composer's OWN inner scroller, not just the
+  // page. Scroll events do not bubble; capture from window still sees them.
+  window.addEventListener('scroll', reposition, true)
+  window.addEventListener('resize', () => { syncChip(); reposition() })
   setInterval(syncChip, 1200)
 
   /**
    * Reposition the moment the composer changes SIZE.
    *
-   * The box growing is precisely the event our UI needs to react to, and we
-   * were not listening for it - we relied on the 1.2s interval and scroll
-   * events, so a paste made the chip visibly lag or land wrong until the next
-   * poll. A ResizeObserver fires exactly when the geometry changes.
+   * We watch the editable AND the shell. The editable tells us the text grew;
+   * the shell tells us the visible box grew. They stop agreeing at exactly the
+   * point this bug used to appear - the composer's max-height, after which the
+   * text keeps growing and the box does not. Watching only the editable meant
+   * we kept firing on growth that no longer moved anything we anchor to, and
+   * never fired on shell-only changes (an attachment chip appearing).
    *
-   * These SPAs swap the composer element out on navigation, so re-target the
-   * observer whenever the element we are watching is no longer the live one.
+   * These SPAs swap the composer out on navigation, so re-target when the
+   * elements we are watching are no longer the live ones.
    */
-  let observedEl = null
+  let observedEls = []
   const boxResizeObserver =
-    typeof ResizeObserver !== 'undefined'
-      ? new ResizeObserver(() => {
-          if (chip.classList.contains('show')) positionChip()
-          positionForks()
-        })
-      : null
+    typeof ResizeObserver !== 'undefined' ? new ResizeObserver(reposition) : null
 
   function watchPromptBox() {
     if (!boxResizeObserver) return
     const el = findPromptEl()
-    if (el === observedEl) return
-    if (observedEl) boxResizeObserver.unobserve(observedEl)
-    observedEl = el
-    if (el) boxResizeObserver.observe(el)
+    const next = []
+    if (el) {
+      next.push(el)
+      const shell = shellElement(el)
+      if (shell && shell !== el) next.push(shell)
+    }
+
+    const same =
+      next.length === observedEls.length && next.every((n, i) => n === observedEls[i])
+    if (same) return
+
+    for (const n of observedEls) {
+      try { boxResizeObserver.unobserve(n) } catch {}
+    }
+    observedEls = next
+    for (const n of next) boxResizeObserver.observe(n)
+    reposition()
   }
 
   watchPromptBox()
