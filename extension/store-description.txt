@@ -1,31 +1,3 @@
-# Chrome Web Store listing - Deepclario
-
-Everything the store asks for. Copy each block into the matching field.
-
----
-
-## TITLE (45 char max)
-
-Deepclario: AI Prompt Improver
-
-<!-- Must match manifest.json "name" exactly. 30 chars.
-     "AI Prompt Improver" is the phrase people actually type into the store
-     search box; "Deepclario" is not, and neither was "one key", which named
-     the mechanism instead of the payoff. Platform names stay OUT of the title
-     on purpose: the store's trademark rule restricts third-party brands in the
-     NAME field, and a rejection before launch costs weeks. They are free to use
-     in the summary and description below, which is where they earn their keep. -->
-
-## SUMMARY / SHORT DESCRIPTION (132 char max)
-
-Improve your prompt right inside ChatGPT, Claude, or Gemini. It asks what you meant before it rewrites, instead of guessing.
-
-<!-- Must match manifest.json "description" exactly. 123 of 132 chars.
-     Carries the two things the title cannot: where it works, and the one thing
-     no other prompt tool does, which is ask before rewriting. -->
-
-## DESCRIPTION
-
 Any AI can reword your prompt. None of them ask what you actually meant.
 
 So they guess. You type "help me write a song", the AI picks one reading out of three, and you spend the next four messages steering it back to the thing you had in your head the whole time. Your prompt was never the problem. The guess was.
@@ -88,24 +60,6 @@ FREE AND PRO
 • A free account gives you 10 improvements a day.
 • Pro removes the daily limit and runs your prompts through a stronger model. Improve as much as you like, with no waiting.
 
-<!-- THESE CLAIMS COME FROM CODE. Do not edit them from memory.
-     5  = ANON_FREE_TRIES in extension/content.js
-     10 = USAGE_DAILY_LIMIT in src/lib/limits.ts (rolling 24h, not calendar)
-     "stronger model" = MODELS.sharpenPro (gpt-5.4-mini) vs MODELS.sharpen
-     (gpt-5.4-nano), selected in sharpen.ts from the `pro` flag the sharpen
-     route passes. This was NOT true before 2026-07-21: the extension ran nano
-     for every tier, so the sentence would have been false advertising for the
-     one button this listing is about. If that branch is ever removed, this
-     bullet has to go with it.
-     The extension's improve path is /api/anon/sharpen, which gates on
-     USAGE_DAILY_LIMIT. REWRITE_FREE_LIMIT (5/48h) governs the WEBSITE analyze
-     route and is not what an extension user hits.
-     A draft in circulation described "2 hours of improving, then a 3 hour
-     break". That model was deleted from limits.ts on purpose: the comment there
-     calls it "clever and unexplainable". Publishing it would describe a product
-     that does not exist. -->
-
-
 PRIVACY
 
 We only see a prompt when you press Improve. Nothing runs on its own.
@@ -120,19 +74,3 @@ SUPPORT
 
 Website: https://deepclario.com
 Email: contact@deepclario.com
-
----
-
-## PERMISSION JUSTIFICATIONS (the review form asks for these)
-
-**storage**
-To remember the user's account token and their preferences on their own device. Nothing is read from the browser beyond what the user themselves saved here.
-
-**Host permission: deepclario.com**
-To send the prompt the user has explicitly asked us to improve, and to receive the improved version back. This is the only server the extension talks to.
-
-**Content scripts on chatgpt.com, claude.ai, gemini.google.com**
-To read the prompt the user is writing in the chat box when they press Improve, and to write the improved version back into that same box. We do not read the conversation, the page, or anything the user has not asked us to improve.
-
-**Remote code**
-None. All code is bundled in the package.

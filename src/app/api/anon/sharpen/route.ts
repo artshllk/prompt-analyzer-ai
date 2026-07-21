@@ -164,7 +164,15 @@ export async function POST(req: NextRequest) {
     async start(controller) {
       let full = ''
       try {
-        for await (const delta of streamSharpen({ prompt, tone, choice })) {
+        // The route has known the tier since the burst check above; it just
+        // never told the engine. That is why Pro and free improved on the
+        // same model.
+        for await (const delta of streamSharpen({
+          prompt,
+          tone,
+          choice,
+          pro: auth?.tier === 'pro',
+        })) {
           full += delta
           controller.enqueue(encoder.encode(delta))
         }

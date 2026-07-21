@@ -19,6 +19,14 @@ export const MODELS = {
    * and ~4x cheaper than mini and plenty for a single rewrite.
    */
   sharpen: 'gpt-5.4-nano',
+  /**
+   * Same fast path, for Pro. The extension's Improve button used to run nano
+   * for everybody, which made Pro identical to free at the exact moment a
+   * paying user is looking for their money's worth. Still OpenAI streaming,
+   * so first-token latency stays in the same class; mini is ~4x nano per call
+   * and Pro is unlimited, so this is the line to watch if Pro cost drifts.
+   */
+  sharpenPro: 'gpt-5.4-mini',
   /** Stage 1+2+3 merged: intent triage, interpretation forks, rubric audit. */
   diagnose: 'gpt-5.4-mini',
   /** Stage 4: rewrite for free-tier users. */

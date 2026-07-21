@@ -92,11 +92,24 @@ ${(Object.entries(RUBRICS) as Array<[IntentClass, Rubric]>)
  * `choice` is the interpretation the user picked from the inline fork
  * chips (see quick-fork.ts). When present it is ground truth: the rewrite
  * must commit to that reading rather than hedging across all of them.
+ *
+ * `pro` picks the model. Until now this path ran nano for everybody, so the
+ * extension's Improve button - the thing Pro is mostly bought for - was byte
+ * for byte the same product on both tiers, and the only difference a paying
+ * user could feel was the absence of a limit they may never have hit. A paid
+ * tier that is defined by what does not happen to you is a weak one.
+ *
+ * mini over nano rather than the Gemini rewrite model: this is the STREAMING
+ * path, where first-token latency is the whole experience, and gemini-client
+ * has no streaming entry point. Both of these are OpenAI, so the swap is the
+ * model string and nothing else. mini is ~4x nano per call against an
+ * unlimited tier, which is the real cost of this and is worth watching.
  */
 export async function* streamSharpen(params: {
   prompt: string
   tone: Tone
   choice?: string
+  pro?: boolean
 }): AsyncGenerator<string, void, unknown> {
   const user = params.choice
     ? `<prompt>\n${params.prompt.trim()}\n</prompt>\n\n` +
@@ -105,7 +118,7 @@ export async function* streamSharpen(params: {
     : params.prompt.trim()
 
   yield* streamLLM({
-    model: MODELS.sharpen,
+    model: params.pro ? MODELS.sharpenPro : MODELS.sharpen,
     systemPrompt: systemPrompt(params.tone),
     userMessage: user,
     maxOutputTokens: 700,
