@@ -1,4 +1,4 @@
-import { diagnose, toRubricAudit } from './diagnose'
+import { diagnose, toRubricAudit, type DiagnoseResponse } from './diagnose'
 import { rewrite } from './rewrite'
 import { critic } from './critic'
 import type { AnalyzeInput, AnalyzeResult } from '@/types'
@@ -24,14 +24,48 @@ import type { AnalyzeInput, AnalyzeResult } from '@/types'
 export const MAX_CLARIFY_TURNS = 2
 const DIRECT_IMPROVE_THRESHOLD = 75
 
+/**
+ * When diagnose fails we can still rewrite - worse informed, but a rewrite.
+ *
+ * Returning null here surfaces as "Something went wrong on our end", which is
+ * the failure users read as "this product is broken". Measured against the
+ * live pipeline, diagnose failed on 2 of 25 adversarial prompts, so this is
+ * not hypothetical. A neutral diagnosis costs the rewrite its findings and its
+ * intent-specific rubric; it does not cost the user their result.
+ */
+const NEUTRAL_DIAGNOSIS: DiagnoseResponse = {
+  intent: 'general',
+  score: { total: 50, confidence: 50 },
+  already_good: false,
+  audit: { dimensions: [], findings: [], failure_forecast: [] },
+}
+
 export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult | null> {
   const turnCount = input.priorAnswers.length
   const mustImprove = turnCount >= MAX_CLARIFY_TURNS
 
-  const diag = await diagnose(input)
-  if (!diag) return null
+  const diagnosed = await diagnose(input)
+  const diag = diagnosed ?? NEUTRAL_DIAGNOSIS
+  if (!diagnosed) {
+    console.error('[engine] diagnose unavailable, rewriting without a diagnosis')
+  }
 
   const audit = toRubricAudit(diag)
+
+  // Not a prompt at all: a thank-you, a greeting, a reaction. Improving these
+  // produces a prompt for replying to yourself, which is what the engine did
+  // with "thanks that was perfect" before this existed. Saying "there is
+  // nothing here" is the honest answer and costs the user nothing.
+  if (diagnosed && diag.no_task && turnCount === 0) {
+    return {
+      type: 'no_task',
+      message: diag.no_task_reason?.trim() || 'There is no prompt here to improve yet.',
+      // Not scored, not 100. The model has handed back both, and a "100/100"
+      // next to "there is nothing here" is nonsense the UI would render.
+      scoreBeforeImprovement: 0,
+      audit,
+    }
+  }
 
   // Honest path: a strong prompt gets told it's strong, not rewritten
   // into noise. Only on the first turn - if we already asked a question,
@@ -40,7 +74,7 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
     return {
       type: 'already_good',
       message: diag.already_good_notes.message,
-      tweaks: diag.already_good_notes.tweaks.slice(0, 2),
+      tweaks: (diag.already_good_notes.tweaks ?? []).slice(0, 2),
       scoreBeforeImprovement: diag.score.total,
       audit,
     }

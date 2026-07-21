@@ -176,6 +176,7 @@ Rules:
 - Work each answer in naturally, where it belongs. Do not bolt them on as a list at the end.
 - Change nothing else. Keep the rest of the prompt exactly as it is.
 - Never invent detail beyond what they told you.
+- No em dashes. Use a comma, a full stop, or a colon.
 
 Return JSON: {"prompt": "..."}`,
     userMessage: [

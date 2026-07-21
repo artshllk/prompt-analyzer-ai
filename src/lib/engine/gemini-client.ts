@@ -1,4 +1,5 @@
 import { GEMINI_CASCADE } from './models'
+import { unwrapSchemaEcho } from './openai-client'
 
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
 // Worst case is exactly MODELS.length attempts (no same-model retries).
@@ -111,12 +112,15 @@ function parseJSON<T>(raw: string): T | null {
   // but strip code fences defensively in case the model ignores it.
   const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
   try {
-    return JSON.parse(cleaned) as T
+    // Same schema-echo unwrap as the OpenAI client: both providers are given
+    // the same non-strict schemas, so both can answer in the schema's shape
+    // instead of the shape it describes. See unwrapSchemaEcho.
+    return unwrapSchemaEcho<T>(JSON.parse(cleaned))
   } catch {
     // Try to extract the first {...} block (rare model misbehavior)
     const match = cleaned.match(/\{[\s\S]*\}/)
     if (match) {
-      try { return JSON.parse(match[0]) as T } catch { /* fall through */ }
+      try { return unwrapSchemaEcho<T>(JSON.parse(match[0])) } catch { /* fall through */ }
     }
     return null
   }

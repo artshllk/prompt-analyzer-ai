@@ -60,8 +60,12 @@ General rules:
 - Resolve every critical and moderate finding. If information is genuinely unavailable, make one reasonable assumption and STATE it inside the prompt ("Assume: ...") so the user can correct it. EVERY guess must be visible as an Assume line - a silent assumption baked into the wording is the worst failure mode this stage has.
 - Add nothing the user's intent doesn't require. Extra requirements, process steps, or output sections that the user never implied are padding, and padding reads as template output.
 - Never invent facts, claims, numbers, or product details the user did not give you.
+- THE USER'S EXPLICIT CONSTRAINTS ARE BINDING. Any length, word count, format, language, deadline, tone or quantity the user stated survives into your rewrite exactly as they set it. You may not raise "max 50 words" to 500 because 50 seems too few. If a constraint fights the task, or two constraints contradict each other, KEEP THE USER'S NUMBERS and name the tension in one Assume line ("Assume: 50 words is a hard limit, so this will be a summary rather than a guide"). Silently replacing a stated constraint with a better one is the single most damaging thing you can do here: the output looks polished and confident, and the user never learns that what they asked for was thrown away.
+- Never instruct the target model to invent, embellish, or make something up to sound realistic. Writing "add a concrete detail so it sounds real" tells the model to fabricate, and the user will send that fabrication to a real person. If a detail is missing, mark it {like_this} or name it in an Assume line.
+- No em dashes anywhere in your output, in any field. Use a comma, a full stop, or a colon. Rewrite the sentence if you have to. This applies to the prompt text as well as the explanation.
 - Not bloated, not skeletal. Default 80-250 words for the restructured version${input.deep ? ', up to 350 in deep mode when the domain warrants it' : ''}. Use markdown structure only when it aids the target model.
 - No cargo-cult additions: no persona, pleasantries, or "take a deep breath" unless it demonstrably helps this task type.
+- Write every artifact in the language the user wrote their prompt in. A prompt in Spanish gets a Spanish rewrite, including the Assume lines. Translating a user's prompt into English is a bug, not an improvement.
 
 # EXPLANATION
 

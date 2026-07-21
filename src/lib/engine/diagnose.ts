@@ -1,4 +1,4 @@
-import { callLLM } from './openai-client'
+import { callLLMDetailed, isSchemaFragment } from './openai-client'
 import { MODELS } from './models'
 import { DIAGNOSE_SCHEMA } from './schemas'
 import { rubricDigest } from './rubrics'
@@ -23,6 +23,9 @@ export interface DiagnoseResponse {
   score: { total: number; confidence: number }
   already_good: boolean
   already_good_notes?: { message: string; tweaks: string[] }
+  /** The input is not a prompt at all (a thank-you, a greeting, a reaction). */
+  no_task?: boolean
+  no_task_reason?: string
   forks?: ForkOption[]
   question?: { text: string; targets_gap: string }
   audit: {
@@ -57,6 +60,7 @@ Grade the prompt against the dimensions for its intent class (rubric reference b
 # 4. INTERPRETATION FORKS
 Silently imagine completing this prompt. If materially different plausible readings exist, list 2-3 forks. Each fork: a short label plus one sentence describing what the OUTPUT would look like under that reading. Forks must be readings a reasonable person could intend - not strawmen, not minor stylistic variants.
 - Label and summary must be plain, everyday words - something a smart reader with a medium English level understands on first read, no dictionary needed. Ban business/marketing jargon entirely, in labels AND summaries: no "B2B", "self-serve", "funnel", "positioning", "lead gen", "conversion", "persona", "ICP", or similar shorthand. Describe who reads it and what they do next in plain terms instead ("for a business buyer deciding whether to talk to sales" not "B2B").
+- LANGUAGE: write the question, every fork label, and every fork summary in the language the user wrote their prompt in. If the prompt mixes languages, use the dominant one. A German question above English answer buttons is a broken screen, not a translation choice.
 - Forks diverge MATERIALLY only if the rewrite itself would be substantively different under each reading.
 - A one-line prompt that names only a topic or artifact ("write a blog post about X", "marketing copy for my app", "analyze my data") almost ALWAYS has diverging forks - who it's for and what job it does are undecided, and each choice produces a different rewrite. Do not paper over that with assumptions when a single click would resolve it.
 - If the readings converge - the user gave enough that any reasonable reading lands in the same place - return no forks and no question.
@@ -73,7 +77,31 @@ How to write the question - this is user-facing copy and it must feel human:
 - Plain, everyday English: short words, no business or technical jargon, no em dashes, no semicolons. A reader with medium English must get it on first read.
 - targets_gap: one short plain sentence on what the answer decides. Same language rules.
 
-# 6. ALREADY GOOD
+# 6. NO TASK
+Some input is not a prompt at all. Set no_task = true ONLY when BOTH are true:
+  (a) there is no request an AI could act on, AND
+  (b) there is no substantive material to act on either.
+
+Both conditions matter. Something with no request but real content is a user who pasted their material and wants something done with it - that is a question to ask, not a door to close.
+
+no_task = true:
+- reactions and acknowledgments ("thanks that was perfect", "ok great", "lol")
+- greetings and sign-offs ("hi", "morning", "see you tomorrow")
+- a remark to a person that carries nothing to work on ("that's so annoying")
+
+Then write no_task_reason: one short, plain, friendly sentence saying there is nothing to improve here. No scolding, no explanation of what a prompt is.
+
+no_task = FALSE for all of these, which get forks and a question in the normal way:
+- "marketing" - names a subject, wants something made
+- "shorter" / "now do the same for the intro" - real instructions that depend on an earlier turn
+- "do this for the attached csv too" - a real instruction about a file
+- a paste of notes, numbers, a transcript or a draft with no instruction attached - there is plenty to act on, so ask what they want made from it
+
+Getting this backwards is worse than not having the check at all: refusing to improve a real prompt is the one failure a user will not forgive. When in doubt, set no_task = false and ask.
+
+When no_task is true, set score.total to 0. There is no prompt to score.
+
+# 7. ALREADY GOOD
 If the prompt is genuinely strong - clear goal, sufficient context, bounded format, checkable success - set already_good = true and say specifically what it does right, plus 1-2 marginal tweaks. Do not invent problems to seem useful. An honest "this is already good" is a feature.
 already_good requires score.total >= 80 and no critical or moderate findings.
 
@@ -84,7 +112,7 @@ already_good requires score.total >= 80 and no critical or moderate findings.
 # RUBRIC REFERENCE
 {{RUBRICS}}
 
-Return JSON matching the schema. Include already_good_notes only when already_good is true. Include question only under the rule in section 5.`
+Return JSON matching the schema. Return the DATA the schema describes - never echo the schema itself, and never return objects containing "type" and "properties" keys. Include already_good_notes only when already_good is true. Include no_task_reason only when no_task is true. Include question only under the rule in section 5.`
 
 function buildUserMessage(input: AnalyzeInput): string {
   const lines: string[] = ['<original_prompt>', input.prompt.trim(), '</original_prompt>']
@@ -108,20 +136,68 @@ export async function diagnose(input: AnalyzeInput): Promise<DiagnoseResponse | 
     responseSchema: DIAGNOSE_SCHEMA as unknown as Record<string, unknown>,
   }
 
-  // Diagnose is the pipeline's front door - if it fails, the user sees an
-  // error. Unlike rewrite/critic it has no cross-provider fallback, so a
-  // single retry absorbs the occasional transient failure.
-  let result = await callLLM<DiagnoseResponse>(request)
-  if (!result || !result.score || !result.audit) {
-    console.error(`[engine.diagnose] first attempt ${!result ? 'llm_failed' : 'missing_score_or_audit'}, retrying once`)
-    result = await callLLM<DiagnoseResponse>(request)
+  // Diagnose is the pipeline's front door, so a failure here is the failure
+  // the user sees. It has no cross-provider fallback, so one retry absorbs a
+  // transient fault - but ONLY a fast one.
+  //
+  // Retrying a timeout is the trap: the first call already spent the whole
+  // budget, so the retry doubles the user's wait for another coin flip and
+  // then reports the same generic error. Measured live, diagnose runs 2-6s;
+  // a call that hits the ceiling is pathological, not unlucky, so we stop and
+  // let the orchestrator degrade instead of making the user wait twice.
+  const first = await callLLMDetailed<DiagnoseResponse>(request)
+  let result = usable(first.data) ? first.data : null
+
+  if (!result && first.failure !== 'timeout') {
+    console.error(
+      `[engine.diagnose] first attempt ${first.failure ?? 'missing_score_or_audit'} in ${first.ms}ms, retrying once`
+    )
+    const second = await callLLMDetailed<DiagnoseResponse>(request)
+    result = usable(second.data) ? second.data : null
+    if (!result) {
+      console.error(`[engine.diagnose] ${second.failure ?? 'missing_score_or_audit'} after retry`)
+    }
+  } else if (!result) {
+    console.error(`[engine.diagnose] timeout after ${first.ms}ms, not retrying`)
   }
 
-  if (!result || !result.score || !result.audit) {
-    console.error(`[engine.diagnose] ${!result ? 'llm_failed' : 'missing_score_or_audit'} after retry`)
-    return null
+  return result ? sanitize(result) : null
+}
+
+function usable(d: DiagnoseResponse | null): d is DiagnoseResponse {
+  return !!d && !!d.score && !!d.audit && Array.isArray(d.audit.findings)
+}
+
+/**
+ * A schema echo can survive on a single field even when the envelope was fine,
+ * leaving `{type:'object', properties:{...}}` where a string or an array
+ * belongs. index.ts calls `.tweaks.slice()` on one of these, which throws and
+ * turns a cosmetic model slip into a 500. Drop anything that is not data.
+ */
+function sanitize(d: DiagnoseResponse): DiagnoseResponse {
+  const notes = d.already_good_notes
+  const notesOk =
+    notes &&
+    !isSchemaFragment(notes) &&
+    typeof notes.message === 'string' &&
+    Array.isArray(notes.tweaks)
+
+  return {
+    ...d,
+    already_good: d.already_good === true && !!notesOk,
+    already_good_notes: notesOk ? notes : undefined,
+    forks: Array.isArray(d.forks) ? d.forks.filter(f => f && typeof f.label === 'string') : undefined,
+    question:
+      d.question && typeof d.question.text === 'string' && !isSchemaFragment(d.question)
+        ? d.question
+        : undefined,
+    audit: {
+      ...d.audit,
+      dimensions: Array.isArray(d.audit.dimensions) ? d.audit.dimensions : [],
+      findings: Array.isArray(d.audit.findings) ? d.audit.findings : [],
+      failure_forecast: Array.isArray(d.audit.failure_forecast) ? d.audit.failure_forecast : [],
+    },
   }
-  return result
 }
 
 /** Map the raw diagnose audit into the API/UI shape. */

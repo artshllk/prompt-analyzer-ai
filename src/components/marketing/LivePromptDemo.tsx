@@ -50,6 +50,11 @@ type AnalyzeResponse =
       tweaks: string[]
       scoreBeforeImprovement: number
     }
+  | {
+      type: 'no_task'
+      message: string
+      scoreBeforeImprovement: number
+    }
 
 type State =
   | { kind: 'idle' }
@@ -180,6 +185,16 @@ export function LivePromptDemo({ defaultPrompt = '', compact = false }: LiveProm
           gap: data.targetsGap,
           score: data.scoreBeforeImprovement,
           answer: '',
+        })
+      } else if (data.type === 'no_task') {
+        // Not a prompt at all (a greeting, a thank-you). Say so plainly and
+        // hand their text back untouched, rather than inventing a task.
+        setState({
+          kind: 'done',
+          before: data.scoreBeforeImprovement,
+          after: data.scoreBeforeImprovement,
+          rewrite: currentPrompt,
+          explanation: data.message,
         })
       } else if (data.type === 'already_good') {
         // Rare in the demo (sample prompts are deliberately rough), but a

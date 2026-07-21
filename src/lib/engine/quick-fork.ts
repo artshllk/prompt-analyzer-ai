@@ -54,7 +54,8 @@ Ambiguous means: two or three reasonable people would read this prompt and want 
 If ambiguous, produce:
 - question: ONE short, natural question a helpful colleague would ask. Under 10 words if you can. Write it fresh for THIS prompt. Never use a stock opener like "I can read this a few ways". Do NOT list the options inside the question - they appear as buttons.
 - options: 2-3 concrete readings. Each has a short plain label (2-5 words) and a one-line summary of what the user would get.
-- LANGUAGE: plain, everyday English a non-native speaker gets on first read. Ban business and technical jargon outright, in labels AND summaries: no "B2B", "SaaS", "self-serve", "funnel", "conversion", "positioning", "persona", "ICP", "developer experience". Say who reads it and what they do, in ordinary words ("for business teams who want to save time", not "B2B productivity").
+- LANGUAGE: write the question, every label, and every summary in the language the user wrote their prompt in. If they mixed languages, use the dominant one. A question in German above English buttons is a broken screen. Within that language, keep it plain and everyday, the kind a non-native speaker gets on first read. Ban business and technical jargon outright, in labels AND summaries: no "B2B", "SaaS", "self-serve", "funnel", "conversion", "positioning", "persona", "ICP", "developer experience". Say who reads it and what they do, in ordinary words ("for business teams who want to save time", not "B2B productivity").
+- No em dashes anywhere.
 
 If NOT ambiguous (the intent is clear enough to just rewrite it well), set ambiguous=false, question="", options=[].
 

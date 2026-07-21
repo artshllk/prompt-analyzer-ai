@@ -116,6 +116,17 @@ export type AnalyzeResult =
       scoreBeforeImprovement: number
       audit?: RubricAudit
     }
+  | {
+      /**
+       * The input contains no request at all - a thank-you, a greeting, a
+       * reaction. Distinct from a weak prompt: there is nothing to improve,
+       * so we say so instead of inventing a task. Never charged.
+       */
+      type: 'no_task'
+      message: string
+      scoreBeforeImprovement: number
+      audit?: RubricAudit
+    }
 
 export interface VerifyResult {
   originalOutput: string

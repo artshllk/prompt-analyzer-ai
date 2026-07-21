@@ -134,14 +134,19 @@ export async function POST(req: NextRequest) {
     return withCors(NextResponse.json({ error: 'ai_unavailable' }, { status: 503 }))
   }
 
-  // The extension predates the already_good result type and switches on
-  // `type`, so give it the same information in the improved shape it
-  // understands. Web clients get the honest type.
-  if (result.type === 'already_good' && source === 'extension') {
+  // The extension predates the already_good and no_task result types and
+  // switches on `type`, so give it the same information in the improved shape
+  // it understands. Web clients get the honest type. Both cases leave the
+  // user's prompt exactly as they wrote it.
+  if ((result.type === 'already_good' || result.type === 'no_task') && source === 'extension') {
+    const explanation =
+      result.type === 'already_good'
+        ? `${result.message} ${result.tweaks.join(' ')}`.trim()
+        : result.message
     result = {
       type: 'improved',
       improvedPrompt: prompt.trim(),
-      explanation: `${result.message} ${result.tweaks.join(' ')}`.trim(),
+      explanation,
       improvementTags: [],
       clarityScoreAfter: result.scoreBeforeImprovement,
       scoreBeforeImprovement: result.scoreBeforeImprovement,
@@ -152,8 +157,10 @@ export async function POST(req: NextRequest) {
   // Record usage for signed-in users, fire-and-forget. Only on the first
   // turn of a session - clarification rounds belong to the same analysis.
   // An already-good verdict is free: no rewrite was produced, and charging
-  // for "your prompt is fine" would teach users not to trust it.
-  if (auth && priorAnswers.length === 0 && result.type !== 'already_good') {
+  // for "your prompt is fine" would teach users not to trust it. Same for
+  // no_task, where there was nothing to rewrite in the first place.
+  const producedNothing = result.type === 'already_good' || result.type === 'no_task'
+  if (auth && priorAnswers.length === 0 && !producedNothing) {
     const supabase = await createServiceClient()
     supabase
       .from('usage_events')

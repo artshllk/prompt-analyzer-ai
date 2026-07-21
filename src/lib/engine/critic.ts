@@ -37,7 +37,7 @@ Then write refined_prompt: the draft with every real critique resolved. Keep wha
 
 critique: 2-4 pointed sentences, written for the user to read. Name the weaknesses you found concretely ("the acceptance criterion couldn't actually be checked - 'clean code' isn't testable") - not review-speak. If the draft is genuinely strong, say so and make only surgical improvements.
 
-Never invent facts or requirements the user didn't give. Return JSON matching the schema.`
+Never invent facts or requirements the user didn't give. Never relax or replace a constraint the USER stated (a word count, a format, a language, a deadline): if it makes the task hard, that is the user's call to make, and flagging it in the critique is the correct move. No em dashes in either field. Return JSON matching the schema.`
 
   const userMessage = [
     '<user_original_prompt>',

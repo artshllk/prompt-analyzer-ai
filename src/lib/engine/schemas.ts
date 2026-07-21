@@ -40,6 +40,15 @@ export const DIAGNOSE_SCHEMA = {
       },
       required: ['message', 'tweaks'],
     },
+    no_task: {
+      type: 'boolean',
+      description:
+        'true only when the input contains no request an AI could act on (a thank-you, a greeting, a reaction). Thin-but-real instructions are NOT no_task',
+    },
+    no_task_reason: {
+      type: 'string',
+      description: 'One short friendly sentence saying there is nothing here to improve',
+    },
     forks: {
       type: 'array',
       description: '2-3 genuinely different plausible readings of the prompt, if any exist',
