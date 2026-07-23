@@ -8,6 +8,8 @@ const API_BASE = 'https://deepclario.com'
 const SHARPEN_URL = API_BASE + '/api/anon/sharpen'
 const FORK_URL = API_BASE + '/api/anon/fork'
 const EXPLAIN_URL = API_BASE + '/api/anon/explain'
+const IMAGE_PLAN_URL = API_BASE + '/api/anon/image-plan'
+const IMAGE_URL = API_BASE + '/api/anon/image-improve'
 
 // Sign-in handoff from the website.
 //
@@ -110,6 +112,85 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     .catch(() => sendResponse({ ok: false }))
 
   return true
+})
+
+// Image feature, ask stage. Mirrors DEEPCLARIO_FORK: a single JSON call that
+// returns the plan (detected style, the pivotal question, refinements, or a
+// decline). Costs no quota. Fired only when the user clicks the image action.
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type !== 'DEEPCLARIO_IMAGE_PLAN') return
+
+  const headers = { 'Content-Type': 'application/json' }
+  if (msg.token) headers['Authorization'] = 'Bearer ' + msg.token
+
+  fetch(IMAGE_PLAN_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ prompt: msg.prompt }),
+  })
+    .then(res => (res.ok ? res.json() : null))
+    .then(data => sendResponse({ ok: !!data, data }))
+    .catch(() => sendResponse({ ok: false }))
+
+  return true
+})
+
+// Image feature, rewrite stage. Same Port/streaming contract as
+// DEEPCLARIO_SHARPEN - deltas pipe into the box live, headroom rides on
+// X-Improvements-Left, errors map the same status codes.
+chrome.runtime.onConnect.addListener(port => {
+  if (port.name !== 'DEEPCLARIO_IMAGE') return
+
+  port.onMessage.addListener(async msg => {
+    if (msg?.type !== 'START') return
+
+    const headers = { 'Content-Type': 'application/json' }
+    if (msg.token) headers['Authorization'] = 'Bearer ' + msg.token
+
+    try {
+      const res = await fetch(IMAGE_URL, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          prompt: msg.prompt,
+          styleFamily: msg.styleFamily || undefined,
+          answers: msg.answers || undefined,
+          source: 'extension',
+        }),
+      })
+
+      if (!res.ok) {
+        let error = 'server_error'
+        let resetAt = null
+        if (res.status === 429) error = 'rate_limited'
+        else if (res.status === 402) {
+          const body = await res.json().catch(() => ({}))
+          error = body.error === 'pro_required' ? 'pro_required' : 'quota'
+          resetAt = body.resetAt || null
+        } else if (res.status === 400) {
+          const body = await res.json().catch(() => ({}))
+          if (body.error) error = body.error
+        }
+        port.postMessage({ type: 'ERROR', error, status: res.status, resetAt })
+        return
+      }
+
+      const leftHeader = res.headers.get('X-Improvements-Left')
+      port.postMessage({ type: 'META', left: leftHeader === null ? null : parseInt(leftHeader, 10) })
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      for (;;) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const chunk = decoder.decode(value, { stream: true })
+        if (chunk) port.postMessage({ type: 'DELTA', text: chunk })
+      }
+      port.postMessage({ type: 'DONE' })
+    } catch {
+      port.postMessage({ type: 'ERROR', error: 'network' })
+    }
+  })
 })
 
 // Fast-path streaming sharpen. The content script owns a Port; we pipe

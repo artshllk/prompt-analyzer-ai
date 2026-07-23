@@ -3,7 +3,8 @@
 ## Read this first: the store is behind the repo
 
 **Live on the Chrome Web Store: 0.7.0** (published 2026-07-13, commit `c7b093a`).
-**Next submission: 0.9.0.**
+**Next submission: 0.10.0** (the accumulated fixes from 0.9.0 plus the new image
+feature; ship them together or split by cherry-picking the image commit out).
 
 Five versions were bumped locally and never published: 0.7.1, 0.8.0, 0.8.1,
 0.8.2, 0.8.3. Nobody has ever run them. Every user on the store is sitting on
@@ -18,6 +19,44 @@ browser (see the release notes below).
 
 The internal builds are recorded under the 0.9.0 entry so the trail from a
 commit to a shipped version stays intact.
+
+---
+
+## 0.10.0 (unreleased) — Image prompt improver
+
+A new, separate feature: turn a rough image idea into a strong, model-ready
+image prompt, right in the box, on the sites that generate images.
+
+- One adaptive button, never two. On ChatGPT and Gemini (not Claude, which
+  cannot generate images), when what you type reads like an image request the
+  single Improve button becomes **🖼 Improve image** and runs the image flow;
+  otherwise it stays plain Improve. No mode to pick, and the label is how the
+  feature announces itself. A wrong guess has an "improve as text instead"
+  escape on the first step, and the server falls back to text if the request
+  turns out not to be an image.
+- It asks the one question that changes everything first — the look: realistic
+  photo, cinematic, anime, 3D, illustration, product, logo, or concept art —
+  then writes the prompt in the vocabulary of that medium. A realistic request
+  gets lens and lighting language; an anime request gets linework and cel
+  shading; a logo gets flat vector and negative space. Never the same generic
+  soup.
+- After the first result, it offers up to two refinements (mood, framing,
+  subject detail), walked one at a time like the text detail questions.
+- Output is natural language for ChatGPT (GPT Image) and Gemini (Imagen), never
+  Midjourney parameters. Paste-and-go.
+- It declines what it should: a photoreal likeness of a real named person,
+  someone else's trademarked character or brand logo, and explicit content —
+  with a friendly steer, not a wall. Your OWN logo brief is welcomed.
+
+Engine, routes and the extension flow are built as a parallel path to the text
+feature, reusing the shared UI (the chip, the inline question chooser, compare,
+undo, the edit guard) without touching the text state machine.
+
+**Not browser-verified.** The engine (`src/lib/engine/image/`) and both API
+routes are verified against live models via `src/lib/engine/image/probe.ts`. The
+extension JS is syntax-checked only. Load unpacked and run one image improve on
+ChatGPT and one on Gemini, and confirm the image action never appears on Claude,
+before submitting.
 
 ---
 

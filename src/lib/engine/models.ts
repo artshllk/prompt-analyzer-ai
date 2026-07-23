@@ -29,6 +29,13 @@ export const MODELS = {
   sharpenPro: 'gpt-5.4-mini',
   /** Stage 1+2+3 merged: intent triage, interpretation forks, rubric audit. */
   diagnose: 'gpt-5.4-mini',
+  /**
+   * Image feature, plan stage: detect the style family, decide the one
+   * pivotal question, and screen for disallowed requests. Mini, not nano, for
+   * the same reason quick-fork is mini - judging what to ask needs reasoning,
+   * and nano under-asks. Costs no quota (a decision, like fork).
+   */
+  imagePlan: 'gpt-5.4-mini',
   /** Stage 4: rewrite for free-tier users. */
   rewriteFree: 'gpt-5.4-mini',
   /** Stage 4: rewrite for Pro users (Gemini, with OpenAI fallback). */

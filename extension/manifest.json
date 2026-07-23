@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Deepclario: AI Prompt Improver",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Improve your prompt right inside ChatGPT, Claude, or Gemini. It asks what you meant before it rewrites, instead of guessing.",
   "icons": {
     "16": "icons/icon16.png",

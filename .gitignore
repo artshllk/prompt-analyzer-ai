@@ -46,3 +46,6 @@ next-env.d.ts
 /deepclario-extension.zip
 # versioned local packages built for Chrome Web Store upload
 /deepclario-extension-*.zip
+
+# Local extension dev build (points at localhost, never shipped)
+extension-dev/

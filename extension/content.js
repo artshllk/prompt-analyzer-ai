@@ -45,18 +45,24 @@
    *   shell    - the rounded box the user perceives as "the input", which is a
    *              different element from the text inside it. See composerRect().
    */
+  //   images   - does this site generate images? Drives the image-prompt
+  //              affordance. ChatGPT (GPT Image) and Gemini (Imagen) do;
+  //              Claude does not, so the image action never shows there.
   const PLATFORM_SITES = [
     ['chatgpt.com', {
       editable: ['#prompt-textarea', 'form div.ProseMirror[contenteditable="true"]'],
       shell: ['form[data-type="unified-composer"]', 'main form'],
+      images: true,
     }],
     ['chat.openai.com', {
       editable: ['#prompt-textarea', 'form div.ProseMirror[contenteditable="true"]'],
       shell: ['form[data-type="unified-composer"]', 'main form'],
+      images: true,
     }],
     ['claude.ai', {
       editable: ['div.ProseMirror[contenteditable="true"]'],
       shell: ['div[data-testid="chat-input-container"]', 'fieldset', 'form'],
+      images: false,
     }],
     ['gemini.google.com', {
       editable: [
@@ -65,6 +71,7 @@
         'div.ql-editor[contenteditable="true"]',
       ],
       shell: ['input-container', 'div.input-area-container'],
+      images: true,
     }],
   ]
 
@@ -623,13 +630,34 @@
     return true
   }
 
+  // ONE adaptive button, never two.
+  //
+  // Showing "Improve" and "Image" side by side made the user classify their own
+  // prompt and predict what each did - the app's job, not theirs. Instead the
+  // single primary button follows what was typed: plain "Improve" for text, and
+  // "Improve image" the moment you are on an image-capable site and the text
+  // reads like an image request. The label change is also how the feature is
+  // discovered - it announces itself exactly when it is relevant. If we read it
+  // wrong, the pivotal "pick a look" step offers "improve as text instead", and
+  // the server's own is-this-an-image check falls back to text on a bad guess.
+  const IMAGE_IDLE_HTML =
+    `<span class="mark">🖼</span>Improve image<span class="kbd">${HOTKEY_LABEL}</span>`
+
+  function imageModeOffered() {
+    return !!(SITE_CFG && SITE_CFG.images) && looksLikeImagePrompt(readPrompt())
+  }
+
   function showIdleChip() {
     if (state.phase === 'working') return
+    if (imageState.active) return
     if (!positionChip()) return
-    if (!chipChanged('idle')) return
+
+    const imageMode = imageModeOffered()
+    if (!chipChanged(imageMode ? 'idle-image' : 'idle')) return
+
     chip.className = 'chip show'
-    chip.innerHTML = IDLE_HTML
-    chip.onclick = onSharpen
+    chip.innerHTML = imageMode ? IMAGE_IDLE_HTML : IDLE_HTML
+    chip.onclick = imageMode ? onImproveImage : onSharpen
     // Re-anchor AFTER the content changed. positionChip() above measured the
     // chip we are replacing, and these states are not the same size.
     reposition()
@@ -1629,7 +1657,14 @@
         (e.code === 'KeyI' || e.key === 'i' || e.key === 'I')
 
       if (isImproveKey) {
-        if (readPrompt()) { e.preventDefault(); onSharpen() }
+        // The hotkey follows the same adaptive rule as the chip: on an image
+        // request on an image-capable site it runs the image flow, otherwise
+        // the text improve. One key, the right path.
+        if (readPrompt()) {
+          e.preventDefault()
+          if (imageModeOffered()) onImproveImage()
+          else onSharpen()
+        }
         return
       }
       // If the user is typing INTO one of our own fields ("or type your own",
@@ -1642,6 +1677,29 @@
         root.activeElement &&
         root.activeElement.tagName === 'INPUT'
       if (typingInOurUI) return
+
+      // Image flow keyboard support, kept separate from the text branches so
+      // the two never interfere. Same keys, own state.
+      if (imageState.active) {
+        if (imageState.phase === 'asking') {
+          if (e.key === 'Escape') { e.preventDefault(); hideForks(); streamImageInto(); return }
+          const opts = forksEl.querySelectorAll('.fork')
+          const n = parseInt(e.key, 10)
+          if (n >= 1 && n <= opts.length) { e.preventDefault(); opts[n - 1].click(); return }
+        }
+        if (imageState.phase === 'filling') {
+          if (e.key === 'Escape') { e.preventDefault(); hideForks(); applyImageRefinements(); return }
+          const opts = forksEl.querySelectorAll('.fork')
+          const n = parseInt(e.key, 10)
+          if (n >= 1 && n <= opts.length) { e.preventDefault(); opts[n - 1].click(); return }
+        }
+        if (e.key === 'Escape' && boxHoldsImageOutput()) { e.preventDefault(); undoImage(); return }
+        if (inBox && e.key === 'Enter' && !e.shiftKey && imageState.phase !== 'idle') {
+          hideForks()
+          for (const ms of [60, 200, 500, 1000]) setTimeout(syncChip, ms)
+        }
+        return
+      }
 
       // While a question is up: 1/2/3 picks an answer, Esc skips it.
       // Keeps the whole flow on the keyboard - never forces a reach for
@@ -1703,6 +1761,12 @@
    * navigation, so one-time binds aren't enough).
    */
   function syncChip() {
+    // The image flow owns the chip while it is active. This one line is the
+    // whole seam between the two features: the text state machine below never
+    // runs while an image improve is in progress, and vice versa. See the
+    // "Image prompt improver" block for the parallel logic.
+    if (imageState.active) { syncImageChip(); return }
+
     if (state.phase === 'working') return
 
     const el = findPromptEl()
@@ -1849,6 +1913,407 @@
 
   watchPromptBox()
   setInterval(watchPromptBox, 1200)
+
+  /* ---------- Image prompt improver (a separate feature) ---------- */
+  //
+  // A parallel path to the text flow, NOT a branch inside it. It reuses the
+  // shared primitives - the one chip, renderChoices, writePrompt/readPrompt,
+  // the selfWriting/userEdited edit guard, anchorTo, toast, and the compare
+  // panel - but owns its own small state machine. syncChip() hands control
+  // here whenever imageState.active, so the text state machine and this one
+  // never run at the same time.
+  //
+  // Shape mirrors the text flow deliberately: ask the ONE pivotal question
+  // (style family) -> stream the image prompt into the box -> offer up to two
+  // refinements after, walked one at a time like the text "gaps". The finished
+  // prompt is natural language for ChatGPT/Gemini; the user sends it and the
+  // site generates the image. We never call an image API.
+
+  const imageState = {
+    active: false,
+    // planning | asking | working | done | filling
+    phase: 'idle',
+    before: '',
+    after: '',
+    style: null,
+    styleLabel: '',
+    refinements: [],
+    refIndex: 0,
+    answers: [],
+    port: null,
+  }
+
+  // Cheap client heuristic - it only decides whether to OFFER the image action,
+  // so a miss just hides a button (the user still has normal Improve) and a
+  // false positive costs a stray button, never a wrong rewrite. The plan stage
+  // on the server makes the real call and can still say "not an image".
+  //
+  // Three parts, tuned on examples for zero false positives on plain text:
+  //  - WORDS: nouns/styles that almost always mean an image (photo, logo, anime)
+  //  - DRAW:  "draw/sketch/paint a ..." - these verbs mean an image; "draw up a
+  //           contract" is excluded because it is "draw up", not "draw a"
+  //  - MAKE:  generic verbs (generate/create/design) only count with a visual
+  //           object noun, so "create a plan" and "design a system" do not fire
+  const IMAGE_WORDS =
+    /\b(image|photo|photorealistic|photograph|picture|pic|logo|icon|drawing|illustration|wallpaper|poster|sticker|portrait|artwork|painting|anime|cartoon|cgi)\b|\bconcept art\b|\b3d\b|\bproduct shot\b|\bshot of\b/i
+  const IMAGE_DRAW = /\b(draw|sketch|paint)\s+(a|an|the|me|this)\b/i
+  const IMAGE_MAKE =
+    /\b(generate|create|make|design|render)\s+(a|an|the)\b[^.?!]{0,30}\b(image|photo|picture|logo|icon|art|scene|character|poster|wallpaper|banner|avatar|portrait|landscape)\b/i
+  // A text task that merely MENTIONS an image word ("write a blog post about our
+  // logo", "fix the logo rendering in my css", "write a caption for this photo")
+  // is not an image request. This guard matters far more now that the button is
+  // adaptive - a false positive would hijack the primary Improve action, not
+  // just add a stray pill.
+  const TEXT_TASK =
+    /\b(write|writing|draft|compose|rewrite|blog|essay|article|email|newsletter|letter|summary|summarize|summarise|explain|translate|code|coding|function|script|debug|refactor|fix|plan|outline|report|paragraph|caption|resume|cv)\b/i
+
+  function looksLikeImagePrompt(text) {
+    const t = (text || '').trim()
+    if (!t) return false
+    if (/^\/imagine\b/i.test(t)) return true
+    if (TEXT_TASK.test(t)) return false
+    return IMAGE_WORDS.test(t) || IMAGE_DRAW.test(t) || IMAGE_MAKE.test(t)
+  }
+
+  function imageReset() {
+    if (imageState.port) { try { imageState.port.disconnect() } catch {} }
+    imageState.active = false
+    imageState.phase = 'idle'
+    imageState.before = ''
+    imageState.after = ''
+    imageState.style = null
+    imageState.styleLabel = ''
+    imageState.refinements = []
+    imageState.refIndex = 0
+    imageState.answers = []
+    imageState.port = null
+    state.userEdited = false
+    hideForks()
+    showIdleChip()
+  }
+
+  /** True while OUR image prompt is sitting unedited in the box. */
+  function boxHoldsImageOutput() {
+    if (imageState.phase !== 'done' && imageState.phase !== 'filling') return false
+    return !!imageState.after && !state.userEdited
+  }
+
+  async function onImproveImage() {
+    if (imageState.active || state.phase === 'working') return
+
+    await loadAuth()
+    if (authState.tier === 'anon' && anonCount >= ANON_FREE_TRIES) {
+      toast(`Sign in free for ${DAILY_LIMIT} improvements a day.`, {
+        action: { label: 'Sign in', onClick: openConnect },
+      })
+      return
+    }
+
+    const prompt = readPrompt()
+    if (!prompt || prompt.length < 3) { toast('Type an image idea first'); return }
+    if (prompt.length > MAX_PROMPT_CHARS) { toast(tooLongMessage(prompt.length)); return }
+
+    imageState.active = true
+    imageState.phase = 'planning'
+    imageState.before = prompt
+    imageState.style = null
+    imageState.styleLabel = ''
+    imageState.refinements = []
+    imageState.answers = []
+    state.userEdited = false
+    hideForks()
+    showImageWorking('Reading your idea')
+
+    chrome.runtime.sendMessage(
+      { type: 'DEEPCLARIO_IMAGE_PLAN', prompt, token: authState.token },
+      resp => {
+        // The idea changed under us, or we were reset - abandon quietly.
+        if (!imageState.active || imageState.before !== prompt || imageState.phase !== 'planning') return
+
+        const plan = resp && resp.ok ? resp.data : null
+
+        // Server declined (real-person likeness, third-party IP, explicit). Say
+        // it once, plainly, and hand the box back untouched.
+        if (plan && plan.decline) {
+          toast(plan.decline, { action: { label: 'OK', onClick: () => {} } })
+          imageReset()
+          return
+        }
+        // Not actually an image request - fall back to the normal text improve.
+        if (plan && plan.isImage === false) {
+          imageState.active = false
+          imageState.phase = 'idle'
+          onSharpen()
+          return
+        }
+
+        imageState.style = plan && plan.styleFamily ? plan.styleFamily : null
+        imageState.refinements = plan && Array.isArray(plan.refinements) ? plan.refinements : []
+
+        const pivotal = plan && plan.pivotal
+        if (pivotal && pivotal.question && Array.isArray(pivotal.options) && pivotal.options.length >= 2) {
+          imageState.phase = 'asking'
+          showImageAsking()
+          showImageForks(pivotal)
+          return
+        }
+        // Look already known: straight to the rewrite.
+        streamImageInto()
+      }
+    )
+  }
+
+  function showImageForks(pivotal) {
+    renderChoices({
+      question: pivotal.question,
+      options: pivotal.options,
+      raw: true, // we need the whole option (its .value = family key)
+      onPick: chooseImageStyle,
+      onType: text => chooseImageStyle({ label: text, value: null }),
+      typeable: true,
+      onSkip: () => { hideForks(); streamImageInto() },
+    })
+  }
+
+  /** They picked a look. Commit to it and rewrite once. */
+  function chooseImageStyle(option) {
+    hideForks()
+    imageState.style = option && option.value ? option.value : imageState.style
+    imageState.styleLabel = option && option.label ? option.label : imageState.styleLabel
+    streamImageInto()
+  }
+
+  function streamImageInto() {
+    imageState.phase = 'working'
+    showImageWorking('Writing your image prompt')
+
+    if (authState.tier === 'anon') bumpAnon()
+
+    const port = chrome.runtime.connect({ name: 'DEEPCLARIO_IMAGE' })
+    imageState.port = port
+    let acc = ''
+    let firstDelta = true
+
+    port.onMessage.addListener(msg => {
+      if (msg.type === 'META') {
+        state.left = typeof msg.left === 'number' ? msg.left : null
+      } else if (msg.type === 'DELTA') {
+        if (firstDelta) { acc = ''; firstDelta = false }
+        acc += msg.text
+        writePrompt(acc)
+      } else if (msg.type === 'DONE') {
+        finishImage(acc)
+        port.disconnect()
+      } else if (msg.type === 'ERROR') {
+        onImageError(msg)
+        port.disconnect()
+      }
+    })
+
+    port.postMessage({
+      type: 'START',
+      prompt: imageState.before,
+      styleFamily: imageState.style || undefined,
+      answers: imageState.answers.length ? imageState.answers : undefined,
+      token: authState.token,
+    })
+  }
+
+  function finishImage(result) {
+    const clean = (result || '').trim()
+    if (!clean) {
+      writePrompt(imageState.before)
+      toast('Could not build that image prompt. Try again.')
+      imageReset()
+      return
+    }
+    writePrompt(clean)
+    imageState.after = clean
+    imageState.phase = 'done'
+    state.userEdited = false
+    hideForks()
+    showImageDone()
+    noteHeadroom()
+  }
+
+  function onImageError(msg) {
+    writePrompt(imageState.before)
+    const wasActive = imageState.active
+    imageReset()
+    if (!wasActive) return
+    if (msg.error === 'quota') {
+      toast(`That was your ${DAILY_LIMIT} free improvements for today. ${resetPhrase(msg.resetAt)}`, {
+        action: { label: 'Get unlimited', url: LINKS.pricing },
+      })
+    } else if (msg.error === 'rate_limited') {
+      toast('Too many requests. Wait a moment, then try again.')
+    } else if (msg.error === 'prompt_too_long') {
+      toast(tooLongMessage(imageState.before ? imageState.before.length : MAX_PROMPT_CHARS + 1))
+    } else if (msg.error === 'network') {
+      toast('Network hiccup. Check your connection and try again.')
+    } else {
+      toast('Something went wrong on our end. Try again.')
+    }
+  }
+
+  /* ---- image refinements: offered AFTER the first result, walked one at a
+     time, exactly like the text "gaps" ---- */
+
+  function openImageRefinements() {
+    if (!imageState.refinements.length) return
+    if (!boxHoldsImageOutput()) return
+    imageState.phase = 'filling'
+    imageState.refIndex = 0
+    imageState.answers = []
+    showImageRefinement()
+  }
+
+  function showImageRefinement() {
+    const q = imageState.refinements[imageState.refIndex]
+    if (!q) { applyImageRefinements(); return }
+    showImageFilling()
+    renderChoices({
+      question: q.question,
+      options: q.options,
+      onPick: v => { imageState.answers.push({ question: q.question, answer: v }); nextImageRefinement() },
+      onType: v => { imageState.answers.push({ question: q.question, answer: v }); nextImageRefinement() },
+      onSkip: nextImageRefinement,
+      typeable: true,
+    })
+  }
+
+  function nextImageRefinement() {
+    imageState.refIndex += 1
+    if (imageState.refIndex >= imageState.refinements.length) applyImageRefinements()
+    else showImageRefinement()
+  }
+
+  function applyImageRefinements() {
+    hideForks()
+    if (!imageState.answers.length) {
+      imageState.phase = 'done'
+      imageState.refinements = []
+      showImageDone()
+      return
+    }
+    // Re-run the rewrite with the answers folded in. The refinements are now
+    // spent, so the done chip stops offering them.
+    imageState.refinements = []
+    streamImageInto()
+  }
+
+  function undoImage() {
+    if (imageState.phase !== 'done') return
+    writePrompt(imageState.before)
+    toast('Reverted to your original')
+    imageReset()
+  }
+
+  function openImageCompare() {
+    openPanel(imageState.before, boxHoldsImageOutput() ? imageState.after : null)
+  }
+
+  /* ---- image chip states (own signatures so they never collide with text) ---- */
+
+  function showImageWorking(label) {
+    positionChip()
+    if (!chipChanged(`img-work|${label}`)) return
+    chip.className = 'chip show state-working'
+    chip.innerHTML = `<span class="dots"><span></span><span></span><span></span></span>${escHtml(label)}`
+    chip.onclick = null
+    reposition()
+  }
+
+  function showImageAsking() {
+    positionChip()
+    if (!chipChanged('img-asking')) return
+    chip.className = 'chip show state-working'
+    // "skip" = pick no look, just make the image. "not an image?" = the escape
+    // hatch for a wrong guess: bail to the normal text improve on the same text.
+    chip.innerHTML =
+      `<span class="mark">🖼</span>Pick a look` +
+      `<span class="why" id="img-skip">skip</span>` +
+      `<span class="why" id="img-astext">not an image?</span>`
+    chip.onclick = null
+    const s = $('#img-skip')
+    if (s) s.onclick = e => { e.stopPropagation(); hideForks(); streamImageInto() }
+    const t = $('#img-astext')
+    if (t) t.onclick = e => { e.stopPropagation(); bailToText() }
+    reposition()
+  }
+
+  /** The wrong-guess escape: drop the image flow and run the text improve on
+   *  the same, still-untouched text. */
+  function bailToText() {
+    imageReset()
+    onSharpen()
+  }
+
+  function showImageFilling() {
+    positionChip()
+    if (!chipChanged(`img-fill|${imageState.refIndex}`)) return
+    chip.className = 'chip show state-working'
+    const step = imageState.refIndex + 1
+    chip.innerHTML =
+      `<span class="mark">+</span>Detail ${step} of ${imageState.refinements.length}` +
+      `<span class="why" id="img-skipall">skip</span>`
+    chip.onclick = null
+    const s = $('#img-skipall')
+    if (s) s.onclick = e => { e.stopPropagation(); hideForks(); applyImageRefinements() }
+    reposition()
+  }
+
+  function showImageDone() {
+    positionChip()
+    chip.className = 'chip show state-done'
+    const tag = imageState.styleLabel ? `Image · ${imageState.styleLabel}` : 'Image prompt ready'
+    const n = imageState.refinements.length
+    if (!chipChanged(`img-done|${tag}|${n}`)) return
+    chip.innerHTML =
+      `<span class="mark">✓</span>${escHtml(tag)}` +
+      (n ? `<span class="why add" id="img-add">+ ${n} detail${n === 1 ? '' : 's'}</span>` : '') +
+      `<span class="why" id="img-cmp">compare</span>` +
+      `<span class="why" id="img-undo">undo</span>`
+    const bind = (el, fn) => { if (el) el.onclick = e => { e.stopPropagation(); fn() } }
+    bind($('#img-add'), openImageRefinements)
+    bind($('#img-cmp'), openImageCompare)
+    bind($('#img-undo'), undoImage)
+    chip.onclick = null
+    reposition()
+  }
+
+  /** Image counterpart of syncChip, entered whenever imageState.active. */
+  function syncImageChip() {
+    const el = findPromptEl()
+    const text = readPrompt()
+
+    if (!el || !text) { imageReset(); hideChip(); return }
+    if (imageState.phase === 'planning' || imageState.phase === 'working') return
+
+    if (imageState.phase === 'asking') {
+      // Box untouched while the look question is up. If they typed instead of
+      // picking, the question is stale.
+      if (state.userEdited) { imageReset(); return }
+      showImageAsking()
+      positionForks()
+      return
+    }
+
+    if (imageState.phase === 'filling') {
+      if (state.userEdited) { imageReset(); return }
+      positionForks()
+      return
+    }
+
+    if (imageState.phase === 'done') {
+      if (!state.userEdited) { showImageDone(); return }
+      // They edited our image prompt - it is theirs again.
+      imageReset()
+      return
+    }
+
+    imageReset()
+  }
 
   /* ---------- Panel wiring ---------- */
   // Built ONCE, eagerly, at startup. It used to be built lazily on the
