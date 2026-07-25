@@ -62,6 +62,17 @@ export const USER_LIMIT: LimitConfig = { capacity: 10, refillPerSecond: 10 / 60 
  *  the pricing page promises. Still capped for infra protection. */
 export const PRO_USER_LIMIT: LimitConfig = { capacity: 30, refillPerSecond: 30 / 60 } // 30/minute
 
+/**
+ * Counter events (/api/anon/event). Deliberately loose: one improve emits
+ * several of these, an active session emits many, and throttling them would
+ * quietly bias the data toward light users - the opposite of what a metric is
+ * for. It exists only so a script cannot fill the table.
+ *
+ * On its own key namespace, like every other endpoint, so a burst of counters
+ * can never consume the budget that gates real work.
+ */
+export const EVENT_LIMIT: LimitConfig = { capacity: 120, refillPerSecond: 120 / 3600 } // 120/hour
+
 export function getClientIp(req: Request): string {
   const forwarded = req.headers.get('x-forwarded-for')
   if (forwarded) return forwarded.split(',')[0]!.trim()

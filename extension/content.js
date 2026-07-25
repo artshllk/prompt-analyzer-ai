@@ -218,6 +218,49 @@
     try { chrome.storage.local.set({ dc_anon_count: anonCount }) } catch {}
   }
 
+  /* ---------- Counters ---------- */
+
+  /** Which of the three, for the counters. Null anywhere else. */
+  const SURFACE = (function () {
+    const h = location.hostname
+    if (h.endsWith('chatgpt.com') || h.endsWith('chat.openai.com')) return 'chatgpt'
+    if (h.endsWith('claude.ai')) return 'claude'
+    if (h.endsWith('gemini.google.com')) return 'gemini'
+    return null
+  })()
+
+  /**
+   * One event name, the tier, and which site. That is the entire payload, and
+   * it is the entire payload on purpose.
+   *
+   * We have been shipping blind: nothing records whether anyone presses the
+   * key, and nothing records the one fact that says whether the rewrite was
+   * any good - that the user sent it rather than taking it back. This file
+   * already worked both of those out and dropped them on the floor.
+   *
+   * What is NOT sent, and must never be: the prompt, the rewrite, any part of
+   * either, and any identifier. The extension page promises we only see a
+   * prompt when the key is pressed, and that promise is worth more than any
+   * measurement. Counts answer the questions we actually have, because those
+   * questions are all ratios.
+   *
+   * Fire and forget. No callback, no await, no error path. If the network is
+   * down or the endpoint is gone, the user never finds out.
+   */
+  function track(event) {
+    try {
+      chrome.runtime.sendMessage({
+        type: 'DEEPCLARIO_EVENT',
+        event,
+        tier: authState.tier || 'anon',
+        surface: SURFACE,
+      })
+    } catch {
+      // An invalidated context (the extension just updated) throws here. It is
+      // a counter; let it go.
+    }
+  }
+
   /* ---------- Shadow DOM host ---------- */
 
   const host = document.createElement('div')
@@ -682,6 +725,10 @@
   /** They don't want to answer: rewrite anyway, with our best guess. */
   function skipQuestion() {
     if (state.phase !== 'asking') return
+    // Against question_shown this is the answer to "is the question welcome or
+    // is it in the way?" - the one thing that would tell us ask-first is
+    // wrong, if it is.
+    track('question_skipped')
     hideForks()
     state.fork = null
     streamSharpenInto(state.before, null)
@@ -986,6 +1033,10 @@
       return
     }
 
+    // The denominator. Every ratio worth knowing - how many improves get sent,
+    // how many get undone, how often we ask - is measured against this.
+    track('improve_started')
+
     state.before = prompt
     state.fork = null
     state.chosen = ''
@@ -1099,6 +1150,7 @@
    * The box has been untouched until this moment.
    */
   function chooseFork(option) {
+    track('question_answered')
     hideForks()
     state.fork = null
     state.chosen = option.label
@@ -1113,6 +1165,10 @@
    * buttons. No panel, no report, nothing to opt into.
    */
   function showForks(fork) {
+    // How often the prompt was genuinely ambiguous. Also the denominator that
+    // tells us whether the local pre-gate is skipping the check on prompts it
+    // should not - if this rate collapses, the heuristic is too eager.
+    track('question_shown')
     renderChoices({
       question: fork.question,
       options: fork.options,
@@ -1247,6 +1303,7 @@
   function finishSharpen(result) {
     const clean = (result || '').trim()
     if (clean) {
+      track('improve_finished')
       writePrompt(clean)
       state.after = clean
       state.phase = 'done'
@@ -1464,6 +1521,10 @@
   }
 
   function onSharpenError(msg) {
+    // Counts every failure the same way, including the quota and sign-in walls
+    // that are working as designed. improve_started minus improve_finished is
+    // otherwise a number with no explanation in it.
+    track('improve_failed')
     // Restore what the user had; never leave the box half-written.
     writePrompt(state.before)
     resetToIdle()
@@ -1519,6 +1580,10 @@
 
   function undoSharpen() {
     if (state.phase !== 'done') return
+    // The other half of the verdict. Taking their own words back is the
+    // clearest rejection the product can receive, and it was as unrecorded as
+    // the acceptance.
+    track('rewrite_undone')
     writePrompt(state.before)
     resetToIdle()
     toast('Reverted to your original')
@@ -1776,7 +1841,24 @@
     const text = readPrompt()
 
     if (!el || !text) {
-      // Box empty (usually: they sent it). Nothing to sharpen or explain.
+      // Box empty. This is the verdict, and until now we threw it away.
+      //
+      // The box holding our rewrite one tick and being empty the next means
+      // they hit Enter: they kept what we wrote and sent it. That is the only
+      // honest measure of whether a rewrite was any good, and it is the number
+      // the whole product should be judged on.
+      //
+      // Fired before resetToIdle, which clears the state this reads. Firing it
+      // twice is not possible: resetToIdle moves the phase to 'idle', and the
+      // 1.2s tick that follows takes the early return above.
+      //
+      // Imperfect on purpose. Navigating to a new chat also empties the box
+      // and will read as an accept. That overcounts a little and it is still
+      // the best signal available without watching the send button on three
+      // sites that redesign it constantly.
+      if ((state.phase === 'done' || state.phase === 'filling') && state.after) {
+        track(state.userEdited ? 'rewrite_edited' : 'rewrite_accepted')
+      }
       if (state.phase !== 'idle') resetToIdle()
       hideChip()
       return

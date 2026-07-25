@@ -8,6 +8,7 @@ const API_BASE = 'https://deepclario.com'
 const SHARPEN_URL = API_BASE + '/api/anon/sharpen'
 const FORK_URL = API_BASE + '/api/anon/fork'
 const EXPLAIN_URL = API_BASE + '/api/anon/explain'
+const EVENT_URL = API_BASE + '/api/anon/event'
 
 // Sign-in handoff from the website.
 //
@@ -55,6 +56,26 @@ chrome.runtime.onMessageExternal.addListener((msg, sender, sendResponse) => {
   if (msg?.type !== 'DEEPCLARIO_PING') return
   if (sender.origin !== API_BASE) return
   sendResponse({ ok: true, version: chrome.runtime.getManifest().version })
+})
+
+// Counters. One event name, the tier, and which of the three sites - nothing
+// else, ever. No prompt text, no identifier.
+//
+// Sent with keepalive so a 'rewrite_accepted' still leaves the browser when
+// the user has just hit Enter and the page is busy tearing the composer down.
+// No sendResponse and no `return true`: the content script does not wait for
+// this and must never be able to stall on it.
+chrome.runtime.onMessage.addListener(msg => {
+  if (msg?.type !== 'DEEPCLARIO_EVENT') return
+
+  fetch(EVENT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ event: msg.event, tier: msg.tier, surface: msg.surface }),
+    keepalive: true,
+  }).catch(() => {
+    // Counters are not worth a retry and not worth a log line.
+  })
 })
 
 // Explain a sharpen that already happened. Produces no rewrite and asks no

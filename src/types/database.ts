@@ -6,6 +6,29 @@ export type SessionStatus = 'analyzing' | 'clarifying' | 'improving' | 'complete
 export type Tone = 'friendly' | 'professional' | 'persuasive' | 'concise' | 'creative'
 export type ImprovementTag = 'context' | 'role' | 'action' | 'format' | 'constraints' | 'examples' | 'specificity'
 
+/**
+ * The closed set of extension counters. Migration 010.
+ *
+ * This list exists three times - here, in the allowlist in
+ * /api/anon/event/route.ts, and as a CHECK constraint on the table - and all
+ * three must agree. A name in one and not the others is data that is written
+ * and silently dropped, which is the worst failure an analytics pipeline has,
+ * because it looks like the feature is simply unused.
+ */
+export type ExtensionEvent =
+  | 'improve_started'
+  | 'improve_finished'
+  | 'improve_failed'
+  | 'question_shown'
+  | 'question_answered'
+  | 'question_skipped'
+  | 'rewrite_accepted'
+  | 'rewrite_edited'
+  | 'rewrite_undone'
+
+/** Which of the three chat products the counter came from. */
+export type ExtensionSurface = 'chatgpt' | 'claude' | 'gemini'
+
 // Row types as `type` aliases (not interfaces) - required for Supabase's Record<string, unknown> checks
 export type ProfileRow = {
   id: string
@@ -200,6 +223,32 @@ export type Database = {
           updated_at?: string
         }
         Update: { answer?: string; times_used?: number; updated_at?: string }
+        Relationships: []
+      }
+      /**
+       * Content-free counters for the browser extension. Migration 010.
+       *
+       * No user_id and no Relationships, which is the point rather than an
+       * omission: nothing in this table can be joined back to a person. See
+       * the migration for why that trade was made.
+       */
+      extension_events: {
+        Row: {
+          id: string
+          event: ExtensionEvent
+          tier: Tier | 'anon'
+          surface: ExtensionSurface | null
+          created_at: string
+        }
+        Insert: {
+          event: ExtensionEvent
+          id?: string
+          tier?: Tier | 'anon'
+          surface?: ExtensionSurface | null
+          created_at?: string
+        }
+        /** Counters are append-only. Nothing edits one. */
+        Update: never
         Relationships: []
       }
     }

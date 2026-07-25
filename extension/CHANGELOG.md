@@ -36,11 +36,31 @@ A length floor sits under it, because a short prompt can name a format and a
 tone while still naming no task at all. "Summarize in 100 words, professional
 tone" trips two patterns and is still missing the only thing that matters.
 
-### Known gap in this build
+### It now records whether any of this works
 
-Nothing measures whether any of this helps. The extension still records no
-events, so accept-versus-undo, the rate at which questions are shown and
-answered, and install-to-first-use are all unknown.
+Nothing measured the extension at all, which meant the two questions that
+decide whether the product works - do people press the key, and do they keep
+the rewrite - were both unanswerable. The answer to the second was being
+computed and thrown away: the code already noticed the box going empty while
+it still held our untouched text (they sent it) and already handled undo, and
+neither was recorded.
+
+Nine counters now cover the whole path: started, finished, failed, the question
+shown, answered or skipped, and the rewrite accepted, edited or undone.
+
+**What is sent is an event name, the tier, and which of the three sites. That
+is all, and it is all deliberately.** No prompt text, no rewrite, no identifier
+of any kind, not even a random install id. That costs us the ability to follow
+one person through the funnel, and it is the right trade: every question worth
+asking here is a ratio, and ratios need counts, not people. The promise on the
+extension page is worth more than the extra column.
+
+Sending is fire and forget with no callback, so it cannot stall or break an
+improve, and the endpoint answers 204 to everything including its own failures.
+
+Server-side, `POST /api/anon/event` needs migration `010_extension_events.sql`
+applied before it stores anything. Until then it accepts and discards, and says
+so in the server log rather than silently.
 
 ---
 
