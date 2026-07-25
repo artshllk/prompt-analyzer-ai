@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import type { UsageInfo } from '@/types'
 import {
   REWRITE_FREE_LIMIT,
@@ -81,9 +81,24 @@ export function recordDetectorUsage(userId: string): Promise<void> {
   return record(userId, DETECT_EVENT)
 }
 
-/** Count a user's events of one type since `sinceIso` (omit for lifetime). */
-async function countEvents(userId: string, eventType: string, sinceIso?: string): Promise<number> {
-  const supabase = await createClient()
+/**
+ * Count a user's events of one type since `sinceIso` (omit for lifetime).
+ *
+ * `serviceRole` exists for callers authenticated by a `dc_` bearer token
+ * rather than a cookie session - the browser extension, and anything else
+ * hitting /api/anon/*. The default client is the anon key under RLS, which
+ * reads the caller's cookies; a token-authed request has none, so the query
+ * matches zero rows and returns 0. For a COUNT behind a quota gate, that
+ * failure is silent and it fails OPEN: "you have used 0 of your 3 free runs"
+ * forever. Pass true whenever the userId came from validateToken().
+ */
+async function countEvents(
+  userId: string,
+  eventType: string,
+  sinceIso?: string,
+  serviceRole = false
+): Promise<number> {
+  const supabase = serviceRole ? await createServiceClient() : await createClient()
   let query = supabase
     .from('usage_events')
     .select('id', { count: 'exact', head: true })
@@ -115,18 +130,26 @@ export function recordDeepUsage(userId: string): Promise<void> {
  */
 export async function getVerifyAllowance(
   userId: string,
-  tier: string
-): Promise<{ used: number; limit: number; isAtLimit: boolean }> {
+  tier: string,
+  /** True when the caller was authenticated by a bearer token, not a cookie.
+   *  See countEvents: without this the count silently reads 0 and the gate
+   *  never closes. */
+  serviceRole = false
+): Promise<{ used: number; limit: number; isAtLimit: boolean; remaining: number }> {
   const isPro = tier === 'pro'
   const used = await countEvents(
     userId,
     VERIFY_EVENT,
-    isPro ? windowStart(PRO_VERIFY_WINDOW_HOURS) : undefined
+    isPro ? windowStart(PRO_VERIFY_WINDOW_HOURS) : undefined,
+    serviceRole
   )
   const limit = isPro ? PRO_VERIFY_LIMIT : FREE_VERIFY_LIFETIME_CREDITS
-  return { used, limit, isAtLimit: used >= limit }
+  return { used, limit, isAtLimit: used >= limit, remaining: Math.max(0, limit - used) }
 }
 
-export function recordVerifyUsage(userId: string): Promise<void> {
-  return record(userId, VERIFY_EVENT)
+/** Same bearer-token caveat as getVerifyAllowance: a token-authed write under
+ *  RLS is silently dropped, which would hand out unlimited free runs. */
+export async function recordVerifyUsage(userId: string, serviceRole = false): Promise<void> {
+  const supabase = serviceRole ? await createServiceClient() : await createClient()
+  await supabase.from('usage_events').insert({ user_id: userId, event_type: VERIFY_EVENT })
 }
