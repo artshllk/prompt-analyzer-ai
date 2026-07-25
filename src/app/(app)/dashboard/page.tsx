@@ -191,7 +191,7 @@ export default async function DashboardPage({
                     See your patterns over weeks, <span style={{ color: 'var(--color-paper-mute)' }}>not days.</span>
                   </h2>
                   <p className="text-base leading-[1.6] max-w-xl" style={{ color: 'var(--color-paper-mute)' }}>
-                    Deep Rewrite for the hardest tasks, unlimited rewrites, full history, and a weekly report on the fixes you reach for most.
+                    Unlimited improvements on a stronger model, full history, and a weekly report on the fixes you reach for most.
                   </p>
                 </div>
                 <div className="md:col-span-4 md:flex md:items-center md:justify-end">

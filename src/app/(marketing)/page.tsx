@@ -58,7 +58,7 @@ const structuredData = {
         "@type": "Offer",
         price: "0",
         priceCurrency: "USD",
-        description: "Free plan with 5 prompt rewrites every 48 hours",
+        description: "Free plan with 10 prompt improvements a day",
       },
     },
     {
@@ -85,7 +85,7 @@ const structuredData = {
           name: "Is Deepclario free?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes. The free plan gives you 5 prompt rewrites every 48 hours, no card required. Pro is $4.99 a month right now (a launch discount from $9.99) and removes the limit, keeps your full history, and adds weekly insights.",
+            text: "Yes. The free plan gives you 10 prompt improvements a day, no card required. Pro is $4.99 a month right now (a launch discount from $9.99). It removes the daily limit, runs a stronger model on every improve, keeps your full history, and adds weekly insights.",
           },
         },
       ],

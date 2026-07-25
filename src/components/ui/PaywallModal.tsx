@@ -10,12 +10,18 @@ const PADDLE_LIVE = process.env.NEXT_PUBLIC_PADDLE_LIVE === "true";
 
 /**
  * Why the modal was opened - drives the headline + body copy so the
- * message actually matches what the user just did. All four call sites
- * used to share the "you've hit your limit" copy, which was wrong (and
- * confusing) for anything that wasn't the real usage-limit trigger - e.g.
- * clicking the locked Deep Rewrite chip while free rewrites remained.
+ * message actually matches what the user just did.
+ *
+ * NOTE: this component currently has no call sites. It is kept because the
+ * paywall is needed again the moment an in-app upgrade prompt exists, but
+ * nothing renders it today, so none of this copy is on screen.
+ *
+ * The "deep-rewrite" reason is gone with the feature. Nothing in the repo
+ * sends deep:true since the playground was deleted, so the modal was offering
+ * to sell an upgrade for something the buyer could not then use. It comes back
+ * with the feature.
  */
-type PaywallReason = "limit" | "deep-rewrite" | "upgrade";
+type PaywallReason = "limit" | "upgrade";
 
 interface PaywallModalProps {
   open: boolean;
@@ -27,17 +33,12 @@ const COPY: Record<PaywallReason, { headline: string; body: (limit: number, hour
   limit: {
     headline: "You've hit your limit.",
     body: (limit, hours) =>
-      `You've used all ${limit} free rewrites for now. Go Pro for unlimited rewrites, plus Deep Rewrite on our strongest model, or wait for your ${hours}-hour window to reset.`,
-  },
-  "deep-rewrite": {
-    headline: "Deep Rewrite is a Pro feature.",
-    body: () =>
-      "Unlock our strongest model for the hardest rewrites, plus unlimited rewrites, full history, and more.",
+      `You've used all ${limit} free improvements for now. Go Pro for unlimited improvements on a stronger model, or wait for your ${hours}-hour window to reset.`,
   },
   upgrade: {
     headline: "Go unlimited with Pro.",
     body: () =>
-      "Unlimited rewrites and AI detection, Deep Rewrite on our strongest model, and full history kept forever.",
+      "Unlimited improvements, a stronger model on every one, and full history kept forever.",
   },
 };
 
@@ -47,8 +48,8 @@ const COPY: Record<PaywallReason, { headline: string; body: (limit: number, hour
  * the modal stays scannable.
  */
 const PRO_FEATURES = [
-  "Deep Rewrite for the hardest tasks",
-  "Unlimited rewrites and AI detection",
+  "Unlimited improvements",
+  "A stronger model on every improve",
   "Weekly insights report",
   "Full history, kept forever",
   "Priority processing and support",

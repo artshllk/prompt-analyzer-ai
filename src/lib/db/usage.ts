@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import type { UsageInfo } from '@/types'
 import {
-  REWRITE_FREE_LIMIT,
-  REWRITE_WINDOW_HOURS,
+  USAGE_DAILY_LIMIT,
+  USAGE_WINDOW_HOURS,
   DETECT_FREE_LIMIT,
   DETECT_WINDOW_HOURS,
   PRO_DEEP_LIMIT,
@@ -63,9 +63,18 @@ async function record(userId: string, eventType: string): Promise<void> {
   await supabase.from('usage_events').insert({ user_id: userId, event_type: eventType })
 }
 
-/** Rewrites: 5 per rolling 48h for free, unlimited for pro. */
+/**
+ * Improvements: USAGE_DAILY_LIMIT per rolling 24h for free, unlimited for pro.
+ *
+ * This read the deprecated REWRITE_FREE_LIMIT/REWRITE_WINDOW_HOURS (5 per 48h),
+ * which no longer gates anything. The gate that actually runs is decideUsage()
+ * on the sharpen route, at 10 per 24h. Both count the same `prompt_analyzed`
+ * event, so the dashboard was counting the right rows against the wrong
+ * ceiling: a free user with six improvements saw "6 of 5" on a 48-hour window
+ * they were not on, while the extension happily kept going.
+ */
 export function getUsageInfo(userId: string): Promise<UsageInfo> {
-  return getUsage(userId, REWRITE_EVENT, REWRITE_WINDOW_HOURS, REWRITE_FREE_LIMIT)
+  return getUsage(userId, REWRITE_EVENT, USAGE_WINDOW_HOURS, USAGE_DAILY_LIMIT)
 }
 
 export function recordUsage(userId: string): Promise<void> {
