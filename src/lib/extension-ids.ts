@@ -18,10 +18,34 @@
  * shows it) to test the flow locally.
  */
 
-/** The published Web Store build. */
-const STORE_ID = process.env.NEXT_PUBLIC_EXTENSION_ID_STORE || ''
+import { CHROME_EXTENSION_ID } from './constants'
 
-/** A locally loaded unpacked build, for development. */
+/**
+ * The published Web Store build.
+ *
+ * Defaults to the real published ID rather than an empty string, and that is
+ * the whole fix. This used to be NEXT_PUBLIC_EXTENSION_ID_STORE alone, which
+ * was never set in Vercel - so in production this list was empty, the connect
+ * page had nobody to ping, and every user was told "we could not find the
+ * extension" and pushed to the manual code. The one-click flow the 0.9.0 notes
+ * announced had never run for anybody.
+ *
+ * An empty default is the wrong failure for this: it is indistinguishable from
+ * "the user has not installed it", so the bug looked like ordinary behaviour
+ * and stayed invisible. The env var is kept as an override for a differently
+ * signed build; forgetting it now costs nothing.
+ */
+const STORE_ID = process.env.NEXT_PUBLIC_EXTENSION_ID_STORE || CHROME_EXTENSION_ID
+
+/**
+ * A locally loaded unpacked build, for development.
+ *
+ * Chrome derives an unpacked extension's ID from its own generated key, so it
+ * differs from the store build and differs per machine. There is no sensible
+ * default; without this set, testing the connect flow against a locally loaded
+ * build will always fall back to the manual code, which is correct rather than
+ * broken. chrome://extensions shows the ID.
+ */
 const DEV_ID = process.env.NEXT_PUBLIC_EXTENSION_ID_DEV || ''
 
 export const EXTENSION_IDS: string[] = [STORE_ID, DEV_ID].filter(Boolean)
