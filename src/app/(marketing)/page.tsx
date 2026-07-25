@@ -10,7 +10,6 @@ import { EarlyDays } from "@/components/marketing/EarlyDays";
 import { FAQSection } from "@/components/marketing/FAQSection";
 import { HeroRefinement } from "@/components/marketing/refinement/HeroRefinement";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
-import { SplashScreen } from "@/components/marketing/SplashScreen";
 import { Reveal } from "@/components/ui/Reveal";
 import { defaultOGImage } from "@/lib/og-image";
 // { /* CUT - redundant with demo + steps */ }
@@ -104,7 +103,6 @@ export default function LandingPage() {
         className="editorial grain min-h-screen relative"
         style={{ background: "var(--color-ink)", color: "var(--color-paper)" }}
       >
-        <SplashScreen />
         <MarketingNav current="home" />
 
         {/* Hero - two-column on desktop: copy left, animated centerpiece
