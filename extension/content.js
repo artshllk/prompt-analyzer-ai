@@ -897,6 +897,58 @@
     return !!state.after && !state.userEdited
   }
 
+  /* ---------- Is the ambiguity check worth waiting for? ---------- */
+
+  /**
+   * The fork check is a full round trip to a reasoning model before a single
+   * word of the rewrite can appear. Measured, it lands at 2-6s. The rewrite
+   * itself streams its first token in under a second, so on a clear prompt we
+   * spend most of the wait deciding not to ask anything.
+   *
+   * These patterns are the cheap local answer to "has this person already told
+   * us the things we would have asked about?". They are looking for the four
+   * gaps the server's own calibration names: audience, output shape, hard
+   * constraints, and tone.
+   *
+   * Deliberately loose. A false positive here (we think it is specific, it was
+   * not) costs one unasked question and degrades to what every other prompt
+   * tool does anyway. A false negative costs the user the wait they already
+   * have today. Neither breaks anything, which is what makes a heuristic
+   * acceptable in front of a model call.
+   */
+  const SIGNALS = [
+    // Audience: who is going to read this.
+    /\b(audience|readers?|customers?|clients?|students?|beginners?|subscribers?|recruiters?|for (my|our|a|an) \w+|non-?technical)\b/i,
+    // Output shape: what the answer should look like.
+    /\b(format|formatted|table|bullets?|bulleted|numbered|list|json|markdown|csv|outline|paragraphs?|sections?|headings?|steps?|slides?)\b/i,
+    // Hard constraints: a number attached to a unit is the least ambiguous
+    // thing a prompt can contain.
+    /\b(\d+\s*(words?|characters?|chars?|sentences?|paragraphs?|bullets?|points?|items?|lines?|steps?|examples?|options?)|under \d+|at most \d+|no more than \d+|max(imum)? \d+)\b/i,
+    // Tone: named explicitly rather than left to taste.
+    /\b(tone|formal|informal|casual|friendly|professional|persuasive|concise|conversational|plain english)\b/i,
+    // Structure: line breaks and bullets mean they wrote a brief, not a wish.
+    /(\n\s*[-*•]|\n\s*\d+[.)]|\n\n)/,
+  ]
+
+  /**
+   * Below this, skip nothing. A short prompt can hit two patterns by accident
+   * ("write a professional email") while still being exactly the topic-only
+   * request the server calls ambiguous. Length is not evidence of quality, but
+   * its absence is decent evidence of a missing brief.
+   */
+  const SPECIFIC_MIN_CHARS = 200
+  const SPECIFIC_MIN_SIGNALS = 2
+
+  function needsForkCheck(prompt) {
+    if (prompt.length < SPECIFIC_MIN_CHARS) return true
+    let hits = 0
+    for (const re of SIGNALS) {
+      if (re.test(prompt)) hits++
+      if (hits >= SPECIFIC_MIN_SIGNALS) return false
+    }
+    return true
+  }
+
   async function onSharpen() {
     if (state.phase === 'working') return
 
@@ -952,9 +1004,24 @@
     // look like it didn't know what it was doing. A question that arrives
     // after the answer is worthless.
     //
-    // So the fork check now GATES the rewrite. An ambiguous prompt waits
-    // ~1.5s and sees a question; a clear prompt goes straight to the
-    // rewrite. Either way the box is written exactly once.
+    // So the fork check GATES the rewrite. An ambiguous prompt waits and sees
+    // a question; a clear prompt goes straight to the rewrite. Either way the
+    // box is written exactly once.
+    //
+    // The gate is right and the bill for it was not. Every prompt paid a
+    // 2-6s reasoning round trip to find out whether we had anything to ask,
+    // including the many that had already answered it. A prompt that names
+    // its audience, its shape and its limits does not need a model to
+    // confirm it is unambiguous, so it no longer waits for one and streams
+    // in under a second like it used to.
+    //
+    // Everything short or thin still goes through the check, which is the
+    // half where the question is worth the wait.
+    if (!needsForkCheck(prompt)) {
+      streamSharpenInto(prompt, null)
+      return
+    }
+
     state.phase = 'working'
     showAskingChip()
 

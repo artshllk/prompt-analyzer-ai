@@ -1,27 +1,50 @@
 # Deepclario extension - changelog
 
-## Read this first: the store is behind the repo
+## Read this first
 
-**Live on the Chrome Web Store: 0.7.0** (published 2026-07-13, commit `c7b093a`).
-**Next submission: 0.9.0.**
+**Live on the Chrome Web Store: 0.9.0** (confirmed live 2026-07-25).
+**Next submission: 0.9.1.**
 
-Five versions were bumped locally and never published: 0.7.1, 0.8.0, 0.8.1,
-0.8.2, 0.8.3. Nobody has ever run them. Every user on the store is sitting on
-0.7.0 and will jump straight to 0.9.0 in one update.
-
-That is why the next number is 0.9.0 rather than 0.8.3. The store shows users a
-single version string, and 0.8.3 reads like a patch on a 0.8.x they never had.
-One minor bump for everything since 0.7.0 is the honest label, and it leaves
-0.9.x free for fixes that follow this submission. 1.0.0 is deliberately not
-being spent here: part of this release is still unverified against a real
-browser (see the release notes below).
-
-The internal builds are recorded under the 0.9.0 entry so the trail from a
-commit to a shipped version stays intact.
+The store and the repo are finally in step. 0.9.0 cleared review and carried
+everything from the five internal builds that were never published, so every
+user is now on the ask-first flow with a working Mac shortcut.
 
 ---
 
-## 0.9.0 (unreleased)
+## 0.9.1 (unreleased)
+
+### Improve stopped waiting to decide it had nothing to ask
+
+Every press paid a 2-6 second round trip to a reasoning model before a single
+word could appear, to find out whether the prompt was ambiguous. Most were not,
+so most of that wait bought a decision to say nothing, while the chip read
+"Improving" over a box that did not move.
+
+The check now runs only when it might change something. A prompt that already
+names its audience, its output shape, its limits or its tone is not sent for a
+second opinion, and streams in under a second the way the fast path was built
+to. Anything short or thin still goes through the check, which is the half
+where a question is worth waiting for.
+
+The rule is local and deliberately loose (`needsForkCheck` in `content.js`).
+Guessing "specific" when it was not costs one unasked question, which is what
+every other prompt tool does anyway. Guessing "vague" when it was not costs the
+wait that already exists today. Neither can produce a wrong rewrite, which is
+what makes a heuristic acceptable in front of a model call.
+
+A length floor sits under it, because a short prompt can name a format and a
+tone while still naming no task at all. "Summarize in 100 words, professional
+tone" trips two patterns and is still missing the only thing that matters.
+
+### Known gap in this build
+
+Nothing measures whether any of this helps. The extension still records no
+events, so accept-versus-undo, the rate at which questions are shown and
+answered, and install-to-first-use are all unknown.
+
+---
+
+## 0.9.0 - live on the store
 
 Rolled up from internal builds 0.7.1, 0.8.0, 0.8.1, 0.8.2 and 0.8.3.
 12 commits, `c7b093a..eb50d56`.
@@ -110,17 +133,20 @@ words). Improve one section at a time." (`fba0900`)
 - The busy chip holds one label instead of flashing through three that nobody
   could read. (`dd54cd9`)
 
-### Known risk in this build
+### Risk this shipped with
 
-The Compare fix (`32f9889`) has not been verified in a browser. It depends on
-`execCommand('insertText')` dispatching its `input` event synchronously, which
-is true per spec and true in every implementation checked by reading, but was
-not confirmed by running it against ChatGPT, Claude and Gemini. If that
-assumption is wrong on one of them, the chip will disappear *immediately* rather
-than after two seconds, which is loud enough to catch on the first improve.
+The Compare fix (`32f9889`) went out without being verified in a browser. It
+depends on `execCommand('insertText')` dispatching its `input` event
+synchronously, which is true per spec and true in every implementation checked
+by reading, but was never confirmed by running it against ChatGPT, Claude and
+Gemini.
 
-**Load the unpacked build and do one improve on each of the three before
-submitting.**
+It is in front of users now, so the question is no longer whether to check
+before submitting but whether it is currently broken on one of the three. The
+symptom is loud: the Compare chip disappears the instant a rewrite lands
+instead of staying put. **Do one improve on each of chatgpt.com, claude.ai and
+gemini.google.com and watch whether Compare survives.** Nothing in the product
+would tell us if it does not.
 
 ---
 
