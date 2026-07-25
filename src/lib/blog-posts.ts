@@ -6,6 +6,12 @@
 //
 // When you meaningfully edit a post, bump its dateModified: search engines
 // use it for freshness signals in the Article schema and sitemap.
+//
+// A post can be UNLISTED (see the `unlisted` flag): it keeps its entry here,
+// so the page still builds and still knows its own title and dates, but it
+// disappears from /blog, the sitemap, the RSS feed and related-post lists.
+// Import LISTED_POSTS for anything that shows a list of posts to a human;
+// import BLOG_POSTS only to look a post up by slug.
 
 export type BlogPost = {
   slug: string
@@ -17,6 +23,16 @@ export type BlogPost = {
   dateModified: string
   readTime: string
   tag: string
+  /**
+   * Hide the post from every list without unpublishing it. The page still
+   * builds and still resolves by slug; it just stops being advertised.
+   *
+   * Used for a post that describes something the product cannot currently do.
+   * Deleting it would 404 a URL search engines already hold, and rewriting it
+   * to hedge would be worse than silence. Pair this with a redirect in
+   * next.config.ts so anyone arriving from search lands somewhere useful.
+   */
+  unlisted?: boolean
 }
 
 export const BLOG_POSTS: BlogPost[] = [
@@ -127,6 +143,9 @@ export const BLOG_POSTS: BlogPost[] = [
     dateModified: '2026-07-07',
     readTime: '6 min read',
     tag: 'Product',
+    // Deep Rewrite has no client: nothing sends deep:true since the playground
+    // was deleted. Unlisted until it ships as a Pro action in the extension.
+    unlisted: true,
   },
   {
     slug: 'why-prompt-improvement-matters',
@@ -433,6 +452,8 @@ export const BLOG_POSTS: BlogPost[] = [
     dateModified: '2026-07-03',
     readTime: '5 min read',
     tag: 'Product',
+    // See deep-rewrite-vs-standard-rewrite above. Same reason, same reversal.
+    unlisted: true,
   },
   {
     slug: 'what-is-prompt-engineering',
@@ -543,6 +564,13 @@ export const BLOG_POSTS: BlogPost[] = [
     tag: 'Fundamentals',
   },
 ]
+
+/**
+ * Every post that should appear in a list a human reads: the /blog index, the
+ * sitemap, the RSS feed, related-post links. This is the default import for
+ * display. Use BLOG_POSTS directly only when resolving a known slug.
+ */
+export const LISTED_POSTS: BlogPost[] = BLOG_POSTS.filter(p => !p.unlisted)
 
 /** Look up a post by slug; throws at build time if a page references a slug missing from the registry. */
 export function getBlogPost(slug: string): BlogPost {

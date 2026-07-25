@@ -1,18 +1,23 @@
 import Link from 'next/link'
-import { BLOG_POSTS } from '@/lib/blog-posts'
+import { BLOG_POSTS, LISTED_POSTS } from '@/lib/blog-posts'
 
 /**
  * Shared footer for every blog post: a founder byline plus three related
  * posts picked automatically by tag from the registry. Hand-curated
  * "Related reading" blocks inside individual posts stay; this evens out
  * the internal linking across all posts without per-page curation.
+ *
+ * The current post is resolved against the FULL registry so an unlisted post
+ * can still find itself and render its own footer. What it recommends comes
+ * from LISTED_POSTS only: an unlisted post is one we have stopped advertising,
+ * so it must not reappear as someone else's "related reading".
  */
 export function PostFooter({ slug }: { slug: string }) {
   const current = BLOG_POSTS.find((p) => p.slug === slug)
-  const sameTag = BLOG_POSTS.filter(
+  const sameTag = LISTED_POSTS.filter(
     (p) => p.slug !== slug && current && p.tag === current.tag,
   )
-  const fallback = BLOG_POSTS.filter(
+  const fallback = LISTED_POSTS.filter(
     (p) => p.slug !== slug && !sameTag.includes(p),
   )
   const related = [...sameTag, ...fallback].slice(0, 3)
