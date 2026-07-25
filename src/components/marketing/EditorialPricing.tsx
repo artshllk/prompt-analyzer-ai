@@ -8,25 +8,36 @@ import Link from "next/link";
  * "Most popular" treatment on Pro. The cards use card-editorial
  * for surface depth and card-accent-edge for the Pro accent ring.
  *
- * Pro features are limited to what the product actually ships today.
- * Persona memory, multi-model compare, BYOK - all on the roadmap,
- * intentionally not listed here. Bullets lead with outcomes (Deep
- * Rewrite, insights, history) rather than raw usage limits - keep this
- * list in sync with PaywallModal's PRO_FEATURES.
+ * EVERY BULLET HERE MUST BE REACHABLE BY A USER TODAY. This list had drifted
+ * badly enough to be selling three things nobody could get to:
+ *
+ *   - "5 prompt rewrites / 48h" came from REWRITE_FREE_LIMIT, which limits.ts
+ *     marks @deprecated. The real limit is USAGE_DAILY_LIMIT: 10 a day.
+ *   - "AI detector" is unrouted (/detector redirects to / in next.config.ts).
+ *   - "Deep Rewrite" has no client. Nothing in the repo sends deep:true since
+ *     the playground was deleted, so no paying customer could run it.
+ *   - "Clarity score for every prompt" overstated it. The fast path
+ *     deliberately does not score (see sessions.ts, which writes a null score);
+ *     a score only appears when the user opens compare.
+ *
+ * Deep Rewrite is being rebuilt as a Pro action in the extension. It goes back
+ * on this list when it ships, not before.
+ *
+ * The stronger-model bullet is new and it is real: MODELS.sharpenPro runs a
+ * bigger model than MODELS.sharpen on every single improve (see models.ts).
  */
 
 const FREE_FEATURES = [
-  "5 prompt rewrites / 48h",
-  "AI detector · 5 texts / 24h",
+  "10 prompt improvements a day",
+  "Works inside ChatGPT, Claude, and Gemini",
+  "One question first, when your prompt could mean two things",
   "Chrome extension",
-  "7-day session history",
-  "Clarity score for every prompt",
-  "Works with ChatGPT, Claude, Gemini",
+  "7-day history",
 ];
 
 const PRO_FEATURES = [
-  "Deep Rewrite: drafts, critiques, and refines your prompt for the hardest tasks",
-  "Unlimited prompt rewrites and AI detection",
+  "Unlimited improvements",
+  "A stronger model on every improve",
   "Weekly insights report: see exactly where your prompts improve",
   "Full history, kept forever (Free keeps 7 days)",
   "Priority processing on every request",
@@ -213,16 +224,6 @@ export function EditorialPricing({
             Get Pro
           </Link>
           <FeatureList items={PRO_FEATURES} accent />
-          <p className="mt-6 text-xs" style={{ color: "var(--color-paper-mute)" }}>
-            New to Deep Rewrite?{" "}
-            <Link
-              href="/blog/what-is-deep-rewrite"
-              className="underline underline-offset-4 hover:opacity-80 transition-opacity"
-              style={{ color: "var(--color-paper)" }}
-            >
-              Read how it works →
-            </Link>
-          </p>
         </PricingCard>
       </div>
 
