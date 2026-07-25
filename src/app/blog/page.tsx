@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
-import { BLOG_POSTS } from '@/lib/blog-posts'
+import { LISTED_POSTS } from '@/lib/blog-posts'
 
 export const metadata: Metadata = {
   title: 'Blog - Prompt Engineering Guides and Tips',
@@ -46,7 +46,7 @@ export default function BlogIndexPage() {
 
         <ul className="space-y-px">
           <li className="rule-strong" />
-          {BLOG_POSTS.map(post => (
+          {LISTED_POSTS.map(post => (
             <li key={post.slug}>
               <Link
                 href={`/blog/${post.slug}`}

@@ -3,7 +3,7 @@
 // new content. Posts come from the shared registry in
 // src/lib/blog-posts.ts, so new posts appear here automatically.
 
-import { BLOG_POSTS } from '@/lib/blog-posts'
+import { LISTED_POSTS } from '@/lib/blog-posts'
 
 const BASE = 'https://deepclario.com'
 
@@ -17,7 +17,7 @@ function escape(str: string) {
 }
 
 export function GET() {
-  const items = BLOG_POSTS.map(p => `
+  const items = LISTED_POSTS.map(p => `
     <item>
       <title>${escape(p.title)}</title>
       <link>${BASE}/blog/${p.slug}</link>

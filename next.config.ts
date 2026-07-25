@@ -32,6 +32,30 @@ const nextConfig: NextConfig = {
       // stay. If the extension bet underperforms we have not destroyed a
       // working product - re-listing it is a one-line change.
       { source: '/detector', destination: '/', permanent: false },
+
+      /**
+       * The two Deep Rewrite posts, unrouted by the same logic.
+       *
+       * Both sell Deep Rewrite as a live Pro feature, and no client sends
+       * deep:true any more - so after the pricing page stopped advertising it,
+       * these were the last surface still doing so. They are delisted from
+       * BLOG_POSTS (which removes them from /blog, the sitemap and RSS) and
+       * redirected here so the indexed URLs do not 404.
+       *
+       * TEMPORARY (307), not permanent, for the same reason as the detector:
+       * Deep Rewrite is being rebuilt as a Pro action in the extension, and a
+       * 301 tells Google the move is final. Restoring both posts means adding
+       * their BLOG_POSTS entries back and deleting these two lines.
+       *
+       * /pricing rather than /extension: someone who searched for a Pro
+       * feature wants to know what Pro actually includes.
+       *
+       * The SEO cost is close to nothing. Both target branded queries that
+       * only someone who already knows Deepclario would type, and nothing
+       * internally links to either one.
+       */
+      { source: '/blog/what-is-deep-rewrite', destination: '/pricing', permanent: false },
+      { source: '/blog/deep-rewrite-vs-standard-rewrite', destination: '/pricing', permanent: false },
     ]
   },
 }

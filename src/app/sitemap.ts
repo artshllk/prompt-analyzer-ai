@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { PROMPT_LIBRARY, CATEGORY_HUBS } from '@/lib/prompt-library'
-import { BLOG_POSTS } from '@/lib/blog-posts'
+import { LISTED_POSTS } from '@/lib/blog-posts'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = 'https://deepclario.com'
@@ -26,7 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Generated from the shared blog registry; lastModified reflects the real
   // edit date so search engines get an honest freshness signal.
-  const blogPages: MetadataRoute.Sitemap = BLOG_POSTS.map(post => ({
+  const blogPages: MetadataRoute.Sitemap = LISTED_POSTS.map(post => ({
     url: `${base}/blog/${post.slug}`,
     lastModified: new Date(post.dateModified),
     changeFrequency: 'monthly' as const,
