@@ -7,10 +7,15 @@ import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
  * Quick fork check: is this prompt genuinely ambiguous, and if so, what are
  * the 2-3 readings?
  *
- * The extension fires this IN PARALLEL with /anon/sharpen, so the rewrite
- * still streams in ~1s and the question (when there is one) appears right
- * after, offering to refine. That way the user gets the clarifying question
- * at the moment it matters, without paying its latency on every prompt.
+ * The extension BLOCKS on this before it starts the rewrite: an ambiguous
+ * prompt has to produce its question before anything is written to the box,
+ * because a question that arrives after the answer is worthless. The cost is
+ * that every prompt waits for this call, including the majority that turn out
+ * not to be ambiguous.
+ *
+ * This comment used to say the two ran in parallel. They did once; the
+ * ask-first change made it serial and the comment was not updated, which is
+ * how the added latency went unnoticed.
  *
  * Costs no quota: this is a decision, not a rewrite. Rate-limited only.
  */
@@ -39,12 +44,32 @@ export async function POST(req: NextRequest) {
   const token = extractBearerToken(req.headers.get('authorization'))
   const auth = token ? await validateToken(token) : null
 
+  // This endpoint gets its OWN bucket namespace, and that is the whole point.
+  //
+  // One improve in the extension is two requests: this fork check, then
+  // /anon/sharpen. Both used the same `anon:<ip>` bucket, so a single improve
+  // spent two of the six tokens an anonymous user gets per hour. Six tokens
+  // therefore bought THREE improves, against the five free tries the extension
+  // promises and the popup displays. The fourth improve in a sitting returned a
+  // 429, which reads as "this is broken" at the exact moment a new user is
+  // deciding whether it works.
+  //
+  // Worse, the buckets are in-memory per serverless instance, so which improve
+  // failed depended on which instance answered: intermittent, not reproducible.
+  //
+  // Separate namespaces mean one improve costs one token from each of two
+  // buckets rather than two from one. An anonymous user gets six improves an
+  // hour, which covers the five free tries with room to spare, and both
+  // endpoints keep their own abuse ceiling.
   if (!auth) {
     const ip = getClientIp(req)
-    const limit = take(`anon:${ip}`, ANON_LIMIT)
+    const limit = take(`fork:anon:${ip}`, ANON_LIMIT)
     if (!limit.allowed) return corsJson({ error: 'rate_limited' }, 429)
   } else {
-    const burst = take(`user:${auth.userId}`, auth.tier === 'pro' ? PRO_USER_LIMIT : USER_LIMIT)
+    const burst = take(
+      `fork:user:${auth.userId}`,
+      auth.tier === 'pro' ? PRO_USER_LIMIT : USER_LIMIT
+    )
     if (!burst.allowed) return corsJson({ error: 'rate_limited' }, 429)
   }
 
