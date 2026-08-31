@@ -100,7 +100,19 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   })
     .then(async res => {
       if (!res.ok) {
-        sendResponse({ ok: false, error: res.status === 429 ? 'rate_limited' : 'server_error' })
+        // Same two-meanings-of-429 problem as the sharpen path above.
+        let error = 'server_error'
+        let resetAt = null
+        if (res.status === 429) {
+          const body = await res.json().catch(() => ({}))
+          if (body.error === 'daily_capacity') {
+            error = 'daily_capacity'
+            resetAt = body.resetAt || null
+          } else {
+            error = 'rate_limited'
+          }
+        }
+        sendResponse({ ok: false, error, resetAt })
         return
       }
       sendResponse({ ok: true, data: await res.json() })
@@ -161,8 +173,20 @@ chrome.runtime.onConnect.addListener(port => {
       if (!res.ok) {
         let error = 'server_error'
         let resetAt = null
-        if (res.status === 429) error = 'rate_limited'
-        else if (res.status === 402) {
+        // A 429 is two different things. One is "you personally are going too
+        // fast", a wait of seconds. The other is the site-wide free ceiling
+        // for the day, a wait until tomorrow. Both used to map to
+        // 'rate_limited' and both told the user to wait a moment, and the
+        // resetAt that says which was read here and then thrown away.
+        if (res.status === 429) {
+          const body = await res.json().catch(() => ({}))
+          if (body.error === 'daily_capacity') {
+            error = 'daily_capacity'
+            resetAt = body.resetAt || null
+          } else {
+            error = 'rate_limited'
+          }
+        } else if (res.status === 402) {
           const body = await res.json().catch(() => ({}))
           error = body.error === 'pro_required' ? 'pro_required' : 'quota'
           // Carry WHEN it comes back, so the user gets a wait, not a wall.

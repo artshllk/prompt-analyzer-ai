@@ -42,6 +42,20 @@ import { SAMPLE_PROMPTS, ALREADY_GOOD_SAMPLE, pickSamples } from '@/lib/sample-p
  * and come back once. The site-wide daily ceiling is the real cost control;
  * this is just the sign-up moment.
  */
+/**
+ * "Comes back at 16:00" beats an ISO timestamp, and beats "try later", which
+ * is a dead end wearing a clock. Falls back to a plain sentence when the
+ * server did not send a reset time.
+ */
+function resetPhrase(iso: string): string {
+  if (!iso) return 'It resets on a rolling 24 hour window.'
+  const at = new Date(iso)
+  if (Number.isNaN(at.getTime())) return 'It resets on a rolling 24 hour window.'
+  const time = at.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+  const sameDay = at.toDateString() === new Date().toDateString()
+  return sameDay ? `Your next one is back at ${time}.` : `Your next one is back tomorrow at ${time}.`
+}
+
 const DEMO_LIMIT = 3
 const RUNS_KEY = 'pc_demo_runs'
 const MAX_CLARIFY = 1 // demo asks at most one follow-up before improving
@@ -67,6 +81,8 @@ type Response =
   | { kind: 'no_task'; message: string }
   /** The whole site's anonymous budget for today is gone. */
   | { kind: 'capacity'; resetAt: string }
+  /** Their own plan limit, which is not the same thing as us breaking. */
+  | { kind: 'quota'; resetAt: string; dailyLimit: number }
   | { kind: 'error'; text: string }
 
 type Phase = 'idle' | 'thinking' | 'awaiting-answer' | 'done' | 'error'
@@ -182,8 +198,40 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
         fail('That is a lot of rewrites in one go. Give it a minute and try again.')
         return
       }
+      /**
+       * These three used to fall into one message: "Something went sideways
+       * on our end." That is a lie in two of the three cases. Telling someone
+       * our servers broke when they have simply used their improvements for
+       * the day teaches them the product is unreliable AND hides the upgrade
+       * path that would fix it.
+       */
+      if (res.status === 402) {
+        const d = await res.json().catch(() => ({}))
+        setResponse({
+          kind: 'quota',
+          resetAt: d.resetAt ?? '',
+          dailyLimit: typeof d.dailyLimit === 'number' ? d.dailyLimit : 10,
+        })
+        setPhase('done')
+        return
+      }
+      if (res.status === 503) {
+        fail(
+          'The model did not come back. That one is on us, and it did not use up any of your improvements. Try again.'
+        )
+        return
+      }
+      if (res.status === 400) {
+        const d = await res.json().catch(() => ({}))
+        fail(
+          d.error === 'prompt_too_long'
+            ? 'That prompt is too long. Trim it under 4000 characters and try again.'
+            : 'That prompt did not come through. Try sending it again.'
+        )
+        return
+      }
       if (!res.ok) {
-        fail('Something went sideways on our end. Try again in a moment.')
+        fail('Something went wrong on our end. Nothing was used up, so try again.')
         return
       }
 
@@ -458,6 +506,37 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
               >
                 {response.message}
               </motion.p>
+            )}
+
+            {response?.kind === 'quota' && (
+              <motion.div key="quota" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <p
+                  className="text-[15px] sm:text-base leading-[1.7] mb-2"
+                  style={{ color: 'var(--color-paper)' }}
+                >
+                  That is your {response.dailyLimit} improvements for today.
+                </p>
+                <p className="text-[14px] leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
+                  {resetPhrase(response.resetAt)} Pro removes the daily limit and
+                  runs a stronger model on every improve.
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-4">
+                  <Link
+                    href="/pricing"
+                    className="inline-flex items-center px-5 py-2.5 rounded-full text-sm btn-paper transition-all"
+                    style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+                  >
+                    See what Pro includes
+                  </Link>
+                  <Link
+                    href="/extension"
+                    className="text-sm underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity"
+                    style={{ color: 'var(--color-paper)' }}
+                  >
+                    Or get the extension
+                  </Link>
+                </div>
+              </motion.div>
             )}
 
             {response?.kind === 'capacity' && (

@@ -215,6 +215,10 @@ curl -s -o /dev/null -w 'run 1: %{http_code}\n' -X POST http://localhost:3000/ap
   -d '{"prompt":"write a launch email for my app","tone":"professional"}'
 ```
 
+**Run 2 must be a SECOND PROMPT, not an answer to the first.** One user action
+costs one budget unit, so answering a clarifying question does not spend
+another. Use a different prompt:
+
 **Run 2, expect 429 and the named error:**
 
 ```bash
@@ -285,6 +289,13 @@ curl -s -o /dev/null -w 'bearer: %{http_code}\n' -X POST http://localhost:3000/a
 Both credentials now go through the same `resolveCaller()` in
 `lib/auth/caller.ts`, so if one works and the other does not, the problem is
 the credential, not the route.
+
+**Run 5, a prompt that asks a question, at cap 1.** This is the case that was
+broken: the question spent the only unit and the answer was refused, so the
+user got a question they could never answer. Reset the counter first
+(`delete from anon_daily_usage where day = (now() at time zone 'utc')::date;`),
+then in the browser send `write about coffee`, click one of the readings, and
+confirm you get a rewrite rather than the capacity message.
 
 ### Clean up, every time
 

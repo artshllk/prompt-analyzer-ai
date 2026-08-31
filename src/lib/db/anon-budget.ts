@@ -37,6 +37,30 @@ export function anonDailyCap(): number {
   return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : DEFAULT_CAP
 }
 
+/**
+ * What the budget should do for one incoming call.
+ *
+ * Extracted from the route so the rule can be tested rather than inferred
+ * from an if-chain, because the if-chain got it wrong. `consumeAnonRun` used
+ * to run on every anonymous call with no turn gate, while the quota check
+ * three lines below was correctly gated on the first turn. A prompt that
+ * asked a clarifying question therefore cost two units: one for the question
+ * and one for the answer. That halved the real ceiling, and at a cap of 1 it
+ * meant no prompt that asked anything could ever finish.
+ *
+ *   consume  first turn of an anonymous action. Costs one unit.
+ *   check    a later turn of the same action. Must respect the ceiling, must
+ *            not spend again, or one action costs two.
+ *   skip     signed in. They have their own quota and their own
+ *            accountability, and this ceiling is not theirs.
+ */
+export type BudgetAction = 'consume' | 'check' | 'skip'
+
+export function budgetActionFor(params: { signedIn: boolean; turn: number }): BudgetAction {
+  if (params.signedIn) return 'skip'
+  return params.turn === 0 ? 'consume' : 'check'
+}
+
 /** UTC, so the reset is a fixed time rather than one that moves per region. */
 function today(): string {
   return new Date().toISOString().slice(0, 10)

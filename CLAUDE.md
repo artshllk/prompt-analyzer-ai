@@ -86,6 +86,41 @@ returns `daily_capacity`. It is in place.
 Full procedure, including what to re-check and how to roll back:
 `docs/deploy-runbook.md`.
 
+## What happens when Supabase is down
+
+The three gates fail in different directions, on purpose, and the combination
+has a hole in it. Written down because it is not visible from any one file.
+
+| Gate | On a DB error | Why |
+|---|---|---|
+| Anonymous daily cap | **closed** | The model still bills. A limiter a script walks past is not a cost control. |
+| Signed-in free quota | **open** | Locking out a real user over our own infrastructure is worse than one extra rewrite. |
+| `analyzePrompt()` | unaffected | It has no DB access at all. Verified: zero supabase/db/next imports across its whole graph. |
+
+So an outage refuses anonymous visitors and leaves signed-in users uncapped.
+
+**The hole.** `resolveCaller()` reads `tier` from `profiles`, and
+`validateToken()` reads `api_tokens` then `profiles`. **Tier cannot be known
+without Postgres on either path.** Worse, `tier: profile?.tier ?? 'free'`
+makes a failed read indistinguishable from a genuine free account, so during a
+Postgres-only outage (Auth up, Postgres down) every signed-in caller resolves
+as free, the quota check fails open, and they are uncapped. Sign-up needs
+Auth, not Postgres, so in that specific failure someone can still create an
+account and walk straight through.
+
+**"Free fails closed, only Pro fails open" is therefore not implementable
+today.** During the outage there is no way to tell Pro from free.
+
+Two ways out, neither done:
+
+1. **Distinguish unknown from free.** Make the tier read return `null` on
+   error rather than defaulting, and refuse when it is unknown. Small change,
+   closes the hole, costs Pro users their service during an outage.
+2. **Put `tier` in the access token** via a Supabase custom access token hook.
+   The JWT is signed, so tier becomes verifiable with no database at all, and
+   then Pro genuinely can fail open while everyone else fails closed. This is
+   the only version of the design that actually works.
+
 ## Commands
 
 - `npm run dev` — local dev. `npm run build` — production build (real verification).

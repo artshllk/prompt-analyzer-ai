@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { analyzePrompt } from '@/lib/engine'
 import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import { resolveCaller } from '@/lib/auth/caller'
-import { consumeAnonRun } from '@/lib/db/anon-budget'
+import { consumeAnonRun, anonBudgetExhausted, budgetActionFor } from '@/lib/db/anon-budget'
 import { recordSession } from '@/lib/db/sessions'
 import { createServiceClient } from '@/lib/supabase/server'
 import { decideUsage, windowStart, USAGE_WINDOW_HOURS, USAGE_DAILY_LIMIT } from '@/lib/limits'
@@ -58,23 +58,6 @@ export async function POST(req: NextRequest) {
         { status: 429, headers: { 'Retry-After': String(Math.ceil(limit.retryAfterMs / 1000)) } }
       ))
     }
-
-    /**
-     * The global ceiling. The per-IP bucket above is in-memory, per-instance,
-     * and reset by every deploy, so it stops one impatient person and not a
-     * script with a proxy list. This tool is in the hero of a public page
-     * now, which makes that the difference between a rate limit and a bill.
-     *
-     * Consumed only on the anonymous path. Signed-in users have their own
-     * quotas and their own accountability, and are never blocked by this.
-     */
-    const budget = await consumeAnonRun()
-    if (!budget.allowed) {
-      return withCors(NextResponse.json(
-        { error: 'daily_capacity', resetAt: budget.resetAt },
-        { status: 429, headers: { 'Retry-After': '3600' } }
-      ))
-    }
   } else {
     const burst = take(`user:${auth.userId}`, auth.tier === 'pro' ? PRO_USER_LIMIT : USER_LIMIT)
     if (!burst.allowed) {
@@ -100,6 +83,46 @@ export async function POST(req: NextRequest) {
   }
   if (prompt.length > 4000) {
     return withCors(NextResponse.json({ error: 'prompt_too_long' }, { status: 400 }))
+  }
+
+  /**
+   * The global anonymous ceiling.
+   *
+   * The per-IP bucket above is in-memory, per-instance and reset by every
+   * deploy, so it stops one impatient person and not a script with a proxy
+   * list. This tool is in the hero of a public page, which makes that the
+   * difference between a rate limit and a bill.
+   *
+   * ONE USER ACTION, ONE UNIT. This used to run on every call with no turn
+   * gate, while the quota check below was correctly gated on the first turn.
+   * So a prompt that asked a clarifying question cost two units: one for the
+   * question, one for the answer. That halved the real ceiling, and at a cap
+   * of 1 it meant no prompt that asked anything could ever complete, because
+   * turn 2 was always over.
+   *
+   * Later turns still have to respect the ceiling or this becomes the way
+   * around it, so they CHECK without incrementing. Same split as the fork
+   * route, for the same reason.
+   *
+   * It also moved below body validation. It used to run first, so a garbage
+   * request spent a unit of the day's budget and then got a 400 for its
+   * trouble.
+   */
+  const budgetAction = budgetActionFor({ signedIn: !!auth, turn: priorAnswers.length })
+
+  if (budgetAction === 'consume') {
+    const budget = await consumeAnonRun()
+    if (!budget.allowed) {
+      return withCors(NextResponse.json(
+        { error: 'daily_capacity', resetAt: budget.resetAt },
+        { status: 429, headers: { 'Retry-After': '3600' } }
+      ))
+    }
+  } else if (budgetAction === 'check' && (await anonBudgetExhausted())) {
+    return withCors(NextResponse.json(
+      { error: 'daily_capacity' },
+      { status: 429, headers: { 'Retry-After': '3600' } }
+    ))
   }
 
   /**

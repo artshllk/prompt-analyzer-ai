@@ -1557,6 +1557,17 @@
       toast(`That was your ${DAILY_LIMIT} free improvements for today. ${resetPhrase(msg.resetAt)}`, {
         action: { label: 'Get unlimited', url: LINKS.pricing },
       })
+    } else if (msg.error === 'daily_capacity') {
+      // NOT the same as rate_limited, and it used to be told as if it were.
+      // This is the whole site's free allowance for the day, not this person
+      // going too fast, and "wait a moment" is wrong by about sixteen hours.
+      // An account carries its own allowance, which is the real way out.
+      toast(
+        `That is today's free improvements used up, across everyone. ${
+          resetPhrase(msg.resetAt) || 'It resets at midnight UTC.'
+        }`,
+        { action: { label: 'Connect account', onClick: openConnect } }
+      )
     } else if (msg.error === 'rate_limited') {
       toast('Too many requests. Wait a moment, then try again.', {
         action: { label: 'Connect account', onClick: openConnect },
