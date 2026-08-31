@@ -85,8 +85,8 @@ export default async function AuthErrorPage({
         </p>
         <Link
           href="/login"
-          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] transition-all btn-paper"
-          style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 600 }}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] transition-all btn-brand"
+          style={{ fontWeight: 500 }}
         >
           {cta}
         </Link>

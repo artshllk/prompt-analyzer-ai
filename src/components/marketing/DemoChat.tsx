@@ -5,6 +5,11 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { StreamOut } from '@/components/shared/StreamOut'
 import { LabelledPrompt } from '@/components/shared/LabelledPrompt'
+import {
+  SAMPLE_ORIGINAL,
+  SAMPLE_ANSWER,
+  SAMPLE_SEGMENTS,
+} from '@/lib/sample-result'
 import type { Segment } from '@/lib/engine/segments'
 import { CompareAnswers } from '@/components/shared/CompareAnswers'
 import { track, trackRun } from '@/lib/track'
@@ -23,11 +28,11 @@ import { SAMPLE_PROMPTS, ALREADY_GOOD_SAMPLE, pickSamples } from '@/lib/sample-p
  *           prompt.
  *
  * Conversational intelligence (the engine decides):
- *   - Vague prompt  → one clarifying question on the right, with a
- *     "Type your answer" field UNDER it. The field exists only while we
- *     are waiting on that answer.
- *   - Specific prompt → straight to the improved prompt on the right, no
- *     answer field at all.
+ *   - Vague prompt  → one clarifying question on the right, with the two
+ *     or three readings under it as buttons. They exist only while we are
+ *     waiting on that answer.
+ *   - Specific prompt → straight to the improved prompt on the right, and
+ *     we say so rather than staying silent about it.
  *
  * One free run per browser (localStorage). After it's spent, the panel
  * swaps to the account gate - rendered inline, not a stacked overlay.
@@ -103,7 +108,6 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
   const [copyText, setCopyText] = useState('')
   const [phase, setPhase] = useState<Phase>('idle')
   const [history, setHistory] = useState<QA[]>([])
-  const [answer, setAnswer] = useState('')
 
   const [runs, setRuns] = useState(0)
   const [hydrated, setHydrated] = useState(false)
@@ -116,7 +120,6 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
   ])
 
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const answerRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -136,20 +139,7 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
     ta.style.overflowY = ta.scrollHeight > MAX ? 'auto' : 'hidden'
   }, [input])
 
-  // Auto-grow + focus the answer field when a question appears.
-  useEffect(() => {
-    if (phase !== 'awaiting-answer') return
-    answerRef.current?.focus()
-  }, [phase])
 
-  useEffect(() => {
-    const ta = answerRef.current
-    if (!ta) return
-    const MAX = 160
-    ta.style.height = 'auto'
-    ta.style.height = `${Math.min(ta.scrollHeight, MAX)}px`
-    ta.style.overflowY = ta.scrollHeight > MAX ? 'auto' : 'hidden'
-  }, [answer])
 
   const started = phase !== 'idle'
   const gated = hydrated && runs >= DEMO_LIMIT && !started
@@ -253,8 +243,7 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
           gap: data.targetsGap,
           options: Array.isArray(data.options) ? data.options.slice(0, 3) : [],
         })
-        setAnswer('')
-        setPhase('awaiting-answer')
+            setPhase('awaiting-answer')
         return
       }
 
@@ -341,21 +330,15 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       { question: response.text, answer: clean, turn },
     ]
     setHistory(nextHistory)
-    setAnswer('')
     callEngine(rootPrompt, nextHistory)
   }
 
-  function handleAnswer(e?: React.FormEvent) {
-    e?.preventDefault()
-    submitAnswer(answer)
-  }
 
   function startOver() {
     setInput('')
     setRootPrompt('')
     setResponse(null)
     setHistory([])
-    setAnswer('')
     setPhase('idle')
   }
 
@@ -530,8 +513,8 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
                 <div className="mt-4 flex flex-wrap items-center gap-4">
                   <Link
                     href="/pricing"
-                    className="inline-flex items-center px-5 py-2.5 rounded-full text-sm btn-paper transition-all"
-                    style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+                    className="inline-flex items-center px-5 py-2.5 rounded-full text-sm btn-brand transition-all"
+                    style={{ fontWeight: 500 }}
                   >
                     See what Pro includes
                   </Link>
@@ -548,22 +531,28 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
 
             {response?.kind === 'capacity' && (
               <motion.div key="capacity" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                {/* Leads with the way forward, not with the shortage.
+                    "Today's free runs used up, across everyone" is accurate
+                    and reads like we ran out of money, which is the last
+                    thing a stranger should think on the day we launch. The
+                    fact is the same either way: signing in moves you off a
+                    shared pool onto your own. */}
                 <p
                   className="text-[15px] sm:text-base leading-[1.7] mb-2"
                   style={{ color: 'var(--color-paper)' }}
                 >
-                  That is today&apos;s free runs used up, across everyone.
+                  Sign in to keep going. You get your own allowance, ten
+                  improvements a day, instead of sharing the open one.
                 </p>
                 <p className="text-[14px] leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
-                  This is a small operation and the free tool has a daily
-                  ceiling so it stays free. It resets at midnight UTC. An
-                  account gets you your own allowance instead of sharing this
-                  one.
+                  The version you can use without an account runs on a shared
+                  daily pool, and today&apos;s is spent. It refills at midnight
+                  UTC if you would rather wait. It is free either way.
                 </p>
                 <Link
                   href="/login?signup=1"
-                  className="mt-4 inline-flex items-center px-5 py-2.5 rounded-full text-sm btn-paper transition-all"
-                  style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+                  className="mt-4 inline-flex items-center px-5 py-2.5 rounded-full text-sm btn-brand transition-all"
+                  style={{ fontWeight: 500 }}
                 >
                   Create a free account
                 </Link>
@@ -704,8 +693,8 @@ function Intro({
             type="submit"
             disabled={!input.trim()}
             aria-label="Send"
-            className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-full transition-all btn-paper disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink-card) focus:ring-(--color-paper)"
-            style={{ background: 'var(--color-paper)', color: 'var(--color-ink)' }}
+            className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-full transition-all btn-brand disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink-card) focus:ring-(--color-paper)"
+            
           >
             <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
               <path d="M7 12V2M7 2L2 7M7 2L12 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -745,7 +734,71 @@ function Intro({
           </a>
         </span>
       </p>
+
+      <WorkedExample />
     </motion.div>
+  )
+}
+
+/**
+ * A finished result, on the screen before anyone types.
+ *
+ * The hero used to be an empty box. A stranger arriving from a link had to
+ * think of a prompt, type it and wait before seeing the only thing that makes
+ * this different from every other rewriter: that it shows what it added and
+ * lets you take it back. Most people will not do that for a tool they have
+ * never heard of.
+ *
+ * Static, server-rendered, no API call and no cost. It uses the real parser
+ * and the real component, so it cannot drift from what the product actually
+ * produces, and it is fully interactive: remove a guess here and the count
+ * drops, without typing anything or spending a run.
+ */
+function WorkedExample() {
+  return (
+    <div
+      className="mt-7 pt-6"
+      style={{ borderTop: '1px solid var(--color-rule)' }}
+    >
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-4">
+        <p className="eyebrow">An example, already done</p>
+        <span className="text-[12px]" style={{ color: 'var(--color-paper-mute)' }}>
+          try removing a guess
+        </span>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 items-start">
+        <div>
+          <p className="text-[12px] mb-2" style={{ color: 'var(--color-paper-mute)' }}>
+            What someone typed
+          </p>
+          <p
+            className="text-[15px] leading-[1.6] p-3 rounded-xl"
+            style={{
+              color: 'var(--color-paper-mute)',
+              background: 'var(--color-ink-card)',
+              border: '1px solid var(--color-rule)',
+            }}
+          >
+            {SAMPLE_ORIGINAL}
+          </p>
+          <p className="text-[12px] mt-3 leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
+            <span style={{ color: 'var(--machine)' }}>We asked one question.</span>{' '}
+            They picked: {SAMPLE_ANSWER}
+          </p>
+        </div>
+
+        <div
+          className="p-3 sm:p-4 rounded-xl"
+          style={{ background: 'var(--color-ink-card)', border: '1px solid var(--color-rule)' }}
+        >
+          <p className="text-[12px] mb-2" style={{ color: 'var(--color-paper-mute)' }}>
+            What it wrote back
+          </p>
+          <LabelledPrompt segments={SAMPLE_SEGMENTS} />
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -760,8 +813,8 @@ function CopyButton({ text }: { text: string }) {
         setCopied(true)
         setTimeout(() => setCopied(false), 1600)
       }}
-      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all btn-paper focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink) focus:ring-(--color-paper)"
-      style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all btn-brand focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink) focus:ring-(--color-paper)"
+      style={{ fontWeight: 500 }}
     >
       {copied ? 'Copied' : 'Copy rewrite'}
     </button>
@@ -810,8 +863,8 @@ function Gate() {
       </p>
       <Link
         href="/login?signup=1&redirectTo=/playground"
-        className="inline-flex items-center justify-center px-7 py-3 rounded-full text-[15px] btn-paper transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink) focus:ring-(--color-paper)"
-        style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+        className="inline-flex items-center justify-center px-7 py-3 rounded-full text-[15px] btn-brand transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink) focus:ring-(--color-paper)"
+        style={{ fontWeight: 500 }}
       >
         Create account
       </Link>

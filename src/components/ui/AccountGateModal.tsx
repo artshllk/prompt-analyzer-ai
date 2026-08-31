@@ -37,7 +37,7 @@ export function AccountGateModal({ open }: AccountGateModalProps) {
       aria-modal="true"
       aria-labelledby="account-gate-title"
       className="fixed inset-0 z-[70] flex items-center justify-center p-6"
-      style={{ background: 'rgba(14,14,16,0.85)', backdropFilter: 'blur(6px)' }}
+      style={{ background: 'rgba(21,19,15,0.45)', backdropFilter: 'blur(6px)' }}
     >
       <div
         className="card-editorial w-full max-w-md p-8 md:p-10 text-center"
@@ -58,8 +58,8 @@ export function AccountGateModal({ open }: AccountGateModalProps) {
         </p>
         <Link
           href="/login?signup=1&redirectTo=/extension"
-          className="inline-flex items-center justify-center px-7 py-3 rounded-full text-[15px] btn-paper transition-all"
-          style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+          className="inline-flex items-center justify-center px-7 py-3 rounded-full text-[15px] btn-brand transition-all"
+          style={{ fontWeight: 500 }}
         >
           Create account
         </Link>

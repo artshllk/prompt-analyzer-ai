@@ -284,17 +284,13 @@ function LoginInner() {
                     type="submit"
                     disabled={loading || !effectiveEmail.trim()}
                     className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={{
-                      background: 'var(--color-paper)',
-                      color: 'var(--color-ink)',
-                      fontWeight: 600,
-                    }}
+                    style={{ fontWeight: 500 }}
                   >
                     {loading ? (
                       <>
                         <span
                           className="h-4 w-4 rounded-full animate-spin"
-                          style={{ border: '2px solid rgba(14,14,16,0.25)', borderTopColor: 'var(--color-ink)' }}
+                          style={{ border: '2px solid var(--rule)', borderTopColor: 'var(--brand)' }}
                         />
                         Sending link
                       </>
@@ -430,13 +426,13 @@ function SentState({
           <button
             type="submit"
             disabled={code.length < 6 || verifying}
-            className="px-5 py-3.5 rounded-xl text-[15px] transition-all btn-paper disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 600 }}
+            className="px-5 py-3.5 rounded-xl text-[15px] transition-all btn-brand disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ fontWeight: 500 }}
           >
             {verifying ? (
               <span
                 className="block h-4 w-4 rounded-full animate-spin"
-                style={{ border: '2px solid rgba(14,14,16,0.25)', borderTopColor: 'var(--color-ink)' }}
+                style={{ border: '2px solid var(--rule)', borderTopColor: 'var(--brand)' }}
               />
             ) : (
               'Verify'

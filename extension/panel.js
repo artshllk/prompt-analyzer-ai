@@ -22,54 +22,54 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
     <style>
       .dc-overlay {
         position: fixed; inset: 0; z-index: 2147483647;
-        background: rgba(0,0,0,.5); display: none;
+        background: rgba(21,19,15,.45); display: none;
       }
       .dc-overlay.open { display: block; }
       .dc-panel {
         position: fixed; top: 0; right: 0; height: 100%;
-        width: 430px; max-width: 94vw; background: #0E0E10;
-        color: #F5F4F1; border-left: 1px solid rgba(245,244,241,.14);
+        width: 430px; max-width: 94vw; background: var(--dc-card);
+        color: var(--dc-ink); border-left: 1px solid var(--dc-rule);
         transform: translateX(100%); transition: transform .28s cubic-bezier(.16,1,.3,1);
         display: flex; flex-direction: column;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+        font-family: var(--dc-font);
       }
       .dc-overlay.open .dc-panel { transform: translateX(0); }
       .dc-head { padding: 18px 20px 14px; flex-shrink: 0; }
       .dc-body { padding: 0 20px 20px; overflow-y: auto; flex: 1; }
       .dc-row { display: flex; align-items: center; justify-content: space-between; }
-      .dc-eyebrow { font-size: 10.5px; letter-spacing:.16em; text-transform: uppercase; color: #6b6a66; font-weight: 600; }
-      .dc-x { background:none;border:none;color:#A8A6A0;cursor:pointer;font-size:20px;line-height:1;padding:4px; }
-      .dc-x:hover { color:#F5F4F1; }
+      .dc-eyebrow { font-size: 10.5px; letter-spacing:.16em; text-transform: uppercase; color: var(--dc-ink-soft); font-weight: 600; }
+      .dc-x { background:none;border:none;color:var(--dc-ink-soft);cursor:pointer;font-size:20px;line-height:1;padding:4px; }
+      .dc-x:hover { color:var(--dc-ink); }
 
       /* The two versions. Theirs is live; yours is the one you can take back. */
       .dc-block { margin-bottom: 18px; }
       .dc-label { font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; margin:0 0 8px; font-weight:600; }
       .dc-text {
         font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
-        background: #16161c; border: 1px solid rgba(245,244,241,.12);
+        background: var(--dc-ink); border: 1px solid var(--dc-rule);
         border-radius: 10px; padding: 13px 14px;
       }
-      .dc-text.mine { color: #A8A6A0; }
-      .dc-text.theirs { color: #F5F4F1; border-color: rgba(143,180,242,.35); }
+      .dc-text.mine { color: var(--dc-ink-soft); }
+      .dc-text.theirs { color: var(--dc-ink); border-color: var(--dc-machine); }
 
       .dc-act {
         margin-top: 8px; background: none; border: none; cursor: pointer;
-        color: #8FB4F2; font-size: 11.5px; font-weight: 600; font-family: inherit;
+        color: var(--dc-machine); font-size: 11.5px; font-weight: 600; font-family: inherit;
         text-decoration: underline; text-underline-offset: 3px; padding: 4px 0;
       }
       .dc-act:hover { opacity: .8; }
-      .dc-act.quiet { color: #6b6a66; font-weight: 400; }
-      .dc-act.quiet:hover { color: #F5F4F1; }
+      .dc-act.quiet { color: var(--dc-ink-soft); font-weight: 400; }
+      .dc-act.quiet:hover { color: var(--dc-ink); }
 
-      .dc-foot{margin-top:auto;padding:12px 20px;border-top:1px solid rgba(245,244,241,.08);display:flex;gap:14px;flex-wrap:wrap;flex-shrink:0}
-      .dc-foot a{color:#5a5a56;font-size:11px;text-decoration:none}
-      .dc-foot a:hover{color:#A8A6A0}
+      .dc-foot{margin-top:auto;padding:12px 20px;border-top:1px solid var(--dc-rule);display:flex;gap:14px;flex-wrap:wrap;flex-shrink:0}
+      .dc-foot a{color:var(--dc-ink-soft);font-size:11px;text-decoration:none}
+      .dc-foot a:hover{color:var(--dc-ink-soft)}
       .dc-acct{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
-      .dc-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.04em;color:#6b6a66;border:1px solid rgba(245,244,241,.14)}
-      .dc-badge.pro{background:#F5F4F1;color:#0E0E10;border-color:transparent}
-      .dc-link{background:none;border:none;color:#6b6a66;font-size:11px;cursor:pointer;padding:2px 0;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
-      .dc-link:hover{color:#F5F4F1}
-      .dc-muted { color:#A8A6A0; font-size:12.5px; line-height:1.55; }
+      .dc-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--dc-ink-soft);border:1px solid var(--dc-rule)}
+      .dc-badge.pro{background:var(--dc-ink);color:var(--dc-card);border-color:transparent}
+      .dc-link{background:none;border:none;color:var(--dc-ink-soft);font-size:11px;cursor:pointer;padding:2px 0;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
+      .dc-link:hover{color:var(--dc-ink)}
+      .dc-muted { color:var(--dc-ink-soft); font-size:12.5px; line-height:1.55; }
     </style>
     <div class="dc-overlay" id="dc-overlay">
       <div class="dc-panel" role="dialog" aria-label="Compare prompts">
@@ -138,12 +138,12 @@ window.createDetailsPanel = function createDetailsPanel(ctx) {
 
       stage.innerHTML = `
         <div class="dc-block">
-          <p class="dc-label" style="color:#8FB4F2">In your box now</p>
+          <p class="dc-label" style="color:var(--dc-machine)">In your box now</p>
           <div class="dc-text theirs">${esc(sharpened)}</div>
           <button class="dc-act quiet" id="dc-copy">Copy</button>
         </div>
         <div class="dc-block">
-          <p class="dc-label" style="color:#6b6a66">What you wrote</p>
+          <p class="dc-label" style="color:var(--dc-ink-soft)">What you wrote</p>
           <div class="dc-text mine">${esc(original)}</div>
           <button class="dc-act" id="dc-restore">Use mine instead</button>
         </div>

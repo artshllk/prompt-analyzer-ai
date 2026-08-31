@@ -92,7 +92,7 @@ export function LabelledPrompt({ segments, onChange }: LabelledPromptProps) {
                 >
                   <span
                     className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] leading-none"
-                    style={{ background: color, color: 'var(--color-ink)' }}
+                    style={{ background: 'var(--guess-accent)', color: 'var(--ink)' }}
                     aria-hidden
                   >
                     ×

@@ -50,8 +50,8 @@ function AddToChrome({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
       href={CHROME_STORE_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex items-center gap-2 rounded-full transition-all btn-paper ${pad}`}
-      style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+      className={`inline-flex items-center gap-2 rounded-full transition-all btn-brand ${pad}`}
+      style={{ fontWeight: 500 }}
     >
       Add to Chrome
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

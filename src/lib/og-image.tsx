@@ -1,6 +1,10 @@
-// Reusable OG image renderer. Each blog post and prompt page imports
-// this and passes its title + eyebrow text. Keeps the 12 blog post
-// opengraph-image.tsx files tiny.
+// Reusable OG image renderer. Every blog post and prompt page imports this
+// and passes a title + eyebrow, which keeps 56 opengraph-image.tsx files down
+// to three lines each and makes a palette change one edit here.
+//
+// It also read "Prompt analyzer for ChatGPT, Claude, Gemini" on the share card
+// of every blog post: a product name that stopped existing when
+// /tools/prompt-analyzer was removed.
 
 import { ImageResponse } from 'next/og'
 
@@ -35,8 +39,8 @@ export function renderOGImage({
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: '80px',
-          background: 'linear-gradient(135deg, #0a0e1a 0%, #131826 100%)',
-          color: '#f5f1e8',
+          background: '#F1F0EA',
+          color: '#15130F',
           fontFamily: 'system-ui',
         }}
       >
@@ -46,8 +50,8 @@ export function renderOGImage({
               width: '44px',
               height: '44px',
               borderRadius: '11px',
-              background: '#f5f1e8',
-              color: '#0a0e1a',
+              background: '#C9452F',
+              color: '#FFFFFF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -66,7 +70,7 @@ export function renderOGImage({
           <div
             style={{
               fontSize: '22px',
-              color: '#7c8398',
+              color: '#C9452F',
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               fontWeight: 600,
@@ -77,7 +81,7 @@ export function renderOGImage({
           </div>
           <div
             style={{
-              fontSize: '68px',
+              fontSize: '64px',
               fontWeight: 600,
               lineHeight: 1.1,
               letterSpacing: '-0.03em',
@@ -95,12 +99,12 @@ export function renderOGImage({
             justifyContent: 'space-between',
             alignItems: 'center',
             fontSize: '20px',
-            color: '#7c8398',
-            borderTop: '1px solid #2a3045',
+            color: '#6B6559',
+            borderTop: '1px solid #DFDCD2',
             paddingTop: '24px',
           }}
         >
-          <div style={{ display: 'flex' }}>Prompt analyzer for ChatGPT, Claude, Gemini</div>
+          <div style={{ display: 'flex' }}>Prompt improver for ChatGPT, Claude and Gemini</div>
           <div style={{ display: 'flex' }}>deepclario.com</div>
         </div>
       </div>

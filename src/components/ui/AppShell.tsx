@@ -110,7 +110,7 @@ function SidebarProfile() {
     >
       {/* 1. Upgrade button gets its own full-width row if present */}
       {isFree && (
-        <UpgradeButton className="w-full flex items-center justify-center text-[10px] font-bold tracking-wider uppercase py-2 rounded-full border border-[#FFFFFF26] text-(--color-paper-mute) transition-all hover:bg-white hover:text-black">
+        <UpgradeButton className="w-full flex items-center justify-center text-[10px] font-bold tracking-wider uppercase py-2 rounded-full btn-brand transition-all">
           Upgrade to Pro
         </UpgradeButton>
       )}
@@ -120,9 +120,9 @@ function SidebarProfile() {
         <div
           className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-medium transition-transform group-hover:scale-105"
           style={{
-            background: "rgba(255, 255, 255, 0.08)",
+            background: "var(--card)",
             color: "var(--color-paper)",
-            border: "1px solid rgba(255, 255, 255, 0.04)",
+            border: "1px solid var(--rule)",
           }}
         >
           {initials}
@@ -133,7 +133,7 @@ function SidebarProfile() {
           />
         </div>
         <p
-          className="text-[13px] font-medium transition-colors group-hover:text-white"
+          className="text-[13px] font-medium transition-colors group-hover:text-[color:var(--ink)]"
           style={{ color: "var(--color-paper)" }}
         >
           Manage account
@@ -192,7 +192,7 @@ export function AppShell({ children }: AppShellProps) {
       <header
         className="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-5 py-3.5"
         style={{
-          background: "rgba(14,14,16,0.85)",
+          background: "rgba(21,19,15,0.45)",
           backdropFilter: "blur(8px)",
           borderBottom: "1px solid var(--color-rule)",
         }}

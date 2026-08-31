@@ -309,3 +309,28 @@ test('a non-string field never throws and never leaks', () => {
     assert.equal(hasMarkers(v), false, `hasMarkers(${String(v)})`)
   }
 })
+
+test('two marked sentences separated by a space are two constraints', () => {
+  // Found by writing the homepage's static example. The merge rule only
+  // looked at the text BETWEEN two spans, and the full stop was inside the
+  // first span rather than between them, so two complete instructions the
+  // user can remove separately were counted as one.
+  const input = `${G('Keep it under 150 words.')} ${G('Open with the single change that affects them.')}`
+  const { added, guessed } = countAdditions(parseSegments(input))
+  assert.equal(added, 2)
+  assert.equal(guessed, 2)
+})
+
+test('a comma between two marked spans still merges them', () => {
+  // The original rule still holds: one decision the model happened to
+  // punctuate in the middle is one constraint.
+  const input = `Write ${G('300 words')}, ${G('warmly')} for founders.`
+  assert.equal(countAdditions(parseSegments(input)).added, 1)
+})
+
+test('a question mark or exclamation also ends a constraint', () => {
+  for (const punct of ['.', '?', '!']) {
+    const input = `${G('Ask one question' + punct)} ${G('Then stop' + punct)}`
+    assert.equal(countAdditions(parseSegments(input)).added, 2, `punct ${punct}`)
+  }
+})

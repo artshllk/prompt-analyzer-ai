@@ -228,7 +228,7 @@ export default function WhatIsAGoodPromptPage() {
           <div className="flex flex-wrap gap-3">
             <Link
               href="/playground"
-              className="inline-block px-5 py-2.5 rounded-xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] text-sm font-semibold transition-all"
+              className="inline-block px-5 py-2.5 rounded-xl btn-brand text-sm font-semibold transition-all"
             >
               Improve my prompt →
             </Link>

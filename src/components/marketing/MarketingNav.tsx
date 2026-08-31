@@ -48,7 +48,7 @@ export function MarketingNav({ current }: MarketingNavProps = {}) {
     <header
       className="fixed top-0 left-0 right-0 z-40 backdrop-blur-md"
       style={{
-        background: 'rgba(14,14,16,0.72)',
+        background: 'rgba(241, 240, 234, 0.82)',
         borderBottom: '1px solid var(--color-rule)',
       }}
     >

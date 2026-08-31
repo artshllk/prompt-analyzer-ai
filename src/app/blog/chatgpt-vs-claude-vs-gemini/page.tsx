@@ -198,7 +198,7 @@ export default function ChatGPTVsClaudeVsGeminiPage() {
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Write one prompt that works everywhere</h2>
             <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A well-built prompt gets better results no matter which model you send it to. Deepclario helps you write it once, and write it well. Free, no account needed.</p>
-            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] font-semibold transition-all">
+            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Improve my prompt →
             </Link>
           </div>

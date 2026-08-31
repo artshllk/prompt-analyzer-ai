@@ -25,8 +25,8 @@ export function CopyButton({ text }: { text: string }) {
     <button
       type="button"
       onClick={copy}
-      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all btn-paper"
-      style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all btn-brand"
+      style={{ fontWeight: 500 }}
     >
       {copied ? 'Copied' : 'Copy prompt'}
       {!copied && (

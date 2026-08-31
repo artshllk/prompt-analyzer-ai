@@ -166,8 +166,8 @@ export default async function CategoryHubPage({
           </p>
           <Link
             href="/extension"
-            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] transition-all btn-paper"
-            style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] transition-all btn-brand"
+            style={{ fontWeight: 500 }}
           >
             Improve my prompt free
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none">

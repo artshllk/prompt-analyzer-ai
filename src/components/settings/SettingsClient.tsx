@@ -210,7 +210,7 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
+            className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-[color:rgba(21,19,15,0.45)] px-4"
             onClick={() => !deleting && setConfirmOpen(false)}
           >
             <motion.div
@@ -253,7 +253,7 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
                 <button
                   onClick={handleDelete}
                   disabled={confirmText !== 'DELETE' || deleting}
-                  className="px-4 py-2 rounded-full bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-4 py-2 rounded-full bg-[color:var(--brand)] hover:bg-[color:var(--brand-deep)] text-[color:var(--card)] text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {deleting ? 'Deleting…' : 'Delete account'}
                 </button>

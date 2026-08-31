@@ -1,69 +1,109 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-inter), var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-serif);
+  /* ===================================================================
+     PAPER AND MARKUP
+     ===================================================================
+     The page is paper. The product marks it up like a copy editor.
+     Colour carries meaning; it is not decoration.
 
-  /* Brand colors (legacy - used by app/dashboard/playground) */
-  --color-base: #0a0e1a;
-  --color-base-800: #0f1628;
-  --color-base-700: #151d35;
-  --color-base-600: #1c2644;
-  --color-base-500: #253058;
-  --color-surface: #0f1628;
-  --color-surface-hover: #151d35;
-  --color-border: #1e2d4a;
-  --color-border-bright: #2d4070;
+     Light only. There is no dark mode and none is planned: a marked-up
+     page is a light-surface idea, and a second palette would double the
+     surface area of every contrast decision below for no gain.
+     Supersedes decisions/0004.
 
-  --color-violet: #7c3aed;
-  --color-violet-light: #8b5cf6;
-  --color-violet-glow: rgba(124, 58, 237, 0.3);
+     THE ROLE ALIASES AT THE BOTTOM ARE LOAD-BEARING. The old names meant
+     the opposite of what they say: --color-ink was the dark BACKGROUND and
+     --color-paper was the light TEXT. There are ~2,700 uses across 118
+     files, 84% of them in blog posts. Renaming them all would be a
+     mechanical edit with a real chance of inverting a contrast somewhere
+     nobody looks. Mapping them by ROLE instead flips the entire site
+     correctly in one place, and new code uses the honest names.
+     ================================================================== */
 
-  --color-cyan: #06b6d4;
-  --color-cyan-light: #22d3ee;
-  --color-cyan-glow: rgba(6, 182, 212, 0.25);
+  /* --- surfaces --- */
+  --paper: #F1F0EA;
+  --card: #FFFFFF;
 
-  --color-green-score: #10b981;
-  --color-amber-score: #f59e0b;
-  --color-red-score: #ef4444;
+  /* --- text --- */
+  --ink: #15130F;
+  --ink-soft: #6B6559;
 
-  --color-text-primary: #f0f4ff;
-  --color-text-secondary: #8b9cc8;
-  --color-text-muted: #4a5a80;
+  /* --- lines --- */
+  --rule: #DFDCD2;
 
-  /* Editorial palette (used by marketing pages) */
-  --color-ink: #0E0E10;          /* warm near-black */
-  --color-ink-soft: #15151A;
-  --color-ink-card: #1A1A20;
-  --color-ink-card-elevated: #1F1F26;  /* one step brighter for raised cards */
-  --color-paper: #F5F4F1;        /* warm off-white */
-  --color-paper-mute: #A8A6A0;
-  --color-rule: rgba(245, 244, 241, 0.10);
-  --color-rule-strong: rgba(245, 244, 241, 0.18);
+  /* --- brand --- */
+  --brand: #C9452F;
+  --brand-deep: #A93520;
+  /* #C9452F is 4.20:1 on paper: fine as a button fill under white text
+     (4.80:1), below AA as small text. Links and inline brand text use the
+     deeper red, which is 5.72:1. */
+  --brand-text: #A93520;
 
-  /* Brand accent. A precise electric blue, not purple (PromptPerfect),
-     not generic AI cyan, not Linear's exact value. Used sparingly on
-     hover states, score highlights, active nav, and one hero word. */
-  /* Colour that carries meaning, not decoration. Three roles, used only
-     for these three things anywhere in the product:
+  /* --- meaning. Only ever these three things. --- */
+  --machine: #2C5FD4;      /* the tool contributed this */
+  --machine-bg: #E8EEFC;
+  /* The brief's amber is #B8791A. It measures 3.24:1 on its own tint, which
+     is below AA for body text, and the guessed span IS body text at 15px.
+     It is also the single most important thing on the page to be able to
+     read. Darkened to 5.01:1 on the tint and 4.91:1 on paper, hue held.
+     #B8791A survives as --guess-accent for the dot and the remove control,
+     which are shapes rather than text. */
+  --guess: #8F5D12;        /* the tool assumed this, and you can remove it */
+  --guess-accent: #B8791A;
+  --guess-bg: #FBF1DE;
+  --confirm: #2E6F4E;      /* verified, removed, done */
 
-       machine - the tool contributed this
-       guess   - the tool assumed this, and you can take it back
-       confirm - verified, removed, done
+  /* --- type ---
+     Bricolage Grotesque for display, IBM Plex Sans for body, IBM Plex Mono
+     for anything countable: labels, counts, diff chrome. Not Inter. */
+  --font-display: var(--font-bricolage), Georgia, serif;
+  --font-sans: var(--font-plex-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
 
-     Values here are tuned for the current dark canvas. The light rebuild
-     changes these numbers and nothing that uses them. */
-  --color-machine: #7DA7F4;
-  --color-machine-bg: rgba(125, 167, 244, 0.14);
-  --color-guess: #E0B23C;
-  --color-guess-bg: rgba(224, 178, 60, 0.14);
-  --color-confirm: #5FBE8C;
+  /* ===================================================================
+     Legacy aliases, mapped BY ROLE, not by name.
 
-  --color-accent: #5B8FED;
-  --color-accent-bright: #7DA7F4;
-  --color-accent-soft: rgba(91, 143, 237, 0.10);
-  --color-accent-glow: rgba(91, 143, 237, 0.22);
+       --color-ink*   was the page background  -> stays the background
+       --color-paper* was the primary text     -> stays the text
+
+     Do not "fix" these to match their names. The names are wrong and the
+     mapping is right. New code should use the tokens above.
+     ================================================================== */
+  --color-ink: var(--paper);
+  --color-ink-soft: var(--paper);
+  --color-ink-card: var(--card);
+  --color-ink-card-elevated: var(--card);
+
+  --color-paper: var(--ink);
+  --color-paper-mute: var(--ink-soft);
+
+  --color-rule: var(--rule);
+  --color-rule-strong: #CFCBBE;
+
+  --color-accent: var(--brand);
+  --color-accent-bright: var(--brand-deep);
+  --color-accent-soft: #F6E7E3;
+  --color-accent-glow: rgba(201, 69, 47, 0.16);
+
+  /* Font aliases, same role-preserving logic as the colours above.
+     ~40 call sites say var(--font-inter) or class="font-serif". Repointing
+     the variables is one edit; renaming every use is forty chances to miss
+     one. --font-serif now resolves to the DISPLAY face, which is a grotesque
+     rather than a serif: the name is wrong and the role is right. */
+  --font-inter: var(--font-plex-sans);
+  --font-serif: var(--font-bricolage);
+  --font-geist-sans: var(--font-plex-sans);
+  --font-geist-mono: var(--font-plex-mono);
+
+  /* Kept so existing markup keeps compiling. Same three meanings. */
+  --color-guess-accent: var(--guess-accent);
+  --color-brand-text: var(--brand-text);
+  --color-machine: var(--machine);
+  --color-machine-bg: var(--machine-bg);
+  --color-guess: var(--guess);
+  --color-guess-bg: var(--guess-bg);
+  --color-confirm: var(--confirm);
 }
 
 * {
@@ -75,9 +115,9 @@ html {
 }
 
 body {
-  background: #0a0e1a;
-  color: #f0f4ff;
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -87,20 +127,20 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f1628;
+  background: var(--paper);
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e2d4a;
+  background: var(--rule);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2d4070;
+  background: #CFCBBE;
 }
 
 /* Selection */
 ::selection {
-  background: rgba(124, 58, 237, 0.35);
-  color: #f0f4ff;
+  background: var(--guess-bg);
+  color: var(--ink);
 }
 
 /* Focus ring - on-brand accent, keyboard-only (focus-visible). Replaces
@@ -120,16 +160,9 @@ body {
 }
 
 /* Glow utilities */
-.glow-violet {
-  box-shadow: 0 0 20px rgba(124, 58, 237, 0.4), 0 0 60px rgba(124, 58, 237, 0.15);
-}
 
 .glow-cyan {
   box-shadow: 0 0 20px rgba(6, 182, 212, 0.4), 0 0 60px rgba(6, 182, 212, 0.15);
-}
-
-.text-glow-violet {
-  text-shadow: 0 0 20px rgba(124, 58, 237, 0.8);
 }
 
 .text-glow-cyan {
@@ -137,27 +170,8 @@ body {
 }
 
 /* Glass morphism */
-.glass {
-  background: rgba(15, 22, 40, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(30, 45, 74, 0.8);
-}
-
-.glass-strong {
-  background: rgba(10, 14, 26, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(45, 64, 112, 0.5);
-}
 
 /* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
 
 /* Fade in */
 @keyframes fadeIn {
@@ -169,10 +183,6 @@ body {
 }
 
 /* Animated border */
-@keyframes border-spin {
-  from { --border-angle: 0turn; }
-  to { --border-angle: 1turn; }
-}
 
 /* Score bar animation */
 @keyframes score-fill {
@@ -180,34 +190,8 @@ body {
 }
 
 /* Typing animation */
-@keyframes typing-cursor {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-.typing-cursor::after {
-  content: '|';
-  animation: typing-cursor 1s step-end infinite;
-  color: #7c3aed;
-  margin-left: 1px;
-}
 
 /* Shimmer loading */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(30, 45, 74, 0.3) 25%,
-    rgba(45, 64, 112, 0.5) 50%,
-    rgba(30, 45, 74, 0.3) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
 
 /* ============================================================
    Editorial design system (marketing pages)
@@ -216,7 +200,7 @@ body {
 .editorial {
   background: var(--color-ink);
   color: var(--color-paper);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-feature-settings: 'ss01', 'cv01';
 }
 
@@ -257,14 +241,15 @@ body {
 }
 
 .font-serif {
-  font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
+  font-family: var(--font-display);
+  font-weight: 600;
   font-optical-sizing: auto;
 }
 
 /* Display headlines: tighter tracking, balanced wrap */
 .display {
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 400;
+  font-family: var(--font-display);
+  font-weight: 800;
   font-style: normal;
   letter-spacing: -0.02em;
   line-height: 1.02;
@@ -272,20 +257,21 @@ body {
 }
 
 .display-italic {
-  font-family: var(--font-serif), Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
+  font-family: var(--font-display);
+  font-style: normal;
+  font-weight: 600;
   letter-spacing: -0.015em;
 }
 
 /* Eyebrow: tiny, tracked, all caps */
 .eyebrow {
-  font-family: var(--font-inter), system-ui, sans-serif;
+  /* Labels are data, and data is mono. Same rule as the counts. */
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-paper-mute);
+  color: var(--ink-soft);
 }
 
 /* Subtle film grain - covers full page with low-opacity SVG noise */
@@ -295,9 +281,13 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.06;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* Paper tooth. This was WHITE noise in `overlay` at 0.06, which is a
+     dark-canvas device: on a light page it washes the surface out instead
+     of giving it texture. Dark noise in `multiply` at a third of the
+     strength reads as paper rather than as fog. */
+  opacity: 0.022;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* Hairline rule */
@@ -418,6 +408,115 @@ a[aria-disabled="true"],
 
 /* Filled paper button - subtle opacity dip on hover, gentle press scale on active.
    Use on any element styled with paper background + ink text. */
+/* ===================================================================
+   .btn-brand - the primary action.
+
+   The fill sweeps left to right on hover and on focus-visible. It is a
+   pseudo-element scaled on the X axis, never an animated width and never a
+   moving background-position: both of those relayout or repaint the whole
+   button every frame, and on a long label you can watch it tear.
+   transform is the only property here that the compositor can do on its own.
+
+   focus-visible gets the same treatment as hover, so a keyboard user sees
+   the same affordance a mouse user does rather than a different one.
+   =================================================================== */
+.btn-brand {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--brand);
+  color: #FFFFFF;
+  border: 1px solid var(--brand);
+  transition: color 160ms linear;
+}
+
+.btn-brand::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--brand-deep);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-brand:hover::before,
+.btn-brand:focus-visible::before {
+  transform: scaleX(1);
+}
+
+.btn-brand:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* An outline variant that fills on the same sweep. */
+.btn-brand-outline {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: transparent;
+  color: var(--brand);
+  border: 1px solid var(--brand);
+  transition: color 220ms linear;
+}
+
+.btn-brand-outline::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--brand);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-brand-outline:hover,
+.btn-brand-outline:focus-visible {
+  color: #FFFFFF;
+}
+
+.btn-brand-outline:hover::before,
+.btn-brand-outline:focus-visible::before {
+  transform: scaleX(1);
+}
+
+/* ===================================================================
+   Scroll reveal.
+
+   The class is ADDED by JavaScript. Nothing is hidden in CSS by default,
+   so a page with broken or blocked JS renders completely rather than
+   rendering nothing, which is what the previous framer-motion version did:
+   it server-rendered opacity:0 and relied on hydration to undo it.
+   =================================================================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 500ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .btn-brand::before,
+  .btn-brand-outline::before {
+    transition: none;
+  }
+}
+
 .btn-paper {
   transition: opacity 200ms ease, transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }

@@ -79,8 +79,8 @@ export default async function DashboardPage({
           <div className="md:col-span-3 flex md:justify-end">
             <Link
               href="/extension"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
-              style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-brand"
+              style={{ fontWeight: 500 }}
             >
               Open the extension
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
@@ -92,13 +92,13 @@ export default async function DashboardPage({
       </Reveal>
 
       {isNew ? (
-        <Reveal delay={0.06}>
+        <Reveal index={1}>
           <EmptyState />
         </Reveal>
       ) : (
         <>
           {/* Metric cards - premium, animated, tier-aware. */}
-          <Reveal delay={0.06}>
+          <Reveal index={1}>
             <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
               <UsageCard usage={usage} isPro={isPro} />
               <MetricCard
@@ -112,7 +112,7 @@ export default async function DashboardPage({
           </Reveal>
 
           {/* Latest improvement spotlight. */}
-          <Reveal delay={0.14}>
+          <Reveal index={2}>
             <section>
               <div className="flex items-baseline justify-between mb-5">
                 <p className="eyebrow">Latest improvement</p>
@@ -170,7 +170,7 @@ export default async function DashboardPage({
 
           {/* Pro upsell. */}
           {!isPro && (
-            <Reveal delay={0.2}>
+            <Reveal index={3}>
               <section
                 className="rounded-2xl p-7 md:p-9 grid md:grid-cols-12 gap-6 md:gap-10 items-center"
                 style={{ border: '1px solid var(--color-rule-strong)', background: 'var(--color-ink-card)' }}
@@ -187,7 +187,7 @@ export default async function DashboardPage({
                 <div className="md:col-span-4 md:flex md:items-center md:justify-end">
                   <UpgradeButton
                     plan="pro_monthly"
-                    className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper cursor-pointer"
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-brand cursor-pointer"
                   >
                     <span>Upgrade · <span className="line-through opacity-60">$9.99</span> $4.99/mo</span>
                     <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
@@ -371,8 +371,8 @@ function EmptyState() {
 
         <Link
           href="/extension"
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-paper"
-          style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-brand"
+          style={{ fontWeight: 500 }}
         >
           Get the extension
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none">

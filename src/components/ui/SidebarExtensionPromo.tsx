@@ -55,7 +55,7 @@ export function SidebarExtensionPromo() {
               'linear-gradient(180deg, var(--color-ink-card-elevated) 0%, var(--color-ink-card) 100%)',
             border: '1px solid var(--color-rule-strong)',
             boxShadow:
-              '0 1px 0 rgba(245, 244, 241, 0.04) inset, 0 20px 40px -24px rgba(0, 0, 0, 0.65)',
+              '0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 18px 34px -24px rgba(21, 19, 15, 0.28)',
           }}
         >
           {/* Soft accent glow in the top-right corner - gives the card
