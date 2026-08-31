@@ -1,3 +1,7 @@
+> **SUPERSEDED by [0006](0006-paper-and-markup.md).** The aesthetic moved to
+> paper and markup, light only, in preparation for launch. Kept for the
+> reasoning, which is still why there is no purple and no glassmorphism.
+
 # 0004 — Design aesthetic is locked (editorial dark, no 3D)
 
 ## Context

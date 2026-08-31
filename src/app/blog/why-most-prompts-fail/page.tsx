@@ -262,7 +262,7 @@ export default function WhyMostPromptsFailPage() {
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Not sure which gap your prompt has?</h2>
             <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Paste your prompt into Deepclario. It scores each part, points to the weak one, and rewrites it. Free, no account needed.</p>
-            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] font-semibold transition-all">
+            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Analyze my prompt →
             </Link>
           </div>

@@ -239,8 +239,8 @@ function Gate({
       </p>
       <Link
         href={href}
-        className="inline-flex items-center px-5 py-2.5 rounded-full text-sm transition-all btn-paper"
-        style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+        className="inline-flex items-center px-5 py-2.5 rounded-full text-sm transition-all btn-brand"
+        style={{ fontWeight: 500 }}
       >
         {cta}
       </Link>

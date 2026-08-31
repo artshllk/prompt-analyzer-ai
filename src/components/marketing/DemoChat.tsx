@@ -530,8 +530,8 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
                 <div className="mt-4 flex flex-wrap items-center gap-4">
                   <Link
                     href="/pricing"
-                    className="inline-flex items-center px-5 py-2.5 rounded-full text-sm btn-paper transition-all"
-                    style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+                    className="inline-flex items-center px-5 py-2.5 rounded-full text-sm btn-brand transition-all"
+                    style={{ fontWeight: 500 }}
                   >
                     See what Pro includes
                   </Link>
@@ -562,8 +562,8 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
                 </p>
                 <Link
                   href="/login?signup=1"
-                  className="mt-4 inline-flex items-center px-5 py-2.5 rounded-full text-sm btn-paper transition-all"
-                  style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+                  className="mt-4 inline-flex items-center px-5 py-2.5 rounded-full text-sm btn-brand transition-all"
+                  style={{ fontWeight: 500 }}
                 >
                   Create a free account
                 </Link>
@@ -704,8 +704,8 @@ function Intro({
             type="submit"
             disabled={!input.trim()}
             aria-label="Send"
-            className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-full transition-all btn-paper disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink-card) focus:ring-(--color-paper)"
-            style={{ background: 'var(--color-paper)', color: 'var(--color-ink)' }}
+            className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-full transition-all btn-brand disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink-card) focus:ring-(--color-paper)"
+            
           >
             <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
               <path d="M7 12V2M7 2L2 7M7 2L12 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -760,8 +760,8 @@ function CopyButton({ text }: { text: string }) {
         setCopied(true)
         setTimeout(() => setCopied(false), 1600)
       }}
-      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all btn-paper focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink) focus:ring-(--color-paper)"
-      style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all btn-brand focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink) focus:ring-(--color-paper)"
+      style={{ fontWeight: 500 }}
     >
       {copied ? 'Copied' : 'Copy rewrite'}
     </button>
@@ -810,8 +810,8 @@ function Gate() {
       </p>
       <Link
         href="/login?signup=1&redirectTo=/playground"
-        className="inline-flex items-center justify-center px-7 py-3 rounded-full text-[15px] btn-paper transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink) focus:ring-(--color-paper)"
-        style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+        className="inline-flex items-center justify-center px-7 py-3 rounded-full text-[15px] btn-brand transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink) focus:ring-(--color-paper)"
+        style={{ fontWeight: 500 }}
       >
         Create account
       </Link>

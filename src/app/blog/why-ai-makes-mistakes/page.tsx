@@ -203,7 +203,7 @@ export default function WhyAIMakesMistakesPage() {
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Fewer mistakes start with a better prompt</h2>
             <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A clear, specific prompt gives the model less room to drift. Paste yours into Deepclario for a stronger version. Free, no account needed.</p>
-            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] font-semibold transition-all">
+            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Improve my prompt →
             </Link>
           </div>

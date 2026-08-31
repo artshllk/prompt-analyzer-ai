@@ -44,18 +44,20 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 backdrop-blur-sm"
+            style={{ background: 'rgba(21, 19, 15, 0.45)' }}
             onClick={onClose}
           />
 
           <motion.div
-            className="relative z-10 w-full max-w-md glass rounded-2xl p-8 border border-[#2d4070]"
+            className="relative z-10 w-full max-w-md rounded-2xl p-8"
+            style={{ background: 'var(--card)', border: '1px solid var(--rule)', boxShadow: '0 24px 60px rgba(21,19,15,0.18)' }}
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
           >
-            <div className="absolute -top-px left-1/2 -translate-x-1/2 w-32 h-px bg-gradient-to-r from-transparent via-violet-500 to-transparent" />
+            <div className="absolute -top-px left-1/2 -translate-x-1/2 w-32 h-px" style={{ background: 'var(--brand)' }} />
 
             {status === 'done' ? (
               <div className="text-center py-4">
@@ -64,13 +66,13 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                     <path d="M5 12L10 17L19 8" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <h2 className="text-xl font-bold text-[#f0f4ff] mb-2">You&apos;re on the list</h2>
+                <h2 className="text-xl font-bold text-[color:var(--ink)] mb-2">You&apos;re on the list</h2>
                 <p className="text-[#8b9cc8] text-sm mb-6">
                   We&apos;ll email you the moment Pro goes live - usually within a few days.
                 </p>
                 <button
                   onClick={onClose}
-                  className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-all"
+                  className="btn-brand px-6 py-2.5 rounded-xl text-sm font-semibold"
                 >
                   Got it
                 </button>
@@ -78,12 +80,12 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
             ) : (
               <>
                 <div className="text-center mb-6">
-                  <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-violet-400">
+                  <div className="w-14 h-14 mx-auto mb-4 rounded-2xl flex items-center justify-center" style={{ background: 'var(--machine-bg)', border: '1px solid var(--machine)' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--machine)' }}>
                       <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-bold text-[#f0f4ff] mb-2">Pro is launching soon</h2>
+                  <h2 className="text-2xl font-bold text-[color:var(--ink)] mb-2">Pro is launching soon</h2>
                   <p className="text-[#8b9cc8] text-sm leading-relaxed">
                     We&apos;re finalizing payment processing. Leave your email and you&apos;ll be first to know - and first in line.
                   </p>
@@ -92,7 +94,7 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                 <ul className="space-y-2.5 mb-6">
                   {PRO_FEATURES.map(f => (
                     <li key={f} className="flex items-center gap-3 text-sm text-[#8b9cc8]">
-                      <div className="w-4 h-4 rounded-full bg-violet-500/20 border border-violet-500/40 flex items-center justify-center shrink-0">
+                      <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--machine-bg)', border: '1px solid var(--machine)' }}>
                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
                           <path d="M1.5 4L3 5.5L6.5 2" stroke="#7c3aed" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
@@ -109,12 +111,13 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                     onChange={e => setEmail(e.target.value)}
                     placeholder="your@email.com"
                     required
-                    className="w-full px-4 py-3 rounded-xl bg-[#0a0e1a] border border-[#1e2d4a] text-[#f0f4ff] placeholder:text-[#4a5a80] outline-none focus:border-violet-500/60 text-sm transition-colors"
+                    className="w-full px-4 py-3 rounded-xl outline-none text-sm transition-colors"
+                    style={{ background: 'var(--paper)', border: '1px solid var(--rule)', color: 'var(--ink)' }}
                   />
                   <button
                     type="submit"
                     disabled={status === 'loading'}
-                    className="w-full py-3.5 rounded-xl font-semibold text-white bg-violet-600 hover:bg-violet-500 active:scale-[0.98] transition-all disabled:opacity-50 glow-violet"
+                    className="btn-brand w-full py-3.5 rounded-xl font-semibold active:scale-[0.98] disabled:opacity-50"
                   >
                     {status === 'loading' ? 'Saving...' : 'Notify me when Pro launches'}
                   </button>
@@ -125,7 +128,7 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
 
                 <button
                   onClick={onClose}
-                  className="w-full py-2 mt-2 text-sm text-[#4a5a80] hover:text-[#8b9cc8] transition-colors"
+                  className="w-full py-2 mt-2 text-sm text-[color:var(--ink-soft)] hover:text-[color:var(--ink)] transition-colors"
                 >
                   Maybe later
                 </button>

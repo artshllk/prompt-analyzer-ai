@@ -83,7 +83,7 @@ export function ExtensionHeroVisual() {
                   style={{
                     width: 16,
                     height: 16,
-                    background: i === 0 ? 'var(--color-accent-bright)' : 'rgba(245,244,241,.10)',
+                    background: i === 0 ? 'var(--color-accent-bright)' : 'var(--rule)',
                     color: i === 0 ? 'var(--color-ink)' : 'var(--color-paper-mute)',
                   }}
                 >

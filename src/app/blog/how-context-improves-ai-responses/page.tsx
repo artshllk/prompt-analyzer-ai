@@ -211,7 +211,7 @@ export default function HowContextImprovesResponsesPage() {
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Is your prompt missing context?</h2>
             <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Deepclario scores your prompt, tells you what context is missing, and rewrites it. Free, no account needed.</p>
-            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] font-semibold transition-all">
+            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Analyze my prompt →
             </Link>
           </div>

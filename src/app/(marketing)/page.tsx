@@ -115,11 +115,11 @@ export default function LandingPage() {
             {/* Entrance choreography: eyebrow -> headline -> subhead -> tool,
                 staggered so the hero assembles in under a second. The page
                 paints and stays interactive throughout - this is a reveal,
-                never a gate. Only the headline gets the blur resolve. */}
+                never a gate. Only the headline gets the resolve. */}
             <Reveal>
               <p className="eyebrow mb-5">For ChatGPT, Claude &amp; Gemini users</p>
             </Reveal>
-            <Reveal delay={0.08} blur>
+            <Reveal index={1}>
               <h1
                 className="display text-[2.6rem] sm:text-5xl md:text-[4.5rem] leading-[1.05] tracking-tight"
                 style={{ color: "var(--color-paper)" }}
@@ -130,7 +130,7 @@ export default function LandingPage() {
                 </span>
               </h1>
             </Reveal>
-            <Reveal delay={0.2}>
+            <Reveal index={3}>
               <p
                 className="mt-4 md:mt-5 text-base sm:text-lg md:text-xl leading-relaxed max-w-2xl"
                 style={{ color: "var(--color-paper-mute)" }}
@@ -152,7 +152,7 @@ export default function LandingPage() {
               space. The demo modal, HeroRefinement and its five supporting
               components are deleted.
             */}
-            <Reveal delay={0.3}>
+            <Reveal index={5}>
               <div
                 className="mt-8 md:mt-10 rounded-3xl p-4 sm:p-6 md:p-8"
                 style={{
@@ -164,7 +164,7 @@ export default function LandingPage() {
               </div>
             </Reveal>
 
-            <Reveal delay={0.4}>
+            <Reveal index={5}>
               <p
                 className="mt-5 text-[13px] flex flex-wrap items-center gap-x-4 gap-y-2"
                 style={{ color: "var(--color-paper-mute)" }}

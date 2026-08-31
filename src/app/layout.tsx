@@ -1,25 +1,41 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono, Instrument_Serif, Inter } from 'next/font/google'
+import { Bricolage_Grotesque, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 import { PaddleProvider } from '@/components/PaddleProvider'
 import { Analytics } from '@vercel/analytics/react'
 
-const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
-const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
-
-// Instrument Serif - contemporary editorial serif. Single weight (400)
-// plus its italic. Crisper, more modern feel than older serif revivals.
-const editorialSerif = Instrument_Serif({
-  variable: '--font-serif',
+/**
+ * Three faces, three jobs. Self-hosted at build time by next/font, so there
+ * is no render-blocking request to Google and no layout shift.
+ *
+ * Display  Bricolage Grotesque, 600 and 800. Has real character at large
+ *          sizes without being a novelty face.
+ * Body     IBM Plex Sans. Deliberately not Inter: Inter is the default of
+ *          every AI product shipped in the last three years, and looking
+ *          like all of them is the one thing this brand cannot afford.
+ * Data     IBM Plex Mono, for anything countable. Labels, counts, the
+ *          "3 added, 2 of them guesses" line, diff chrome. If a number can
+ *          be checked by hand it is set in mono, which is the typographic
+ *          version of the same promise.
+ */
+const display = Bricolage_Grotesque({
+  variable: '--font-bricolage',
   subsets: ['latin'],
-  weight: '400',
-  style: ['normal', 'italic'],
+  weight: ['600', '800'],
   display: 'swap',
 })
 
-const inter = Inter({
-  variable: '--font-inter',
+const body = IBM_Plex_Sans({
+  variable: '--font-plex-sans',
   subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  display: 'swap',
+})
+
+const mono = IBM_Plex_Mono({
+  variable: '--font-plex-mono',
+  subsets: ['latin'],
+  weight: ['400', '500'],
   display: 'swap',
 })
 
@@ -98,7 +114,7 @@ const orgSchema = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${editorialSerif.variable} ${inter.variable} h-full`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable} h-full`}>
       <head>
         <link rel="alternate" type="application/rss+xml" title="Deepclario Blog RSS" href="/rss.xml" />
         <script

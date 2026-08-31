@@ -17,6 +17,11 @@
   if (window.__deepclarioInjected) return
   window.__deepclarioInjected = true
 
+  // Shared palette and type scale (extension/tokens.js, loaded first by the
+  // manifest). Falls back to an empty block rather than throwing, so a load
+  // ordering mistake costs the colours and not the product.
+  const TOKENS = (typeof window !== 'undefined' && window.DC_TOKENS) || { cssVars: '' }
+
   /* ---------- Read / write the host page's prompt box ---------- */
 
   const READ_SELECTORS = [
@@ -280,15 +285,21 @@
 
   root.innerHTML = `
     <style>
-      :host { all: initial; }
-      * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
+      :host {
+        all: initial;
+        /* The shared palette. Defined once here so every rule below can use
+           a name instead of a hex, and so a palette change is one edit in
+           tokens.js rather than eighty-six across three files. */
+        ${TOKENS.cssVars}
+      }
+      * { box-sizing: border-box; font-family: var(--dc-font); }
 
       /* Inline chip anchored near the prompt box - the whole default UI. */
       .chip {
         position: fixed; z-index: 2147483646;
         display: inline-flex; align-items: center; gap: 7px;
         padding: 7px 12px; border-radius: 999px; cursor: pointer;
-        background: #F5F4F1; color: #0E0E10; font-size: 12.5px; font-weight: 600;
+        background: var(--dc-card); color: var(--dc-ink); font-size: 12.5px; font-weight: 600;
         border: none; box-shadow: 0 3px 16px rgba(0,0,0,0.28);
         opacity: 0; transform: translateY(4px) scale(.97); pointer-events: none;
         transition: opacity .18s, transform .18s cubic-bezier(.16,1,.3,1);
@@ -302,22 +313,22 @@
         padding: 1px 5px; margin-left: 2px;
       }
       .chip .why {
-        font-size: 11px; font-weight: 600; color: #2f5fae;
+        font-size: 11px; font-weight: 600; color: var(--dc-machine);
         margin-left: 2px; padding-left: 8px; border-left: 1px solid rgba(14,14,16,.2);
         cursor: pointer;
       }
       .chip .why:hover { text-decoration: underline; }
-      .chip #undo { color: #6b6a66; }
+      .chip #undo { color: var(--dc-ink-soft); }
       /* The offer to add missing details - the next step of the journey,
          so it reads as an action, not as a footnote. */
-      .chip .add { color: #0E0E10; background: #8FB4F2; border-left: none;
+      .chip .add { color: var(--dc-ink); background: var(--dc-machine); border-left: none;
         border-radius: 999px; padding: 3px 9px; margin-left: 6px; font-weight: 700; }
       .chip .add:hover { text-decoration: none; opacity: .88; }
-      .chip.state-working { background: #E9E7E2; cursor: default; }
-      .chip.state-done { background: #DFF0E4; }
+      .chip.state-working { background: var(--dc-paper); cursor: default; }
+      .chip.state-done { background: var(--dc-confirm-bg); }
       .chip .dots span {
         display:inline-block; width:4px;height:4px;border-radius:50%;
-        background:#0E0E10; margin:0 1.5px; animation: d 1.2s infinite; vertical-align: middle;
+        background:var(--dc-ink); margin:0 1.5px; animation: d 1.2s infinite; vertical-align: middle;
       }
       .chip .dots span:nth-child(2){animation-delay:.18s}
       .chip .dots span:nth-child(3){animation-delay:.36s}
@@ -330,7 +341,7 @@
         display: inline-flex; align-items: center; gap: 8px;
         font-size: 12px; font-weight: 600;
         padding: 7px 8px 7px 12px; border-radius: 999px;
-        background: #0E0E10; color: #F5F4F1;
+        background: var(--dc-ink); color: var(--dc-card);
         border: 1px solid rgba(245,244,241,.16);
         box-shadow: 0 3px 16px rgba(0,0,0,.3);
         opacity: 0; transform: translateY(4px);
@@ -340,13 +351,13 @@
       }
       .toast.show { opacity: 1; transform: none; }
       .toast.actionable { pointer-events: auto; }
-      .toast.good { background: #DFF0E4; color: #14401f; border-color: transparent; }
+      .toast.good { background: var(--dc-confirm-bg); color: var(--dc-confirm); border-color: transparent; }
       .toast .msg { padding-right: 2px; }
       .toast .act {
         flex-shrink: 0; cursor: pointer; font-family: inherit;
         font-size: 11.5px; font-weight: 700;
         padding: 4px 11px; border-radius: 999px; border: none;
-        background: #F5F4F1; color: #0E0E10;
+        background: var(--dc-card); color: var(--dc-ink);
         transition: opacity .15s;
       }
       .toast .act:hover { opacity: .88; }
@@ -361,52 +372,52 @@
       .forks.show { display: flex; }
       .forks .q {
         display: flex; align-items: center; justify-content: space-between; gap: 8px;
-        font-size: 12.5px; font-weight: 600; color: #F5F4F1;
-        background: #0E0E10; border: 1px solid rgba(245,244,241,.16);
+        font-size: 12.5px; font-weight: 600; color: var(--dc-card);
+        background: var(--dc-ink); border: 1px solid rgba(245,244,241,.16);
         border-radius: 9px; padding: 8px 10px 8px 12px;
         box-shadow: 0 4px 20px rgba(0,0,0,.35);
       }
       .forks .qx {
-        background: none; border: none; color: #A8A6A0; cursor: pointer;
+        background: none; border: none; color: var(--dc-ink-soft); cursor: pointer;
         font-size: 15px; line-height: 1; padding: 2px 4px; flex-shrink: 0;
       }
-      .forks .qx:hover { color: #F5F4F1; }
+      .forks .qx:hover { color: var(--dc-card); }
       .fork {
         text-align: left; cursor: pointer; font-family: inherit;
-        background: #1A1A20; color: #F5F4F1;
+        background: var(--dc-card); color: var(--dc-card);
         border: 1px solid rgba(245,244,241,.18); border-radius: 9px;
         padding: 8px 11px;
         box-shadow: 0 4px 20px rgba(0,0,0,.35);
         transition: border-color .14s, background .14s;
       }
-      .fork:hover { border-color: #8FB4F2; background: #21212a; }
+      .fork:hover { border-color: var(--dc-machine); background: var(--dc-rule); }
       .fork b { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; }
       .fork b .n {
         flex-shrink: 0; font-style: normal; font-size: 9.5px; font-weight: 700;
         width: 15px; height: 15px; border-radius: 4px;
         display: inline-flex; align-items: center; justify-content: center;
-        background: rgba(245,244,241,.10); color: #A8A6A0;
+        background: rgba(245,244,241,.10); color: var(--dc-ink-soft);
       }
-      .fork:hover b .n { background: #8FB4F2; color: #0E0E10; }
-      .fork span { display: block; color: #A8A6A0; font-size: 11.5px; margin-top: 2px; margin-left: 22px; line-height: 1.4; }
+      .fork:hover b .n { background: var(--dc-machine); color: var(--dc-ink); }
+      .fork span { display: block; color: var(--dc-ink-soft); font-size: 11.5px; margin-top: 2px; margin-left: 22px; line-height: 1.4; }
       .forks .hint {
-        font-size: 11px; color: #8a8985; padding: 0 2px 2px 2px; margin-top: -2px;
+        font-size: 11px; color: var(--dc-ink-soft); padding: 0 2px 2px 2px; margin-top: -2px;
       }
       .forks .own {
-        background: #14141a; color: #F5F4F1;
+        background: var(--dc-card); color: var(--dc-card);
         border: 1px dashed rgba(245,244,241,.22); border-radius: 9px;
         padding: 8px 11px; font-size: 12.5px; outline: none; font-family: inherit;
         box-shadow: 0 4px 20px rgba(0,0,0,.35);
       }
-      .forks .own:focus { border-color: #8FB4F2; border-style: solid; }
-      .forks .own::placeholder { color: #5a5a56; }
+      .forks .own:focus { border-color: var(--dc-machine); border-style: solid; }
+      .forks .own::placeholder { color: var(--dc-ink-soft); }
 
       /* Connect box - the paste target, anchored right by the input so
          the user never has to hunt for where the code goes. */
       .connect {
         position: fixed; z-index: 2147483647;
         width: min(86vw, 380px);
-        background: #0E0E10; color: #F5F4F1;
+        background: var(--dc-ink); color: var(--dc-card);
         border: 1px solid rgba(245,244,241,.18);
         border-radius: 12px; padding: 14px 14px 12px;
         box-shadow: 0 8px 32px rgba(0,0,0,.45);
@@ -415,31 +426,31 @@
       }
       .connect.show { opacity: 1; transform: none; }
       .connect .ctitle { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-      .connect .chelp { font-size: 11.5px; color: #A8A6A0; line-height: 1.5; margin-bottom: 10px; }
-      .connect .chelp b { color: #F5F4F1; }
+      .connect .chelp { font-size: 11.5px; color: var(--dc-ink-soft); line-height: 1.5; margin-bottom: 10px; }
+      .connect .chelp b { color: var(--dc-card); }
       .connect .crow { display: flex; gap: 7px; }
       .connect .cinput {
         flex: 1; min-width: 0;
-        background: #1A1A20; color: #F5F4F1;
+        background: var(--dc-card); color: var(--dc-card);
         border: 1px solid rgba(245,244,241,.18); border-radius: 8px;
         padding: 8px 10px; font-size: 12.5px; outline: none;
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       }
-      .connect .cinput:focus { border-color: #8FB4F2; }
+      .connect .cinput:focus { border-color: var(--dc-machine); }
       .connect .cbtn {
         flex-shrink: 0; cursor: pointer; font-family: inherit;
-        background: #F5F4F1; color: #0E0E10;
+        background: var(--dc-card); color: var(--dc-ink);
         border: none; border-radius: 8px;
         padding: 8px 14px; font-size: 12.5px; font-weight: 700;
       }
       .connect .cbtn:hover { opacity: .9; }
-      .connect .cerr { color: #E08A8A; font-size: 11.5px; line-height: 1.45; margin-top: 7px; }
+      .connect .cerr { color: var(--dc-brand); font-size: 11.5px; line-height: 1.45; margin-top: 7px; }
       .connect .cclose {
         position: absolute; top: 8px; right: 10px;
-        background: none; border: none; color: #A8A6A0;
+        background: none; border: none; color: var(--dc-ink-soft);
         font-size: 17px; line-height: 1; cursor: pointer; padding: 2px;
       }
-      .connect .cclose:hover { color: #F5F4F1; }
+      .connect .cclose:hover { color: var(--dc-card); }
 
     </style>
 

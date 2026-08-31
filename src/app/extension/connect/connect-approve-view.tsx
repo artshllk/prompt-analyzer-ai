@@ -193,8 +193,8 @@ export function ConnectApproveView({ email }: { email: string }) {
               <button
                 type="button"
                 onClick={copy}
-                className="px-4 py-2 rounded-full text-sm transition-all btn-paper shrink-0"
-                style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+                className="px-4 py-2 rounded-full text-sm transition-all btn-brand shrink-0"
+                style={{ fontWeight: 500 }}
               >
                 {copied ? 'Copied' : 'Copy'}
               </button>
@@ -266,7 +266,7 @@ export function ConnectApproveView({ email }: { email: string }) {
           type="button"
           onClick={approve}
           disabled={phase !== 'ready'}
-          className="mt-5 px-5 py-2.5 rounded-full text-sm transition-all btn-paper"
+          className="mt-5 px-5 py-2.5 rounded-full text-sm transition-all btn-brand"
           style={{
             background: 'var(--color-paper)',
             color: 'var(--color-ink)',

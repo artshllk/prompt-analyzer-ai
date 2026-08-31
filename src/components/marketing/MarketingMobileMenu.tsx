@@ -230,7 +230,7 @@ export function MarketingMobileMenu({ links, current }: MarketingMobileMenuProps
                     drawer, and closes on tap. */}
                 <motion.div
                   className="absolute inset-0"
-                  style={{ background: 'rgba(0,0,0,0.55)' }}
+                  style={{ background: 'rgba(21,19,15,0.45)' }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
