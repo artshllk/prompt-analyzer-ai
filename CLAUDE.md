@@ -75,10 +75,16 @@ These are verified from code and get re-derived or mistaken every session.
 
 ## Unapplied migrations
 
-`011`-`014` are written and **not applied**. `014` is load-bearing: it creates
-the RPC behind the global anonymous daily cap, and that guard fails closed, so
-without it every anonymous run on the site returns `daily_capacity`. Apply all
-four in Supabase before the next deploy.
+Checked against the live database on 2026-08-31: **`012`, `013` and `014` are
+applied. Only `011` is outstanding**, and it can wait as long as you like
+because nothing in the new code touches `profiles.email_weekly`.
+
+`014` is the load-bearing one: it creates the RPC behind the global anonymous
+daily cap, and that guard fails closed, so without it every anonymous run
+returns `daily_capacity`. It is in place.
+
+Full procedure, including what to re-check and how to roll back:
+`docs/deploy-runbook.md`.
 
 ## Commands
 

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { streamSharpen } from '@/lib/engine/sharpen'
 import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
-import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
+import { resolveCaller } from '@/lib/auth/caller'
 import { consumeAnonRun } from '@/lib/db/anon-budget'
 import { createServiceClient } from '@/lib/supabase/server'
-import { recordExtensionSession } from '@/lib/db/sessions'
+import { recordSession } from '@/lib/db/sessions'
 import { decideUsage, windowStart, USAGE_WINDOW_HOURS, USAGE_DAILY_LIMIT } from '@/lib/limits'
 import type { Tone } from '@/types/database'
 
@@ -46,8 +46,7 @@ export function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  const token = extractBearerToken(req.headers.get('authorization'))
-  const auth = token ? await validateToken(token) : null
+  const auth = await resolveCaller(req)
 
   // Burst / IP throttle, identical tiers to the analyze route.
   if (!auth) {
@@ -196,15 +195,16 @@ export async function POST(req: NextRequest) {
         // ONLY place history is written now that the playground is going -
         // without it, /history is empty forever. Awaited
         // inside the stream (not the request) so it never delays a token,
-        // and it can never break the rewrite: recordExtensionSession
+        // and it can never break the rewrite: recordSession
         // swallows its own errors.
         if (auth && full.trim()) {
-          await recordExtensionSession({
+          await recordSession({
             userId: auth.userId,
             originalPrompt: prompt,
             finalPrompt: full.trim(),
             tone,
             choice,
+            source: 'extension',
           })
         }
       }

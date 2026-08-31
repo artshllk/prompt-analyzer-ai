@@ -15,13 +15,16 @@ import type { Tone, SessionStatus } from '@/types/database'
  *
  * Fire-and-forget: a failed write must never break the user's rewrite.
  */
-export async function recordExtensionSession(params: {
+export async function recordSession(params: {
   userId: string
   originalPrompt: string
   finalPrompt: string
   tone: Tone
   /** The interpretation they picked, when the prompt was ambiguous. */
   choice?: string
+  /** Which surface produced it. Logged, not stored: the table has no column
+   *  for it and adding one is not worth a migration for a log line. */
+  source?: 'web' | 'extension'
 }): Promise<void> {
   try {
     const supabase = await createServiceClient()
@@ -35,9 +38,9 @@ export async function recordExtensionSession(params: {
         tone: params.tone,
         status: 'completed',
         clarify_turns: params.choice ? 1 : 0,
-        // The fast path deliberately does not score - that is what keeps it
-        // under a second. The score arrives later, when the user opens the
-        // why? panel (which runs the diagnosis), and backfills these.
+        // Retained columns, never written. The score they held was two model
+        // self-reports and is gone from the product entirely. See
+        // decisions/0005-no-invented-numbers.md.
         clarity_score_before: null,
         clarity_score_after: null,
       })
@@ -45,7 +48,10 @@ export async function recordExtensionSession(params: {
       .single()
 
     if (error || !data) {
-      console.error('[sessions] extension session insert failed:', error?.message)
+      console.error(
+        `[sessions] insert failed (source=${params.source ?? 'unknown'}):`,
+        error?.message
+      )
       return
     }
 
@@ -72,7 +78,7 @@ export async function recordExtensionSession(params: {
       improvement_tags: [],
     })
   } catch (err) {
-    console.error('[sessions] recordExtensionSession threw:', (err as Error).message)
+    console.error('[sessions] recordSession threw:', (err as Error).message)
   }
 }
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { quickFork } from '@/lib/engine/quick-fork'
 import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
-import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
+import { resolveCaller } from '@/lib/auth/caller'
 import { anonBudgetExhausted } from '@/lib/db/anon-budget'
 
 /**
@@ -42,8 +42,7 @@ export function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  const token = extractBearerToken(req.headers.get('authorization'))
-  const auth = token ? await validateToken(token) : null
+  const auth = await resolveCaller(req)
 
   // This endpoint gets its OWN bucket namespace, and that is the whole point.
   //

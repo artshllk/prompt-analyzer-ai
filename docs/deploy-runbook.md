@@ -3,21 +3,39 @@
 Written for one deploy. Four migrations, one environment variable, one guard
 that has never run in production.
 
-Read the blocker at the bottom before you start. It changes what the cost
-guard does to signed-in visitors, and it is a code change, not a migration.
+Sections 6a to 6c are post-deploy checks, not optional. Two of these
+migrations fail silently by design, so "no data" and "wrong constraint" look
+identical from the outside.
+
+> **Checked against the live database on 2026-08-31: 012, 013 and 014 are
+> already applied. Only 011 is outstanding.**
+>
+> `bump_anon_runs` resolves, `anon_daily_usage` exists, and an
+> `event = 'tool_run'` / `surface = 'web'` insert is accepted, which is only
+> possible if both 012 and 013 landed and landed in the right order.
+> `profiles.email_weekly` is still present, so 011 has not run.
+>
+> That removes the two riskiest items from this deploy. 014 is not a
+> prerequisite any more, and the 012-before-013 ordering hazard is already
+> settled. **Re-run the checks in section 6b anyway**: they cost one query and
+> they are the only thing that distinguishes "recording correctly" from
+> "silently rejecting everything".
 
 ---
 
 ## 1. The four migrations at a glance
 
-| | Change | Side of deploy | Destructive | Reversible |
+| | Change | Side of deploy | Destructive | Applied? |
 |---|---|---|---|---|
-| **014** | Creates `anon_daily_usage` + `bump_anon_runs()` | **BEFORE** (required) | No | Schema yes, counters lost |
-| **012** | Widens two CHECK constraints on `extension_events` | BEFORE (recommended) | No | Only after deleting new rows |
-| **013** | Widens the same event CHECK again | BEFORE, **after 012** | No | Only after deleting new rows |
-| **011** | `DROP COLUMN profiles.email_weekly` | **AFTER** (required) | **Yes** | Schema yes, opt-outs lost |
+| **014** | Creates `anon_daily_usage` + `bump_anon_runs()` | BEFORE (required) | No | **Already applied** |
+| **012** | Widens two CHECK constraints on `extension_events` | BEFORE, before 013 | No | **Already applied** |
+| **013** | Widens the same event CHECK again | BEFORE, after 012 | No | **Already applied** |
+| **011** | `DROP COLUMN profiles.email_weekly` | **AFTER** (required) | **Yes** | **Outstanding** |
 
-Order: **014, 012, 013 → deploy → 011.**
+Order as designed: **014, 012, 013, then deploy, then 011.** In practice the
+first three are done, so this deploy is: **deploy, then 011 whenever you
+like.** The detail below is kept because it is what you need if any of them
+has to be re-run or rolled back.
 
 ---
 
@@ -218,16 +236,55 @@ should get the same graceful "back tomorrow" state rather than a 500. This is
 the branch that runs if Supabase is ever unreachable, and it is the reason the
 guard fails closed.
 
-**Signed-in bypass: see the blocker below. This currently does not work on the
-web, and the test will fail.** For the extension path, with a `dc_` token from
-`/extension/connect`:
+**Run 4, the signed-in bypass. This is the one that used to fail.** The cap is
+consumed only on the anonymous branch, so a signed-in visitor should sail past
+it while the cap is still set to 1 and the counter is already over.
+
+*Browser, cookie session. This is the path that was broken:*
+
+1. With the server still running on `ANON_DAILY_GLOBAL_CAP=1`, open
+   `http://localhost:3000/login` and sign in.
+2. Go back to `http://localhost:3000`.
+3. Improve a prompt.
+4. **Expect a normal rewrite, not "back tomorrow".** If you get the capacity
+   message while signed in, `resolveCaller` is not seeing your cookie.
+5. Open DevTools, Network tab, find the `analyze` request. It should be `200`,
+   and the JSON should carry `"anon": false` and `"tier": "free"` or
+   `"tier": "pro"`. `"anon": true` while signed in means the fix is not live.
+6. Improve a prompt twice more, then check the quota is now real for you:
+
+```sql
+select count(*) from usage_events
+where user_id = 'YOUR_USER_ID'
+  and event_type = 'prompt_analyzed'
+  and created_at > now() - interval '24 hours';
+-- expect: one row per improvement. Before this fix it was always zero.
+```
+
+7. And that the work reached History. Visit `http://localhost:3000/history`,
+   or:
+
+```sql
+select created_at, left(original_prompt, 40) as prompt, final_prompt is not null as has_rewrite
+from prompt_sessions
+where user_id = 'YOUR_USER_ID'
+order by created_at desc limit 5;
+-- expect: a row per improvement, has_rewrite = true.
+-- Before this fix the website wrote nothing here at all.
+```
+
+*Extension path, bearer token from `/extension/connect`:*
 
 ```bash
 curl -s -o /dev/null -w 'bearer: %{http_code}\n' -X POST http://localhost:3000/api/anon/analyze \
   -H 'Content-Type: application/json' -H "Authorization: Bearer dc_YOUR_TOKEN" \
   -d '{"prompt":"write a launch email","tone":"professional"}'
-# expect: 200, because the cap is only consumed on the anonymous branch
+# expect: 200
 ```
+
+Both credentials now go through the same `resolveCaller()` in
+`lib/auth/caller.ts`, so if one works and the other does not, the problem is
+the credential, not the route.
 
 ### Clean up, every time
 
@@ -241,49 +298,104 @@ ever existed in that one process.
 
 ---
 
-## 5. Blocker: signed-in web visitors are not exempt from the cap
+## 5. Fixed before this deploy: signed-in web visitors
 
-Found while writing this runbook. It is a code change, not a migration, and it
-is not fixed.
+This was a blocker when the runbook was first written. It is fixed, and the
+fix is in the same deploy, so the section is kept as a record of what to
+re-test if any of it regresses.
 
-`/api/anon/analyze` identifies a caller by `Authorization: Bearer dc_...` and
-nothing else. The web tool (`DemoChat`) sends `Content-Type` only, because a
-browser session is a Supabase cookie and there is no bearer token to send.
+`/api/anon/analyze`, `sharpen` and `fork` identified a caller by
+`Authorization: Bearer dc_...` and nothing else. Only the extension sends one.
+A browser session is a Supabase cookie, so a signed-in visitor using the tool
+on the website was anonymous to all three routes:
 
-So a signed-in visitor using the homepage tool is **anonymous to that route**:
+- they consumed the global anonymous budget and were blocked by it
+- their free-plan quota was never checked or recorded
+- their sessions never reached History
 
-- They consume the global anonymous budget.
-- They are blocked by it when it trips, on the page they are signed into.
-- Their free-plan quota is never checked or recorded, because the usage write
-  at `route.ts:168` is gated on `if (auth ...)`.
-- Their sessions never reach History from the web path.
+All four routes now call `resolveCaller()` from `lib/auth/caller.ts`, which
+tries the bearer token and falls back to the cookie session. `verify` had its
+own copy of that logic and now shares this one.
 
-This was always true, and it did not matter much while the tool was behind a
-modal. Putting it in the hero and adding a cap that blocks is what makes it
-matter now.
+Two things changed alongside it:
 
-`/api/anon/verify` already has the fix: a `resolveCaller()` helper that tries
-the bearer token and falls back to the cookie session. `analyze`, `sharpen` and
-`fork` need the same twelve lines.
+- **The website was enforcing the wrong limit.** `analyze` used
+  `REWRITE_FREE_LIMIT`, 5 per 48 hours, which `limits.ts` marks `@deprecated`.
+  The live policy is 10 per rolling 24 hours, which is what the pricing page
+  and the FAQ promise. It did not matter while no web user was ever recognised
+  as signed in. It would have from the moment this fix landed, so `analyze`
+  now runs the same `decideUsage()` policy as the extension route.
+- **`recordExtensionSession` is now `recordSession`.** The website calls it
+  too, so the old name was describing a constraint that no longer exists.
 
-**Until that lands, expect the "signed-in users are unaffected" test to fail on
-the web.** It holds for the extension, which does send a bearer token.
-
-My recommendation is to fix `analyze` before this deploy, since it is small,
-already-written-once, and the alternative is shipping a cap that can lock
-signed-in users out of your homepage.
-
----
+Re-test all of this with Run 4 in section 4.
 
 ## 6. The order, one more time
 
 ```
-1. Apply 014                      (or the hero is dead on arrival)
-2. Apply 012                      (surface_check lives only here)
-3. Apply 013                      (must follow 012, not precede it)
-4. Set ANON_DAILY_GLOBAL_CAP=150  (Production scope)
+1. Apply 014                      DONE (verified 2026-08-31)
+2. Apply 012                      DONE
+3. Apply 013                      DONE
+4. Set ANON_DAILY_GLOBAL_CAP=150  (Production scope, then redeploy)
 5. Deploy
-6. Smoke test: one anonymous run on the live site, then
-   select * from anon_daily_usage;   -- expect runs = 1
-7. Apply 011                      (any time after step 5, no rush)
+6. Post-deploy checks, below
+7. Apply 011                      (any time after step 6, no rush)
 ```
+
+### 6a. The cost guard is counting
+
+One anonymous run on the live site (a private window, so no cookie), then:
+
+```sql
+select * from anon_daily_usage;
+-- expect: today's date, runs = 1
+```
+
+If the row is missing, 014 did not apply and every anonymous visitor is
+currently seeing "back tomorrow".
+
+### 6b. The funnel counters are actually recording
+
+**Do not skip this one.** 012 and 013 fail silently by design: the CHECK
+constraint rejects the insert and `/api/anon/event` returns 204 regardless,
+because that endpoint is built so it can never interfere with the product.
+A constraint applied in the wrong order looks exactly like no traffic. Without
+this query you would watch an empty dashboard for a week and conclude nobody
+was using the tool.
+
+Improve one prompt on the live site, then:
+
+```sql
+select event, surface, count(*) from extension_events
+where created_at > now() - interval '1 hour'
+group by event, surface order by 1;
+```
+
+**You must see `tool_run` with `surface = 'web'`.**
+
+| What you see | What it means |
+|---|---|
+| `tool_run` / `web` | Both migrations landed correctly. |
+| Nothing at all | 012 never applied, so `surface = 'web'` fails the surface CHECK and every website counter is rejected. |
+| `question_none` but no `tool_run` | 013 either never applied, or ran before 012 and was narrowed back. Re-run 013. |
+| Rows only with `chatgpt`/`claude`/`gemini` | The extension is writing and the website is not. Same cause as row two: 012. |
+
+If anything is missing, fix the constraint and re-check. Nothing is lost
+except the counters for the window, and no user ever sees an error.
+
+### 6c. A signed-in visitor is recognised
+
+In a normal window, signed in, improve one prompt. Then:
+
+```sql
+select count(*) from usage_events
+where event_type = 'prompt_analyzed' and created_at > now() - interval '1 hour';
+-- expect: at least 1
+
+select count(*) from prompt_sessions where created_at > now() - interval '1 hour';
+-- expect: at least 1
+```
+
+Both were always zero for website traffic before this deploy. If they are
+still zero, `resolveCaller` is not seeing the cookie in production and
+signed-in users are sharing the anonymous cap.

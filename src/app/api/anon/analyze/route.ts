@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { analyzePrompt } from '@/lib/engine'
 import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
-import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
+import { resolveCaller } from '@/lib/auth/caller'
 import { consumeAnonRun } from '@/lib/db/anon-budget'
+import { recordSession } from '@/lib/db/sessions'
 import { createServiceClient } from '@/lib/supabase/server'
-import { REWRITE_FREE_LIMIT, REWRITE_WINDOW_HOURS, windowStart } from '@/lib/limits'
+import { decideUsage, windowStart, USAGE_WINDOW_HOURS, USAGE_DAILY_LIMIT } from '@/lib/limits'
 import type { Tone } from '@/types/database'
 import type { QAPair } from '@/types'
 
@@ -43,8 +44,7 @@ export function OPTIONS() {
  *   - Token + pro tier  → unlimited, DB usage write (for analytics)
  */
 export async function POST(req: NextRequest) {
-  const token = extractBearerToken(req.headers.get('authorization'))
-  const auth = token ? await validateToken(token) : null
+  const auth = await resolveCaller(req)
 
   // Anonymous: IP-throttle. Token-bearing: per-user burst limit, same
   // tiers as the website route (10/min free, 30/min pro) so the
@@ -102,23 +102,49 @@ export async function POST(req: NextRequest) {
     return withCors(NextResponse.json({ error: 'prompt_too_long' }, { status: 400 }))
   }
 
-  // Rolling-window quota for signed-in free users on the extension:
-  // 5 rewrites per 48h. Pro users bypass entirely. New turns in an
-  // in-progress session (priorAnswers non-empty) don't recount - they're
-  // part of the same analysis the user already spent a credit on.
+  /**
+   * Free-tier quota, on the same policy the extension uses.
+   *
+   * This enforced REWRITE_FREE_LIMIT, 5 per 48 hours, which limits.ts marks
+   * @deprecated. The live policy is USAGE_DAILY_LIMIT, 10 per rolling 24
+   * hours, and that is what the pricing page and the FAQ both promise. The
+   * two routes disagreeing did not show up while this one was unreachable
+   * for signed-in web users. Now that a cookie session is recognised, a web
+   * visitor would have hit a limit half the size of the one they were sold.
+   *
+   * Pro bypasses entirely. A later turn in the same session does not
+   * recount: the user already spent a credit on that analysis.
+   */
   if (auth && auth.tier === 'free' && priorAnswers.length === 0) {
     const supabase = await createServiceClient()
 
-    const { count } = await supabase
+    const { data: rows, count, error: usageErr } = await supabase
       .from('usage_events')
-      .select('id', { count: 'exact', head: true })
+      .select('created_at', { count: 'exact' })
       .eq('user_id', auth.userId)
       .eq('event_type', 'prompt_analyzed')
-      .gte('created_at', windowStart(REWRITE_WINDOW_HOURS))
+      .gte('created_at', windowStart(USAGE_WINDOW_HOURS))
+      .order('created_at', { ascending: true })
+      .limit(1)
 
-    if ((count ?? 0) >= REWRITE_FREE_LIMIT) {
+    // Fail open, but shout. Locking a signed-in user out over our own
+    // infrastructure error is worse than one extra free rewrite, and a
+    // silently disabled gate is worse than either.
+    if (usageErr) {
+      console.error(
+        `[anon-analyze] USAGE GATE DISABLED - usage_events read failed: ${usageErr.message}`
+      )
+    }
+
+    const decision = decideUsage(count ?? 0, rows?.[0]?.created_at ?? null)
+    if (!decision.allow) {
       return withCors(NextResponse.json(
-        { error: 'rate_limited_quota', used: count, limit: REWRITE_FREE_LIMIT, windowHours: REWRITE_WINDOW_HOURS },
+        {
+          error: 'rate_limited_quota',
+          // A wall with a clock on it is a wait; without one it is a dead end.
+          resetAt: decision.retryAt,
+          dailyLimit: USAGE_DAILY_LIMIT,
+        },
         { status: 402 }
       ))
     }
@@ -171,6 +197,34 @@ export async function POST(req: NextRequest) {
       .from('usage_events')
       .insert({ user_id: auth.userId, event_type: 'prompt_analyzed' })
       .then(() => {})
+  }
+
+  /**
+   * Persist the session so it reaches History.
+   *
+   * This route never wrote one. recordSession() was called from the sharpen
+   * route only, so History was an extension-only record and every rewrite a
+   * signed-in visitor made on the website vanished when they closed the tab.
+   * They were anonymous to this route anyway, so nobody noticed.
+   *
+   * Written on the turn that actually produces a rewrite, so a clarifying
+   * question followed by an answer is one row and not two. The reading they
+   * picked is stored as the choice, the same shape the extension records.
+   *
+   * Awaited so the row exists before the response returns. On a serverless
+   * platform a fire-and-forget write can be cut off when the function
+   * freezes, and a missing history row is a support ticket nobody can debug.
+   * recordSession swallows its own errors, so this cannot break a rewrite.
+   */
+  if (auth && result.type === 'improved') {
+    await recordSession({
+      userId: auth.userId,
+      originalPrompt: prompt,
+      finalPrompt: result.improvedPrompt,
+      tone,
+      choice: priorAnswers[0]?.answer,
+      source: 'web',
+    })
   }
 
   return withCors(NextResponse.json({
