@@ -14,7 +14,6 @@ import { refinedText, roughText } from "./scenarios";
 import { useLoopPhase } from "./useLoopPhase";
 import { PromptCard } from "./PromptCard";
 import { QuestionCard } from "./QuestionCard";
-import { ClarityMeter } from "./ClarityMeter";
 import { ModelChips } from "./ModelChips";
 
 /**
@@ -71,11 +70,9 @@ export function HeroRefinement() {
 
   const srDescription = `Example of Deepclario refining a prompt. Before: "${roughText(
     scenario,
-  )}" with clarity ${scenario.clarity.from} and ${scenario.tokens.from} tokens. Deepclario asks: "${
-    scenario.question
-  }" After: "${refinedText(scenario)}" with clarity ${scenario.clarity.to} and ${
-    scenario.tokens.to
-  } tokens. Works with ChatGPT, Claude, and Gemini.`;
+  )}". Deepclario asks: "${scenario.question}" After: "${refinedText(
+    scenario,
+  )}". Works with ChatGPT, Claude, and Gemini.`;
 
   return (
     <div
@@ -188,11 +185,6 @@ export function HeroRefinement() {
               }
             />
             <QuestionCard
-              phase={phase}
-              scenario={scenario}
-              staticFinal={reduce}
-            />
-            <ClarityMeter
               phase={phase}
               scenario={scenario}
               staticFinal={reduce}

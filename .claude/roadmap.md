@@ -50,7 +50,7 @@ The engine, API, auth, rate-limiting, and billing are already built and reusable
 
 - **Token counter has no public page** yet, though the logic exists (`lib/tokens.ts`,
   `gpt-tokenizer`). The token blog posts currently have no product CTA because of this.
-- **Stripe is a dead dependency** (`lib/stripe.ts`, `stripe` package, Stripe env vars).
-  Billing is Paddle. Consider removing Stripe to avoid confusion. See `decisions/0001`.
-- **3D dependencies** (`three`, `react-three-fiber`, `components/3d/`) exist but 3D is
-  a rejected direction. Confirm whether they are still used anywhere before removing.
+- ~~Stripe is a dead dependency~~ **Done.** `lib/stripe.ts` and both Stripe
+  packages are removed. Billing is Paddle. See `decisions/0001`.
+- ~~3D dependencies~~ **Done.** `components/3d/` and the four Three.js packages
+  are removed, along with `recharts`, which nothing imported.

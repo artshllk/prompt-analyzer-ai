@@ -171,7 +171,7 @@
   let authState = { token: null, tier: 'anon' }
   // proSeen: the "unlimited" confirmation is shown once, ever. After that
   // Pro users never see a word about limits again - that IS the benefit.
-  let prefs = { tone: 'professional', deep: false, proSeen: false }
+  let prefs = { tone: 'professional', proSeen: false }
   let anonCount = 0
   // The storage listener that waits for the connect page's token. Held so it
   // can be torn down: it is armed only while a connect is in flight.
@@ -189,12 +189,11 @@
     return new Promise(resolve => {
       try {
         chrome.storage.local.get(
-          ['dc_token', 'dc_tier', 'dc_tone', 'dc_deep', 'dc_anon_count', 'dc_pro_seen'],
+          ['dc_token', 'dc_tier', 'dc_tone', 'dc_anon_count', 'dc_pro_seen'],
           v => {
             authState.token = v?.dc_token || null
             authState.tier = v?.dc_tier || (authState.token ? 'free' : 'anon')
             if (TONES.includes(v?.dc_tone)) prefs.tone = v.dc_tone
-            prefs.deep = v?.dc_deep === true
             prefs.proSeen = v?.dc_pro_seen === true
             anonCount = Number.isFinite(v?.dc_anon_count) ? v.dc_anon_count : 0
             // Machines that ran an older build still hold a dc_intro_seen
@@ -1539,10 +1538,6 @@
       // better. One clean way out, no guilt, no second button.
       toast(`That was your ${DAILY_LIMIT} free improvements for today. ${resetPhrase(msg.resetAt)}`, {
         action: { label: 'Get unlimited', url: LINKS.pricing },
-      })
-    } else if (msg.error === 'pro_required') {
-      toast('Deep Rewrite is a Pro feature.', {
-        action: { label: 'See Pro', url: LINKS.pricing },
       })
     } else if (msg.error === 'rate_limited') {
       toast('Too many requests. Wait a moment, then try again.', {

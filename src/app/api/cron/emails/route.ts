@@ -6,19 +6,17 @@ import {
   welcomeEmail,
   nudgeNewUserEmail,
   nudgeActiveUserEmail,
-  weeklyReportEmail,
   tipEmail,
   winbackEmail,
 } from '@/lib/email/templates'
 
 /**
- * Daily email decision engine. One cron, five rules, one send log.
+ * Daily email decision engine. One cron, four rules, one send log.
  *
  * Cadence by design:
  * - welcome        once, minutes after sign-up (auth callback sends it;
  *                  this cron is the sweep for any that slipped through)
  * - nudge          once ever, day 2-7, variant depends on activation
- * - weekly report  Mondays, ONLY for users with sessions that week
  * - tip            Thursdays, opt-out separately, one per ISO week
  * - winback        after 14 quiet days, max twice ever
  *
@@ -47,12 +45,12 @@ export async function GET(req: NextRequest) {
   const [{ data: profiles }, { data: sent }, { data: sessions }] = await Promise.all([
     db
       .from('profiles')
-      .select('id, email, full_name, tier, created_at, email_weekly, email_tips')
+      .select('id, email, full_name, tier, created_at, email_tips')
       .eq('email_unsubscribed', false),
     db.from('emails_sent').select('user_id, email_type, dedupe_key, sent_at'),
     db
       .from('prompt_sessions')
-      .select('user_id, created_at, clarity_score_before, clarity_score_after, original_prompt, id')
+      .select('user_id, created_at, original_prompt')
       .eq('status', 'completed')
       .gte('created_at', new Date(now.getTime() - 90 * DAY_MS).toISOString()),
   ])
@@ -107,9 +105,6 @@ export async function GET(req: NextRequest) {
     const createdAt = new Date(user.created_at).getTime()
     const ageDays = (now.getTime() - createdAt) / DAY_MS
     const userSessions = byUser.get(user.id) ?? []
-    const weekSessions = userSessions.filter(
-      s => now.getTime() - new Date(s.created_at).getTime() < 7 * DAY_MS
-    )
     const lastSessionAt = userSessions.length
       ? Math.max(...userSessions.map(s => new Date(s.created_at).getTime()))
       : null
@@ -127,42 +122,7 @@ export async function GET(req: NextRequest) {
       await trySend(user, 'nudge', `nudge:${user.id}`, content)
     }
 
-    // 3. Weekly report - Mondays, data-gated. Zero sessions means no
-    //    email: a report saying "you did nothing" is a guilt trip.
-    if (day === 1 && user.email_weekly && weekSessions.length > 0) {
-      const scored = weekSessions.filter(
-        s => s.clarity_score_before != null && s.clarity_score_after != null
-      )
-      const avgLift = scored.length
-        ? Math.round(
-            scored.reduce((a, s) => a + (s.clarity_score_after! - s.clarity_score_before!), 0) /
-              scored.length
-          )
-        : 0
-      const best = scored.length
-        ? scored.reduce((b, s) =>
-            s.clarity_score_after! - s.clarity_score_before! >
-            b.clarity_score_after! - b.clarity_score_before!
-              ? s
-              : b
-          )
-        : null
-      // The pattern line is the Pro insights hook, so Pro only.
-      const topGap = user.tier === 'pro' ? await topGapFor(db, scored.map(s => s.id)) : null
-      await trySend(
-        user,
-        'weekly',
-        `weekly:${user.id}:${week}`,
-        weeklyReportEmail(user.id, user.full_name, {
-          sessionCount: weekSessions.length,
-          avgLift,
-          bestOriginal: best?.original_prompt ?? null,
-          topGap,
-        })
-      )
-    }
-
-    // 4. Tip of the week - Thursdays, separate opt-out, skip week one
+    // 3. Tip of the week - Thursdays, separate opt-out, skip week one
     //    (they already got welcome + nudge).
     if (day === 4 && user.email_tips && ageDays > 7) {
       await trySend(
@@ -173,30 +133,20 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    // 5. Win-back - 14 quiet days, max twice, 14 days between attempts.
+    // 4. Win-back - 14 quiet days, max twice, 14 days between attempts.
     if (lastSessionAt !== null && now.getTime() - lastSessionAt > 14 * DAY_MS) {
       const wb = winbacks.get(user.id) ?? { count: 0, last: 0 }
       if (wb.count < 2 && now.getTime() - wb.last > 14 * DAY_MS) {
-        const scored = userSessions.filter(
-          s => s.clarity_score_before != null && s.clarity_score_after != null
-        )
-        const best = scored.length
-          ? scored.reduce((b, s) =>
-              s.clarity_score_after! - s.clarity_score_before! >
-              b.clarity_score_after! - b.clarity_score_before!
-                ? s
-                : b
+        const latest = userSessions.length
+          ? userSessions.reduce((a, s) =>
+              new Date(s.created_at).getTime() > new Date(a.created_at).getTime() ? s : a
             )
           : null
         await trySend(
           user,
           'winback',
           `winback:${user.id}:${wb.count + 1}`,
-          winbackEmail(
-            user.id,
-            user.full_name,
-            best ? { before: best.clarity_score_before!, after: best.clarity_score_after! } : null
-          )
+          winbackEmail(user.id, user.full_name, latest?.original_prompt ?? null)
         )
         // Keep the in-memory count honest within this run.
         winbacks.set(user.id, { count: wb.count + 1, last: now.getTime() })
@@ -205,36 +155,6 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({ ...outcome, total: sends })
-}
-
-async function topGapFor(
-  db: ReturnType<typeof createEmailAdminClient>,
-  sessionIds: string[]
-): Promise<string | null> {
-  if (sessionIds.length === 0) return null
-  const { data } = await db
-    .from('prompt_improvements')
-    .select('improvement_tags')
-    .in('session_id', sessionIds)
-  const counts = new Map<string, number>()
-  for (const row of data ?? []) {
-    for (const t of row.improvement_tags ?? []) counts.set(t, (counts.get(t) ?? 0) + 1)
-  }
-  const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]
-  return top ? humanTag(top[0]) : null
-}
-
-function humanTag(tag: string): string {
-  const names: Record<string, string> = {
-    context: 'the context',
-    role: 'a role for the AI',
-    action: 'a clear action',
-    format: 'the output format',
-    constraints: 'your constraints',
-    examples: 'an example',
-    specificity: 'the specifics',
-  }
-  return names[tag] ?? tag.replace(/_/g, ' ')
 }
 
 /** ISO week key like "2026-W27" for dedupe, plus a numeric week for tip rotation. */

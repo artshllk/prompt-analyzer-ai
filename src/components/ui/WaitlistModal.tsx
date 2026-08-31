@@ -12,7 +12,6 @@ const PRO_FEATURES = [
   'Unlimited prompt improvements',
   'A stronger model on every improve',
   'Full session history',
-  'Weekly insights & pattern reports',
 ]
 
 export function WaitlistModal({ open, onClose }: WaitlistModalProps) {

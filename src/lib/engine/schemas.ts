@@ -135,24 +135,8 @@ export const REWRITE_SCHEMA = {
         enum: ['context', 'role', 'action', 'format', 'constraints', 'examples', 'specificity'],
       },
     },
-    clarity_score_after: { type: 'integer', minimum: 0, maximum: 100 },
   },
-  required: ['minimal_edit', 'restructured', 'template', 'explanation', 'improvement_tags', 'clarity_score_after'],
-} as const
-
-export const CRITIC_SCHEMA = {
-  type: 'object',
-  properties: {
-    critique: {
-      type: 'string',
-      description: 'The hostile review of the draft, 2-4 pointed sentences. Shown to the user.',
-    },
-    refined_prompt: {
-      type: 'string',
-      description: 'The rewrite with every critique point resolved',
-    },
-  },
-  required: ['critique', 'refined_prompt'],
+  required: ['minimal_edit', 'restructured', 'template', 'explanation', 'improvement_tags'],
 } as const
 
 export const CONTRAST_SCHEMA = {

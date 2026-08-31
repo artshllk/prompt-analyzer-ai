@@ -34,7 +34,7 @@ type QA = { question: string; answer: string; turn: number }
 
 type Response =
   | { kind: 'question'; text: string; gap?: string }
-  | { kind: 'improved'; text: string; before: number; after: number }
+  | { kind: 'improved'; text: string }
   | { kind: 'error'; text: string }
 
 type Phase = 'idle' | 'thinking' | 'awaiting-answer' | 'done' | 'error'
@@ -160,12 +160,7 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       }
 
       bumpRuns()
-      setResponse({
-        kind: 'improved',
-        text: data.improvedPrompt,
-        before: data.scoreBeforeImprovement,
-        after: data.clarityScoreAfter,
-      })
+      setResponse({ kind: 'improved', text: data.improvedPrompt })
       setPhase('done')
     } catch {
       fail('Network hiccup. Check your connection and try again.')
@@ -255,13 +250,6 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       <div>
         <div className="flex items-baseline justify-between mb-3">
           <p className="eyebrow" style={{ color: 'var(--color-accent-bright)' }}>Deepclario</p>
-          {response?.kind === 'improved' && (
-            <span className="text-xs tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
-              clarity <span style={{ color: 'var(--color-paper)' }}>{response.before}</span>
-              <span className="mx-1">→</span>
-              <span style={{ color: 'var(--color-accent-bright)' }}>{response.after}</span>
-            </span>
-          )}
         </div>
 
         <div

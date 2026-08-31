@@ -34,17 +34,18 @@ const nextConfig: NextConfig = {
    *                           404s honestly; the links that pointed there
    *                           were repointed at /playground.
    *
-   * The two Deep Rewrite posts stay redirected for now. They sell a Pro
-   * feature that no client can reach, so they are delisted from BLOG_POSTS
-   * (which removes them from /blog, the sitemap and RSS) and sent to
-   * /pricing rather than 404ing an indexed URL. Temporary (307), not
-   * permanent: the feature is being removed outright, and these two lines
-   * go with it.
+   * The two Deep Rewrite posts are the one thing still redirected, and now
+   * permanently. Deep Rewrite is deleted, not parked: it had no client, so
+   * nothing could ever send deep:true and no paying customer could run it.
+   * Both posts described it as a live Pro feature in detail, which makes them
+   * wrong rather than merely stale, so the pages are gone. A 301 to /pricing
+   * keeps the two indexed URLs working and sends someone who searched for a
+   * Pro feature to what Pro actually includes.
    */
   async redirects() {
     return [
-      { source: '/blog/what-is-deep-rewrite', destination: '/pricing', permanent: false },
-      { source: '/blog/deep-rewrite-vs-standard-rewrite', destination: '/pricing', permanent: false },
+      { source: '/blog/what-is-deep-rewrite', destination: '/pricing', permanent: true },
+      { source: '/blog/deep-rewrite-vs-standard-rewrite', destination: '/pricing', permanent: true },
     ]
   },
 }

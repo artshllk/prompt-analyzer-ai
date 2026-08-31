@@ -380,7 +380,7 @@ async function main() {
     const ratio = words(out) / Math.max(1, words(c.prompt))
     console.log(
       `RESULT   ${decision(result)}   intent=${result.type === 'improved' ? result.intent : '-'}` +
-        `  score=${result.scoreBeforeImprovement}  words ${words(c.prompt)} -> ${words(out)} (${ratio.toFixed(1)}x)`
+        `  words ${words(c.prompt)} -> ${words(out)} (${ratio.toFixed(1)}x)`
     )
     console.log(`OUTPUT   ${out.replace(/\n/g, '\n         ')}`)
 

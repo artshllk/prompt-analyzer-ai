@@ -4,7 +4,7 @@
  * The DB stores a raw status ('clarifying' | 'completed' | ...), but the
  * UI needs a clearer story:
  *
- *   improved      - has before + after scores. The good outcome.
+ *   improved      - a rewrite came back. The good outcome.
  *   needs-answer  - clarifying question is waiting, and it's recent enough
  *                   to still be worth resuming.
  *   abandoned     - a question was asked but never answered, and the
@@ -23,12 +23,19 @@ export const STALE_AFTER_HOURS = 24
 
 interface StatusInput {
   status: string
-  clarityScoreAfter: number | null
+  /** The rewrite we produced. Null means we never got that far. */
+  finalPrompt: string | null
   createdAt: string
 }
 
+/**
+ * "Improved" used to mean "has an after-score". The shipping path writes
+ * that column as null on every session, so this function could never
+ * return 'improved' and every real session eventually rendered as
+ * "Abandoned". The honest signal is whether a rewrite came back.
+ */
 export function statusOf(session: StatusInput): DerivedStatus {
-  if (session.clarityScoreAfter != null) return 'improved'
+  if (session.finalPrompt != null && session.finalPrompt.trim() !== '') return 'improved'
   if (session.status === 'failed') return 'failed'
 
   // Unanswered clarifying session: recent => resumable, old => abandoned.

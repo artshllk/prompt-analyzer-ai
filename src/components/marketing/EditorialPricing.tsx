@@ -13,15 +13,17 @@ import Link from "next/link";
  *
  *   - "5 prompt rewrites / 48h" came from REWRITE_FREE_LIMIT, which limits.ts
  *     marks @deprecated. The real limit is USAGE_DAILY_LIMIT: 10 a day.
- *   - "AI detector" is unrouted (/detector redirects to / in next.config.ts).
- *   - "Deep Rewrite" has no client. Nothing in the repo sends deep:true since
- *     the playground was deleted, so no paying customer could run it.
- *   - "Clarity score for every prompt" overstated it. The fast path
- *     deliberately does not score (see sessions.ts, which writes a null score);
- *     a score only appears when the user opens compare.
+ *   - "Deep Rewrite" had no client. Nothing sent deep:true, so no paying
+ *     customer could ever run it. It has since been deleted outright rather
+ *     than left parked, because a Pro tier is not allowed to list a feature
+ *     that does not exist.
+ *   - "Clarity score for every prompt" was an invented number, and it is gone
+ *     from the product. The rewrite model was grading its own rewrite.
+ *   - "Weekly insights report" was built on those same scores. Since the
+ *     shipping path never wrote them, the email always said "+0 clarity".
  *
- * Deep Rewrite is being rebuilt as a Pro action in the extension. It goes back
- * on this list when it ships, not before.
+ * The detector is routed again, so it is a real bullet now rather than a
+ * broken promise.
  *
  * The stronger-model bullet is new and it is real: MODELS.sharpenPro runs a
  * bigger model than MODELS.sharpen on every single improve (see models.ts).
@@ -31,14 +33,13 @@ const FREE_FEATURES = [
   "10 prompt improvements a day",
   "Works inside ChatGPT, Claude, and Gemini",
   "One question first, when your prompt could mean two things",
-  "Chrome extension",
+  "Chrome extension and AI text detector",
   "7-day history",
 ];
 
 const PRO_FEATURES = [
   "Unlimited improvements",
   "A stronger model on every improve",
-  "Weekly insights report: see exactly where your prompts improve",
   "Full history, kept forever (Free keeps 7 days)",
   "Priority processing on every request",
   "Priority support",

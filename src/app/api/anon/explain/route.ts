@@ -107,14 +107,12 @@ export async function POST(req: NextRequest) {
   const result = await explainSharpen({ original, sharpened, memory })
   if (!result) return corsJson({ error: 'ai_unavailable' }, 503)
 
-  // The fast path could not score the prompt without slowing down. This
-  // call did the diagnosis, so backfill the session with it - that is what
-  // makes History teachable and gives Insights something to aggregate.
+  // Backfill the session with what this call worked out was still missing.
+  // That is what makes History teachable.
   if (auth) {
     void attachDiagnosis({
       userId: auth.userId,
       originalPrompt: original,
-      score: result.score,
       gaps: result.gaps,
     })
   }

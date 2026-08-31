@@ -185,7 +185,7 @@ export async function POST(req: NextRequest) {
 
         // Persist the session once we have the finished text. This is the
         // ONLY place history is written now that the playground is going -
-        // without it, /history and /insights are empty forever. Awaited
+        // without it, /history is empty forever. Awaited
         // inside the stream (not the request) so it never delays a token,
         // and it can never break the rewrite: recordExtensionSession
         // swallows its own errors.

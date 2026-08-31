@@ -45,7 +45,6 @@ export type ProfileRow = {
   subscription_status: SubscriptionStatus | null
   subscription_period_end: string | null
   onboarding_completed: boolean
-  email_weekly: boolean
   email_tips: boolean
   email_unsubscribed: boolean
   created_at: string
@@ -67,6 +66,13 @@ export type PromptSessionRow = {
   final_prompt: string | null
   tone: Tone
   status: SessionStatus
+  /**
+   * Retained, no longer read or written. The score was two model
+   * self-reports and the "after" one was the rewrite model grading its own
+   * rewrite, so it is gone from the product. The columns stay because they
+   * hold real historical rows; dropping them would throw that away for
+   * nothing. Nothing should start writing them again.
+   */
   clarity_score_before: number | null
   clarity_score_after: number | null
   clarify_turns: number
@@ -131,8 +137,7 @@ export type Database = {
     Tables: {
       profiles: {
         Row: ProfileRow
-        Insert: Omit<ProfileRow, 'created_at' | 'updated_at' | 'email_weekly' | 'email_tips' | 'email_unsubscribed'> & {
-          email_weekly?: boolean
+        Insert: Omit<ProfileRow, 'created_at' | 'updated_at' | 'email_tips' | 'email_unsubscribed'> & {
           email_tips?: boolean
           email_unsubscribed?: boolean
         }

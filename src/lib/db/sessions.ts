@@ -8,7 +8,7 @@ import type { Tone, SessionStatus } from '@/types/database'
  * The extension authenticates with a bearer token, not a cookie, so it
  * cannot use the cookie-scoped helpers below - hence the service client.
  *
- * This exists because History and Insights read `prompt_sessions`, and
+ * This exists because History reads `prompt_sessions`, and
  * until now ONLY the website playground wrote to it. With the playground
  * gone, the extension is the sole source of history: if it does not write
  * here, the account area is empty forever.
@@ -83,7 +83,7 @@ export async function recordExtensionSession(params: {
  * land with null scores. When the user opens the why? panel we DO run the
  * diagnosis - so we attach the score and the gaps to the session they were
  * looking at. This is what turns History from a log into something you can
- * learn from, and it is what Insights aggregates over.
+ * learn from.
  *
  * Matches the newest completed session for this exact original prompt.
  * Fire-and-forget.
@@ -91,7 +91,6 @@ export async function recordExtensionSession(params: {
 export async function attachDiagnosis(params: {
   userId: string
   originalPrompt: string
-  score: number
   /** What the diagnosis found was still missing. */
   gaps: unknown
 }): Promise<void> {
@@ -108,11 +107,6 @@ export async function attachDiagnosis(params: {
       .maybeSingle()
 
     if (!session) return
-
-    await supabase
-      .from('prompt_sessions')
-      .update({ clarity_score_before: params.score })
-      .eq('id', session.id)
 
     await supabase
       .from('prompt_improvements')
@@ -161,96 +155,14 @@ export async function updateFinalPrompt(params: {
   }
 }
 
-export async function createSession(params: {
-  userId: string
-  originalPrompt: string
-  tone: Tone
-  clarityScoreBefore: number
-}): Promise<string | null> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('prompt_sessions')
-    .insert({
-      user_id: params.userId,
-      original_prompt: params.originalPrompt,
-      tone: params.tone,
-      status: 'clarifying',
-      clarity_score_before: params.clarityScoreBefore,
-    })
-    .select('id')
-    .single()
-
-  if (error) {
-    console.error('createSession error:', error)
-    return null
-  }
-  return data.id
-}
-
-export async function updateSessionStatus(
-  sessionId: string,
-  status: SessionStatus,
-  extra?: { finalPrompt?: string; clarityScoreAfter?: number; clarifyTurns?: number }
-): Promise<void> {
-  const supabase = await createClient()
-  await supabase
-    .from('prompt_sessions')
-    .update({
-      status,
-      ...(extra?.finalPrompt && { final_prompt: extra.finalPrompt }),
-      ...(extra?.clarityScoreAfter !== undefined && { clarity_score_after: extra.clarityScoreAfter }),
-      ...(extra?.clarifyTurns !== undefined && { clarify_turns: extra.clarifyTurns }),
-    })
-    .eq('id', sessionId)
-}
-
-export async function addClarificationExchange(params: {
-  sessionId: string
-  turn: number
-  aiQuestion: string
-  userAnswer?: string
-  confidenceBefore?: number
-  confidenceAfter?: number
-}): Promise<void> {
-  const supabase = await createClient()
-  await supabase.from('clarification_exchanges').upsert({
-    session_id: params.sessionId,
-    turn: params.turn,
-    ai_question: params.aiQuestion,
-    user_answer: params.userAnswer ?? null,
-    confidence_before: params.confidenceBefore ?? null,
-    confidence_after: params.confidenceAfter ?? null,
-  }, { onConflict: 'session_id,turn' })
-}
-
-export async function saveImprovement(params: {
-  sessionId: string
-  improvedPrompt: string
-  explanation: string
-  improvementTags: string[]
-  /** Pipeline extras (minimal edit, template, rubric audit, critique, intent). */
-  analysis?: Record<string, unknown>
-}): Promise<void> {
-  const supabase = await createClient()
-  const row = {
-    session_id: params.sessionId,
-    improved_prompt: params.improvedPrompt,
-    explanation: params.explanation,
-    improvement_tags: params.improvementTags as import('@/types/database').ImprovementTag[],
-  }
-
-  // The analysis JSONB column arrives with migration 006. Until it has
-  // run in an environment, fall back to inserting without it so the core
-  // improvement is never lost to a schema mismatch.
-  if (params.analysis) {
-    const { error } = await supabase
-      .from('prompt_improvements')
-      .insert({ ...row, analysis: params.analysis })
-    if (!error) return
-    console.error('saveImprovement with analysis failed, retrying without:', error.message)
-  }
-  await supabase.from('prompt_improvements').insert(row)
-}
+/*
+ * createSession / updateSessionStatus / addClarificationExchange /
+ * saveImprovement lived here until now. All four were written for the
+ * playground's multi-step flow, all four lost their last caller when it was
+ * deleted, and all four wrote the clarity score columns. saveImprovement was
+ * the only thing that ever persisted the rich `analysis` blob, and it had
+ * been dead long enough that nothing noticed.
+ */
 
 export async function getSessionWithDetails(
   sessionId: string,
@@ -289,8 +201,6 @@ export async function getSessionWithDetails(
     finalPrompt: session.final_prompt,
     tone: session.tone as Tone,
     status: session.status as SessionStatus,
-    clarityScoreBefore: session.clarity_score_before,
-    clarityScoreAfter: session.clarity_score_after,
     clarifyTurns: session.clarify_turns,
     createdAt: session.created_at,
     exchanges: exchanges.map(e => ({
@@ -359,8 +269,6 @@ export async function getUserSessions(
       finalPrompt: session.final_prompt,
       tone: session.tone as Tone,
       status: session.status as SessionStatus,
-      clarityScoreBefore: session.clarity_score_before,
-      clarityScoreAfter: session.clarity_score_after,
       clarifyTurns: session.clarify_turns,
       createdAt: session.created_at,
       exchanges: exchanges.map(e => ({

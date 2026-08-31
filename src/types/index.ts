@@ -1,33 +1,5 @@
 export type { Tone, ImprovementTag, Tier, SessionStatus } from './database'
 
-export interface ClarityDimensions {
-  goal_clarity: number
-  context_sufficiency: number
-  format_specification: number
-  constraint_definition: number
-  example_presence: number
-}
-
-export interface ClarityScore {
-  total_score: number
-  dimensions: ClarityDimensions
-  gaps: string[]
-  confidence: number
-  can_improve_directly: boolean
-}
-
-export interface ClarifyingQuestion {
-  question: string
-  targets_gap: string
-}
-
-export interface Improvement {
-  improved_prompt: string
-  explanation: string
-  improvement_tags: import('./database').ImprovementTag[]
-  clarity_score_after: number
-}
-
 export interface QAPair {
   question: string
   answer: string
@@ -39,9 +11,7 @@ export interface AnalyzeInput {
   tone: import('./database').Tone
   priorAnswers: QAPair[]
   currentConfidence?: number
-  /** Pro-only Deep Rewrite: stronger model, draft-critique-refine pass. */
-  deep?: boolean
-  /** Pro rewrites run on the stronger model even when deep is off. */
+  /** Pro rewrites run on the stronger model. */
   pro?: boolean
 }
 
@@ -86,13 +56,11 @@ export type AnalyzeResult =
       targetsGap: string
       /** Interpretation forks rendered as one-click answers. */
       options?: ForkOption[]
-      confidenceSoFar: number
-      scoreBeforeImprovement: number
       audit?: RubricAudit
     }
   | {
       type: 'improved'
-      /** The full restructured rewrite (refined by the critic in deep mode). */
+      /** The full restructured rewrite. */
       improvedPrompt: string
       /** Light-touch variant: the user's own wording with only the gaps patched. */
       minimalEdit?: string
@@ -100,11 +68,7 @@ export type AnalyzeResult =
       template?: string
       explanation: string
       improvementTags: import('./database').ImprovementTag[]
-      clarityScoreAfter: number
-      scoreBeforeImprovement: number
       audit?: RubricAudit
-      /** Deep mode only: the critic's attack on the first draft, shown to the user. */
-      critique?: string
       intent?: IntentClass
     }
   | {
@@ -113,7 +77,6 @@ export type AnalyzeResult =
       message: string
       /** 1-2 marginal tweaks worth considering anyway. */
       tweaks: string[]
-      scoreBeforeImprovement: number
       audit?: RubricAudit
     }
   | {
@@ -124,7 +87,6 @@ export type AnalyzeResult =
        */
       type: 'no_task'
       message: string
-      scoreBeforeImprovement: number
       audit?: RubricAudit
     }
 
@@ -149,8 +111,6 @@ export interface SessionWithDetails {
   finalPrompt: string | null
   tone: import('./database').Tone
   status: import('./database').SessionStatus
-  clarityScoreBefore: number | null
-  clarityScoreAfter: number | null
   clarifyTurns: number
   createdAt: string
   exchanges: Array<{

@@ -1,5 +1,14 @@
 # Prompt Improver v2 — What Changed and How It Works
 
+> **Partly historical. Read `decisions/0005-no-invented-numbers.md` first.**
+>
+> Three things this document describes were deleted after it was written:
+> the clarity score, Deep Rewrite, and the weekly insights report. Anything
+> below about scoring, "Deep Rewrite (Pro)", or the score-based pricing table
+> is no longer true. The rest, the staged pipeline, one-question-or-none,
+> interpretation forks, the already-good path, and prove-it verification,
+> still describes the engine.
+
 Plain-English guide to the new Prompt Improver. Written so anyone on the team
 can understand it, not just engineers.
 

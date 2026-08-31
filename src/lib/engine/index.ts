@@ -1,6 +1,5 @@
 import { diagnose, toRubricAudit, type DiagnoseResponse } from './diagnose'
 import { rewrite } from './rewrite'
-import { critic } from './critic'
 import type { AnalyzeInput, AnalyzeResult } from '@/types'
 
 /**
@@ -11,7 +10,6 @@ import type { AnalyzeInput, AnalyzeResult } from '@/types'
  *   diagnose (gpt-5.4-mini)  - intent, interpretation forks, rubric audit,
  *                              failure forecast, already-good check
  *   rewrite  (mini / Gemini) - minimal edit + restructure + template
- *   critic   (Gemini, deep)  - hostile review pass; critique is SHOWN
  *
  * Clarifying questions exist only as a choice between interpretation
  * forks - concrete readings of this prompt that would produce different
@@ -22,6 +20,18 @@ import type { AnalyzeInput, AnalyzeResult } from '@/types'
  */
 
 export const MAX_CLARIFY_TURNS = 2
+
+/**
+ * The diagnostic still scores the prompt, and that score never leaves this
+ * file's decisions. It gates two things: whether the prompt is already good
+ * enough to leave alone, and whether we are unsure enough to ask a question.
+ *
+ * What is gone is showing a number to the user. "Clarity 22 -> 87" was two
+ * model self-reports dressed as a measurement, and the second one was the
+ * rewrite model grading its own rewrite. Nothing checkable, so nothing worth
+ * printing. The countable replacement is how many constraints we added and
+ * how many of those we guessed.
+ */
 const DIRECT_IMPROVE_THRESHOLD = 75
 
 /**
@@ -60,9 +70,6 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
     return {
       type: 'no_task',
       message: diag.no_task_reason?.trim() || 'There is no prompt here to improve yet.',
-      // Not scored, not 100. The model has handed back both, and a "100/100"
-      // next to "there is nothing here" is nonsense the UI would render.
-      scoreBeforeImprovement: 0,
       audit,
     }
   }
@@ -75,7 +82,6 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
       type: 'already_good',
       message: diag.already_good_notes.message,
       tweaks: (diag.already_good_notes.tweaks ?? []).slice(0, 2),
-      scoreBeforeImprovement: diag.score.total,
       audit,
     }
   }
@@ -95,8 +101,6 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
       question: diag.question.text,
       targetsGap: diag.question.targets_gap,
       options: forks,
-      confidenceSoFar: diag.score.confidence,
-      scoreBeforeImprovement: diag.score.total,
       audit,
     }
   }
@@ -104,21 +108,7 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
   const rw = await rewrite(input, diag)
   if (!rw) return null
 
-  let improvedPrompt = rw.restructured
-  let critique: string | undefined
-
-  if (input.deep) {
-    const crit = await critic({
-      originalPrompt: input.prompt,
-      draftRewrite: rw.restructured,
-      intent: diag.intent,
-    })
-    if (crit) {
-      critique = crit.critique
-      improvedPrompt = crit.refined_prompt
-    }
-    // If the critic fails we ship the draft - degraded, not broken.
-  }
+  const improvedPrompt = rw.restructured
 
   return {
     type: 'improved',
@@ -127,10 +117,7 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
     template: rw.template,
     explanation: rw.explanation,
     improvementTags: rw.improvement_tags,
-    clarityScoreAfter: rw.clarity_score_after,
-    scoreBeforeImprovement: diag.score.total,
     audit,
-    critique,
     intent: diag.intent,
   }
 }

@@ -12,20 +12,25 @@ A staged diagnostic pipeline, not a single rewrite call:
    forks, rubric audit with evidence spans, failure forecast, already-good check.
 2. **rewrite.ts** (mini for free, Gemini 3.5 Flash for Pro) - minimal edit +
    full restructure + reusable `{variable}` template.
-3. **critic.ts** (Gemini, Pro Deep only) - real second call that attacks the
-   draft; the critique is returned and SHOWN to the user.
-4. **verify.ts** (used by `/api/prompts/verify`) - runs original vs improved on
+3. **verify.ts** (used by `/api/anon/verify`) - runs original vs improved on
    a real model, side-by-side outputs + a one-line contrast. Metered.
+
+There is a SECOND pipeline, and it is the one that ships: **sharpen.ts**
+(`streamSharpen()`) behind `POST /api/anon/sharpen`. One streaming call, plain
+text out, no JSON schema and no diagnosis. The extension uses it. A change to
+rewrite behavior usually has to land in both pipelines or they drift.
 
 Model assignments live in **models.ts** - the only place model upgrades happen.
 Rubrics (the curated per-intent knowledge) live in **rubrics.ts**.
 
 ## Result types
 
-`AnalyzeResult` (types/index.ts) is a 3-way union: `clarifying` (with fork
+`AnalyzeResult` (types/index.ts) is a 4-way union: `clarifying` (with fork
 `options` for one-click answers), `improved` (with `minimalEdit`, `template`,
-`audit`, `critique`, `intent`), and `already_good` (honest no-rewrite path -
-routes do NOT charge quota for it).
+`audit`, `intent`), `already_good` (honest no-rewrite path - routes do NOT
+charge quota for it), and `no_task`.
+
+**No result carries a score.** See `decisions/0005-no-invented-numbers.md`.
 
 ## Key rules baked into the engine
 
@@ -35,7 +40,8 @@ routes do NOT charge quota for it).
   questions and junk-answer handling are gone by construction.
 - **Clarify loop hard-capped at 2 turns** (`MAX_CLARIFY_TURNS` in index.ts).
 - **Direct-improve threshold** (`DIRECT_IMPROVE_THRESHOLD = 75`) enforced in
-  code, not left to the model.
+  code, not left to the model. It reads `diag.score.confidence`, which is the
+  one score still alive and is internal only.
 - **Tone rules** live in rewrite.ts (`TONE_RULES`).
 
 ## Providers (not Anthropic)
@@ -61,9 +67,13 @@ whenever a real session surprises the engine.
 
 ## Quota surface (see limits.ts)
 
-Standard improvements: 5/48h free, unlimited Pro. Deep (critic pass): Pro,
-100 / rolling 30d. Verification runs: Pro 100 / rolling 30d, free 3 lifetime
-credits. `already_good` results are never charged.
+Improvements: 10 per rolling 24h free (`USAGE_DAILY_LIMIT`), unlimited Pro.
+Verification runs: Pro 100 / rolling 30d, free 3 lifetime credits.
+`already_good` and `no_task` results are never charged.
+
+`REWRITE_FREE_LIMIT` (5/48h) is `@deprecated` but still enforced by
+`/api/anon/analyze`. The two routes disagree; that is a real inconsistency,
+not a doc error.
 
 ## When editing
 

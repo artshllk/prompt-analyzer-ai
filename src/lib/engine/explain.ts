@@ -30,8 +30,6 @@ export interface Gap {
 }
 
 export interface Explanation {
-  /** Clarity of the prompt as it stands now, 0-100. */
-  score: number
   /** One short line: the single most important thing still missing. */
   headline: string
   /** The fillable gaps, most important first. Max 3 - more is a wall. */
@@ -41,13 +39,6 @@ export interface Explanation {
 const SCHEMA = {
   type: 'object',
   properties: {
-    score: {
-      type: 'integer',
-      minimum: 0,
-      maximum: 100,
-      description:
-        'How good the IMPROVED prompt already is, as a prompt. A detailed, well-structured prompt scores 70-90 even if personal details are still missing. Do not score it low just because gaps remain.',
-    },
     headline: {
       type: 'string',
       description:
@@ -73,14 +64,12 @@ const SCHEMA = {
       },
     },
   },
-  required: ['score', 'headline', 'gaps'],
+  required: ['headline', 'gaps'],
 } as const
 
 const SYSTEM_PROMPT = `A user's prompt has been improved by an AI. Your job: find what is STILL missing that only the user can answer, and turn each one into a question they can answer in seconds.
 
 This is not a report. Do not explain what was wrong before, do not praise the rewrite, do not teach a lesson. Only look forward: what would make this prompt genuinely better, that we cannot guess for them?
-
-SCORE: rate how good the IMPROVED prompt already is, as a prompt. It has usually just been rewritten well, so it should score high - 70 to 90 is normal. Gaps remaining does NOT make it a bad prompt; those are personal details no one could have guessed. Only score below 50 if the prompt itself is genuinely weak or vague.
 
 Rules:
 - Max 3 gaps. Pick the ones that would change the OUTPUT the most. Three good ones beat six weak ones.
@@ -136,7 +125,7 @@ export async function explainSharpen(params: {
     responseSchema: SCHEMA as unknown as Record<string, unknown>,
   })
 
-  if (!res || typeof res.score !== 'number') return null
+  if (!res || typeof res.headline !== 'string') return null
 
   // Defensive: a gap missing its examples would break the tap-to-answer UI,
   // so normalise every field rather than trusting the model.
@@ -153,7 +142,6 @@ export async function explainSharpen(params: {
     }))
 
   return {
-    score: Math.max(0, Math.min(100, Math.round(res.score))),
     headline: res.headline ?? '',
     gaps,
   }

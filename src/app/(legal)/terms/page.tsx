@@ -31,7 +31,7 @@ export default function TermsPage() {
       <Section title="Plans and billing">
         <ul className="list-disc pl-5 space-y-1.5">
           <li><Strong>Free</Strong>: 10 prompt improvements per rolling 24-hour window.</li>
-          <li><Strong>Pro</Strong>: unlimited prompt improvements, a stronger model on every one, full history, weekly insights. Current prices are shown on the Pricing page; launch discounts may apply.</li>
+          <li><Strong>Pro</Strong>: unlimited prompt improvements, a stronger model on every one, and full history. Current prices are shown on the Pricing page; launch discounts may apply.</li>
           <li>Subscriptions renew automatically. Cancel anytime in Settings → Manage billing. No prorated refunds.</li>
         </ul>
       </Section>

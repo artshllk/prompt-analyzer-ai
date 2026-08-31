@@ -9,7 +9,7 @@ const FAQS = [
   },
   {
     q: 'Is Deepclario free to use?',
-    a: 'Yes. The free plan gives you 10 prompt improvements a day. No credit card needed. Pro is $4.99 a month right now (a launch discount from $9.99). It removes the daily limit, runs a stronger model on every improve, keeps your full history, and adds weekly insights.',
+    a: 'Yes. The free plan gives you 10 prompt improvements a day. No credit card needed. Pro is $4.99 a month right now (a launch discount from $9.99). It removes the daily limit, runs a stronger model on every improve, and keeps your full history.',
   },
   {
     q: 'Do I have to learn prompt engineering to use this?',

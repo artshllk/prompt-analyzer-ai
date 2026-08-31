@@ -10,10 +10,11 @@ the pointer instead of expanding this file.
 
 A web toolkit for people who use ChatGPT, Claude, and Gemini. Four tools:
 
-- **Prompt improver** — scores a rough prompt and rewrites it with CRAFT
-  (Context, Role, Action, Format, Tone). `/playground`, `/tools/*`.
-- **Deep rewrite** — Pro-only multi-pass rewrite (draft → critique → refine).
-- **AI text detector** — scores how likely text is AI-written. `/detector`.
+- **Prompt improver** — rewrites a rough prompt, asking one question first when
+  two readings would give different answers. `/playground`, the homepage hero,
+  and the extension.
+- **AI text detector** — reports the signals that say text reads as AI-written.
+  Never a percentage. `/detector`.
 - **Token counter** — counts tokens (`gpt-tokenizer`). Logic exists; no public page yet.
 
 Backed by a large SEO blog (`/blog`, 37+ posts), a free prompt library
@@ -37,12 +38,22 @@ These are verified from code and get re-derived or mistaken every session.
   verdict band; the LLM only writes the plain-English explanation. It reports
   signals openly and a confidence *label*, never "94% AI". See
   `.claude/decisions/0002-detector-no-percentage.md` and `architecture/detector.md`.
+- **There is no clarity score, and Deep Rewrite does not exist.** Both were
+  deleted. The score was two model self-reports (the "after" number was the
+  rewrite model grading its own rewrite) and the shipping path never wrote it,
+  so three surfaces silently showed zeros. Deep Rewrite had no client. See
+  `.claude/decisions/0005-no-invented-numbers.md`. Do not reintroduce either.
+- **There are two engine pipelines.** `analyzePrompt()` (structured JSON, used by
+  the web tool) and `streamSharpen()` (plain-text stream, used by the extension).
+  A change to rewrite behavior usually has to land in both.
 - **The prompt engine uses OpenAI + Gemini, not Anthropic.** See `architecture/prompt-engine.md`.
 - **`analyzePrompt()` in `lib/engine/index.ts` is a pure, portable function** — no
   Next/Supabase/HTTP deps. This is why new clients (VS Code, MCP) are cheap. See `roadmap.md`.
-- **Pro is $9.99/mo (Paddle).** Free tier: 5 rewrites + 5 detections per window,
-  7-day history (`lib/limits.ts`). Older docs say $5 / 25-a-month — those are stale;
-  trust `limits.ts` and the marketing pages.
+- **Pro is $4.99/mo right now, a launch discount from $9.99 (Paddle).** The
+  launch flag is `LAUNCH` in `components/marketing/EditorialPricing.tsx`; Paddle
+  charges 499¢ (`lib/paddle.ts`). Free tier: 10 improvements per rolling 24h
+  (`USAGE_DAILY_LIMIT`), 5 detections per 24h, 7-day history (`lib/limits.ts`).
+  Anything saying 25-a-month or a flat $9.99 is stale.
 - **Auth: Google Identity Services + `signInWithIdToken`**, not Supabase OAuth
   redirect — so the consent screen shows Deepclario, never supabase.co. See
   `.claude/decisions/0003-auth-gis-no-supabase-co.md`.
@@ -54,12 +65,12 @@ These are verified from code and get re-derived or mistaken every session.
 
 ## Repo map
 
-- `src/lib/engine/` — prompt engine (OpenAI + Gemini clients, CRAFT, clarify loop, deep rewrite).
+- `src/lib/engine/` — prompt engine. `index.ts` (staged pipeline) and `sharpen.ts` (streaming fast path).
 - `src/lib/detector/` — AI detection (deterministic signals + Gemini explanation).
 - `src/lib/db/` — Supabase data access: `sessions`, `usage`, `api-tokens`.
 - `src/lib/{paddle,limits,rate-limit,tokens}.ts` — billing, quotas, throttling, token counting.
-- `src/app/(marketing|app|auth|legal)/` — route groups. `blog/`, `detector/`, `playground/`, `prompts/`, `tools/`, `extension/`.
-- `src/app/api/` — anon analyze, detector, billing, webhooks/paddle, extension token, cron, email.
+- `src/app/(marketing|app|auth|legal)/` — route groups. `blog/`, `detector/`, `playground/`, `prompts/`, `extension/`. There is no `tools/`; those URLs 404 on purpose.
+- `src/app/api/` — anon analyze/sharpen/fork/explain/verify, detector, billing, webhooks/paddle, extension token, cron, email.
 - `extension/` — browser extension source (v0.5.0). Also versioned zips on the Desktop.
 
 ## Commands

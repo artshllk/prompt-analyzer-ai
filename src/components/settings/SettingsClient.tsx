@@ -171,7 +171,7 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
           </>
         ) : (
           <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-            You&apos;re on the free plan. Upgrade in the sidebar to unlock unlimited rewrites and insights.
+            You&apos;re on the free plan. Upgrade in the sidebar for unlimited improvements and a stronger model.
           </p>
         )}
       </section>
@@ -183,7 +183,7 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
       >
         <p className="eyebrow" style={{ color: '#F2A0A0' }}>Danger zone</p>
         <p className="text-sm leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
-          Permanently delete your account and all associated data - sessions, history, and insights. This cannot be undone.
+          Permanently delete your account and all associated data, including your sessions and history. This cannot be undone.
           {isPro && (
             <span className="block mt-2" style={{ color: '#E89A6B' }}>
               Cancel your subscription via &quot;Manage billing&quot; first to avoid further charges.

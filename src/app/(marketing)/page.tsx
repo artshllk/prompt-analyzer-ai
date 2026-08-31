@@ -6,7 +6,6 @@ import Image from "next/image";
 import { EditorialPricing } from "@/components/marketing/EditorialPricing";
 import { HeroDemoModal } from "@/components/marketing/HeroDemoModal";
 import { UseCases } from "@/components/marketing/UseCases";
-import { EarlyDays } from "@/components/marketing/EarlyDays";
 import { FAQSection } from "@/components/marketing/FAQSection";
 import { HeroRefinement } from "@/components/marketing/refinement/HeroRefinement";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -84,7 +83,7 @@ const structuredData = {
           name: "Is Deepclario free?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes. The free plan gives you 10 prompt improvements a day, no card required. Pro is $4.99 a month right now (a launch discount from $9.99). It removes the daily limit, runs a stronger model on every improve, keeps your full history, and adds weekly insights.",
+            text: "Yes. The free plan gives you 10 prompt improvements a day, no card required. Pro is $4.99 a month right now (a launch discount from $9.99). It removes the daily limit, runs a stronger model on every improve, and keeps your full history.",
           },
         },
       ],

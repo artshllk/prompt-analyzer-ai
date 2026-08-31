@@ -18,7 +18,6 @@ export type Scenario = {
   options: [string, string];
   /** Index into `options` that the ghost cursor picks. */
   answerIndex: 0 | 1;
-  clarity: { from: number; to: number };
   tokens: { from: number; to: number };
 };
 
@@ -39,7 +38,6 @@ export const SCENARIOS: Scenario[] = [
     question: "Should the tone be apologetic or matter-of-fact?",
     options: ["Apologetic", "Matter-of-fact"],
     answerIndex: 1,
-    clarity: { from: 22, to: 87 },
     tokens: { from: 412, to: 268 },
   },
   {
@@ -56,7 +54,6 @@ export const SCENARIOS: Scenario[] = [
     question: "Review for correctness, or style and readability?",
     options: ["Correctness", "Style"],
     answerIndex: 0,
-    clarity: { from: 18, to: 91 },
     tokens: { from: 356, to: 214 },
   },
   {
@@ -74,7 +71,6 @@ export const SCENARIOS: Scenario[] = [
     question: "Who is the audience: freelancers or finance teams?",
     options: ["Freelancers", "Finance teams"],
     answerIndex: 0,
-    clarity: { from: 26, to: 84 },
     tokens: { from: 388, to: 241 },
   },
 ];
