@@ -60,8 +60,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    site: '@deepclario',
-    creator: '@deepclario',
+    // No `site` or `creator`. Asserting a handle that does not exist makes
+    // the card render with a broken attribution, which is worse than having
+    // no attribution at all. Add them back once the account is real.
     title: 'Deepclario - Turn a rough prompt into a great one',
     description: 'Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it. Works with ChatGPT, Claude, and Gemini.',
   },

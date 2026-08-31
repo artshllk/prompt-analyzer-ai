@@ -53,7 +53,19 @@ export function take(key: string, config: LimitConfig): { allowed: boolean; retr
 }
 
 /** Strict per-IP cap for anonymous traffic - abuse protection. */
-export const ANON_LIMIT: LimitConfig = { capacity: 6, refillPerSecond: 6 / 3600 } // 6/hour
+/**
+ * 6/hour was set when the tool was behind a modal and most traffic was
+ * desktop. Launch traffic is mostly mobile, and a mobile carrier NAT puts
+ * thousands of people behind one address: at 6/hour the seventh person on
+ * that carrier is refused while the site is quiet, and they have no way to
+ * know why.
+ *
+ * This is burst protection, not a cost control. The cost control is the
+ * global daily ceiling in lib/db/anon-budget.ts, which no amount of IP
+ * rotation gets around. 30/hour still stops one person hammering it and stops
+ * blaming a whole carrier for it.
+ */
+export const ANON_LIMIT: LimitConfig = { capacity: 30, refillPerSecond: 30 / 3600 } // 30/hour
 
 /** Per-user cap layered on top of monthly quota - burst protection. */
 export const USER_LIMIT: LimitConfig = { capacity: 10, refillPerSecond: 10 / 60 } // 10/minute

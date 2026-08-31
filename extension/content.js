@@ -1573,9 +1573,11 @@
       // This is the whole site's free allowance for the day, not this person
       // going too fast, and "wait a moment" is wrong by about sixteen hours.
       // An account carries its own allowance, which is the real way out.
+      // Leads with the way forward rather than the shortage, same as the
+      // website. "Used up across everyone" reads like we ran out of money.
       toast(
-        `That is today's free improvements used up, across everyone. ${
-          resetPhrase(msg.resetAt) || 'It resets at midnight UTC.'
+        `Connect an account to keep going: you get your own allowance instead of the shared one. ${
+          resetPhrase(msg.resetAt) || 'The open pool refills at midnight UTC.'
         }`,
         { action: { label: 'Connect account', onClick: openConnect } }
       )

@@ -5,6 +5,11 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { StreamOut } from '@/components/shared/StreamOut'
 import { LabelledPrompt } from '@/components/shared/LabelledPrompt'
+import {
+  SAMPLE_ORIGINAL,
+  SAMPLE_ANSWER,
+  SAMPLE_SEGMENTS,
+} from '@/lib/sample-result'
 import type { Segment } from '@/lib/engine/segments'
 import { CompareAnswers } from '@/components/shared/CompareAnswers'
 import { track, trackRun } from '@/lib/track'
@@ -526,17 +531,23 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
 
             {response?.kind === 'capacity' && (
               <motion.div key="capacity" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                {/* Leads with the way forward, not with the shortage.
+                    "Today's free runs used up, across everyone" is accurate
+                    and reads like we ran out of money, which is the last
+                    thing a stranger should think on the day we launch. The
+                    fact is the same either way: signing in moves you off a
+                    shared pool onto your own. */}
                 <p
                   className="text-[15px] sm:text-base leading-[1.7] mb-2"
                   style={{ color: 'var(--color-paper)' }}
                 >
-                  That is today&apos;s free runs used up, across everyone.
+                  Sign in to keep going. You get your own allowance, ten
+                  improvements a day, instead of sharing the open one.
                 </p>
                 <p className="text-[14px] leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
-                  This is a small operation and the free tool has a daily
-                  ceiling so it stays free. It resets at midnight UTC. An
-                  account gets you your own allowance instead of sharing this
-                  one.
+                  The version you can use without an account runs on a shared
+                  daily pool, and today&apos;s is spent. It refills at midnight
+                  UTC if you would rather wait. It is free either way.
                 </p>
                 <Link
                   href="/login?signup=1"
@@ -723,7 +734,71 @@ function Intro({
           </a>
         </span>
       </p>
+
+      <WorkedExample />
     </motion.div>
+  )
+}
+
+/**
+ * A finished result, on the screen before anyone types.
+ *
+ * The hero used to be an empty box. A stranger arriving from a link had to
+ * think of a prompt, type it and wait before seeing the only thing that makes
+ * this different from every other rewriter: that it shows what it added and
+ * lets you take it back. Most people will not do that for a tool they have
+ * never heard of.
+ *
+ * Static, server-rendered, no API call and no cost. It uses the real parser
+ * and the real component, so it cannot drift from what the product actually
+ * produces, and it is fully interactive: remove a guess here and the count
+ * drops, without typing anything or spending a run.
+ */
+function WorkedExample() {
+  return (
+    <div
+      className="mt-7 pt-6"
+      style={{ borderTop: '1px solid var(--color-rule)' }}
+    >
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-4">
+        <p className="eyebrow">An example, already done</p>
+        <span className="text-[12px]" style={{ color: 'var(--color-paper-mute)' }}>
+          try removing a guess
+        </span>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 items-start">
+        <div>
+          <p className="text-[12px] mb-2" style={{ color: 'var(--color-paper-mute)' }}>
+            What someone typed
+          </p>
+          <p
+            className="text-[15px] leading-[1.6] p-3 rounded-xl"
+            style={{
+              color: 'var(--color-paper-mute)',
+              background: 'var(--color-ink-card)',
+              border: '1px solid var(--color-rule)',
+            }}
+          >
+            {SAMPLE_ORIGINAL}
+          </p>
+          <p className="text-[12px] mt-3 leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
+            <span style={{ color: 'var(--machine)' }}>We asked one question.</span>{' '}
+            They picked: {SAMPLE_ANSWER}
+          </p>
+        </div>
+
+        <div
+          className="p-3 sm:p-4 rounded-xl"
+          style={{ background: 'var(--color-ink-card)', border: '1px solid var(--color-rule)' }}
+        >
+          <p className="text-[12px] mb-2" style={{ color: 'var(--color-paper-mute)' }}>
+            What it wrote back
+          </p>
+          <LabelledPrompt segments={SAMPLE_SEGMENTS} />
+        </div>
+      </div>
+    </div>
   )
 }
 

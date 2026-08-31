@@ -232,6 +232,18 @@ export function countAdditions(segments: Segment[]): { added: number; guessed: n
       if (seg.source === 'guessed') guessed += 1
     }
     prev = seg.source
+
+    /**
+     * A span that ENDS a sentence ends the constraint too.
+     *
+     * The merge rule above only looked at the text between two spans, so
+     * "⟦g⟧Keep it under 150 words.⟦/g⟧ ⟦g⟧Open with the single change.⟦/g⟧"
+     * counted as one, because the only thing between them is a space. The
+     * full stop is inside the first span, not between them. Those are two
+     * decisions a user can remove separately, and calling them one
+     * understates the number they are being asked to check.
+     */
+    if (/[.!?]["')\]]?\s*$/.test(seg.text)) prev = null
   }
 
   return { added, guessed }

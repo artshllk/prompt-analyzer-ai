@@ -6,6 +6,7 @@ import Image from "next/image";
 import { EditorialPricing } from "@/components/marketing/EditorialPricing";
 import { DemoChat } from "@/components/marketing/DemoChat";
 import { UseCases } from "@/components/marketing/UseCases";
+import { EarlyDays } from "@/components/marketing/EarlyDays";
 import { FAQSection } from "@/components/marketing/FAQSection";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { Reveal } from "@/components/ui/Reveal";
@@ -398,7 +399,10 @@ export default function LandingPage() {
             note. Sits just above Pricing so proof lands at the moment
             buying-doubt peaks. Swap for real testimonials once users
             give attributable quotes. */}
-        {/* <EarlyDays /> */}
+        {/* Honest proof, in place of the invented kind. It says plainly that
+            Deepclario is new and that there are no made-up reviews here,
+            which is worth more at launch than three fabricated quotes. */}
+        <EarlyDays />
 
         {/* Pricing */}
         <section
