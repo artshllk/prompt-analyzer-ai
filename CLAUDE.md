@@ -36,7 +36,7 @@ These are verified from code and get re-derived or mistaken every session.
   `.claude/decisions/0001-paddle-over-stripe.md`.
 - **The detector never reports a percentage.** Deterministic signals compute the
   verdict band; the LLM only writes the plain-English explanation. It reports
-  signals openly and a confidence *label*, never "94% AI". See
+  signals openly and a confidence _label_, never "94% AI". See
   `.claude/decisions/0002-detector-no-percentage.md` and `architecture/detector.md`.
 - **There is no clarity score, and Deep Rewrite does not exist.** Both were
   deleted. The score was two model self-reports (the "after" number was the
@@ -111,3 +111,17 @@ Full detail in `.claude/conventions.md`. The essentials:
 - Why a choice was made: `.claude/decisions/`
 - How to do a recurring task: `.claude/workflows/` (or the `/new-blog-post`, `/verify-blog` commands)
 - Roadmap and the VS Code / MCP plan: `.claude/roadmap.md`
+
+## Production database
+
+.env.local points at the production Supabase project and carries a service-role key.
+Treat production as READ-ONLY at all times.
+
+- Never INSERT, UPDATE, DELETE or call a mutating RPC against production.
+- To check whether a migration landed, use information_schema and pg_constraint.
+  Never probe by writing a row.
+- Never write a row to "test" something, even if you plan to delete it after.
+  The cleanup delete is riskier than the thing it cleans up.
+- Migrations are applied by a human in the Supabase SQL Editor. Never by you,
+  and never via supabase db push.
+- If you believe a write to production is genuinely necessary, stop and ask.
