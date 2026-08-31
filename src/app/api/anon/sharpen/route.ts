@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { streamSharpen } from '@/lib/engine/sharpen'
 import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
+import { consumeAnonRun } from '@/lib/db/anon-budget'
 import { createServiceClient } from '@/lib/supabase/server'
 import { recordExtensionSession } from '@/lib/db/sessions'
 import { decideUsage, windowStart, USAGE_WINDOW_HOURS, USAGE_DAILY_LIMIT } from '@/lib/limits'
@@ -54,6 +55,14 @@ export async function POST(req: NextRequest) {
     const limit = take(`anon:${ip}`, ANON_LIMIT)
     if (!limit.allowed) {
       return corsJson({ error: 'rate_limited', retryAfterMs: limit.retryAfterMs }, 429)
+    }
+
+    // The global ceiling. The bucket above is in-memory and per-instance, so
+    // it stops one impatient person and not a script. Anonymous only:
+    // signed-in users have their own quotas and are never blocked by this.
+    const budget = await consumeAnonRun()
+    if (!budget.allowed) {
+      return corsJson({ error: 'daily_capacity', resetAt: budget.resetAt }, 429)
     }
   } else {
     const burst = take(`user:${auth.userId}`, auth.tier === 'pro' ? PRO_USER_LIMIT : USER_LIMIT)

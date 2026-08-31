@@ -38,6 +38,17 @@ export type ExtensionEvent =
 export type ExtensionSurface = 'chatgpt' | 'claude' | 'gemini' | 'web'
 
 // Row types as `type` aliases (not interfaces) - required for Supabase's Record<string, unknown> checks
+
+/**
+ * One row per day: the global count of anonymous model runs. Migration 014.
+ * No user id, no IP, no prompt - there is deliberately nothing per-caller in
+ * here to identify or to game.
+ */
+export type AnonDailyUsageRow = {
+  day: string
+  runs: number
+}
+
 export type ProfileRow = {
   id: string
   email: string
@@ -264,6 +275,12 @@ export type Database = {
         Update: never
         Relationships: []
       }
+      anon_daily_usage: {
+        Row: AnonDailyUsageRow
+        Insert: AnonDailyUsageRow
+        Update: Partial<AnonDailyUsageRow>
+        Relationships: []
+      }
     }
     Views: Record<never, never>
     Functions: {
@@ -271,6 +288,13 @@ export type Database = {
       bump_memory: {
         Args: { p_user_id: string; p_label: string; p_answer: string }
         Returns: undefined
+      }
+      /** Atomic increment of the global anonymous run counter. Migration 014.
+       *  Returns the post-increment count, so the cap check is on a number
+       *  that is already true rather than one two requests can both pass. */
+      bump_anon_runs: {
+        Args: { p_day: string }
+        Returns: number
       }
     }
     Enums: Record<never, never>

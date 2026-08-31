@@ -4,10 +4,9 @@ import Image from "next/image";
 // { /* CUT - redundant with demo + steps */ }
 // import { StaticTransform } from '@/components/marketing/StaticTransform'
 import { EditorialPricing } from "@/components/marketing/EditorialPricing";
-import { HeroDemoModal } from "@/components/marketing/HeroDemoModal";
+import { DemoChat } from "@/components/marketing/DemoChat";
 import { UseCases } from "@/components/marketing/UseCases";
 import { FAQSection } from "@/components/marketing/FAQSection";
-import { HeroRefinement } from "@/components/marketing/refinement/HeroRefinement";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { Reveal } from "@/components/ui/Reveal";
 import { defaultOGImage } from "@/lib/og-image";
@@ -110,98 +109,78 @@ export default function LandingPage() {
             section directly below so the page reads "promise -> proof". */}
         <section
           id="try"
-          className="pt-28 md:pt-36 pb-16 md:pb-20 px-6 md:px-10 relative"
+          className="pt-24 md:pt-32 pb-14 md:pb-20 px-5 sm:px-6 md:px-10 relative"
         >
-          <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-              <div className="lg:col-span-8">
-                {/* Entrance choreography: eyebrow -> headline -> subhead ->
-                    CTA -> centerpiece, staggered so the hero assembles in
-                    under a second. The page paints and stays interactive
-                    throughout - this is a reveal, never a gate. Only the
-                    headline gets the blur resolve; everything else is the
-                    plain fade + rise. */}
-                <Reveal>
-                  <p className="eyebrow mb-6">
-                    For ChatGPT, Claude &amp; Gemini users
-                  </p>
-                </Reveal>
-                <Reveal delay={0.08} blur>
-                  <h1
-                    className="display text-5xl md:text-[5.25rem] leading-[1.04] tracking-tight"
-                    style={{ color: "var(--color-paper)" }}
-                  >
-                    Turn a rough prompt{" "}
-                    <span style={{ color: "var(--color-accent)" }}>
-                      into a great one.
-                    </span>
-                  </h1>
-                </Reveal>
-                {/* Thesis line, lifted from the old long-form section.
-                    Sits between H1 and explanatory subhead as a one-line
-                    band. Italic serif so it reads as a quote / position
-                    statement, not body copy. */}
-                {/* <p
-                  className="font-serif italic mt-5 md:mt-6 text-xl md:text-2xl leading-snug"
-                  style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+          <div className="max-w-5xl mx-auto">
+            {/* Entrance choreography: eyebrow -> headline -> subhead -> tool,
+                staggered so the hero assembles in under a second. The page
+                paints and stays interactive throughout - this is a reveal,
+                never a gate. Only the headline gets the blur resolve. */}
+            <Reveal>
+              <p className="eyebrow mb-5">For ChatGPT, Claude &amp; Gemini users</p>
+            </Reveal>
+            <Reveal delay={0.08} blur>
+              <h1
+                className="display text-[2.6rem] sm:text-5xl md:text-[4.5rem] leading-[1.05] tracking-tight"
+                style={{ color: "var(--color-paper)" }}
+              >
+                Turn a rough prompt{" "}
+                <span style={{ color: "var(--color-accent)" }}>
+                  into a great one.
+                </span>
+              </h1>
+            </Reveal>
+            <Reveal delay={0.2}>
+              <p
+                className="mt-4 md:mt-5 text-base sm:text-lg md:text-xl leading-relaxed max-w-2xl"
+                style={{ color: "var(--color-paper-mute)" }}
+              >
+                Paste your prompt below. Deepclario rewrites it and marks
+                everything it added, so you can take back anything you did not
+                ask for. No account, no install.
+              </p>
+            </Reveal>
+
+            {/*
+              THE TOOL IS THE HERO.
+
+              What was here was a scripted animation of the product playing a
+              hardcoded script, hidden entirely below 1024px, next to a button
+              that opened the real thing in a modal. So the strongest asset on
+              the page - a working tool that needs no account - was one click
+              away and invisible on a phone, while a cartoon of it took the
+              space. The demo modal, HeroRefinement and its five supporting
+              components are deleted.
+            */}
+            <Reveal delay={0.3}>
+              <div
+                className="mt-8 md:mt-10 rounded-3xl p-4 sm:p-6 md:p-8"
+                style={{
+                  background: "var(--color-ink-card)",
+                  border: "1px solid var(--color-rule-strong)",
+                }}
+              >
+                <DemoChat />
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.4}>
+              <p
+                className="mt-5 text-[13px] flex flex-wrap items-center gap-x-4 gap-y-2"
+                style={{ color: "var(--color-paper-mute)" }}
+              >
+                <span>Your prompts are private. We do not train on them.</span>
+                <Link
+                  href="/pricing"
+                  className="underline underline-offset-4 transition-opacity hover:opacity-100 opacity-80"
+                  style={{ color: "var(--color-paper)" }}
                 >
-                  The model is fine. The brief was vague.
-                </p> */}
-                <Reveal delay={0.22}>
-                  <p
-                    className="mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-2xl"
-                    style={{ color: "var(--color-paper-mute)" }}
-                  >
-                    Paste your prompt. Deepclario spots what is missing, asks
-                    you one quick question, and rewrites it. Works with ChatGPT,
-                    Claude, and Gemini.
-                  </p>
-                </Reveal>
-
-                {/* Primary CTA. Opens the live demo in a modal so a cold
-                    visitor goes straight from promise to "their own
-                    prompt, improved" without leaving the page. */}
-                <Reveal delay={0.34}>
-                  <div className="mt-8 md:mt-10 flex flex-wrap items-center gap-5">
-                    <HeroDemoModal />
-                    <Link
-                      href="/pricing"
-                      className="text-sm transition-opacity hover:opacity-100 opacity-80"
-                      style={{ color: "var(--color-paper)" }}
-                    >
-                      See pricing
-                    </Link>
-                  </div>
-                </Reveal>
-              </div>
-              {/* Centerpiece is now a supporting visual, not a co-headline.
-                  Reduced from col-span-5 to col-span-4 and capped at
-                  ~50% of its previous footprint via max-w-[280px] so it
-                  never competes with the CTA for attention. */}
-              <div className="hidden lg:flex lg:col-span-4 items-center justify-center">
-                <Reveal delay={0.45} className="w-full max-w-96 min-w-96">
-                  <HeroRefinement />
-                </Reveal>
-              </div>
-            </div>
+                  See pricing
+                </Link>
+              </p>
+            </Reveal>
           </div>
         </section>
-
-        {/* CUT - the inline "Try it yourself" section moved into a modal
-            launched by the hero CTA (HeroDemoModal). Restore by
-            uncommenting if the modal flow underperforms the inline one. */}
-        {/*
-        <section
-          id="demo"
-          className="pb-20 md:pb-24 px-6 md:px-10 scroll-mt-24"
-          style={{ borderTop: "1px solid var(--color-rule)" }}
-        >
-          <div className="max-w-6xl mx-auto pt-16 md:pt-20">
-            <p className="eyebrow mb-6">Try it yourself</p>
-            <LivePromptDemo compact />
-          </div>
-        </section>
-        */}
 
         {/* CUT - redundant with demo + steps */}
         {/* <StaticTransform /> */}

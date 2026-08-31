@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { quickFork } from '@/lib/engine/quick-fork'
 import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
+import { anonBudgetExhausted } from '@/lib/db/anon-budget'
 
 /**
  * Quick fork check: is this prompt genuinely ambiguous, and if so, what are
@@ -65,6 +66,14 @@ export async function POST(req: NextRequest) {
     const ip = getClientIp(req)
     const limit = take(`fork:anon:${ip}`, ANON_LIMIT)
     if (!limit.allowed) return corsJson({ error: 'rate_limited' }, 429)
+
+    // Checked, not consumed. This call runs BEFORE the rewrite it belongs
+    // to, so counting it would bill one user action twice and halve the real
+    // ceiling. It still has to stop once the ceiling is hit, or this endpoint
+    // becomes the way around it.
+    if (await anonBudgetExhausted()) {
+      return corsJson({ error: 'daily_capacity' }, 429)
+    }
   } else {
     const burst = take(
       `fork:user:${auth.userId}`,

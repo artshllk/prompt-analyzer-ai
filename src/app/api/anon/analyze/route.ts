@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { analyzePrompt } from '@/lib/engine'
 import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
+import { consumeAnonRun } from '@/lib/db/anon-budget'
 import { createServiceClient } from '@/lib/supabase/server'
 import { REWRITE_FREE_LIMIT, REWRITE_WINDOW_HOURS, windowStart } from '@/lib/limits'
 import type { Tone } from '@/types/database'
@@ -55,6 +56,23 @@ export async function POST(req: NextRequest) {
       return withCors(NextResponse.json(
         { error: 'rate_limited', retryAfterMs: limit.retryAfterMs },
         { status: 429, headers: { 'Retry-After': String(Math.ceil(limit.retryAfterMs / 1000)) } }
+      ))
+    }
+
+    /**
+     * The global ceiling. The per-IP bucket above is in-memory, per-instance,
+     * and reset by every deploy, so it stops one impatient person and not a
+     * script with a proxy list. This tool is in the hero of a public page
+     * now, which makes that the difference between a rate limit and a bill.
+     *
+     * Consumed only on the anonymous path. Signed-in users have their own
+     * quotas and their own accountability, and are never blocked by this.
+     */
+    const budget = await consumeAnonRun()
+    if (!budget.allowed) {
+      return withCors(NextResponse.json(
+        { error: 'daily_capacity', resetAt: budget.resetAt },
+        { status: 429, headers: { 'Retry-After': '3600' } }
       ))
     }
   } else {

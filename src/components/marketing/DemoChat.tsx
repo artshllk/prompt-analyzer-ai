@@ -8,11 +8,14 @@ import { LabelledPrompt } from '@/components/shared/LabelledPrompt'
 import type { Segment } from '@/lib/engine/segments'
 import { CompareAnswers } from '@/components/shared/CompareAnswers'
 import { track, trackRun } from '@/lib/track'
-import { SAMPLE_PROMPTS, pickThree } from '@/lib/sample-prompts'
+import { SAMPLE_PROMPTS, ALREADY_GOOD_SAMPLE, pickSamples } from '@/lib/sample-prompts'
 
 /**
- * Chat-style demo shown inside the hero modal (HeroDemoModal owns the
- * shell, scroll, focus trap, and width animation).
+ * The tool. Rendered directly in the homepage hero and on /playground.
+ *
+ * It used to live inside a modal behind a CTA, with a scripted animation of
+ * itself occupying the hero. Both are gone: this is the hero now, and it owns
+ * its own layout rather than borrowing a modal's.
  *
  * Fixed side-by-side layout:
  *   LEFT  - the user's original prompt (set once, never moves).
@@ -30,7 +33,16 @@ import { SAMPLE_PROMPTS, pickThree } from '@/lib/sample-prompts'
  * swaps to the account gate - rendered inline, not a stacked overlay.
  */
 
-const DEMO_LIMIT = 1
+/**
+ * Free runs per browser before we ask for an account.
+ *
+ * One was not enough to understand this product. The labelling and the quiet
+ * path both need a second look, and the first prompt someone types is usually
+ * a test rather than a real one. Three lets them try a sample, try their own,
+ * and come back once. The site-wide daily ceiling is the real cost control;
+ * this is just the sign-up moment.
+ */
+const DEMO_LIMIT = 3
 const RUNS_KEY = 'pc_demo_runs'
 const MAX_CLARIFY = 1 // demo asks at most one follow-up before improving
 
@@ -44,6 +56,17 @@ type Response =
    *  `segments` is absent when the rewrite came back without usable markers;
    *  the prompt still ships, just unlabelled. */
   | { kind: 'improved'; text: string; quiet: boolean; segments?: Segment[] }
+  /**
+   * The prompt was already good and we refused to rewrite it into noise.
+   * This branch did not exist, so an already_good response fell through to
+   * the improved case and rendered an undefined prompt as a blank panel.
+   * One of the three sample chips is deliberately a prompt that lands here.
+   */
+  | { kind: 'already_good'; message: string; tweaks: string[] }
+  /** Not a prompt at all: a greeting, a thank-you, a reaction. */
+  | { kind: 'no_task'; message: string }
+  /** The whole site's anonymous budget for today is gone. */
+  | { kind: 'capacity'; resetAt: string }
   | { kind: 'error'; text: string }
 
 type Phase = 'idle' | 'thinking' | 'awaiting-answer' | 'done' | 'error'
@@ -51,7 +74,7 @@ type Phase = 'idle' | 'thinking' | 'awaiting-answer' | 'done' | 'error'
 interface DemoChatProps {
   /** Reports whether the panel should widen to the conversation layout. */
   onWide?: (wide: boolean) => void
-  /** Reports whether there is unsaved work the shell should protect on
+  /** Reports whether there is unsaved work a host shell should protect on
    *  an accidental backdrop click. */
   onDirty?: (dirty: boolean) => void
 }
@@ -70,14 +93,18 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
   const [hydrated, setHydrated] = useState(false)
   // Rotating sample chips: deterministic first three for SSR / first
   // client render, then a fresh random trio each time the modal mounts.
-  const [samples, setSamples] = useState<string[]>(() => SAMPLE_PROMPTS.slice(0, 3))
+  const [samples, setSamples] = useState<string[]>(() => [
+    SAMPLE_PROMPTS[0],
+    ALREADY_GOOD_SAMPLE,
+    SAMPLE_PROMPTS[1],
+  ])
 
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const answerRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    setSamples(pickThree())
+    setSamples(pickSamples())
     const r = parseInt(window.localStorage.getItem(RUNS_KEY) ?? '0', 10)
     setRuns(Number.isFinite(r) ? r : 0)
     setHydrated(true)
@@ -142,7 +169,17 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       })
 
       if (res.status === 429) {
-        fail('We limit free rewrites by IP. Give it a minute and try again.')
+        const d = await res.json().catch(() => ({}))
+        // Two different 429s. One is "you personally are going too fast",
+        // the other is "the whole site's free budget for today is gone".
+        // Telling someone to wait a minute when the answer is tomorrow is
+        // just a slower way of wasting their time.
+        if (d.error === 'daily_capacity') {
+          setResponse({ kind: 'capacity', resetAt: d.resetAt ?? '' })
+          setPhase('done')
+          return
+        }
+        fail('That is a lot of rewrites in one go. Give it a minute and try again.')
         return
       }
       if (!res.ok) {
@@ -179,6 +216,26 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       bumpRuns()
       // Counted here, not on submit: a call that failed is not a run.
       trackRun()
+
+      if (data.type === 'already_good') {
+        setResponse({
+          kind: 'already_good',
+          message: data.message ?? 'This one is already clear.',
+          tweaks: Array.isArray(data.tweaks) ? data.tweaks : [],
+        })
+        setPhase('done')
+        return
+      }
+
+      if (data.type === 'no_task') {
+        setResponse({
+          kind: 'no_task',
+          message: data.message ?? 'There is no prompt here to improve yet.',
+        })
+        setPhase('done')
+        return
+      }
+
       // Nothing was asked and nothing needed to be. Say so, rather than
       // letting the user wonder whether the question step is broken.
       if (priorAnswers.length === 0) track('question_none')
@@ -353,6 +410,80 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
               </motion.div>
             )}
 
+            {response?.kind === 'already_good' && (
+              <motion.div key="already-good" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <p
+                  className="text-[13px] mb-3 pb-3"
+                  style={{
+                    color: 'var(--color-confirm)',
+                    borderBottom: '1px solid var(--color-rule)',
+                  }}
+                >
+                  Nothing to change. This one is already clear.
+                </p>
+                <p
+                  className="text-[15px] sm:text-base leading-[1.7]"
+                  style={{ color: 'var(--color-paper)' }}
+                >
+                  {response.message}
+                </p>
+                {response.tweaks.length > 0 && (
+                  <ul className="mt-4 space-y-2">
+                    {response.tweaks.map(t => (
+                      <li
+                        key={t}
+                        className="text-[14px] leading-[1.6] pl-4 relative"
+                        style={{ color: 'var(--color-paper-mute)' }}
+                      >
+                        <span className="absolute left-0" aria-hidden>·</span>
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <p className="mt-4 text-[13px]" style={{ color: 'var(--color-paper-mute)' }}>
+                  We only rewrite when it would actually help. Your prompt is
+                  yours.
+                </p>
+              </motion.div>
+            )}
+
+            {response?.kind === 'no_task' && (
+              <motion.p
+                key="no-task"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-[15px] sm:text-base leading-[1.7]"
+                style={{ color: 'var(--color-paper)' }}
+              >
+                {response.message}
+              </motion.p>
+            )}
+
+            {response?.kind === 'capacity' && (
+              <motion.div key="capacity" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <p
+                  className="text-[15px] sm:text-base leading-[1.7] mb-2"
+                  style={{ color: 'var(--color-paper)' }}
+                >
+                  That is today&apos;s free runs used up, across everyone.
+                </p>
+                <p className="text-[14px] leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
+                  This is a small operation and the free tool has a daily
+                  ceiling so it stays free. It resets at midnight UTC. An
+                  account gets you your own allowance instead of sharing this
+                  one.
+                </p>
+                <Link
+                  href="/login?signup=1"
+                  className="mt-4 inline-flex items-center px-5 py-2.5 rounded-full text-sm btn-paper transition-all"
+                  style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+                >
+                  Create a free account
+                </Link>
+              </motion.div>
+            )}
+
             {response?.kind === 'error' && (
               <motion.p
                 key="error"
@@ -458,20 +589,10 @@ function Intro({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
     >
-      <h3
-        className="font-serif text-[1.6rem] sm:text-3xl leading-[1.15] tracking-tight mb-2.5 pr-10 sm:pr-0"
-        style={{ color: 'var(--color-paper)', fontWeight: 400 }}
-      >
-        Paste a prompt. Watch it get sharper.
-      </h3>
-      <p
-        className="text-[15px] sm:text-base leading-relaxed mb-7 max-w-prose"
-        style={{ color: 'var(--color-paper-mute)' }}
-      >
-        Type something rough below. Deepclario asks a question if it needs to,
-        then rewrites it for ChatGPT, Claude, and Gemini.
-      </p>
-
+      {/* No heading here any more. The hero above already carries the
+          headline and the subhead, and repeating both inside the card put
+          two competing promises on one screen. The chips do the teaching
+          instead: one of them is a prompt that needs no help. */}
       <form onSubmit={onSend}>
         <div
           className="flex items-end gap-2.5 p-2.5 rounded-2xl"
@@ -481,7 +602,7 @@ function Intro({
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder="Message Deepclario…"
+            placeholder="Paste a rough prompt…"
             rows={1}
             maxLength={4000}
             className="flex-1 bg-transparent resize-none py-2.5 px-2 text-base focus:outline-none focus-visible:outline-none"
@@ -507,15 +628,24 @@ function Intro({
         </div>
       </form>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <p className="mt-4 mb-2 text-xs" style={{ color: 'var(--color-paper-mute)' }}>
+        Or try one of these
+      </p>
+      <div className="flex flex-wrap gap-2">
         {samples.map(s => (
           <button
             key={s}
             onClick={() => setInput(s)}
-            className="text-[13px] px-3 py-1.5 rounded-full chip-hover transition-colors focus:outline-none focus:ring-1 focus:ring-(--color-paper-mute)"
+            className="text-[13px] text-left px-3 py-2 rounded-2xl chip-hover transition-colors focus:outline-none focus:ring-1 focus:ring-(--color-paper-mute) max-w-full"
             style={{ color: 'var(--color-paper-mute)', border: '1px solid var(--color-rule-strong)' }}
+            title={s}
           >
-            &ldquo;{s}&rdquo;
+            {/* Truncated on one line: the already-good sample is long on
+                purpose, and a chip that wraps to four lines on a phone stops
+                looking tappable. */}
+            <span className="block truncate max-w-[15rem] sm:max-w-xs">
+              &ldquo;{s}&rdquo;
+            </span>
           </button>
         ))}
       </div>
@@ -587,13 +717,13 @@ function Gate() {
         className="font-serif text-[1.7rem] sm:text-4xl leading-tight mb-3"
         style={{ color: 'var(--color-paper)', fontWeight: 400 }}
       >
-        You&apos;ve seen what it can do.
+        You&apos;ve seen what it does.
       </h3>
       <p className="text-[15px] sm:text-lg leading-relaxed mb-8" style={{ color: 'var(--color-paper-mute)' }}>
-        Create a free account to keep going.
+        Three free rewrites is the taste. An account gets you ten a day.
       </p>
       <Link
-        href="/login?signup=1&redirectTo=/extension"
+        href="/login?signup=1&redirectTo=/playground"
         className="inline-flex items-center justify-center px-7 py-3 rounded-full text-[15px] btn-paper transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink) focus:ring-(--color-paper)"
         style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
       >

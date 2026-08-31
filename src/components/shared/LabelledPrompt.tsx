@@ -83,10 +83,20 @@ export function LabelledPrompt({ segments, onChange }: LabelledPromptProps) {
                   onClick={() => toggle(i)}
                   aria-label={`Remove the guess: ${seg.text}`}
                   title="Remove this. You did not ask for it."
-                  className="ml-1 inline-flex items-center justify-center align-middle w-4 h-4 rounded-full text-[10px] leading-none transition-opacity opacity-60 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-(--color-ink) focus:ring-(--color-guess)"
-                  style={{ background: color, color: 'var(--color-ink)' }}
+                  /* The visible dot stays 16px because a bigger one would
+                     shout, but the hit area is padded out to something a
+                     thumb can actually land on. -my-2 keeps the padding from
+                     pushing the line height around mid-paragraph. */
+                  className="ml-1 -my-2 py-2 px-1 inline-flex items-center justify-center align-middle transition-opacity opacity-70 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-(--color-ink) focus:ring-(--color-guess)"
+                  style={{ color }}
                 >
-                  ×
+                  <span
+                    className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] leading-none"
+                    style={{ background: color, color: 'var(--color-ink)' }}
+                    aria-hidden
+                  >
+                    ×
+                  </span>
                 </button>
               )}
             </span>
