@@ -22,12 +22,14 @@ export type ExtensionEvent =
   | 'question_shown'
   | 'question_answered'
   | 'question_skipped'
+  /** We had nothing worth asking. The numerator of the silence rate. */
+  | 'question_none'
   | 'rewrite_accepted'
   | 'rewrite_edited'
   | 'rewrite_undone'
 
-/** Which of the three chat products the counter came from. */
-export type ExtensionSurface = 'chatgpt' | 'claude' | 'gemini'
+/** Where the counter came from. 'web' is the on-site tool. */
+export type ExtensionSurface = 'chatgpt' | 'claude' | 'gemini' | 'web'
 
 // Row types as `type` aliases (not interfaces) - required for Supabase's Record<string, unknown> checks
 export type ProfileRow = {

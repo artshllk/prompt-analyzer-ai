@@ -26,15 +26,37 @@ import { SAMPLE_PROMPTS, pickThree } from '@/lib/sample-prompts'
  * swaps to the account gate - rendered inline, not a stacked overlay.
  */
 
+/**
+ * Content-free counter, same endpoint and same rules as the extension's
+ * track(): an event name and a surface, never the prompt, the rewrite, or
+ * any identifier. Always fire and forget - a counter must never be able to
+ * interrupt the thing it is counting.
+ */
+function track(event: 'question_shown' | 'question_none') {
+  try {
+    void fetch('/api/anon/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event, tier: 'anon', surface: 'web' }),
+      keepalive: true,
+    }).catch(() => {})
+  } catch {
+    // Never matters.
+  }
+}
+
 const DEMO_LIMIT = 1
 const RUNS_KEY = 'pc_demo_runs'
 const MAX_CLARIFY = 1 // demo asks at most one follow-up before improving
 
 type QA = { question: string; answer: string; turn: number }
 
+type ForkOption = { label: string; summary: string }
+
 type Response =
-  | { kind: 'question'; text: string; gap?: string }
-  | { kind: 'improved'; text: string }
+  | { kind: 'question'; text: string; gap?: string; options: ForkOption[] }
+  /** `quiet` means we never asked: the prompt only had one sensible reading. */
+  | { kind: 'improved'; text: string; quiet: boolean }
   | { kind: 'error'; text: string }
 
 type Phase = 'idle' | 'thinking' | 'awaiting-answer' | 'done' | 'error'
@@ -143,7 +165,13 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       const askedEnough = priorAnswers.length >= MAX_CLARIFY
 
       if (data.type === 'clarifying' && !askedEnough) {
-        setResponse({ kind: 'question', text: data.question, gap: data.targetsGap })
+        track('question_shown')
+        setResponse({
+          kind: 'question',
+          text: data.question,
+          gap: data.targetsGap,
+          options: Array.isArray(data.options) ? data.options.slice(0, 3) : [],
+        })
         setAnswer('')
         setPhase('awaiting-answer')
         return
@@ -160,7 +188,14 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       }
 
       bumpRuns()
-      setResponse({ kind: 'improved', text: data.improvedPrompt })
+      // Nothing was asked and nothing needed to be. Say so, rather than
+      // letting the user wonder whether the question step is broken.
+      if (priorAnswers.length === 0) track('question_none')
+      setResponse({
+        kind: 'improved',
+        text: data.improvedPrompt,
+        quiet: priorAnswers.length === 0,
+      })
       setPhase('done')
     } catch {
       fail('Network hiccup. Check your connection and try again.')
@@ -182,20 +217,31 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
     callEngine(text, [])
   }
 
-  function handleAnswer(e?: React.FormEvent) {
-    e?.preventDefault()
-    const text = answer.trim()
-    if (!text || phase === 'thinking') return
+  /**
+   * One path for answering, whether they clicked a reading or typed one.
+   * Clicking is the intended way in: the engine only ever asks when two
+   * concrete readings of the prompt would produce different rewrites, so the
+   * readings themselves are the answer set. A text box invites a sentence
+   * nobody asked for.
+   */
+  function submitAnswer(text: string) {
+    const clean = text.trim()
+    if (!clean || phase === 'thinking') return
     if (response?.kind !== 'question') return
 
     const turn = history.length + 1
     const nextHistory: QA[] = [
       ...history,
-      { question: response.text, answer: text, turn },
+      { question: response.text, answer: clean, turn },
     ]
     setHistory(nextHistory)
     setAnswer('')
     callEngine(rootPrompt, nextHistory)
+  }
+
+  function handleAnswer(e?: React.FormEvent) {
+    e?.preventDefault()
+    submitAnswer(answer)
   }
 
   function startOver() {
@@ -278,6 +324,17 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
 
             {response?.kind === 'improved' && (
               <motion.div key="improved" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                {response.quiet && (
+                  <p
+                    className="text-[13px] mb-3 pb-3"
+                    style={{
+                      color: 'var(--color-paper-mute)',
+                      borderBottom: '1px solid var(--color-rule)',
+                    }}
+                  >
+                    Nothing to ask, this one is clear.
+                  </p>
+                )}
                 <StreamOut
                   text={response.text}
                   className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
@@ -300,59 +357,71 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
           </AnimatePresence>
         </div>
 
-        {/* Answer field - ONLY while a clarifying question is waiting. */}
+        {/* The readings, as buttons. Only while a question is waiting.
+
+            This used to be a text box, which meant the engine went to the
+            trouble of working out the two ways a prompt could be read and
+            then asked the user to describe one in their own words. Clicking
+            a reading is faster, cannot be answered with junk, and tells the
+            rewrite exactly which fork to commit to. */}
         <AnimatePresence>
-          {phase === 'awaiting-answer' && (
-            <motion.form
+          {phase === 'awaiting-answer' && response?.kind === 'question' && (
+            <motion.div
               key="answer"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              onSubmit={handleAnswer}
-              className="mt-4"
+              className="mt-4 flex flex-col gap-2"
             >
-              <div
-                className="flex items-end gap-2.5 p-2.5 rounded-2xl"
-                style={{ background: 'var(--color-ink-card)', border: '1px solid var(--color-rule-strong)' }}
-              >
-                <textarea
-                  ref={answerRef}
-                  value={answer}
-                  onChange={e => setAnswer(e.target.value)}
-                  placeholder="Type your answer…"
-                  rows={1}
-                  maxLength={1000}
-                  className="flex-1 bg-transparent resize-none py-2 px-2 text-base outline-none"
-                  style={{ color: 'var(--color-paper)', caretColor: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.55 }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      handleAnswer()
-                    }
-                  }}
-                />
+              {response.options.map(opt => (
                 <button
-                  type="submit"
-                  disabled={!answer.trim()}
-                  aria-label="Send answer"
-                  className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-full transition-all btn-paper disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink-card) focus:ring-(--color-paper)"
-                  style={{ background: 'var(--color-paper)', color: 'var(--color-ink)' }}
+                  key={opt.label}
+                  type="button"
+                  onClick={() => submitAnswer(`${opt.label}. ${opt.summary}`.trim())}
+                  className="text-left px-4 py-3 rounded-2xl transition-colors row-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink) focus:ring-(--color-paper)"
+                  style={{
+                    background: 'var(--color-ink-card)',
+                    border: '1px solid var(--color-rule-strong)',
+                  }}
                 >
-                  <svg width="15" height="15" viewBox="0 0 14 14" fill="none">
-                    <path d="M7 12V2M7 2L2 7M7 2L12 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <span
+                    className="block text-[15px]"
+                    style={{ color: 'var(--color-paper)', fontWeight: 500 }}
+                  >
+                    {opt.label}
+                  </span>
+                  {opt.summary && (
+                    <span
+                      className="block text-[13px] mt-0.5 leading-snug"
+                      style={{ color: 'var(--color-paper-mute)' }}
+                    >
+                      {opt.summary}
+                    </span>
+                  )}
                 </button>
-              </div>
-            </motion.form>
+              ))}
+
+              {/* Defensive: the engine is not supposed to ask without giving
+                  at least two readings, but a malformed response should not
+                  strand someone on a question they cannot answer. */}
+              {response.options.length === 0 && (
+                <button
+                  type="button"
+                  onClick={() => submitAnswer('Use reasonable assumptions.')}
+                  className="text-left px-4 py-3 rounded-2xl transition-colors row-hover"
+                  style={{
+                    background: 'var(--color-ink-card)',
+                    border: '1px solid var(--color-rule-strong)',
+                    color: 'var(--color-paper)',
+                  }}
+                >
+                  Just rewrite it
+                </button>
+              )}
+            </motion.div>
           )}
         </AnimatePresence>
-
-        {response?.kind === 'improved' && phase === 'done' && (
-          <div className="mt-4">
-            <CopyButton text={response.text} />
-          </div>
-        )}
       </div>
     </div>
   )

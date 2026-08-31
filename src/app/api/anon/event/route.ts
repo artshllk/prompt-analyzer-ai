@@ -35,13 +35,14 @@ const EVENTS = new Set<ExtensionEvent>([
   'question_shown',
   'question_answered',
   'question_skipped',
+  'question_none',
   'rewrite_accepted',
   'rewrite_edited',
   'rewrite_undone',
 ])
 
 const TIERS = new Set<Tier | 'anon'>(['anon', 'free', 'pro'])
-const SURFACES = new Set<ExtensionSurface>(['chatgpt', 'claude', 'gemini'])
+const SURFACES = new Set<ExtensionSurface>(['chatgpt', 'claude', 'gemini', 'web'])
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',

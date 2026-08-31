@@ -15,11 +15,15 @@ import type { AnalyzeInput, AnalyzeResult } from '@/types'
  * forks - concrete readings of this prompt that would produce different
  * rewrites. The user answers by clicking one, so generic interview
  * questions and junk free-text answers are both impossible by design.
- * Questions are still a gate the user can abandon at, so we cap turns
- * and bias hard toward shipping the rewrite.
+ *
+ * ONE QUESTION, OR NONE. The cap was two. A second question is a second
+ * gate in front of a result the user has not seen yet, and the first one
+ * has already resolved the reading that mattered. If we are still unsure
+ * after one answer, that is our problem to solve with a better rewrite,
+ * not theirs to solve with more typing. Staying quiet is the feature.
  */
 
-export const MAX_CLARIFY_TURNS = 2
+export const MAX_CLARIFY_TURNS = 1
 
 /**
  * The diagnostic still scores the prompt, and that score never leaves this

@@ -745,7 +745,11 @@
   function showDoneChip() {
     positionChip()
     chip.className = 'chip show state-done'
-    const tag = state.chosen ? `Improved · ${state.chosen}` : 'Improved'
+    const tag = state.chosen
+      ? `Improved · ${state.chosen}`
+      : state.quiet
+        ? 'Improved · nothing to ask'
+        : 'Improved'
     const n = state.gaps ? state.gaps.length : 0
 
     if (!chipChanged(`done|${tag}|${n}`)) return
@@ -911,6 +915,12 @@
     fork: null,
     /** The interpretation the user picked, if any. */
     chosen: '',
+    /**
+     * True when the fork check found one sensible reading, so we never asked.
+     * Staying quiet is the feature, and a feature the user cannot see is
+     * indistinguishable from a step that is broken. The chip says so.
+     */
+    quiet: false,
     /** Details only the user knows, offered on the chip after the rewrite. */
     gaps: null,
     gapIndex: 0,
@@ -1039,6 +1049,7 @@
     state.before = prompt
     state.fork = null
     state.chosen = ''
+    state.quiet = false
     // We have just taken a snapshot of what they typed, so their typing up to
     // this moment is accounted for. Anything after this is a genuine edit, and
     // during 'asking' that is what makes the question stale.
@@ -1092,7 +1103,13 @@
           showForks(f)
           return
         }
-        // Clear enough: rewrite it, once.
+        // Clear enough: rewrite it, once, and say nothing.
+        //
+        // This is the numerator of the silence rate. Without it the only
+        // thing we could measure was how often we DID ask, which looks the
+        // same whether the engine is being disciplined or simply broken.
+        track('question_none')
+        state.quiet = true
         streamSharpenInto(prompt, null)
       }
     )
@@ -1508,6 +1525,7 @@
     state.after = ''
     state.fork = null
     state.chosen = ''
+    state.quiet = false
     state.gaps = null
     state.gapIndex = 0
     state.gapAnswers = {}
