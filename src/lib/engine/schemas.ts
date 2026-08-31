@@ -121,11 +121,12 @@ export const REWRITE_SCHEMA = {
     },
     restructured: {
       type: 'string',
-      description: 'The full expert rewrite',
+      description:
+        'The full expert rewrite. Anything you decided for the user must be wrapped in the guess markers, and anything from their clarification answer in the answered markers, exactly as the system prompt describes. Text from their own prompt stays unmarked.',
     },
     template: {
       type: 'string',
-      description: 'Reusable version of the restructured prompt with {curly_brace} variables for the parts that change per use',
+      description: 'Reusable version of the restructured prompt with {curly_brace} variables for the parts that change per use. No markers in this field.',
     },
     explanation: { type: 'string' },
     improvement_tags: {

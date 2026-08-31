@@ -1,5 +1,6 @@
 import { diagnose, toRubricAudit, type DiagnoseResponse } from './diagnose'
 import { rewrite } from './rewrite'
+import { parseSegments, stripMarkers, hasMarkers } from './segments'
 import type { AnalyzeInput, AnalyzeResult } from '@/types'
 
 /**
@@ -112,13 +113,31 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
   const rw = await rewrite(input, diag)
   if (!rw) return null
 
-  const improvedPrompt = rw.restructured
+  /**
+   * The rewrite comes back with its own additions marked inline. Split it
+   * once, here, so every client gets the same two things: a prompt with no
+   * markers in it, and the provenance for that prompt.
+   *
+   * `improvedPrompt` is derived from the segments rather than stripped
+   * separately, which makes "the segments concatenate to the prompt" true by
+   * construction instead of by agreement between two functions.
+   *
+   * If the model returned no markers at all we ship an unlabelled rewrite.
+   * That is exactly what the user got before any of this existed, so a model
+   * having an off day costs the labelling, never the result.
+   */
+  const segments = parseSegments(rw.restructured)
+  const improvedPrompt = segments.map(s => s.text).join('')
 
   return {
     type: 'improved',
     improvedPrompt,
-    minimalEdit: rw.minimal_edit,
-    template: rw.template,
+    segments: hasMarkers(rw.restructured) ? segments : undefined,
+    // Neither of these is supposed to carry markers. Stripping them anyway
+    // costs nothing and means one confused response cannot put bracket junk
+    // in front of a user.
+    minimalEdit: stripMarkers(rw.minimal_edit),
+    template: stripMarkers(rw.template),
     explanation: rw.explanation,
     improvementTags: rw.improvement_tags,
     audit,

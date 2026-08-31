@@ -60,8 +60,18 @@ export type AnalyzeResult =
     }
   | {
       type: 'improved'
-      /** The full restructured rewrite. */
+      /** The full restructured rewrite, with all markers stripped. */
       improvedPrompt: string
+      /**
+       * `improvedPrompt` split by where each word came from: the user's own
+       * prompt, their answer to the clarifying question, or our assumption.
+       * Concatenating `segments` reproduces `improvedPrompt` exactly.
+       *
+       * Optional because a rewrite whose markers came back unusable still
+       * ships - as an unlabelled prompt, which is what the user got before
+       * any of this existed. See lib/engine/segments.ts.
+       */
+      segments?: import('@/lib/engine/segments').Segment[]
       /** Light-touch variant: the user's own wording with only the gaps patched. */
       minimalEdit?: string
       /** Reusable {variable} template extracted from the rewrite. */

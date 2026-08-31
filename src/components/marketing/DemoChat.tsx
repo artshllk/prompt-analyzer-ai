@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { StreamOut } from '@/components/shared/StreamOut'
+import { LabelledPrompt } from '@/components/shared/LabelledPrompt'
+import type { Segment } from '@/lib/engine/segments'
 import { SAMPLE_PROMPTS, pickThree } from '@/lib/sample-prompts'
 
 /**
@@ -55,8 +57,10 @@ type ForkOption = { label: string; summary: string }
 
 type Response =
   | { kind: 'question'; text: string; gap?: string; options: ForkOption[] }
-  /** `quiet` means we never asked: the prompt only had one sensible reading. */
-  | { kind: 'improved'; text: string; quiet: boolean }
+  /** `quiet` means we never asked: the prompt only had one sensible reading.
+   *  `segments` is absent when the rewrite came back without usable markers;
+   *  the prompt still ships, just unlabelled. */
+  | { kind: 'improved'; text: string; quiet: boolean; segments?: Segment[] }
   | { kind: 'error'; text: string }
 
 type Phase = 'idle' | 'thinking' | 'awaiting-answer' | 'done' | 'error'
@@ -73,6 +77,8 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
   const [input, setInput] = useState('')
   const [rootPrompt, setRootPrompt] = useState('')
   const [response, setResponse] = useState<Response | null>(null)
+  /** The rewrite as it currently stands, after any guesses were removed. */
+  const [copyText, setCopyText] = useState('')
   const [phase, setPhase] = useState<Phase>('idle')
   const [history, setHistory] = useState<QA[]>([])
   const [answer, setAnswer] = useState('')
@@ -195,7 +201,10 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
         kind: 'improved',
         text: data.improvedPrompt,
         quiet: priorAnswers.length === 0,
+        segments: Array.isArray(data.segments) ? data.segments : undefined,
       })
+      // Copy hands over the prompt as it stands, so removals have to update it.
+      setCopyText(data.improvedPrompt)
       setPhase('done')
     } catch {
       fail('Network hiccup. Check your connection and try again.')
@@ -335,11 +344,22 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
                     Nothing to ask, this one is clear.
                   </p>
                 )}
-                <StreamOut
-                  text={response.text}
-                  className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
-                  style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)' }}
-                />
+                {response.segments ? (
+                  <LabelledPrompt
+                    segments={response.segments}
+                    onChange={setCopyText}
+                  />
+                ) : (
+                  <StreamOut
+                    text={response.text}
+                    className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
+                    style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)' }}
+                  />
+                )}
+
+                <div className="mt-5">
+                  <CopyButton text={copyText || response.text} />
+                </div>
               </motion.div>
             )}
 

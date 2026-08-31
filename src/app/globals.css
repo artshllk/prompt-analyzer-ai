@@ -45,6 +45,21 @@
   /* Brand accent. A precise electric blue, not purple (PromptPerfect),
      not generic AI cyan, not Linear's exact value. Used sparingly on
      hover states, score highlights, active nav, and one hero word. */
+  /* Colour that carries meaning, not decoration. Three roles, used only
+     for these three things anywhere in the product:
+
+       machine - the tool contributed this
+       guess   - the tool assumed this, and you can take it back
+       confirm - verified, removed, done
+
+     Values here are tuned for the current dark canvas. The light rebuild
+     changes these numbers and nothing that uses them. */
+  --color-machine: #7DA7F4;
+  --color-machine-bg: rgba(125, 167, 244, 0.14);
+  --color-guess: #E0B23C;
+  --color-guess-bg: rgba(224, 178, 60, 0.14);
+  --color-confirm: #5FBE8C;
+
   --color-accent: #5B8FED;
   --color-accent-bright: #7DA7F4;
   --color-accent-soft: rgba(91, 143, 237, 0.10);
