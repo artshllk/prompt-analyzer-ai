@@ -7,12 +7,11 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { NavAuthButton } from './NavAuthButton'
+import type { NavKey } from './MarketingNav'
 
 // Motion-wrapped Link so nav rows can carry a `whileTap` pressed state
 // while keeping Next's prefetch + anchor semantics.
 const MotionLink = motion.create(Link)
-
-type NavKey = 'home' | 'detector' | 'prompts' | 'extension' | 'pricing' | 'faq' | 'blog'
 
 interface NavLink {
   key: NavKey

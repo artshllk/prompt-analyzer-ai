@@ -193,8 +193,8 @@ export default function HowToWriteBetterPromptsPage() {
               <Link href="/blog/what-is-prompt-engineering" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 What is prompt engineering? →
               </Link>
-              <Link href="/tools/prompt-analyzer" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
-                Free AI Prompt Analyzer →
+              <Link href="/playground" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                Try the prompt improver →
               </Link>
               <Link href="/prompts/chatgpt-email-writing" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 Free prompt: write any email with ChatGPT →

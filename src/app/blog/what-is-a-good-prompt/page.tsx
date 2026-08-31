@@ -227,10 +227,10 @@ export default function WhatIsAGoodPromptPage() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/tools/prompt-analyzer"
+              href="/playground"
               className="inline-block px-5 py-2.5 rounded-xl btn-paper bg-[color:var(--color-paper)] text-[color:var(--color-ink)] text-sm font-semibold transition-all"
             >
-              Analyze my prompt →
+              Improve my prompt →
             </Link>
             <Link
               href="/blog/prompt-engineering-examples"

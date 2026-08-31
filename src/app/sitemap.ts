@@ -33,14 +33,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }))
 
-  // /playground, /tools/* and /detector are deliberately absent: the first two
-  // are gone (301 -> /extension in next.config.ts) and the detector is
-  // unrouted. Listing a redirect in a sitemap is a crawl-budget own goal.
-  // The extension takes the top priority the playground used to hold - it is
-  // the product now.
+  // /tools/* stays absent: those pages never existed and now 404 honestly.
+  // /playground and /detector are back, so they are listed again - both are
+  // real pages that a reader can use without an account, and both are linked
+  // from dozens of blog posts.
   return [
     { url: base, lastModified: now, changeFrequency: 'weekly', priority: 1 },
+    { url: `${base}/playground`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${base}/extension`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${base}/detector`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${base}/prompts`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
     ...categoryPages,
     ...promptPages,

@@ -465,12 +465,10 @@ export default function LandingPage() {
             <FooterCol
               title="Product"
               links={[
+                { href: "/playground", label: "Try it" },
                 { href: "/extension", label: "Extension" },
-                { href: "/prompts", label: "Prompt library" },
                 { href: "/detector", label: "AI text detector" },
-                { href: "/extension", label: "Browser extension" },
-                { href: "/tools/prompt-improver", label: "Prompt Improver" },
-                { href: "/tools/prompt-analyzer", label: "Prompt Analyzer" },
+                { href: "/prompts", label: "Prompt library" },
                 { href: "/pricing", label: "Pricing" },
               ]}
             />
