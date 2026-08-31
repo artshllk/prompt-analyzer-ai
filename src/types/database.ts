@@ -24,6 +24,12 @@ export type ExtensionEvent =
   | 'question_skipped'
   /** We had nothing worth asking. The numerator of the silence rate. */
   | 'question_none'
+  /* The funnel. Four counts, in order, answering one question: did any of
+     this work? Everything else is a ratio between two of these. */
+  | 'tool_run'            // someone improved a prompt
+  | 'tool_run_repeat'     // the same visitor came back and did it again
+  | 'compare_clicked'     // they asked to see both answers
+  | 'compare_completed'   // both answers actually landed
   | 'rewrite_accepted'
   | 'rewrite_edited'
   | 'rewrite_undone'

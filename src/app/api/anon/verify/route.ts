@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyPrompts, VERIFY_TARGETS } from '@/lib/engine/verify'
 import { take, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
+import { createClient } from '@/lib/supabase/server'
 import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
 import { getVerifyAllowance, recordVerifyUsage } from '@/lib/db/usage'
 
@@ -56,9 +57,38 @@ export function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS })
 }
 
-export async function POST(req: NextRequest) {
+/**
+ * Two ways in, because there are two kinds of client.
+ *
+ * This route used to read a `dc_` bearer token and nothing else, which meant a
+ * signed-in visitor on deepclario.com got `account_required` while looking at
+ * their own account. The web app authenticates with a Supabase cookie session
+ * and has no bearer token to send; only the extension has one. So the feature
+ * was unreachable from the surface it was designed for.
+ *
+ * Bearer is tried first: it is the cheaper check and it is what every
+ * extension request carries. The cookie session is the fallback.
+ */
+async function resolveCaller(req: NextRequest) {
   const token = extractBearerToken(req.headers.get('authorization'))
-  const auth = token ? await validateToken(token) : null
+  const viaToken = token ? await validateToken(token) : null
+  if (viaToken) return viaToken
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tier')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  return { userId: user.id, tier: (profile?.tier ?? 'free') as 'free' | 'pro' }
+}
+
+export async function POST(req: NextRequest) {
+  const auth = await resolveCaller(req)
 
   // No account, no run. See the header comment: a lifetime credit needs
   // someone to spend it. Named error so the client can offer sign-in rather

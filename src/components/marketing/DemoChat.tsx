@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { StreamOut } from '@/components/shared/StreamOut'
 import { LabelledPrompt } from '@/components/shared/LabelledPrompt'
 import type { Segment } from '@/lib/engine/segments'
+import { CompareAnswers } from '@/components/shared/CompareAnswers'
+import { track, trackRun } from '@/lib/track'
 import { SAMPLE_PROMPTS, pickThree } from '@/lib/sample-prompts'
 
 /**
@@ -27,25 +29,6 @@ import { SAMPLE_PROMPTS, pickThree } from '@/lib/sample-prompts'
  * One free run per browser (localStorage). After it's spent, the panel
  * swaps to the account gate - rendered inline, not a stacked overlay.
  */
-
-/**
- * Content-free counter, same endpoint and same rules as the extension's
- * track(): an event name and a surface, never the prompt, the rewrite, or
- * any identifier. Always fire and forget - a counter must never be able to
- * interrupt the thing it is counting.
- */
-function track(event: 'question_shown' | 'question_none') {
-  try {
-    void fetch('/api/anon/event', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ event, tier: 'anon', surface: 'web' }),
-      keepalive: true,
-    }).catch(() => {})
-  } catch {
-    // Never matters.
-  }
-}
 
 const DEMO_LIMIT = 1
 const RUNS_KEY = 'pc_demo_runs'
@@ -194,6 +177,8 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       }
 
       bumpRuns()
+      // Counted here, not on submit: a call that failed is not a run.
+      trackRun()
       // Nothing was asked and nothing needed to be. Say so, rather than
       // letting the user wonder whether the question step is broken.
       if (priorAnswers.length === 0) track('question_none')
@@ -360,6 +345,11 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
                 <div className="mt-5">
                   <CopyButton text={copyText || response.text} />
                 </div>
+
+                <CompareAnswers
+                  original={rootPrompt}
+                  improved={copyText || response.text}
+                />
               </motion.div>
             )}
 
