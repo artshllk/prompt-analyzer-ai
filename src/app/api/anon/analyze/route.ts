@@ -44,7 +44,23 @@ export function OPTIONS() {
  *   - Token + pro tier  → unlimited, DB usage write (for analytics)
  */
 export async function POST(req: NextRequest) {
-  const auth = await resolveCaller(req)
+  const who = await resolveCaller(req)
+
+  /**
+   * We know who they are and cannot read what they are entitled to.
+   *
+   * Refusing is the whole point of the three-state result. Guessing "free"
+   * here is what turned a database outage into unlimited billed calls, and it
+   * must never be reported as a quota problem: this is our failure, not their
+   * limit.
+   */
+  if (who.state === 'unknown') {
+    return withCors(NextResponse.json(
+      { error: 'identity_unavailable' },
+      { status: 503, headers: { 'Retry-After': '30' } }
+    ))
+  }
+  const auth = who.state === 'known' ? who.caller : null
 
   // Anonymous: IP-throttle. Token-bearing: per-user burst limit, same
   // tiers as the website route (10/min free, 30/min pro) so the

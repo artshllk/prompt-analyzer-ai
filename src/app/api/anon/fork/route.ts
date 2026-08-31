@@ -42,7 +42,11 @@ export function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await resolveCaller(req)
+  const who = await resolveCaller(req)
+  if (who.state === 'unknown') {
+    return corsJson({ error: 'identity_unavailable' }, 503)
+  }
+  const auth = who.state === 'known' ? who.caller : null
 
   // This endpoint gets its OWN bucket namespace, and that is the whole point.
   //

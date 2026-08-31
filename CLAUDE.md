@@ -111,15 +111,39 @@ account and walk straight through.
 **"Free fails closed, only Pro fails open" is therefore not implementable
 today.** During the outage there is no way to tell Pro from free.
 
-Two ways out, neither done:
+**Fixed.** `resolveCaller()` now returns three states, not two: `anonymous`,
+`known`, and `unknown`. `unknown` means we proved who they are and could not
+read their entitlement, and it is refused with a 503 `identity_unavailable`
+and an honest message. Never a 402: a quota response would blame the user for
+our outage and push them toward paying to fix something upgrading would not
+fix. `validateToken` carries `tier: null` for the same case rather than
+`?? 'free'`.
 
-1. **Distinguish unknown from free.** Make the tier read return `null` on
-   error rather than defaulting, and refuse when it is unknown. Small change,
-   closes the hole, costs Pro users their service during an outage.
-2. **Put `tier` in the access token** via a Supabase custom access token hook.
-   The JWT is signed, so tier becomes verifiable with no database at all, and
-   then Pro genuinely can fail open while everyone else fails closed. This is
-   the only version of the design that actually works.
+Anonymous stays anonymous, because that path already fails closed.
+
+## When we have paying customers
+
+The fix above costs Pro users their service during a Supabase outage. That is
+free today because there are zero Pro users. It stops being free the moment
+there is one, and this is the note for that day.
+
+**The design that actually works: put `tier` in the access token.** Supabase
+supports a custom access token hook that embeds claims in the signed JWT.
+Tier then becomes verifiable with no database at all, so during an outage Pro
+can be let through while free and anonymous fail closed, which is the version
+of this that everyone wants.
+
+**Do not reach for it without solving the stale-claim problem first.** A JWT
+carries whatever was true when it was issued. Someone who upgrades is still
+holding a token that says `free` until it refreshes, so they pay and then keep
+hitting the free limit. That bug lands on the first person who ever pays, which
+is the worst possible moment for it. Any version of this needs a forced token
+refresh on the Paddle webhook, and a fallback that re-reads the database when a
+token says `free` but the request is behaving like Pro. Both are more work than
+the hook itself.
+
+Until then, option 1 stands: unknown is refused, and Pro takes the outage with
+everyone else.
 
 ## Commands
 

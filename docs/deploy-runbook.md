@@ -207,42 +207,78 @@ ANON_DAILY_GLOBAL_CAP=1 PORT=3000 npm run start
 The inline variable overrides `.env.local` for this process only. Nothing about
 production changes.
 
-**Run 1, expect 200 and a real rewrite:**
+> **The old version of this test asserted the bug.** It told you to run twice
+> and expect the second to be refused, and at the time answering a clarifying
+> question also spent a unit, so "the second call" was often the same user
+> action. One action now costs one unit. The steps below reflect that.
 
-```bash
-curl -s -o /dev/null -w 'run 1: %{http_code}\n' -X POST http://localhost:3000/api/anon/analyze \
-  -H 'Content-Type: application/json' \
-  -d '{"prompt":"write a launch email for my app","tone":"professional"}'
+**Run 1, one complete action including a question. Expect it to finish.**
+
+This is the case that used to be impossible at `cap=1`: the question spent the
+only unit, and the answer was refused, so the user got a question they could
+never answer.
+
+In a browser at `http://localhost:3000`, in a private window so there is no
+cookie:
+
+1. Send `write about coffee`. Expect a question with two or three readings.
+2. Click one. **Expect a rewrite, not the capacity message.**
+3. Check the counter moved by exactly one:
+
+```sql
+select * from anon_daily_usage where day = (now() at time zone 'utc')::date;
+-- expect: runs = 1, NOT 2
 ```
 
-**Run 2 must be a SECOND PROMPT, not an answer to the first.** One user action
-costs one budget unit, so answering a clarifying question does not spend
-another. Use a different prompt:
+If `runs = 2`, the turn gate is gone and the ceiling is silently half what it
+says.
 
-**Run 2, expect 429 and the named error:**
+**Run 2, a SECOND separate prompt. Expect the capacity message.**
+
+Still in the same private window, send a different prompt, for example
+`write a cover letter`.
+
+Expect: "That is today's free runs used up, across everyone", the note that it
+resets at midnight UTC, and a "Create a free account" button. Not a spinner,
+not a blank panel, not an error.
+
+By curl, if you prefer it without the browser:
 
 ```bash
-curl -s -w '\nrun 2: %{http_code}\n' -X POST http://localhost:3000/api/anon/analyze \
+# first action, turn 1
+curl -s -o /dev/null -w 'turn 1: %{http_code}\n' -X POST http://localhost:3000/api/anon/analyze \
+  -H 'Content-Type: application/json' \
+  -d '{"prompt":"write about coffee","tone":"professional"}'
+# expect 200
+
+# same action, turn 2. Must NOT spend a second unit.
+curl -s -o /dev/null -w 'turn 2: %{http_code}\n' -X POST http://localhost:3000/api/anon/analyze \
+  -H 'Content-Type: application/json' \
+  -d '{"prompt":"write about coffee","tone":"professional","priorAnswers":[{"question":"What kind of piece?","answer":"Opinion piece","turn":1}]}'
+# expect 200
+
+# a different action. This is the one that is refused.
+curl -s -w '\nsecond prompt: %{http_code}\n' -X POST http://localhost:3000/api/anon/analyze \
   -H 'Content-Type: application/json' \
   -d '{"prompt":"write a cover letter","tone":"professional"}'
 # expect: {"error":"daily_capacity","resetAt":"...T00:00:00.000Z"}  429
 ```
 
-**Run 3, the graceful state, which is the point of the test.** Open
-`http://localhost:3000` in a browser, type anything, press send. You should get
-"That is today's free runs used up, across everyone", an explanation that it
-resets at midnight UTC, and a "Create a free account" button. You should not
-get an error, a spinner that never ends, or a blank panel.
+**Run 3, the fail-closed path.** Stop the server, point
+`SUPABASE_SERVICE_ROLE_KEY` at something invalid, restart, and try once
+anonymously. Expect the same graceful "back tomorrow" state and this in the
+log:
 
-**Confirm the fail-closed path too.** Stop the server, point
-`SUPABASE_SERVICE_ROLE_KEY` at something invalid, restart, and try once. You
-should get the same graceful "back tomorrow" state rather than a 500. This is
-the branch that runs if Supabase is ever unreachable, and it is the reason the
-guard fails closed.
+```
+[anon-budget] bump failed, failing CLOSED: Invalid API key
+```
+
+Confirmed working: the request is refused before any model call, so a Supabase
+outage cannot be billed.
 
 **Run 4, the signed-in bypass. This is the one that used to fail.** The cap is
 consumed only on the anonymous branch, so a signed-in visitor should sail past
-it while the cap is still set to 1 and the counter is already over.
+it while the cap is still 1 and the counter is already over.
 
 *Browser, cookie session. This is the path that was broken:*
 
@@ -253,9 +289,9 @@ it while the cap is still set to 1 and the counter is already over.
 4. **Expect a normal rewrite, not "back tomorrow".** If you get the capacity
    message while signed in, `resolveCaller` is not seeing your cookie.
 5. Open DevTools, Network tab, find the `analyze` request. It should be `200`,
-   and the JSON should carry `"anon": false` and `"tier": "free"` or
-   `"tier": "pro"`. `"anon": true` while signed in means the fix is not live.
-6. Improve a prompt twice more, then check the quota is now real for you:
+   and the JSON should carry `"anon": false` and a real `"tier"`.
+   `"anon": true` while signed in means the fix is not live.
+6. Improve twice more, then check the quota is real for you:
 
 ```sql
 select count(*) from usage_events
@@ -265,8 +301,7 @@ where user_id = 'YOUR_USER_ID'
 -- expect: one row per improvement. Before this fix it was always zero.
 ```
 
-7. And that the work reached History. Visit `http://localhost:3000/history`,
-   or:
+7. And that the work reached History, at `http://localhost:3000/history` or:
 
 ```sql
 select created_at, left(original_prompt, 40) as prompt, final_prompt is not null as has_rewrite
@@ -274,7 +309,6 @@ from prompt_sessions
 where user_id = 'YOUR_USER_ID'
 order by created_at desc limit 5;
 -- expect: a row per improvement, has_rewrite = true.
--- Before this fix the website wrote nothing here at all.
 ```
 
 *Extension path, bearer token from `/extension/connect`:*
@@ -286,16 +320,21 @@ curl -s -o /dev/null -w 'bearer: %{http_code}\n' -X POST http://localhost:3000/a
 # expect: 200
 ```
 
-Both credentials now go through the same `resolveCaller()` in
-`lib/auth/caller.ts`, so if one works and the other does not, the problem is
-the credential, not the route.
+**Run 5, an unknown caller is refused, not treated as free.** Signed in, with a
+broken service key so the tier read fails while the session still resolves:
 
-**Run 5, a prompt that asks a question, at cap 1.** This is the case that was
-broken: the question spent the only unit and the answer was refused, so the
-user got a question they could never answer. Reset the counter first
-(`delete from anon_daily_usage where day = (now() at time zone 'utc')::date;`),
-then in the browser send `write about coffee`, click one of the readings, and
-confirm you get a rewrite rather than the capacity message.
+1. Sign in normally.
+2. Restart the server with `SUPABASE_SERVICE_ROLE_KEY` invalid.
+3. Improve a prompt.
+
+Expect: "We are having trouble reaching your account right now. Nothing was
+used up." and a `503` with `{"error":"identity_unavailable"}`.
+
+**It must not be a 402 and must not mention a limit.** A quota message here
+blames the user for our outage and points them at an upgrade that would not
+fix it. Before this fix they were silently classed as free and let through
+with the quota gate failing open, which is how an outage became unlimited
+billed calls.
 
 ### Clean up, every time
 

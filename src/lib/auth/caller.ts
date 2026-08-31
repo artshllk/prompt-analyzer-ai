@@ -11,18 +11,30 @@ import { validateToken, extractBearerToken, type ValidatedToken } from '@/lib/db
  * nothing else. Only the extension has one of those. The website
  * authenticates with a Supabase cookie, so a signed-in visitor using the tool
  * on deepclario.com was ANONYMOUS to every one of these routes while looking
- * at a page that said they were signed in. That meant:
+ * at a page that said they were signed in.
  *
- *   - they consumed the global anonymous budget, and were blocked by it
- *   - their free-plan quota was never checked, and never recorded
- *   - their sessions never reached History
+ * THREE STATES, NOT TWO
  *
- * All three were invisible while the tool sat behind a modal. Putting it in
- * the hero, in front of a cap that blocks, is what made them matter.
+ * This returned `Caller | null`, so "not signed in" and "signed in but we
+ * could not read their plan" were the same answer. The tier read did
+ * `?? 'free'`, so a failed query became a genuine free account, and the free
+ * quota fails open on a database error. Put together: during a Postgres
+ * outage with Auth still up, every signed-in caller resolved as free and got
+ * unlimited billed model calls, and anyone could still sign up to join them
+ * because sign-up only needs Auth.
  *
- * Bearer is tried first: it is the cheaper check, it needs no cookie parsing,
- * and it is what every extension request carries. The cookie session is the
- * fallback, and it is the only thing a browser can send.
+ *   anonymous  no credential at all. Falls to the anonymous ceiling, which
+ *              fails closed, so this is already safe.
+ *   known      identity AND entitlement both confirmed.
+ *   unknown    identity confirmed, entitlement unreadable. REFUSE. Somebody
+ *              we cannot identify is not a free user, and guessing in their
+ *              favour is how an outage turns into a bill.
+ *
+ * The obvious alternative, letting Pro through and refusing everyone else,
+ * is not available: tier lives in Postgres on both paths, so during the exact
+ * failure that matters there is no way to tell Pro from free. See the
+ * "when we have paying customers" note in CLAUDE.md for the version that
+ * would work, and why it is not worth building yet.
  */
 
 export interface Caller {
@@ -32,30 +44,58 @@ export interface Caller {
   via: 'token' | 'session'
 }
 
-export async function resolveCaller(req: NextRequest): Promise<Caller | null> {
+export type CallerResult =
+  | { state: 'anonymous' }
+  | { state: 'known'; caller: Caller }
+  | { state: 'unknown' }
+
+const ANONYMOUS: CallerResult = { state: 'anonymous' }
+const UNKNOWN: CallerResult = { state: 'unknown' }
+
+export async function resolveCaller(req: NextRequest): Promise<CallerResult> {
   const raw = extractBearerToken(req.headers.get('authorization'))
-  const viaToken: ValidatedToken | null = raw ? await validateToken(raw) : null
-  if (viaToken) {
-    return { userId: viaToken.userId, tier: viaToken.tier, via: 'token' }
+  if (raw) {
+    const viaToken: ValidatedToken | null = await validateToken(raw)
+    if (viaToken) {
+      // Token resolved, entitlement did not. Refuse rather than assume free.
+      if (viaToken.tier === null) {
+        console.error('[caller] token valid but tier unreadable, refusing')
+        return UNKNOWN
+      }
+      return { state: 'known', caller: { userId: viaToken.userId, tier: viaToken.tier, via: 'token' } }
+    }
+    // A token that does not resolve is not a signed-in user. It falls through
+    // to the cookie check and then to anonymous, which fails closed.
   }
 
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return null
 
-    const { data: profile } = await supabase
+    // No session is genuinely anonymous, not unknown. Anonymous is already
+    // handled by a ceiling that fails closed, so nothing is at risk here.
+    if (!user) return ANONYMOUS
+
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('tier')
       .eq('id', user.id)
       .maybeSingle()
 
-    return { userId: user.id, tier: (profile?.tier ?? 'free') as 'free' | 'pro', via: 'session' }
+    if (error) {
+      console.error('[caller] session valid but tier unreadable, refusing:', error.message)
+      return UNKNOWN
+    }
+
+    return {
+      state: 'known',
+      caller: { userId: user.id, tier: (profile?.tier ?? 'free') as 'free' | 'pro', via: 'session' },
+    }
   } catch (err) {
-    // A cookie parse failure must not take down an endpoint that also serves
-    // anonymous callers. Treat it as "not signed in" and carry on: the worst
-    // outcome is that one request is throttled as anonymous.
+    // Could not even establish identity. That is indistinguishable from not
+    // being signed in, and the anonymous path fails closed, so treat it as
+    // anonymous rather than refusing someone who never had a session.
     console.error('[caller] session lookup failed, treating as anonymous:', (err as Error).message)
-    return null
+    return ANONYMOUS
   }
 }

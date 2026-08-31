@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "npx tsx --test --experimental-test-module-mocks src/lib/engine/segments.test.ts src/lib/engine/coerce.test.ts src/lib/db/anon-budget.test.ts src/lib/engine/pipeline-guard.test.mts"
+    "test": "npx tsx --test --experimental-test-module-mocks src/lib/engine/segments.test.ts src/lib/engine/coerce.test.ts src/lib/db/anon-budget.test.ts src/lib/auth/caller.test.ts src/lib/engine/pipeline-guard.test.mts"
   },
   "dependencies": {
     "@paddle/paddle-js": "^1.6.4",

@@ -1568,6 +1568,11 @@
         }`,
         { action: { label: 'Connect account', onClick: openConnect } }
       )
+    } else if (msg.error === 'identity_unavailable') {
+      // We could not read their account. Not a limit, not their fault, and
+      // usually over in a minute. Saying "wait a moment" is correct here,
+      // which is exactly why it must not also be said for the daily ceiling.
+      toast('We are having trouble reaching your account. Nothing was used up. Try again shortly.')
     } else if (msg.error === 'rate_limited') {
       toast('Too many requests. Wait a moment, then try again.', {
         action: { label: 'Connect account', onClick: openConnect },

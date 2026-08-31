@@ -57,7 +57,11 @@ export function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await resolveCaller(req)
+  const who = await resolveCaller(req)
+  if (who.state === 'unknown') {
+    return corsJson({ error: 'identity_unavailable' }, 503)
+  }
+  const auth = who.state === 'known' ? who.caller : null
 
   // No account, no run. See the header comment: a lifetime credit needs
   // someone to spend it. Named error so the client can offer sign-in rather

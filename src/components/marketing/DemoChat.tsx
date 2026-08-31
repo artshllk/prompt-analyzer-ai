@@ -216,8 +216,15 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
         return
       }
       if (res.status === 503) {
+        const d = await res.json().catch(() => ({}))
+        // Two different 503s, and telling them apart matters. One is the
+        // model not answering. The other is us being unable to look up your
+        // account, which must never be dressed up as a limit: it is our
+        // problem, it is usually brief, and it costs you nothing.
         fail(
-          'The model did not come back. That one is on us, and it did not use up any of your improvements. Try again.'
+          d.error === 'identity_unavailable'
+            ? 'We are having trouble reaching your account right now. Nothing was used up. Try again shortly.'
+            : 'The model did not come back. That one is on us, and it did not use up any of your improvements. Try again.'
         )
         return
       }

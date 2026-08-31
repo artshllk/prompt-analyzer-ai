@@ -46,7 +46,13 @@ export function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await resolveCaller(req)
+  const who = await resolveCaller(req)
+  // Known identity, unreadable entitlement. Refuse rather than assume free:
+  // see the note in lib/auth/caller.ts.
+  if (who.state === 'unknown') {
+    return corsJson({ error: 'identity_unavailable' }, 503)
+  }
+  const auth = who.state === 'known' ? who.caller : null
 
   // Burst / IP throttle, identical tiers to the analyze route.
   if (!auth) {
