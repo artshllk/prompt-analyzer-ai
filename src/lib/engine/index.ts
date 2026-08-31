@@ -1,7 +1,9 @@
 import { diagnose, toRubricAudit, type DiagnoseResponse } from './diagnose'
 import { rewrite } from './rewrite'
 import { parseSegments, stripMarkers, hasMarkers } from './segments'
+import { asString, asText, asStringArray } from './coerce'
 import type { AnalyzeInput, AnalyzeResult } from '@/types'
+import type { ImprovementTag } from '@/types/database'
 
 /**
  * The prompt engine: a staged diagnostic pipeline, orchestrated behind
@@ -55,7 +57,33 @@ const NEUTRAL_DIAGNOSIS: DiagnoseResponse = {
   audit: { dimensions: [], findings: [], failure_forecast: [] },
 }
 
+/**
+ * THE GUARD.
+ *
+ * Every stage in this pipeline returns null on failure, and the orchestrator
+ * handles null well: a failed diagnose degrades to NEUTRAL_DIAGNOSIS and the
+ * user still gets a rewrite. Nothing handled a THROW.
+ *
+ * That gap was real and it was reachable. Provider responses are read with
+ * `strict:false`, so a field typed `string` can arrive as an array, and one
+ * `.trim()` on it three stages later escaped as an unhandled 500. The route
+ * has one try/catch and it wraps req.json(), so the exception went straight
+ * out to Next and the user was told the product was broken.
+ *
+ * The whole design here is "degrade, do not fail". This makes that true for
+ * exceptions too: anything thrown becomes null, which the route already turns
+ * into a clean 503 rather than a stack trace.
+ */
 export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult | null> {
+  try {
+    return await runPipeline(input)
+  } catch (err) {
+    console.error('[engine] pipeline threw, degrading to no result:', err)
+    return null
+  }
+}
+
+async function runPipeline(input: AnalyzeInput): Promise<AnalyzeResult | null> {
   const turnCount = input.priorAnswers.length
   const mustImprove = turnCount >= MAX_CLARIFY_TURNS
 
@@ -65,7 +93,24 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
     console.error('[engine] diagnose unavailable, rewriting without a diagnosis')
   }
 
-  const audit = toRubricAudit(diag)
+  /**
+   * The audit is caught on its own, and this is the point of doing it that
+   * way rather than with one outer catch.
+   *
+   * The audit is supporting detail: which dimensions were weak, what the
+   * evidence was. The rewrite is the thing the user came for. Letting a
+   * malformed finding take down the whole request trades the result the user
+   * wanted for an error, to protect a panel they may never open. A rewrite
+   * with no audit is a fine outcome. A 503 because the audit mapper threw is
+   * not.
+   */
+  let audit: ReturnType<typeof toRubricAudit> | undefined
+  try {
+    audit = toRubricAudit(diag)
+  } catch (err) {
+    console.error('[engine] audit mapping failed, shipping without it:', err)
+    audit = undefined
+  }
 
   // Not a prompt at all: a thank-you, a greeting, a reaction. Improving these
   // produces a prompt for replying to yourself, which is what the engine did
@@ -74,7 +119,7 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
   if (diagnosed && diag.no_task && turnCount === 0) {
     return {
       type: 'no_task',
-      message: diag.no_task_reason?.trim() || 'There is no prompt here to improve yet.',
+      message: asText(diag.no_task_reason, 'There is no prompt here to improve yet.'),
       audit,
     }
   }
@@ -85,8 +130,11 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
   if (diag.already_good && diag.already_good_notes && turnCount === 0) {
     return {
       type: 'already_good',
-      message: diag.already_good_notes.message,
-      tweaks: (diag.already_good_notes.tweaks ?? []).slice(0, 2),
+      message: asText(
+        diag.already_good_notes.message,
+        'This prompt is already clear enough to send as it is.'
+      ),
+      tweaks: asStringArray(diag.already_good_notes.tweaks, 2),
       audit,
     }
   }
@@ -103,8 +151,8 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
   ) {
     return {
       type: 'clarifying',
-      question: diag.question.text,
-      targetsGap: diag.question.targets_gap,
+      question: asText(diag.question.text),
+      targetsGap: asString(diag.question.targets_gap),
       options: forks,
       audit,
     }
@@ -138,8 +186,8 @@ export async function analyzePrompt(input: AnalyzeInput): Promise<AnalyzeResult 
     // in front of a user.
     minimalEdit: stripMarkers(rw.minimal_edit),
     template: stripMarkers(rw.template),
-    explanation: rw.explanation,
-    improvementTags: rw.improvement_tags,
+    explanation: asString(rw.explanation),
+    improvementTags: asStringArray(rw.improvement_tags) as ImprovementTag[],
     audit,
     intent: diag.intent,
   }

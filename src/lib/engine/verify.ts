@@ -2,6 +2,7 @@ import { callLLM } from './openai-client'
 import { callGemini } from './gemini-client'
 import { MODELS } from './models'
 import { CONTRAST_SCHEMA } from './schemas'
+import { asString, isText } from './coerce'
 import type { VerifyResult } from '@/types'
 
 /**
@@ -35,7 +36,7 @@ async function runPrompt(prompt: string, model: string): Promise<string | null> 
         required: ['response'],
       },
     })
-    return res?.response ?? null
+    return isText(res?.response) ? res.response : null
   }
 
   const res = await callLLM<{ response: string }>({
@@ -50,7 +51,10 @@ async function runPrompt(prompt: string, model: string): Promise<string | null> 
       required: ['response'],
     },
   })
-  return res?.response ?? null
+  // A non-string here used to flow into originalOutput / improvedOutput and
+  // get rendered. Treated as a failed run instead, which the route already
+  // handles without charging the user a credit.
+  return isText(res?.response) ? res.response : null
 }
 
 export async function verifyPrompts(params: {
@@ -96,7 +100,7 @@ export async function verifyPrompts(params: {
   return {
     originalOutput,
     improvedOutput,
-    contrast: contrastRes?.contrast ?? '',
+    contrast: asString(contrastRes?.contrast),
     model,
   }
 }

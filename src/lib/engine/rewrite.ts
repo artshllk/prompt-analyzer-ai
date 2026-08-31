@@ -3,6 +3,7 @@ import { callGemini } from './gemini-client'
 import { MODELS } from './models'
 import { REWRITE_SCHEMA } from './schemas'
 import { MARKER_INSTRUCTIONS } from './segments'
+import { isText } from './coerce'
 import { RUBRICS } from './rubrics'
 import type { AnalyzeInput } from '@/types'
 import type { ImprovementTag, Tone } from '@/types/database'
@@ -112,9 +113,7 @@ export async function rewrite(
       maxOutputTokens,
       responseSchema: schema,
     })
-    if (typeof viaGemini?.restructured === 'string' && viaGemini.restructured.trim()) {
-      return viaGemini
-    }
+    if (isText(viaGemini?.restructured)) return viaGemini
     console.error('[engine.rewrite] gemini cascade failed, falling back to openai mini')
   }
 
@@ -131,7 +130,7 @@ export async function rewrite(
   // string, but strict:false means the model can return an array or an object
   // there and the SDK will hand it straight over. A non-string used to flow
   // through as the rewrite and reach the user as "[object Object]".
-  if (!result || typeof result.restructured !== 'string' || !result.restructured.trim()) {
+  if (!result || !isText(result.restructured)) {
     console.error(`[engine.rewrite] ${!result ? 'llm_failed' : 'bad_restructured'}`)
     return null
   }

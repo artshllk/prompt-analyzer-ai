@@ -1,5 +1,6 @@
 import { callLLM } from './openai-client'
 import { MODELS } from './models'
+import { asText, asString, asObjectArray } from './coerce'
 
 /**
  * Quick fork check: does this prompt mean two or three genuinely different
@@ -84,8 +85,22 @@ export async function quickFork(prompt: string): Promise<QuickFork | null> {
   })
 
   if (!res) return null
-  if (!res.ambiguous || !res.question || !Array.isArray(res.options) || res.options.length < 2) {
+
+  // Every field here is rendered: the question and each label go straight
+  // into the DOM, as React children on the web and as textContent in the
+  // extension. A non-string label throws "Objects are not valid as a React
+  // child" on one surface and prints "[object Object]" on the other, so
+  // nothing reaches a caller without going through the coercers.
+  const question = asText(res.question)
+  const options = asObjectArray(res.options)
+    .map(o => ({ label: asText(o.label), summary: asString(o.summary) }))
+    .filter(o => o.label)
+    .slice(0, 3)
+
+  // An option the user cannot choose between is not a fork. Below two, there
+  // is no question worth asking, whatever the model said about ambiguity.
+  if (!res.ambiguous || !question || options.length < 2) {
     return { question: '', options: [] }
   }
-  return { question: res.question, options: res.options.slice(0, 3) }
+  return { question, options }
 }
