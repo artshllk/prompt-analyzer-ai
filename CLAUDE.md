@@ -73,9 +73,17 @@ These are verified from code and get re-derived or mistaken every session.
 - `src/app/api/` — anon analyze/sharpen/fork/explain/verify, detector, billing, webhooks/paddle, extension token, cron, email.
 - `extension/` — browser extension source (v0.5.0). Also versioned zips on the Desktop.
 
+## Unapplied migrations
+
+`011`-`014` are written and **not applied**. `014` is load-bearing: it creates
+the RPC behind the global anonymous daily cap, and that guard fails closed, so
+without it every anonymous run on the site returns `daily_capacity`. Apply all
+four in Supabase before the next deploy.
+
 ## Commands
 
 - `npm run dev` — local dev. `npm run build` — production build (real verification).
+- `npm test` — unit suite (parser, coercers, pipeline guard). No network, no cost.
 - `npx tsc --noEmit` — typecheck. `npm run lint` — eslint.
 - Verify a change by building or driving the affected flow, not just typecheck.
 

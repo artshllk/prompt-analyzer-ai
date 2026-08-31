@@ -58,12 +58,20 @@ charge quota for it), and `no_task`.
 
 ## Eval harness (the regression gate)
 
-`npx tsx src/lib/engine/eval.ts` - runs `__fixtures__/golden.ts` (16 cases
+`npx tsx src/lib/engine/eval.ts` - runs `__fixtures__/golden.ts` (42 cases
 across intents) through the live pipeline; checks intent accuracy, ask/improve
-decisions, already-good detection, and LLM-judge scores for question
-groundedness and rewrite quality. Run it before and after ANY engine or prompt
-change; it exits 1 below thresholds. Costs a few cents. Add a golden case
-whenever a real session surprises the engine.
+decisions, already-good detection in BOTH directions (15 prompts that should
+be left alone, 14 that should not), and LLM-judge scores. Run it before and
+after ANY engine or prompt change; it exits 1 below thresholds. Costs a few
+cents. Add a golden case whenever a real session surprises the engine.
+
+**It hits live models, so a single run is noisy.** Two runs of identical code
+have differed by 17 points on intent and 0.6 on the judge average. Compare a
+before and an after from the same sitting, never against a number quoted from
+an earlier session, and re-run before calling a change a regression.
+
+There is also a fast, free suite: `npm test` (43 cases, no network) covers the
+provenance parser, the coercers and the pipeline guard.
 
 ## Quota surface (see limits.ts)
 
