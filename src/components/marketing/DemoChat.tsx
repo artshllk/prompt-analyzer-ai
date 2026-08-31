@@ -23,11 +23,11 @@ import { SAMPLE_PROMPTS, ALREADY_GOOD_SAMPLE, pickSamples } from '@/lib/sample-p
  *           prompt.
  *
  * Conversational intelligence (the engine decides):
- *   - Vague prompt  → one clarifying question on the right, with a
- *     "Type your answer" field UNDER it. The field exists only while we
- *     are waiting on that answer.
- *   - Specific prompt → straight to the improved prompt on the right, no
- *     answer field at all.
+ *   - Vague prompt  → one clarifying question on the right, with the two
+ *     or three readings under it as buttons. They exist only while we are
+ *     waiting on that answer.
+ *   - Specific prompt → straight to the improved prompt on the right, and
+ *     we say so rather than staying silent about it.
  *
  * One free run per browser (localStorage). After it's spent, the panel
  * swaps to the account gate - rendered inline, not a stacked overlay.
@@ -103,7 +103,6 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
   const [copyText, setCopyText] = useState('')
   const [phase, setPhase] = useState<Phase>('idle')
   const [history, setHistory] = useState<QA[]>([])
-  const [answer, setAnswer] = useState('')
 
   const [runs, setRuns] = useState(0)
   const [hydrated, setHydrated] = useState(false)
@@ -116,7 +115,6 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
   ])
 
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const answerRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -136,20 +134,7 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
     ta.style.overflowY = ta.scrollHeight > MAX ? 'auto' : 'hidden'
   }, [input])
 
-  // Auto-grow + focus the answer field when a question appears.
-  useEffect(() => {
-    if (phase !== 'awaiting-answer') return
-    answerRef.current?.focus()
-  }, [phase])
 
-  useEffect(() => {
-    const ta = answerRef.current
-    if (!ta) return
-    const MAX = 160
-    ta.style.height = 'auto'
-    ta.style.height = `${Math.min(ta.scrollHeight, MAX)}px`
-    ta.style.overflowY = ta.scrollHeight > MAX ? 'auto' : 'hidden'
-  }, [answer])
 
   const started = phase !== 'idle'
   const gated = hydrated && runs >= DEMO_LIMIT && !started
@@ -253,8 +238,7 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
           gap: data.targetsGap,
           options: Array.isArray(data.options) ? data.options.slice(0, 3) : [],
         })
-        setAnswer('')
-        setPhase('awaiting-answer')
+            setPhase('awaiting-answer')
         return
       }
 
@@ -341,21 +325,15 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       { question: response.text, answer: clean, turn },
     ]
     setHistory(nextHistory)
-    setAnswer('')
     callEngine(rootPrompt, nextHistory)
   }
 
-  function handleAnswer(e?: React.FormEvent) {
-    e?.preventDefault()
-    submitAnswer(answer)
-  }
 
   function startOver() {
     setInput('')
     setRootPrompt('')
     setResponse(null)
     setHistory([])
-    setAnswer('')
     setPhase('idle')
   }
 
