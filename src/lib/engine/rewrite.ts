@@ -2,6 +2,8 @@ import { callLLM } from './openai-client'
 import { callGemini } from './gemini-client'
 import { MODELS } from './models'
 import { REWRITE_SCHEMA } from './schemas'
+import { MARKER_INSTRUCTIONS } from './segments'
+import { isText } from './coerce'
 import { RUBRICS } from './rubrics'
 import type { AnalyzeInput } from '@/types'
 import type { ImprovementTag, Tone } from '@/types/database'
@@ -20,7 +22,6 @@ export interface RewriteResponse {
   template: string
   explanation: string
   improvement_tags: ImprovementTag[]
-  clarity_score_after: number
 }
 
 const TONE_RULES: Record<Tone, string> = {
@@ -57,25 +58,25 @@ Produce THREE artifacts:
 ${rubric.rewriteStrategy}
 
 General rules:
-- Resolve every critical and moderate finding. If information is genuinely unavailable, make one reasonable assumption and STATE it inside the prompt ("Assume: ...") so the user can correct it. EVERY guess must be visible as an Assume line - a silent assumption baked into the wording is the worst failure mode this stage has.
+- Resolve every critical and moderate finding. If information is genuinely unavailable, make one reasonable assumption and fold it into the prompt naturally, then MARK IT (see MARKING WHAT YOU ADDED below). Do not write "Assume: ..." lines - the marking is how the user sees your assumptions now, and an Assume line on top of a marked span says the same thing twice. EVERY guess must be marked. A silent assumption baked into the wording is the worst failure mode this stage has.
 - Add nothing the user's intent doesn't require. Extra requirements, process steps, or output sections that the user never implied are padding, and padding reads as template output.
 - Never invent facts, claims, numbers, or product details the user did not give you.
-- THE USER'S EXPLICIT CONSTRAINTS ARE BINDING. Any length, word count, format, language, deadline, tone or quantity the user stated survives into your rewrite exactly as they set it. You may not raise "max 50 words" to 500 because 50 seems too few. If a constraint fights the task, or two constraints contradict each other, KEEP THE USER'S NUMBERS and name the tension in one Assume line ("Assume: 50 words is a hard limit, so this will be a summary rather than a guide"). Silently replacing a stated constraint with a better one is the single most damaging thing you can do here: the output looks polished and confident, and the user never learns that what they asked for was thrown away.
-- Never instruct the target model to invent, embellish, or make something up to sound realistic. Writing "add a concrete detail so it sounds real" tells the model to fabricate, and the user will send that fabrication to a real person. If a detail is missing, mark it {like_this} or name it in an Assume line.
+- THE USER'S EXPLICIT CONSTRAINTS ARE BINDING. Any length, word count, format, language, deadline, tone or quantity the user stated survives into your rewrite exactly as they set it. You may not raise "max 50 words" to 500 because 50 seems too few. If a constraint fights the task, or two constraints contradict each other, KEEP THE USER'S NUMBERS and name the tension in one marked span ("⟦g⟧50 words is a hard limit, so this will be a summary rather than a guide⟦/g⟧"). Silently replacing a stated constraint with a better one is the single most damaging thing you can do here: the output looks polished and confident, and the user never learns that what they asked for was thrown away.
+- Never instruct the target model to invent, embellish, or make something up to sound realistic. Writing "add a concrete detail so it sounds real" tells the model to fabricate, and the user will send that fabrication to a real person. If a detail is missing, mark it {like_this}.
 - No em dashes anywhere in your output, in any field. Use a comma, a full stop, or a colon. Rewrite the sentence if you have to. This applies to the prompt text as well as the explanation.
-- Not bloated, not skeletal. Default 80-250 words for the restructured version${input.deep ? ', up to 350 in deep mode when the domain warrants it' : ''}. Use markdown structure only when it aids the target model.
+- Not bloated, not skeletal. Default 80-250 words for the restructured version. Use markdown structure only when it aids the target model.
 - No cargo-cult additions: no persona, pleasantries, or "take a deep breath" unless it demonstrably helps this task type.
-- Write every artifact in the language the user wrote their prompt in. A prompt in Spanish gets a Spanish rewrite, including the Assume lines. Translating a user's prompt into English is a bug, not an improvement.
+- Write every artifact in the language the user wrote their prompt in. A prompt in Spanish gets a Spanish rewrite, including anything you mark. Translating a user's prompt into English is a bug, not an improvement.
 
 # EXPLANATION
 
 One short paragraph (max 3 sentences) leading with the single most impactful change. Tone: ${TONE_RULES[input.tone]}
 
-# SCORING
-
-clarity_score_after: honest 0-100 clarity of your restructured version. The diagnostic scored the original at ${diag.score.total}. Do not flatter your own work - a typical strong rewrite lands 75-90; reserve 90+ for prompts with checkable success criteria and zero ambiguity.
+# TAGS
 
 improvement_tags: which elements you materially added or fixed.
+
+${MARKER_INSTRUCTIONS}
 
 Return JSON matching the schema.`
 }
@@ -98,13 +99,13 @@ export async function rewrite(
 ): Promise<RewriteResponse | null> {
   const systemPrompt = buildSystemPrompt(input, diag)
   const userMessage = buildUserMessage(input)
-  const maxOutputTokens = input.deep ? 1800 : 1400
+  const maxOutputTokens = 1400
   const schema = REWRITE_SCHEMA as unknown as Record<string, unknown>
 
-  // Pro (and deep) rewrites run on the frontier-class Gemini cascade;
+  // Pro rewrites run on the frontier-class Gemini cascade;
   // if the whole cascade fails we degrade to the mini model rather than
   // erroring - a good rewrite late beats a 503.
-  if (input.pro || input.deep) {
+  if (input.pro) {
     const viaGemini = await callGemini<RewriteResponse>({
       systemPrompt,
       userMessage,
@@ -112,7 +113,7 @@ export async function rewrite(
       maxOutputTokens,
       responseSchema: schema,
     })
-    if (viaGemini?.restructured) return viaGemini
+    if (isText(viaGemini?.restructured)) return viaGemini
     console.error('[engine.rewrite] gemini cascade failed, falling back to openai mini')
   }
 
@@ -125,8 +126,12 @@ export async function rewrite(
     responseSchema: schema,
   })
 
-  if (!result || !result.restructured) {
-    console.error(`[engine.rewrite] ${!result ? 'llm_failed' : 'missing_restructured'}`)
+  // `restructured` is checked for TYPE, not just truthiness. The schema says
+  // string, but strict:false means the model can return an array or an object
+  // there and the SDK will hand it straight over. A non-string used to flow
+  // through as the rewrite and reach the user as "[object Object]".
+  if (!result || !isText(result.restructured)) {
+    console.error(`[engine.rewrite] ${!result ? 'llm_failed' : 'bad_restructured'}`)
     return null
   }
   return result

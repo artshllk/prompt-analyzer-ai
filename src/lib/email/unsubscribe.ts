@@ -8,6 +8,12 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
  * be forged to unsubscribe someone else.
  */
 
+/**
+ * 'weekly' is kept only so unsubscribe links already sitting in people's
+ * inboxes keep resolving. The weekly report itself is gone, so that scope
+ * is now a no-op that reports success: the thing they wanted stopped is
+ * stopped, permanently. Nothing sends with this scope any more.
+ */
 export type UnsubscribeScope = 'weekly' | 'tips' | 'all'
 
 function secret(): string | null {

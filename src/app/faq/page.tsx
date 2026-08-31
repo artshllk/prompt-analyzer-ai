@@ -52,7 +52,7 @@ export default function FAQPage() {
               Still curious? Try it.
             </h2>
             <Link
-              href="/#demo"
+              href="/playground"
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-[15px] transition-all hover:gap-3 btn-paper"
               style={{
                 background: 'var(--color-paper)',

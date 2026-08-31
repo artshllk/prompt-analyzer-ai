@@ -22,11 +22,14 @@ async function unsubscribe(req: NextRequest): Promise<{ ok: boolean; scope: Unsu
   if (!uid || !sig || !scope || !SCOPES.includes(scope)) return { ok: false, scope: null }
   if (!verifyUnsubscribe(uid, scope, sig)) return { ok: false, scope: null }
 
+  // The weekly report is gone and so is its column. An old link from a
+  // report we already sent still has to resolve, so it succeeds without a
+  // write: what they are asking to stop has already stopped for good.
+  if (scope === 'weekly') return { ok: true, scope }
+
   const db = createEmailAdminClient()
   const update =
-    scope === 'weekly' ? { email_weekly: false }
-    : scope === 'tips' ? { email_tips: false }
-    : { email_unsubscribed: true }
+    scope === 'tips' ? { email_tips: false } : { email_unsubscribed: true }
 
   const { error } = await db.from('profiles').update(update).eq('id', uid)
   return { ok: !error, scope }

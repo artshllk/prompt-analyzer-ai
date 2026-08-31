@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { streamSharpen } from '@/lib/engine/sharpen'
 import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
-import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
+import { resolveCaller } from '@/lib/auth/caller'
+import { consumeAnonRun } from '@/lib/db/anon-budget'
 import { createServiceClient } from '@/lib/supabase/server'
-import { recordExtensionSession } from '@/lib/db/sessions'
+import { recordSession } from '@/lib/db/sessions'
 import { decideUsage, windowStart, USAGE_WINDOW_HOURS, USAGE_DAILY_LIMIT } from '@/lib/limits'
 import type { Tone } from '@/types/database'
 
@@ -45,8 +46,13 @@ export function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  const token = extractBearerToken(req.headers.get('authorization'))
-  const auth = token ? await validateToken(token) : null
+  const who = await resolveCaller(req)
+  // Known identity, unreadable entitlement. Refuse rather than assume free:
+  // see the note in lib/auth/caller.ts.
+  if (who.state === 'unknown') {
+    return corsJson({ error: 'identity_unavailable' }, 503)
+  }
+  const auth = who.state === 'known' ? who.caller : null
 
   // Burst / IP throttle, identical tiers to the analyze route.
   if (!auth) {
@@ -54,6 +60,14 @@ export async function POST(req: NextRequest) {
     const limit = take(`anon:${ip}`, ANON_LIMIT)
     if (!limit.allowed) {
       return corsJson({ error: 'rate_limited', retryAfterMs: limit.retryAfterMs }, 429)
+    }
+
+    // The global ceiling. The bucket above is in-memory and per-instance, so
+    // it stops one impatient person and not a script. Anonymous only:
+    // signed-in users have their own quotas and are never blocked by this.
+    const budget = await consumeAnonRun()
+    if (!budget.allowed) {
+      return corsJson({ error: 'daily_capacity', resetAt: budget.resetAt }, 429)
     }
   } else {
     const burst = take(`user:${auth.userId}`, auth.tier === 'pro' ? PRO_USER_LIMIT : USER_LIMIT)
@@ -185,17 +199,18 @@ export async function POST(req: NextRequest) {
 
         // Persist the session once we have the finished text. This is the
         // ONLY place history is written now that the playground is going -
-        // without it, /history and /insights are empty forever. Awaited
+        // without it, /history is empty forever. Awaited
         // inside the stream (not the request) so it never delays a token,
-        // and it can never break the rewrite: recordExtensionSession
+        // and it can never break the rewrite: recordSession
         // swallows its own errors.
         if (auth && full.trim()) {
-          await recordExtensionSession({
+          await recordSession({
             userId: auth.userId,
             originalPrompt: prompt,
             finalPrompt: full.trim(),
             tone,
             choice,
+            source: 'extension',
           })
         }
       }

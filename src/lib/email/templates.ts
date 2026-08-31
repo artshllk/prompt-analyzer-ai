@@ -27,10 +27,7 @@ function firstNameOf(fullName: string | null): string {
 
 function footer(userId: string, scope: UnsubscribeScope): { text: string; url: string | null } {
   const url = unsubscribeUrl(userId, scope)
-  const label =
-    scope === 'weekly' ? 'Stop the weekly report'
-    : scope === 'tips' ? 'Stop the tips'
-    : 'Stop these emails'
+  const label = scope === 'tips' ? 'Stop the tips' : 'Stop these emails'
   const allUrl = scope === 'all' ? null : unsubscribeUrl(userId, 'all')
   const lines = [
     '--',
@@ -110,48 +107,7 @@ ${f.text}`,
 }
 
 /* ============================================================
- * 3. Weekly report - Mondays, only when there is data.
- * ============================================================ */
-export interface WeeklyStats {
-  sessionCount: number
-  avgLift: number
-  bestOriginal: string | null
-  /** Most frequent improvement tag, human-readable. Pro only. */
-  topGap: string | null
-}
-
-export function weeklyReportEmail(
-  userId: string,
-  fullName: string | null,
-  stats: WeeklyStats
-): EmailContent {
-  const f = footer(userId, 'weekly')
-  const best = stats.bestOriginal
-    ? `\nYour best rewrite started as: "${truncate(stats.bestOriginal, 80)}"`
-    : ''
-  const pattern = stats.topGap
-    ? `\nOne pattern we noticed: the thing you most often leave out is ${stats.topGap}. Before your next prompt, try adding it up front. It is the fastest fix on your list.\n`
-    : ''
-  return {
-    subject: `Your week: +${stats.avgLift} clarity, ${stats.sessionCount} prompt${stats.sessionCount === 1 ? '' : 's'}`,
-    unsubscribeUrl: f.url,
-    text: `Hi ${firstNameOf(fullName)},
-
-Your week in Deepclario:
-
-Prompts improved: ${stats.sessionCount}
-Average clarity lift: +${stats.avgLift}${best}
-${pattern}
-See your full history: ${appUrl('/history')}
-
-Art
-
-${f.text}`,
-  }
-}
-
-/* ============================================================
- * 4. Tip of the week - Thursdays, opt-out separately.
+ * 3. Tip of the week - Thursdays, opt-out separately.
  * ============================================================ */
 const TIPS: Array<{ subject: string; body: string }> = [
   {
@@ -206,11 +162,11 @@ export const TIP_COUNT = TIPS.length
 export function winbackEmail(
   userId: string,
   fullName: string | null,
-  bestLift: { before: number; after: number } | null
+  lastPrompt: string | null
 ): EmailContent {
   const f = footer(userId, 'all')
-  const reminder = bestLift
-    ? `If you just forgot, here is your best result from before, as a reminder of what this does: your prompt went from clarity ${bestLift.before} to ${bestLift.after} in one pass.`
+  const reminder = lastPrompt
+    ? `If you just forgot, the last prompt you improved started as: "${truncate(lastPrompt, 80)}". Same thing, thirty seconds: ${appUrl('/playground')}`
     : `If you just forgot, it takes thirty seconds to install: ${appUrl('/extension')}`
   return {
     subject: 'Still stuck on rough prompts?',

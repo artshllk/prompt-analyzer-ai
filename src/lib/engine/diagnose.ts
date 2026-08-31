@@ -2,6 +2,7 @@ import { callLLMDetailed, isSchemaFragment } from './openai-client'
 import { MODELS } from './models'
 import { DIAGNOSE_SCHEMA } from './schemas'
 import { rubricDigest } from './rubrics'
+import { asString, asText, asStringArray, asObjectArray, asEnum } from './coerce'
 import type { AnalyzeInput, IntentClass, ForkOption, RubricAudit } from '@/types'
 
 /**
@@ -186,7 +187,15 @@ function sanitize(d: DiagnoseResponse): DiagnoseResponse {
     ...d,
     already_good: d.already_good === true && !!notesOk,
     already_good_notes: notesOk ? notes : undefined,
-    forks: Array.isArray(d.forks) ? d.forks.filter(f => f && typeof f.label === 'string') : undefined,
+    // Both fields, not just the label. `summary` renders as a React child in
+    // the web tool's answer buttons and as textContent in the extension's
+    // chips, so an object here is a crash on one surface and "[object Object]"
+    // on the other. The label was checked and the summary was not.
+    forks: Array.isArray(d.forks)
+      ? asObjectArray(d.forks)
+          .map(f => ({ label: asText(f.label), summary: asString(f.summary) }))
+          .filter(f => f.label)
+      : undefined,
     question:
       d.question && typeof d.question.text === 'string' && !isSchemaFragment(d.question)
         ? d.question
@@ -200,17 +209,39 @@ function sanitize(d: DiagnoseResponse): DiagnoseResponse {
   }
 }
 
-/** Map the raw diagnose audit into the API/UI shape. */
+const SEVERITIES = ['critical', 'moderate', 'minor'] as const
+
+/** A 0-100 dimension score, clamped. Internal only: nothing renders it. */
+function asScore(value: unknown): number {
+  const n = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(n)) return 0
+  return Math.max(0, Math.min(100, Math.round(n)))
+}
+
+/**
+ * Map the raw diagnose audit into the API/UI shape.
+ *
+ * This function is the reason coerce.ts exists. Everything above it in this
+ * file is carefully defensive - isSchemaFragment, validated already_good_notes,
+ * filtered forks - and then this mapper called `f.evidence.trim()` on an
+ * entry it never checked. `findings` being an array was verified; the entries
+ * in it were not. One malformed finding threw here and cost the user their
+ * whole rewrite, several stages after the mistake was made.
+ */
 export function toRubricAudit(d: DiagnoseResponse): RubricAudit {
   return {
     intent: d.intent,
-    dimensions: d.audit.dimensions,
-    findings: d.audit.findings.map(f => ({
-      dimension: f.dimension,
-      severity: f.severity,
-      evidence: f.evidence.trim() ? f.evidence : null,
-      note: f.note,
-    })),
-    failureForecast: d.audit.failure_forecast,
+    dimensions: asObjectArray(d.audit?.dimensions)
+      .map(dim => ({ name: asText(dim.name), score: asScore(dim.score) }))
+      .filter(dim => dim.name),
+    findings: asObjectArray(d.audit?.findings)
+      .map(f => ({
+        dimension: asText(f.dimension),
+        severity: asEnum(f.severity, SEVERITIES, 'minor'),
+        evidence: asText(f.evidence) || null,
+        note: asString(f.note),
+      }))
+      .filter(f => f.dimension || f.note),
+    failureForecast: asStringArray(d.audit?.failure_forecast),
   }
 }

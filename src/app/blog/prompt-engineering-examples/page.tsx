@@ -6,7 +6,7 @@ import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
   title: 'Prompt Engineering Examples - Real Before and After Prompts',
-  description: 'Real prompt engineering examples across writing, coding, research, and marketing. See how a weak prompt becomes a strong one - and what score each version gets.',
+  description: 'Real prompt engineering examples across writing, coding, research, and marketing. See exactly what changes when a weak prompt becomes a strong one.',
   alternates: { canonical: 'https://deepclario.com/blog/prompt-engineering-examples' },
   openGraph: {
     title: 'Prompt Engineering Examples - Real Before and After Prompts',
@@ -73,60 +73,54 @@ const breadcrumbSchema = {
 const EXAMPLES = [
   {
     category: 'Writing',
-    before: { prompt: 'Write a product description', score: 14 },
+    before: { prompt: 'Write a product description' },
     after: {
       prompt: 'Write a product description for a $49/month project management tool aimed at freelance designers. The key benefit: it replaces 4 separate apps. Tone: confident and concise. Length: 3 sentences max. Avoid corporate jargon.',
-      score: 92,
       tags: ['+Role/Audience', '+Context', '+Constraints', '+Format'],
     },
     lesson: 'The original prompt has no audience, no product details, no tone guidance, and no length limit. Every one of those gaps gives the AI room to guess wrong.',
   },
   {
     category: 'Coding',
-    before: { prompt: 'Write a login function', score: 11 },
+    before: { prompt: 'Write a login function' },
     after: {
       prompt: 'Act as a senior Node.js developer. Write a login function using Express and bcrypt that: (1) accepts email and password, (2) checks against a PostgreSQL users table, (3) returns a signed JWT on success, (4) returns a 401 with a generic error message on failure to avoid user enumeration. Add inline comments explaining the security decisions.',
-      score: 96,
       tags: ['+Role', '+Stack', '+Requirements', '+Security context'],
     },
     lesson: 'Coding prompts fail when they lack the stack, the security requirements, and the output format. A junior developer\'s prompt and a senior developer\'s prompt look completely different.',
   },
   {
     category: 'Research',
-    before: { prompt: 'Summarize this paper for me', score: 9 },
+    before: { prompt: 'Summarize this paper for me' },
     after: {
       prompt: 'Summarize this research paper in 3 clearly labeled sections: (1) Core hypothesis in one sentence, (2) Methodology in 2–3 sentences - what they measured and how, (3) Key finding and its practical implication for clinicians. Target reader: a hospital administrator with no research background.',
-      score: 91,
       tags: ['+Structure', '+Audience', '+Format', '+Depth'],
     },
     lesson: 'A summary without a target audience is summaries for no one. Defining who will read it changes what gets included and what gets cut.',
   },
   {
     category: 'Marketing',
-    before: { prompt: 'Write a cold email', score: 16 },
+    before: { prompt: 'Write a cold email' },
     after: {
       prompt: 'Write a cold outreach email to a VP of Engineering at a 50–200 person SaaS company. Goal: get a 20-minute call to demo our code review tool. Their pain point: PRs are taking 3+ days to get reviewed. Keep the email under 100 words. No "I hope this finds you well." End with one specific question, not a generic CTA.',
-      score: 89,
       tags: ['+Role/Target', '+Context', '+Pain point', '+Constraints'],
     },
     lesson: '"Cold email" means nothing to an AI. Define the recipient, the goal, the pain point, the length limit, and what to avoid - and the output is actually usable.',
   },
   {
     category: 'Analysis',
-    before: { prompt: 'Analyze my business idea', score: 8 },
+    before: { prompt: 'Analyze my business idea' },
     after: {
       prompt: 'Act as a venture capitalist who has evaluated 500+ B2B SaaS companies. Analyze this business idea: [idea]. Structure your response as: (1) Market size estimate, (2) Top 3 risks, (3) Who the likely first 100 customers are, (4) One question you would ask before investing. Be direct and critical - don\'t soften feedback.',
-      score: 94,
       tags: ['+Role', '+Structure', '+Tone', '+Specificity'],
     },
     lesson: 'Open-ended analysis prompts produce open-ended answers. A structured output format with a critical role forces the model to take a position.',
   },
   {
     category: 'Education',
-    before: { prompt: 'Explain quantum computing', score: 12 },
+    before: { prompt: 'Explain quantum computing' },
     after: {
       prompt: 'Explain quantum computing to a 16-year-old who understands basic algebra but has never studied physics. Use one analogy involving everyday objects. Limit the explanation to 4 paragraphs. End with one question that would help them think deeper about the topic.',
-      score: 88,
       tags: ['+Audience', '+Analogy instruction', '+Format', '+Engagement'],
     },
     lesson: '"Explain X" is one of the most common prompts and one of the least effective. It produces textbook-level output. Specifying the audience and asking for an analogy transforms the response.',
@@ -153,12 +147,12 @@ export default function PromptEngineeringExamplesPage() {
           </h1>
           <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-3">
             The fastest way to learn prompt engineering is to see exactly what changes between a weak prompt
-            and a strong one. Below are 6 real examples across different use cases - each with a clarity score,
-            the specific improvements made, and the reasoning behind them.
+            and a strong one. Below are 6 real examples across different use cases, with the specific
+            improvements made and the reasoning behind them.
           </p>
           <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-            Scores are generated by <Link href="/tools/prompt-analyzer" className="text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Deepclario&apos;s prompt analyzer</Link> - rated
-            across goal clarity, context, format, constraints, and examples.
+            You can run any of these through <Link href="/playground" className="text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Deepclario</Link> and
+            compare its rewrite against the one here.
           </p>
         </div>
 
@@ -169,11 +163,6 @@ export default function PromptEngineeringExamplesPage() {
                 <span className="text-xs font-bold text-[color:var(--color-paper)] uppercase tracking-wider px-2.5 py-1 rounded-lg bg-[color:var(--color-ink-card)] border border-[color:var(--color-rule-strong)]">
                   {ex.category}
                 </span>
-                <div className="flex items-center gap-2 text-xs text-[color:var(--color-paper-mute)]">
-                  <span className="text-[#C25E5E] font-bold">{ex.before.score}/100</span>
-                  <span>→</span>
-                  <span className="text-[color:var(--color-paper)] font-bold">{ex.after.score}/100</span>
-                </div>
               </div>
 
               <div className="space-y-3 mb-4">
@@ -204,8 +193,8 @@ export default function PromptEngineeringExamplesPage() {
         <div className="mt-16 pt-8 border-t border-[color:var(--color-rule)] space-y-4">
           <h2 className="text-lg font-bold text-[color:var(--color-paper)]">Analyze your own prompts</h2>
           <p className="text-sm text-[color:var(--color-paper-mute)]">
-            Paste any prompt and see exactly which dimensions are weak - and get a rewritten version that
-            scores higher. Free to try, no account needed.
+            Paste any prompt and see it rewritten. If it could mean two different things, you get one
+            question first. Free to try, no account needed.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link

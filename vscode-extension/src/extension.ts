@@ -74,7 +74,7 @@ async function improvePrompt(context: vscode.ExtensionContext) {
     return
   }
 
-  await presentResult(editor, selection, result.improvedPrompt, result.scoreBeforeImprovement, result.clarityScoreAfter)
+  await presentResult(editor, selection, result.improvedPrompt, result.explanation)
 }
 
 /**
@@ -150,11 +150,10 @@ async function presentResult(
   editor: vscode.TextEditor,
   selection: vscode.Selection,
   improved: string,
-  before: number,
-  after: number,
+  explanation: string,
 ) {
   const pick = await vscode.window.showInformationMessage(
-    `Prompt improved - clarity ${before} → ${after}.`,
+    explanation || 'Prompt improved.',
     { modal: true, detail: improved },
     'Replace selection',
     'Copy',

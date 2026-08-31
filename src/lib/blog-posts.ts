@@ -136,18 +136,6 @@ export const BLOG_POSTS: BlogPost[] = [
     tag: 'Prompting',
   },
   {
-    slug: 'deep-rewrite-vs-standard-rewrite',
-    title: 'Deep Rewrite vs Standard Rewrite: Which One Do You Need?',
-    description: 'Standard rewrite fixes the obvious problems in a prompt fast. Deep rewrite digs deeper for prompts that really matter. Here is how to tell which one a task actually needs.',
-    datePublished: '2026-07-07',
-    dateModified: '2026-07-07',
-    readTime: '6 min read',
-    tag: 'Product',
-    // Deep Rewrite has no client: nothing sends deep:true since the playground
-    // was deleted. Unlisted until it ships as a Pro action in the extension.
-    unlisted: true,
-  },
-  {
     slug: 'why-prompt-improvement-matters',
     title: 'Why Prompt Improvement Matters More Than People Think',
     description: 'A few minutes spent improving a prompt saves far more time than it costs, across every reply you get. Here is why prompt improvement pays off, with real numbers.',
@@ -443,17 +431,6 @@ export const BLOG_POSTS: BlogPost[] = [
     dateModified: '2026-07-07',
     readTime: '7 min read',
     tag: 'AI Detection',
-  },
-  {
-    slug: 'what-is-deep-rewrite',
-    title: 'What is Deep Rewrite? How the Pro Rewrite Mode Works',
-    description: 'Deep Rewrite makes a stronger model draft your improved prompt, critique its own draft, then refine it before you see it. Here is exactly what you get compared to the normal rewrite.',
-    datePublished: '2026-07-03',
-    dateModified: '2026-07-03',
-    readTime: '5 min read',
-    tag: 'Product',
-    // See deep-rewrite-vs-standard-rewrite above. Same reason, same reversal.
-    unlisted: true,
   },
   {
     slug: 'what-is-prompt-engineering',

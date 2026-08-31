@@ -30,13 +30,11 @@ export default async function DashboardPage({
 
   const firstName = profile?.full_name?.split(' ')[0] ?? null
 
-  const completed = sessions.filter(s => s.clarityScoreAfter && s.clarityScoreBefore)
-  const avgScoreAfter = completed.length
-    ? Math.round(completed.reduce((acc, s) => acc + s.clarityScoreAfter!, 0) / completed.length)
-    : null
-  const avgLift = completed.length
-    ? Math.round(completed.reduce((acc, s) => acc + (s.clarityScoreAfter! - s.clarityScoreBefore!), 0) / completed.length)
-    : null
+  // "Average clarity" and "Average lift" used to live here. Both were
+  // averages over clarity_score_before/after, which the shipping path writes
+  // as null on every session, so `completed` was always empty and both cards
+  // read 0 forever. The score is gone; the cards that showed it are too.
+  const improvedCount = sessions.filter(s => s.improvement).length
 
   // The most recent session that actually produced a rewrite.
   const latest = sessions.find(s => s.improvement) ?? null
@@ -104,18 +102,10 @@ export default async function DashboardPage({
             <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
               <UsageCard usage={usage} isPro={isPro} />
               <MetricCard
-                label="Average clarity"
-                value={avgScoreAfter ?? 0}
-                empty={avgScoreAfter === null}
-                sub="after rewriting"
-              />
-              <MetricCard
-                label="Average lift"
-                value={avgLift ?? 0}
-                empty={avgLift === null}
-                prefix="+"
-                accent
-                sub="points per prompt"
+                label="Prompts improved"
+                value={improvedCount}
+                empty={improvedCount === 0}
+                sub="rewrites you kept"
               />
               <MetricCard label="Sessions" value={total} sub="all time" />
             </section>
@@ -289,29 +279,7 @@ function UsageCard({ usage, isPro }: { usage: UsageInfo; isPro: boolean }) {
 
 /* ===== Spotlight ===== */
 
-function scoreColor(score: number): string {
-  if (score < 30) return '#C25E5E'
-  if (score < 60) return 'var(--color-paper-mute)'
-  return 'var(--color-paper)'
-}
-
-function ClarityBadge({ score, accent }: { score: number | null; accent?: boolean }) {
-  if (score == null) return null
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 text-xs tabular-nums px-2.5 py-1 rounded-full shrink-0"
-      style={{ border: '1px solid var(--color-rule-strong)', color: accent ? 'var(--color-accent)' : scoreColor(score) }}
-    >
-      <span className="text-[10px] uppercase tracking-[0.14em]" style={{ color: 'var(--color-paper-mute)' }}>clarity</span>
-      {score}
-    </span>
-  )
-}
-
 function SpotlightCard({ session }: { session: SessionWithDetails }) {
-  const before = session.clarityScoreBefore
-  const after = session.clarityScoreAfter
-  const lift = before != null && after != null ? after - before : null
   const improved = session.improvement!.improvedPrompt
   const date = new Date(session.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 
@@ -325,7 +293,6 @@ function SpotlightCard({ session }: { session: SessionWithDetails }) {
         <div className="p-6 md:p-7 md:border-r" style={{ borderColor: 'var(--color-rule)' }}>
           <div className="flex items-center justify-between gap-3 mb-3">
             <p className="eyebrow" style={{ color: 'var(--color-paper-mute)' }}>Your prompt</p>
-            <ClarityBadge score={before} />
           </div>
           <p className="text-sm md:text-[15px] leading-[1.6] line-clamp-5" style={{ color: 'var(--color-paper-mute)' }}>
             {session.originalPrompt}
@@ -334,7 +301,6 @@ function SpotlightCard({ session }: { session: SessionWithDetails }) {
         <div className="p-6 md:p-7 border-t md:border-t-0" style={{ borderColor: 'var(--color-rule)' }}>
           <div className="flex items-center justify-between gap-3 mb-3">
             <p className="eyebrow" style={{ color: 'var(--color-accent)' }}>Rewrite</p>
-            <ClarityBadge score={after} accent />
           </div>
           <p className="text-sm md:text-[15px] leading-[1.6] line-clamp-5" style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)' }}>
             {improved}
@@ -343,16 +309,9 @@ function SpotlightCard({ session }: { session: SessionWithDetails }) {
       </div>
 
       <div className="flex items-center justify-between gap-4 px-6 md:px-7 py-3.5" style={{ borderTop: '1px solid var(--color-rule)' }}>
-        <div className="flex items-center gap-2 text-sm tabular-nums">
-          {before != null && after != null && (
-            <>
-              <span style={{ color: scoreColor(before) }}>{before}</span>
-              <span style={{ color: 'var(--color-paper-mute)' }}>→</span>
-              <span style={{ color: scoreColor(after) }}>{after}</span>
-              {lift != null && lift > 0 && <span className="ml-1" style={{ color: '#5FBE8C' }}>+{lift} clarity</span>}
-            </>
-          )}
-        </div>
+        <span className="text-xs" style={{ color: 'var(--color-paper-mute)' }}>
+          Improved
+        </span>
         <span className="text-xs inline-flex items-center gap-2" style={{ color: 'var(--color-paper-mute)' }}>
           <span className="capitalize">{session.tone}</span>
           <span>·</span>

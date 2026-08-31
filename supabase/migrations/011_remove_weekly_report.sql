@@ -1,0 +1,24 @@
+-- 011: remove the weekly insights report.
+--
+-- The report is deleted from the product. It was built on
+-- prompt_sessions.clarity_score_before/after, which the shipping extension
+-- path writes as NULL on every session, so its headline number always read
+-- "+0 clarity". The in-app /insights page had the same problem.
+--
+-- Only the preference column goes. It is a boolean opt-out for a feature that
+-- no longer exists, so it carries no history worth keeping.
+ALTER TABLE profiles DROP COLUMN IF EXISTS email_weekly;
+
+-- Deliberately NOT dropped:
+--
+--   prompt_sessions.clarity_score_before
+--   prompt_sessions.clarity_score_after
+--
+-- Nothing reads or writes them any more, but they hold real rows from every
+-- session the old playground recorded. Dropping them destroys that data
+-- permanently and buys nothing. See the note on PromptSessionRow in
+-- src/types/database.ts.
+--
+-- Rows already in emails_sent with email_type = 'weekly' are left alone: they
+-- are a send log, and deleting them would let a re-run double-send to someone
+-- if the type is ever reused.

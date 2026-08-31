@@ -35,7 +35,7 @@ interface LLMRequest {
    * Outputs (strict:false). Optional - falls back to plain json_object.
    */
   responseSchema?: Record<string, unknown>
-  /** Override the default model (Pro Deep Rewrite uses a stronger one). */
+  /** Override the default model (Pro rewrites use a stronger one). */
   model?: string
   /** Override the default request timeout. See TIMEOUT_MS. */
   timeoutMs?: number

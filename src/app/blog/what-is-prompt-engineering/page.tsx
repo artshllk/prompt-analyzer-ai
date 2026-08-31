@@ -210,8 +210,8 @@ export default function WhatIsPromptEngineeringPage() {
               <Link href="/blog/how-to-write-better-prompts" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 How to write better prompts for ChatGPT, Claude, and Gemini →
               </Link>
-              <Link href="/tools/prompt-improver" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
-                Free AI Prompt Improver →
+              <Link href="/playground" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                Try the prompt improver →
               </Link>
               <Link href="/prompts/chatgpt-blog-post" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 Free prompt: write a blog post with ChatGPT →

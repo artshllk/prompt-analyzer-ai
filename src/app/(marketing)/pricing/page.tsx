@@ -5,11 +5,11 @@ import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
   title: 'Pricing - Free Plan and Pro at $4.99/month',
-  description: 'Free until you outgrow it. Pro is $4.99/month right now, a launch discount from $9.99, for unlimited improvements, a stronger model on every one, full history, and weekly insights.',
+  description: 'Free until you outgrow it. Pro is $4.99/month right now, a launch discount from $9.99, for unlimited improvements, a stronger model on every one, and full history.',
   alternates: { canonical: 'https://deepclario.com/pricing' },
   openGraph: {
     title: 'Deepclario Pricing - Pro at $4.99/month (launch offer)',
-    description: 'Launch pricing: Pro is $4.99/month, down from $9.99. Unlimited improvements, a stronger model on every one, full history, and weekly insights. The free plan stays free.',
+    description: 'Launch pricing: Pro is $4.99/month, down from $9.99. Unlimited improvements, a stronger model on every one, and full history. The free plan stays free.',
     url: 'https://deepclario.com/pricing',
     type: 'website',
     // Same bug as the homepage - see defaultOGImage() and (marketing)/page.tsx.
@@ -48,7 +48,7 @@ const pricingSchema = {
           name: 'Pro',
           price: '4.99',
           priceCurrency: 'USD',
-          description: 'Unlimited improvements, a stronger model on every one, full history, weekly insights. Launch price, down from $9.99/month.',
+          description: 'Unlimited improvements, a stronger model on every one, and full history. Launch price, down from $9.99/month.',
         },
       ],
     },

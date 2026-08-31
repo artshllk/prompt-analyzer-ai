@@ -10,10 +10,11 @@ the pointer instead of expanding this file.
 
 A web toolkit for people who use ChatGPT, Claude, and Gemini. Four tools:
 
-- **Prompt improver** — scores a rough prompt and rewrites it with CRAFT
-  (Context, Role, Action, Format, Tone). `/playground`, `/tools/*`.
-- **Deep rewrite** — Pro-only multi-pass rewrite (draft → critique → refine).
-- **AI text detector** — scores how likely text is AI-written. `/detector`.
+- **Prompt improver** — rewrites a rough prompt, asking one question first when
+  two readings would give different answers. `/playground`, the homepage hero,
+  and the extension.
+- **AI text detector** — reports the signals that say text reads as AI-written.
+  Never a percentage. `/detector`.
 - **Token counter** — counts tokens (`gpt-tokenizer`). Logic exists; no public page yet.
 
 Backed by a large SEO blog (`/blog`, 37+ posts), a free prompt library
@@ -35,14 +36,24 @@ These are verified from code and get re-derived or mistaken every session.
   `.claude/decisions/0001-paddle-over-stripe.md`.
 - **The detector never reports a percentage.** Deterministic signals compute the
   verdict band; the LLM only writes the plain-English explanation. It reports
-  signals openly and a confidence *label*, never "94% AI". See
+  signals openly and a confidence _label_, never "94% AI". See
   `.claude/decisions/0002-detector-no-percentage.md` and `architecture/detector.md`.
+- **There is no clarity score, and Deep Rewrite does not exist.** Both were
+  deleted. The score was two model self-reports (the "after" number was the
+  rewrite model grading its own rewrite) and the shipping path never wrote it,
+  so three surfaces silently showed zeros. Deep Rewrite had no client. See
+  `.claude/decisions/0005-no-invented-numbers.md`. Do not reintroduce either.
+- **There are two engine pipelines.** `analyzePrompt()` (structured JSON, used by
+  the web tool) and `streamSharpen()` (plain-text stream, used by the extension).
+  A change to rewrite behavior usually has to land in both.
 - **The prompt engine uses OpenAI + Gemini, not Anthropic.** See `architecture/prompt-engine.md`.
 - **`analyzePrompt()` in `lib/engine/index.ts` is a pure, portable function** — no
   Next/Supabase/HTTP deps. This is why new clients (VS Code, MCP) are cheap. See `roadmap.md`.
-- **Pro is $9.99/mo (Paddle).** Free tier: 5 rewrites + 5 detections per window,
-  7-day history (`lib/limits.ts`). Older docs say $5 / 25-a-month — those are stale;
-  trust `limits.ts` and the marketing pages.
+- **Pro is $4.99/mo right now, a launch discount from $9.99 (Paddle).** The
+  launch flag is `LAUNCH` in `components/marketing/EditorialPricing.tsx`; Paddle
+  charges 499¢ (`lib/paddle.ts`). Free tier: 10 improvements per rolling 24h
+  (`USAGE_DAILY_LIMIT`), 5 detections per 24h, 7-day history (`lib/limits.ts`).
+  Anything saying 25-a-month or a flat $9.99 is stale.
 - **Auth: Google Identity Services + `signInWithIdToken`**, not Supabase OAuth
   redirect — so the consent screen shows Deepclario, never supabase.co. See
   `.claude/decisions/0003-auth-gis-no-supabase-co.md`.
@@ -54,17 +65,90 @@ These are verified from code and get re-derived or mistaken every session.
 
 ## Repo map
 
-- `src/lib/engine/` — prompt engine (OpenAI + Gemini clients, CRAFT, clarify loop, deep rewrite).
+- `src/lib/engine/` — prompt engine. `index.ts` (staged pipeline) and `sharpen.ts` (streaming fast path).
 - `src/lib/detector/` — AI detection (deterministic signals + Gemini explanation).
 - `src/lib/db/` — Supabase data access: `sessions`, `usage`, `api-tokens`.
 - `src/lib/{paddle,limits,rate-limit,tokens}.ts` — billing, quotas, throttling, token counting.
-- `src/app/(marketing|app|auth|legal)/` — route groups. `blog/`, `detector/`, `playground/`, `prompts/`, `tools/`, `extension/`.
-- `src/app/api/` — anon analyze, detector, billing, webhooks/paddle, extension token, cron, email.
+- `src/app/(marketing|app|auth|legal)/` — route groups. `blog/`, `detector/`, `playground/`, `prompts/`, `extension/`. There is no `tools/`; those URLs 404 on purpose.
+- `src/app/api/` — anon analyze/sharpen/fork/explain/verify, detector, billing, webhooks/paddle, extension token, cron, email.
 - `extension/` — browser extension source (v0.5.0). Also versioned zips on the Desktop.
+
+## Unapplied migrations
+
+Checked against the live database on 2026-08-31: **`012`, `013` and `014` are
+applied. Only `011` is outstanding**, and it can wait as long as you like
+because nothing in the new code touches `profiles.email_weekly`.
+
+`014` is the load-bearing one: it creates the RPC behind the global anonymous
+daily cap, and that guard fails closed, so without it every anonymous run
+returns `daily_capacity`. It is in place.
+
+Full procedure, including what to re-check and how to roll back:
+`docs/deploy-runbook.md`.
+
+## What happens when Supabase is down
+
+The three gates fail in different directions, on purpose, and the combination
+has a hole in it. Written down because it is not visible from any one file.
+
+| Gate | On a DB error | Why |
+|---|---|---|
+| Anonymous daily cap | **closed** | The model still bills. A limiter a script walks past is not a cost control. |
+| Signed-in free quota | **open** | Locking out a real user over our own infrastructure is worse than one extra rewrite. |
+| `analyzePrompt()` | unaffected | It has no DB access at all. Verified: zero supabase/db/next imports across its whole graph. |
+
+So an outage refuses anonymous visitors and leaves signed-in users uncapped.
+
+**The hole.** `resolveCaller()` reads `tier` from `profiles`, and
+`validateToken()` reads `api_tokens` then `profiles`. **Tier cannot be known
+without Postgres on either path.** Worse, `tier: profile?.tier ?? 'free'`
+makes a failed read indistinguishable from a genuine free account, so during a
+Postgres-only outage (Auth up, Postgres down) every signed-in caller resolves
+as free, the quota check fails open, and they are uncapped. Sign-up needs
+Auth, not Postgres, so in that specific failure someone can still create an
+account and walk straight through.
+
+**"Free fails closed, only Pro fails open" is therefore not implementable
+today.** During the outage there is no way to tell Pro from free.
+
+**Fixed.** `resolveCaller()` now returns three states, not two: `anonymous`,
+`known`, and `unknown`. `unknown` means we proved who they are and could not
+read their entitlement, and it is refused with a 503 `identity_unavailable`
+and an honest message. Never a 402: a quota response would blame the user for
+our outage and push them toward paying to fix something upgrading would not
+fix. `validateToken` carries `tier: null` for the same case rather than
+`?? 'free'`.
+
+Anonymous stays anonymous, because that path already fails closed.
+
+## When we have paying customers
+
+The fix above costs Pro users their service during a Supabase outage. That is
+free today because there are zero Pro users. It stops being free the moment
+there is one, and this is the note for that day.
+
+**The design that actually works: put `tier` in the access token.** Supabase
+supports a custom access token hook that embeds claims in the signed JWT.
+Tier then becomes verifiable with no database at all, so during an outage Pro
+can be let through while free and anonymous fail closed, which is the version
+of this that everyone wants.
+
+**Do not reach for it without solving the stale-claim problem first.** A JWT
+carries whatever was true when it was issued. Someone who upgrades is still
+holding a token that says `free` until it refreshes, so they pay and then keep
+hitting the free limit. That bug lands on the first person who ever pays, which
+is the worst possible moment for it. Any version of this needs a forced token
+refresh on the Paddle webhook, and a fallback that re-reads the database when a
+token says `free` but the request is behaving like Pro. Both are more work than
+the hook itself.
+
+Until then, option 1 stands: unknown is refused, and Pro takes the outage with
+everyone else.
 
 ## Commands
 
 - `npm run dev` — local dev. `npm run build` — production build (real verification).
+- `npm test` — unit suite (parser, coercers, pipeline guard). No network, no cost.
 - `npx tsc --noEmit` — typecheck. `npm run lint` — eslint.
 - Verify a change by building or driving the affected flow, not just typecheck.
 
@@ -86,3 +170,17 @@ Full detail in `.claude/conventions.md`. The essentials:
 - Why a choice was made: `.claude/decisions/`
 - How to do a recurring task: `.claude/workflows/` (or the `/new-blog-post`, `/verify-blog` commands)
 - Roadmap and the VS Code / MCP plan: `.claude/roadmap.md`
+
+## Production database
+
+.env.local points at the production Supabase project and carries a service-role key.
+Treat production as READ-ONLY at all times.
+
+- Never INSERT, UPDATE, DELETE or call a mutating RPC against production.
+- To check whether a migration landed, use information_schema and pg_constraint.
+  Never probe by writing a row.
+- Never write a row to "test" something, even if you plan to delete it after.
+  The cleanup delete is riskier than the thing it cleans up.
+- Migrations are applied by a human in the Supabase SQL Editor. Never by you,
+  and never via supabase db push.
+- If you believe a write to production is genuinely necessary, stop and ask.

@@ -4,11 +4,18 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { StreamOut } from '@/components/shared/StreamOut'
-import { SAMPLE_PROMPTS, pickThree } from '@/lib/sample-prompts'
+import { LabelledPrompt } from '@/components/shared/LabelledPrompt'
+import type { Segment } from '@/lib/engine/segments'
+import { CompareAnswers } from '@/components/shared/CompareAnswers'
+import { track, trackRun } from '@/lib/track'
+import { SAMPLE_PROMPTS, ALREADY_GOOD_SAMPLE, pickSamples } from '@/lib/sample-prompts'
 
 /**
- * Chat-style demo shown inside the hero modal (HeroDemoModal owns the
- * shell, scroll, focus trap, and width animation).
+ * The tool. Rendered directly in the homepage hero and on /playground.
+ *
+ * It used to live inside a modal behind a CTA, with a scripted animation of
+ * itself occupying the hero. Both are gone: this is the hero now, and it owns
+ * its own layout rather than borrowing a modal's.
  *
  * Fixed side-by-side layout:
  *   LEFT  - the user's original prompt (set once, never moves).
@@ -26,15 +33,56 @@ import { SAMPLE_PROMPTS, pickThree } from '@/lib/sample-prompts'
  * swaps to the account gate - rendered inline, not a stacked overlay.
  */
 
-const DEMO_LIMIT = 1
+/**
+ * Free runs per browser before we ask for an account.
+ *
+ * One was not enough to understand this product. The labelling and the quiet
+ * path both need a second look, and the first prompt someone types is usually
+ * a test rather than a real one. Three lets them try a sample, try their own,
+ * and come back once. The site-wide daily ceiling is the real cost control;
+ * this is just the sign-up moment.
+ */
+/**
+ * "Comes back at 16:00" beats an ISO timestamp, and beats "try later", which
+ * is a dead end wearing a clock. Falls back to a plain sentence when the
+ * server did not send a reset time.
+ */
+function resetPhrase(iso: string): string {
+  if (!iso) return 'It resets on a rolling 24 hour window.'
+  const at = new Date(iso)
+  if (Number.isNaN(at.getTime())) return 'It resets on a rolling 24 hour window.'
+  const time = at.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+  const sameDay = at.toDateString() === new Date().toDateString()
+  return sameDay ? `Your next one is back at ${time}.` : `Your next one is back tomorrow at ${time}.`
+}
+
+const DEMO_LIMIT = 3
 const RUNS_KEY = 'pc_demo_runs'
 const MAX_CLARIFY = 1 // demo asks at most one follow-up before improving
 
 type QA = { question: string; answer: string; turn: number }
 
+type ForkOption = { label: string; summary: string }
+
 type Response =
-  | { kind: 'question'; text: string; gap?: string }
-  | { kind: 'improved'; text: string; before: number; after: number }
+  | { kind: 'question'; text: string; gap?: string; options: ForkOption[] }
+  /** `quiet` means we never asked: the prompt only had one sensible reading.
+   *  `segments` is absent when the rewrite came back without usable markers;
+   *  the prompt still ships, just unlabelled. */
+  | { kind: 'improved'; text: string; quiet: boolean; segments?: Segment[] }
+  /**
+   * The prompt was already good and we refused to rewrite it into noise.
+   * This branch did not exist, so an already_good response fell through to
+   * the improved case and rendered an undefined prompt as a blank panel.
+   * One of the three sample chips is deliberately a prompt that lands here.
+   */
+  | { kind: 'already_good'; message: string; tweaks: string[] }
+  /** Not a prompt at all: a greeting, a thank-you, a reaction. */
+  | { kind: 'no_task'; message: string }
+  /** The whole site's anonymous budget for today is gone. */
+  | { kind: 'capacity'; resetAt: string }
+  /** Their own plan limit, which is not the same thing as us breaking. */
+  | { kind: 'quota'; resetAt: string; dailyLimit: number }
   | { kind: 'error'; text: string }
 
 type Phase = 'idle' | 'thinking' | 'awaiting-answer' | 'done' | 'error'
@@ -42,7 +90,7 @@ type Phase = 'idle' | 'thinking' | 'awaiting-answer' | 'done' | 'error'
 interface DemoChatProps {
   /** Reports whether the panel should widen to the conversation layout. */
   onWide?: (wide: boolean) => void
-  /** Reports whether there is unsaved work the shell should protect on
+  /** Reports whether there is unsaved work a host shell should protect on
    *  an accidental backdrop click. */
   onDirty?: (dirty: boolean) => void
 }
@@ -51,6 +99,8 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
   const [input, setInput] = useState('')
   const [rootPrompt, setRootPrompt] = useState('')
   const [response, setResponse] = useState<Response | null>(null)
+  /** The rewrite as it currently stands, after any guesses were removed. */
+  const [copyText, setCopyText] = useState('')
   const [phase, setPhase] = useState<Phase>('idle')
   const [history, setHistory] = useState<QA[]>([])
   const [answer, setAnswer] = useState('')
@@ -59,14 +109,18 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
   const [hydrated, setHydrated] = useState(false)
   // Rotating sample chips: deterministic first three for SSR / first
   // client render, then a fresh random trio each time the modal mounts.
-  const [samples, setSamples] = useState<string[]>(() => SAMPLE_PROMPTS.slice(0, 3))
+  const [samples, setSamples] = useState<string[]>(() => [
+    SAMPLE_PROMPTS[0],
+    ALREADY_GOOD_SAMPLE,
+    SAMPLE_PROMPTS[1],
+  ])
 
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const answerRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    setSamples(pickThree())
+    setSamples(pickSamples())
     const r = parseInt(window.localStorage.getItem(RUNS_KEY) ?? '0', 10)
     setRuns(Number.isFinite(r) ? r : 0)
     setHydrated(true)
@@ -131,11 +185,60 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       })
 
       if (res.status === 429) {
-        fail('We limit free rewrites by IP. Give it a minute and try again.')
+        const d = await res.json().catch(() => ({}))
+        // Two different 429s. One is "you personally are going too fast",
+        // the other is "the whole site's free budget for today is gone".
+        // Telling someone to wait a minute when the answer is tomorrow is
+        // just a slower way of wasting their time.
+        if (d.error === 'daily_capacity') {
+          setResponse({ kind: 'capacity', resetAt: d.resetAt ?? '' })
+          setPhase('done')
+          return
+        }
+        fail('That is a lot of rewrites in one go. Give it a minute and try again.')
+        return
+      }
+      /**
+       * These three used to fall into one message: "Something went sideways
+       * on our end." That is a lie in two of the three cases. Telling someone
+       * our servers broke when they have simply used their improvements for
+       * the day teaches them the product is unreliable AND hides the upgrade
+       * path that would fix it.
+       */
+      if (res.status === 402) {
+        const d = await res.json().catch(() => ({}))
+        setResponse({
+          kind: 'quota',
+          resetAt: d.resetAt ?? '',
+          dailyLimit: typeof d.dailyLimit === 'number' ? d.dailyLimit : 10,
+        })
+        setPhase('done')
+        return
+      }
+      if (res.status === 503) {
+        const d = await res.json().catch(() => ({}))
+        // Two different 503s, and telling them apart matters. One is the
+        // model not answering. The other is us being unable to look up your
+        // account, which must never be dressed up as a limit: it is our
+        // problem, it is usually brief, and it costs you nothing.
+        fail(
+          d.error === 'identity_unavailable'
+            ? 'We are having trouble reaching your account right now. Nothing was used up. Try again shortly.'
+            : 'The model did not come back. That one is on us, and it did not use up any of your improvements. Try again.'
+        )
+        return
+      }
+      if (res.status === 400) {
+        const d = await res.json().catch(() => ({}))
+        fail(
+          d.error === 'prompt_too_long'
+            ? 'That prompt is too long. Trim it under 4000 characters and try again.'
+            : 'That prompt did not come through. Try sending it again.'
+        )
         return
       }
       if (!res.ok) {
-        fail('Something went sideways on our end. Try again in a moment.')
+        fail('Something went wrong on our end. Nothing was used up, so try again.')
         return
       }
 
@@ -143,7 +246,13 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       const askedEnough = priorAnswers.length >= MAX_CLARIFY
 
       if (data.type === 'clarifying' && !askedEnough) {
-        setResponse({ kind: 'question', text: data.question, gap: data.targetsGap })
+        track('question_shown')
+        setResponse({
+          kind: 'question',
+          text: data.question,
+          gap: data.targetsGap,
+          options: Array.isArray(data.options) ? data.options.slice(0, 3) : [],
+        })
         setAnswer('')
         setPhase('awaiting-answer')
         return
@@ -160,12 +269,39 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       }
 
       bumpRuns()
+      // Counted here, not on submit: a call that failed is not a run.
+      trackRun()
+
+      if (data.type === 'already_good') {
+        setResponse({
+          kind: 'already_good',
+          message: data.message ?? 'This one is already clear.',
+          tweaks: Array.isArray(data.tweaks) ? data.tweaks : [],
+        })
+        setPhase('done')
+        return
+      }
+
+      if (data.type === 'no_task') {
+        setResponse({
+          kind: 'no_task',
+          message: data.message ?? 'There is no prompt here to improve yet.',
+        })
+        setPhase('done')
+        return
+      }
+
+      // Nothing was asked and nothing needed to be. Say so, rather than
+      // letting the user wonder whether the question step is broken.
+      if (priorAnswers.length === 0) track('question_none')
       setResponse({
         kind: 'improved',
         text: data.improvedPrompt,
-        before: data.scoreBeforeImprovement,
-        after: data.clarityScoreAfter,
+        quiet: priorAnswers.length === 0,
+        segments: Array.isArray(data.segments) ? data.segments : undefined,
       })
+      // Copy hands over the prompt as it stands, so removals have to update it.
+      setCopyText(data.improvedPrompt)
       setPhase('done')
     } catch {
       fail('Network hiccup. Check your connection and try again.')
@@ -187,20 +323,31 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
     callEngine(text, [])
   }
 
-  function handleAnswer(e?: React.FormEvent) {
-    e?.preventDefault()
-    const text = answer.trim()
-    if (!text || phase === 'thinking') return
+  /**
+   * One path for answering, whether they clicked a reading or typed one.
+   * Clicking is the intended way in: the engine only ever asks when two
+   * concrete readings of the prompt would produce different rewrites, so the
+   * readings themselves are the answer set. A text box invites a sentence
+   * nobody asked for.
+   */
+  function submitAnswer(text: string) {
+    const clean = text.trim()
+    if (!clean || phase === 'thinking') return
     if (response?.kind !== 'question') return
 
     const turn = history.length + 1
     const nextHistory: QA[] = [
       ...history,
-      { question: response.text, answer: text, turn },
+      { question: response.text, answer: clean, turn },
     ]
     setHistory(nextHistory)
     setAnswer('')
     callEngine(rootPrompt, nextHistory)
+  }
+
+  function handleAnswer(e?: React.FormEvent) {
+    e?.preventDefault()
+    submitAnswer(answer)
   }
 
   function startOver() {
@@ -255,13 +402,6 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
       <div>
         <div className="flex items-baseline justify-between mb-3">
           <p className="eyebrow" style={{ color: 'var(--color-accent-bright)' }}>Deepclario</p>
-          {response?.kind === 'improved' && (
-            <span className="text-xs tabular-nums" style={{ color: 'var(--color-paper-mute)' }}>
-              clarity <span style={{ color: 'var(--color-paper)' }}>{response.before}</span>
-              <span className="mx-1">→</span>
-              <span style={{ color: 'var(--color-accent-bright)' }}>{response.after}</span>
-            </span>
-          )}
         </div>
 
         <div
@@ -290,11 +430,143 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
 
             {response?.kind === 'improved' && (
               <motion.div key="improved" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <StreamOut
-                  text={response.text}
-                  className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
-                  style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)' }}
+                {response.quiet && (
+                  <p
+                    className="text-[13px] mb-3 pb-3"
+                    style={{
+                      color: 'var(--color-paper-mute)',
+                      borderBottom: '1px solid var(--color-rule)',
+                    }}
+                  >
+                    Nothing to ask, this one is clear.
+                  </p>
+                )}
+                {response.segments ? (
+                  <LabelledPrompt
+                    segments={response.segments}
+                    onChange={setCopyText}
+                  />
+                ) : (
+                  <StreamOut
+                    text={response.text}
+                    className="text-[15px] sm:text-base leading-[1.7] whitespace-pre-wrap wrap-break-word"
+                    style={{ color: 'var(--color-paper)', fontFamily: 'var(--font-inter)' }}
+                  />
+                )}
+
+                <div className="mt-5">
+                  <CopyButton text={copyText || response.text} />
+                </div>
+
+                <CompareAnswers
+                  original={rootPrompt}
+                  improved={copyText || response.text}
                 />
+              </motion.div>
+            )}
+
+            {response?.kind === 'already_good' && (
+              <motion.div key="already-good" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <p
+                  className="text-[13px] mb-3 pb-3"
+                  style={{
+                    color: 'var(--color-confirm)',
+                    borderBottom: '1px solid var(--color-rule)',
+                  }}
+                >
+                  Nothing to change. This one is already clear.
+                </p>
+                <p
+                  className="text-[15px] sm:text-base leading-[1.7]"
+                  style={{ color: 'var(--color-paper)' }}
+                >
+                  {response.message}
+                </p>
+                {response.tweaks.length > 0 && (
+                  <ul className="mt-4 space-y-2">
+                    {response.tweaks.map(t => (
+                      <li
+                        key={t}
+                        className="text-[14px] leading-[1.6] pl-4 relative"
+                        style={{ color: 'var(--color-paper-mute)' }}
+                      >
+                        <span className="absolute left-0" aria-hidden>·</span>
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <p className="mt-4 text-[13px]" style={{ color: 'var(--color-paper-mute)' }}>
+                  We only rewrite when it would actually help. Your prompt is
+                  yours.
+                </p>
+              </motion.div>
+            )}
+
+            {response?.kind === 'no_task' && (
+              <motion.p
+                key="no-task"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-[15px] sm:text-base leading-[1.7]"
+                style={{ color: 'var(--color-paper)' }}
+              >
+                {response.message}
+              </motion.p>
+            )}
+
+            {response?.kind === 'quota' && (
+              <motion.div key="quota" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <p
+                  className="text-[15px] sm:text-base leading-[1.7] mb-2"
+                  style={{ color: 'var(--color-paper)' }}
+                >
+                  That is your {response.dailyLimit} improvements for today.
+                </p>
+                <p className="text-[14px] leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
+                  {resetPhrase(response.resetAt)} Pro removes the daily limit and
+                  runs a stronger model on every improve.
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-4">
+                  <Link
+                    href="/pricing"
+                    className="inline-flex items-center px-5 py-2.5 rounded-full text-sm btn-paper transition-all"
+                    style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+                  >
+                    See what Pro includes
+                  </Link>
+                  <Link
+                    href="/extension"
+                    className="text-sm underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity"
+                    style={{ color: 'var(--color-paper)' }}
+                  >
+                    Or get the extension
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+
+            {response?.kind === 'capacity' && (
+              <motion.div key="capacity" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <p
+                  className="text-[15px] sm:text-base leading-[1.7] mb-2"
+                  style={{ color: 'var(--color-paper)' }}
+                >
+                  That is today&apos;s free runs used up, across everyone.
+                </p>
+                <p className="text-[14px] leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
+                  This is a small operation and the free tool has a daily
+                  ceiling so it stays free. It resets at midnight UTC. An
+                  account gets you your own allowance instead of sharing this
+                  one.
+                </p>
+                <Link
+                  href="/login?signup=1"
+                  className="mt-4 inline-flex items-center px-5 py-2.5 rounded-full text-sm btn-paper transition-all"
+                  style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
+                >
+                  Create a free account
+                </Link>
               </motion.div>
             )}
 
@@ -312,59 +584,71 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
           </AnimatePresence>
         </div>
 
-        {/* Answer field - ONLY while a clarifying question is waiting. */}
+        {/* The readings, as buttons. Only while a question is waiting.
+
+            This used to be a text box, which meant the engine went to the
+            trouble of working out the two ways a prompt could be read and
+            then asked the user to describe one in their own words. Clicking
+            a reading is faster, cannot be answered with junk, and tells the
+            rewrite exactly which fork to commit to. */}
         <AnimatePresence>
-          {phase === 'awaiting-answer' && (
-            <motion.form
+          {phase === 'awaiting-answer' && response?.kind === 'question' && (
+            <motion.div
               key="answer"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              onSubmit={handleAnswer}
-              className="mt-4"
+              className="mt-4 flex flex-col gap-2"
             >
-              <div
-                className="flex items-end gap-2.5 p-2.5 rounded-2xl"
-                style={{ background: 'var(--color-ink-card)', border: '1px solid var(--color-rule-strong)' }}
-              >
-                <textarea
-                  ref={answerRef}
-                  value={answer}
-                  onChange={e => setAnswer(e.target.value)}
-                  placeholder="Type your answer…"
-                  rows={1}
-                  maxLength={1000}
-                  className="flex-1 bg-transparent resize-none py-2 px-2 text-base outline-none"
-                  style={{ color: 'var(--color-paper)', caretColor: 'var(--color-paper)', fontFamily: 'var(--font-inter)', lineHeight: 1.55 }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      handleAnswer()
-                    }
-                  }}
-                />
+              {response.options.map(opt => (
                 <button
-                  type="submit"
-                  disabled={!answer.trim()}
-                  aria-label="Send answer"
-                  className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-full transition-all btn-paper disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink-card) focus:ring-(--color-paper)"
-                  style={{ background: 'var(--color-paper)', color: 'var(--color-ink)' }}
+                  key={opt.label}
+                  type="button"
+                  onClick={() => submitAnswer(`${opt.label}. ${opt.summary}`.trim())}
+                  className="text-left px-4 py-3 rounded-2xl transition-colors row-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink) focus:ring-(--color-paper)"
+                  style={{
+                    background: 'var(--color-ink-card)',
+                    border: '1px solid var(--color-rule-strong)',
+                  }}
                 >
-                  <svg width="15" height="15" viewBox="0 0 14 14" fill="none">
-                    <path d="M7 12V2M7 2L2 7M7 2L12 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <span
+                    className="block text-[15px]"
+                    style={{ color: 'var(--color-paper)', fontWeight: 500 }}
+                  >
+                    {opt.label}
+                  </span>
+                  {opt.summary && (
+                    <span
+                      className="block text-[13px] mt-0.5 leading-snug"
+                      style={{ color: 'var(--color-paper-mute)' }}
+                    >
+                      {opt.summary}
+                    </span>
+                  )}
                 </button>
-              </div>
-            </motion.form>
+              ))}
+
+              {/* Defensive: the engine is not supposed to ask without giving
+                  at least two readings, but a malformed response should not
+                  strand someone on a question they cannot answer. */}
+              {response.options.length === 0 && (
+                <button
+                  type="button"
+                  onClick={() => submitAnswer('Use reasonable assumptions.')}
+                  className="text-left px-4 py-3 rounded-2xl transition-colors row-hover"
+                  style={{
+                    background: 'var(--color-ink-card)',
+                    border: '1px solid var(--color-rule-strong)',
+                    color: 'var(--color-paper)',
+                  }}
+                >
+                  Just rewrite it
+                </button>
+              )}
+            </motion.div>
           )}
         </AnimatePresence>
-
-        {response?.kind === 'improved' && phase === 'done' && (
-          <div className="mt-4">
-            <CopyButton text={response.text} />
-          </div>
-        )}
       </div>
     </div>
   )
@@ -391,20 +675,10 @@ function Intro({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
     >
-      <h3
-        className="font-serif text-[1.6rem] sm:text-3xl leading-[1.15] tracking-tight mb-2.5 pr-10 sm:pr-0"
-        style={{ color: 'var(--color-paper)', fontWeight: 400 }}
-      >
-        Paste a prompt. Watch it get sharper.
-      </h3>
-      <p
-        className="text-[15px] sm:text-base leading-relaxed mb-7 max-w-prose"
-        style={{ color: 'var(--color-paper-mute)' }}
-      >
-        Type something rough below. Deepclario asks a question if it needs to,
-        then rewrites it for ChatGPT, Claude, and Gemini.
-      </p>
-
+      {/* No heading here any more. The hero above already carries the
+          headline and the subhead, and repeating both inside the card put
+          two competing promises on one screen. The chips do the teaching
+          instead: one of them is a prompt that needs no help. */}
       <form onSubmit={onSend}>
         <div
           className="flex items-end gap-2.5 p-2.5 rounded-2xl"
@@ -414,7 +688,7 @@ function Intro({
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder="Message Deepclario…"
+            placeholder="Paste a rough prompt…"
             rows={1}
             maxLength={4000}
             className="flex-1 bg-transparent resize-none py-2.5 px-2 text-base focus:outline-none focus-visible:outline-none"
@@ -440,15 +714,24 @@ function Intro({
         </div>
       </form>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <p className="mt-4 mb-2 text-xs" style={{ color: 'var(--color-paper-mute)' }}>
+        Or try one of these
+      </p>
+      <div className="flex flex-wrap gap-2">
         {samples.map(s => (
           <button
             key={s}
             onClick={() => setInput(s)}
-            className="text-[13px] px-3 py-1.5 rounded-full chip-hover transition-colors focus:outline-none focus:ring-1 focus:ring-(--color-paper-mute)"
+            className="text-[13px] text-left px-3 py-2 rounded-2xl chip-hover transition-colors focus:outline-none focus:ring-1 focus:ring-(--color-paper-mute) max-w-full"
             style={{ color: 'var(--color-paper-mute)', border: '1px solid var(--color-rule-strong)' }}
+            title={s}
           >
-            &ldquo;{s}&rdquo;
+            {/* Truncated on one line: the already-good sample is long on
+                purpose, and a chip that wraps to four lines on a phone stops
+                looking tappable. */}
+            <span className="block truncate max-w-[15rem] sm:max-w-xs">
+              &ldquo;{s}&rdquo;
+            </span>
           </button>
         ))}
       </div>
@@ -520,13 +803,13 @@ function Gate() {
         className="font-serif text-[1.7rem] sm:text-4xl leading-tight mb-3"
         style={{ color: 'var(--color-paper)', fontWeight: 400 }}
       >
-        You&apos;ve seen what it can do.
+        You&apos;ve seen what it does.
       </h3>
       <p className="text-[15px] sm:text-lg leading-relaxed mb-8" style={{ color: 'var(--color-paper-mute)' }}>
-        Create a free account to keep going.
+        Three free rewrites is the taste. An account gets you ten a day.
       </p>
       <Link
-        href="/login?signup=1&redirectTo=/extension"
+        href="/login?signup=1&redirectTo=/playground"
         className="inline-flex items-center justify-center px-7 py-3 rounded-full text-[15px] btn-paper transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-(--color-ink) focus:ring-(--color-paper)"
         style={{ background: 'var(--color-paper)', color: 'var(--color-ink)', fontWeight: 500 }}
       >

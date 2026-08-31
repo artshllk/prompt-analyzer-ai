@@ -171,7 +171,7 @@
   let authState = { token: null, tier: 'anon' }
   // proSeen: the "unlimited" confirmation is shown once, ever. After that
   // Pro users never see a word about limits again - that IS the benefit.
-  let prefs = { tone: 'professional', deep: false, proSeen: false }
+  let prefs = { tone: 'professional', proSeen: false }
   let anonCount = 0
   // The storage listener that waits for the connect page's token. Held so it
   // can be torn down: it is armed only while a connect is in flight.
@@ -189,12 +189,11 @@
     return new Promise(resolve => {
       try {
         chrome.storage.local.get(
-          ['dc_token', 'dc_tier', 'dc_tone', 'dc_deep', 'dc_anon_count', 'dc_pro_seen'],
+          ['dc_token', 'dc_tier', 'dc_tone', 'dc_anon_count', 'dc_pro_seen'],
           v => {
             authState.token = v?.dc_token || null
             authState.tier = v?.dc_tier || (authState.token ? 'free' : 'anon')
             if (TONES.includes(v?.dc_tone)) prefs.tone = v.dc_tone
-            prefs.deep = v?.dc_deep === true
             prefs.proSeen = v?.dc_pro_seen === true
             anonCount = Number.isFinite(v?.dc_anon_count) ? v.dc_anon_count : 0
             // Machines that ran an older build still hold a dc_intro_seen
@@ -746,7 +745,11 @@
   function showDoneChip() {
     positionChip()
     chip.className = 'chip show state-done'
-    const tag = state.chosen ? `Improved · ${state.chosen}` : 'Improved'
+    const tag = state.chosen
+      ? `Improved · ${state.chosen}`
+      : state.quiet
+        ? 'Improved · nothing to ask'
+        : 'Improved'
     const n = state.gaps ? state.gaps.length : 0
 
     if (!chipChanged(`done|${tag}|${n}`)) return
@@ -912,6 +915,12 @@
     fork: null,
     /** The interpretation the user picked, if any. */
     chosen: '',
+    /**
+     * True when the fork check found one sensible reading, so we never asked.
+     * Staying quiet is the feature, and a feature the user cannot see is
+     * indistinguishable from a step that is broken. The chip says so.
+     */
+    quiet: false,
     /** Details only the user knows, offered on the chip after the rewrite. */
     gaps: null,
     gapIndex: 0,
@@ -1040,6 +1049,7 @@
     state.before = prompt
     state.fork = null
     state.chosen = ''
+    state.quiet = false
     // We have just taken a snapshot of what they typed, so their typing up to
     // this moment is accounted for. Anything after this is a genuine edit, and
     // during 'asking' that is what makes the question stale.
@@ -1093,7 +1103,13 @@
           showForks(f)
           return
         }
-        // Clear enough: rewrite it, once.
+        // Clear enough: rewrite it, once, and say nothing.
+        //
+        // This is the numerator of the silence rate. Without it the only
+        // thing we could measure was how often we DID ask, which looks the
+        // same whether the engine is being disciplined or simply broken.
+        track('question_none')
+        state.quiet = true
         streamSharpenInto(prompt, null)
       }
     )
@@ -1509,6 +1525,7 @@
     state.after = ''
     state.fork = null
     state.chosen = ''
+    state.quiet = false
     state.gaps = null
     state.gapIndex = 0
     state.gapAnswers = {}
@@ -1540,10 +1557,22 @@
       toast(`That was your ${DAILY_LIMIT} free improvements for today. ${resetPhrase(msg.resetAt)}`, {
         action: { label: 'Get unlimited', url: LINKS.pricing },
       })
-    } else if (msg.error === 'pro_required') {
-      toast('Deep Rewrite is a Pro feature.', {
-        action: { label: 'See Pro', url: LINKS.pricing },
-      })
+    } else if (msg.error === 'daily_capacity') {
+      // NOT the same as rate_limited, and it used to be told as if it were.
+      // This is the whole site's free allowance for the day, not this person
+      // going too fast, and "wait a moment" is wrong by about sixteen hours.
+      // An account carries its own allowance, which is the real way out.
+      toast(
+        `That is today's free improvements used up, across everyone. ${
+          resetPhrase(msg.resetAt) || 'It resets at midnight UTC.'
+        }`,
+        { action: { label: 'Connect account', onClick: openConnect } }
+      )
+    } else if (msg.error === 'identity_unavailable') {
+      // We could not read their account. Not a limit, not their fault, and
+      // usually over in a minute. Saying "wait a moment" is correct here,
+      // which is exactly why it must not also be said for the daily ceiling.
+      toast('We are having trouble reaching your account. Nothing was used up. Try again shortly.')
     } else if (msg.error === 'rate_limited') {
       toast('Too many requests. Wait a moment, then try again.', {
         action: { label: 'Connect account', onClick: openConnect },

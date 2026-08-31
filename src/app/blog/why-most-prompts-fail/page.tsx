@@ -276,8 +276,8 @@ export default function WhyMostPromptsFailPage() {
               <Link href="/blog/how-to-write-better-prompts" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 How to write better prompts: 7 proven techniques →
               </Link>
-              <Link href="/tools/prompt-improver" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
-                Free AI prompt improver →
+              <Link href="/playground" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                Try the prompt improver →
               </Link>
             </div>
           </div>

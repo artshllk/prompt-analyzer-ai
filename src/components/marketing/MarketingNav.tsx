@@ -5,7 +5,8 @@ import { MarketingMobileMenu } from './MarketingMobileMenu'
 
 /**
  * Shared marketing nav used across every public-facing surface
- * (homepage, /faq, /detector, /extension, /prompts, /blog, blog posts).
+ * (homepage, /playground, /faq, /detector, /extension, /prompts, /blog,
+ * blog posts).
  *
  * Keeps the link set in one place so a content page never drifts from
  * the homepage. Pass `current` to subtly highlight the active link.
@@ -15,12 +16,23 @@ import { MarketingMobileMenu } from './MarketingMobileMenu'
  * arrival).
  */
 
-// The detector is unrouted, not deleted - its code and its 11 blog posts stay.
-// It is off the nav because the product story is now one thing: the extension.
-type NavKey = 'home' | 'detector' | 'prompts' | 'extension' | 'pricing' | 'faq' | 'blog'
+// Exported so MarketingMobileMenu shares this exact union. It used to keep
+// its own copy, which meant adding a nav link broke the build in a file that
+// had not changed.
+export type NavKey =
+  | 'home'
+  | 'playground'
+  | 'detector'
+  | 'prompts'
+  | 'extension'
+  | 'pricing'
+  | 'faq'
+  | 'blog'
 
 const LINKS: { key: NavKey; href: string; label: string }[] = [
   { key: 'extension', href: '/extension', label: 'Extension' },
+  { key: 'playground', href: '/playground', label: 'Try it' },
+  { key: 'detector', href: '/detector', label: 'Detector' },
   { key: 'prompts', href: '/prompts', label: 'Prompts' },
   { key: 'pricing', href: '/pricing', label: 'Pricing' },
   { key: 'faq', href: '/faq', label: 'FAQ' },

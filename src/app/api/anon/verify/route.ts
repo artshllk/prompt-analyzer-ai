@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyPrompts, VERIFY_TARGETS } from '@/lib/engine/verify'
 import { take, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
-import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
+import { resolveCaller } from '@/lib/auth/caller'
 import { getVerifyAllowance, recordVerifyUsage } from '@/lib/db/usage'
 
 /**
@@ -57,8 +57,11 @@ export function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  const token = extractBearerToken(req.headers.get('authorization'))
-  const auth = token ? await validateToken(token) : null
+  const who = await resolveCaller(req)
+  if (who.state === 'unknown') {
+    return corsJson({ error: 'identity_unavailable' }, 503)
+  }
+  const auth = who.state === 'known' ? who.caller : null
 
   // No account, no run. See the header comment: a lifetime credit needs
   // someone to spend it. Named error so the client can offer sign-in rather

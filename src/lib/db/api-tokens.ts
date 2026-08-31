@@ -42,7 +42,15 @@ export async function issueTokenForCurrentUser(label = 'Browser extension'): Pro
 export interface ValidatedToken {
   userId: string
   tokenId: string
-  tier: 'free' | 'pro'
+  /**
+   * null means we proved who they are and could NOT read their entitlement.
+   *
+   * It used to be `?? 'free'`, which made a failed read indistinguishable
+   * from a genuine free account. During a Postgres outage every caller
+   * resolved as free and the free quota fails open, so an outage handed out
+   * unlimited billed calls. Somebody we cannot identify is not a free user.
+   */
+  tier: 'free' | 'pro' | null
 }
 
 /** Validate a Bearer token from a public endpoint. Uses the service-role
@@ -62,7 +70,7 @@ export async function validateToken(rawToken: string): Promise<ValidatedToken | 
 
   if (error || !tokenRow) return null
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileErr } = await supabase
     .from('profiles')
     .select('tier')
     .eq('id', tokenRow.user_id)
@@ -78,7 +86,8 @@ export async function validateToken(rawToken: string): Promise<ValidatedToken | 
   return {
     userId: tokenRow.user_id,
     tokenId: tokenRow.id,
-    tier: (profile?.tier as 'free' | 'pro') ?? 'free',
+    // A read error is not a free account. See the note on `tier` above.
+    tier: profileErr ? null : ((profile?.tier as 'free' | 'pro') ?? 'free'),
   }
 }
 

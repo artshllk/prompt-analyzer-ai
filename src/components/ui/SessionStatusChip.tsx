@@ -3,34 +3,22 @@ import { statusOf, STATUS_META } from '@/lib/session-status'
 /**
  * Small status pill for a prompt session. Derives the status from the
  * session data (see statusOf) so history and dashboard always agree.
- * When the session was improved, the score delta reads better than the
- * label, so callers can pass `showDeltaWhenImproved` to render the
- * before → after +lift instead of the "Improved" chip.
+ *
+ * This used to render a "22 → 87 +65" delta for improved sessions. Both
+ * numbers were model self-reports, the second one produced by the rewrite
+ * model marking its own work, and neither was ever written by the path
+ * that actually ships. The chip says what happened instead.
  */
 
 interface SessionLike {
   status: string
-  clarityScoreBefore: number | null
-  clarityScoreAfter: number | null
+  finalPrompt: string | null
   createdAt: string
 }
 
 export function SessionStatusChip({ session }: { session: SessionLike }) {
   const derived = statusOf(session)
   const meta = STATUS_META[derived]
-
-  // For an improved session, the delta is the headline; show it inline.
-  if (derived === 'improved' && session.clarityScoreBefore != null && session.clarityScoreAfter != null) {
-    const lift = session.clarityScoreAfter - session.clarityScoreBefore
-    return (
-      <span className="inline-flex items-center gap-2 text-sm tabular-nums">
-        <span style={{ color: 'var(--color-paper-mute)' }}>{session.clarityScoreBefore}</span>
-        <span style={{ color: 'var(--color-paper-mute)' }}>→</span>
-        <span style={{ color: 'var(--color-paper)' }}>{session.clarityScoreAfter}</span>
-        {lift > 0 && <span style={{ color: '#5FBE8C' }}>+{lift}</span>}
-      </span>
-    )
-  }
 
   return (
     <span

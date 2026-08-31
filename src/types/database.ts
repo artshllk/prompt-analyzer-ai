@@ -22,14 +22,33 @@ export type ExtensionEvent =
   | 'question_shown'
   | 'question_answered'
   | 'question_skipped'
+  /** We had nothing worth asking. The numerator of the silence rate. */
+  | 'question_none'
+  /* The funnel. Four counts, in order, answering one question: did any of
+     this work? Everything else is a ratio between two of these. */
+  | 'tool_run'            // someone improved a prompt
+  | 'tool_run_repeat'     // the same visitor came back and did it again
+  | 'compare_clicked'     // they asked to see both answers
+  | 'compare_completed'   // both answers actually landed
   | 'rewrite_accepted'
   | 'rewrite_edited'
   | 'rewrite_undone'
 
-/** Which of the three chat products the counter came from. */
-export type ExtensionSurface = 'chatgpt' | 'claude' | 'gemini'
+/** Where the counter came from. 'web' is the on-site tool. */
+export type ExtensionSurface = 'chatgpt' | 'claude' | 'gemini' | 'web'
 
 // Row types as `type` aliases (not interfaces) - required for Supabase's Record<string, unknown> checks
+
+/**
+ * One row per day: the global count of anonymous model runs. Migration 014.
+ * No user id, no IP, no prompt - there is deliberately nothing per-caller in
+ * here to identify or to game.
+ */
+export type AnonDailyUsageRow = {
+  day: string
+  runs: number
+}
+
 export type ProfileRow = {
   id: string
   email: string
@@ -45,7 +64,6 @@ export type ProfileRow = {
   subscription_status: SubscriptionStatus | null
   subscription_period_end: string | null
   onboarding_completed: boolean
-  email_weekly: boolean
   email_tips: boolean
   email_unsubscribed: boolean
   created_at: string
@@ -67,6 +85,13 @@ export type PromptSessionRow = {
   final_prompt: string | null
   tone: Tone
   status: SessionStatus
+  /**
+   * Retained, no longer read or written. The score was two model
+   * self-reports and the "after" one was the rewrite model grading its own
+   * rewrite, so it is gone from the product. The columns stay because they
+   * hold real historical rows; dropping them would throw that away for
+   * nothing. Nothing should start writing them again.
+   */
   clarity_score_before: number | null
   clarity_score_after: number | null
   clarify_turns: number
@@ -131,8 +156,7 @@ export type Database = {
     Tables: {
       profiles: {
         Row: ProfileRow
-        Insert: Omit<ProfileRow, 'created_at' | 'updated_at' | 'email_weekly' | 'email_tips' | 'email_unsubscribed'> & {
-          email_weekly?: boolean
+        Insert: Omit<ProfileRow, 'created_at' | 'updated_at' | 'email_tips' | 'email_unsubscribed'> & {
           email_tips?: boolean
           email_unsubscribed?: boolean
         }
@@ -251,6 +275,12 @@ export type Database = {
         Update: never
         Relationships: []
       }
+      anon_daily_usage: {
+        Row: AnonDailyUsageRow
+        Insert: AnonDailyUsageRow
+        Update: Partial<AnonDailyUsageRow>
+        Relationships: []
+      }
     }
     Views: Record<never, never>
     Functions: {
@@ -258,6 +288,13 @@ export type Database = {
       bump_memory: {
         Args: { p_user_id: string; p_label: string; p_answer: string }
         Returns: undefined
+      }
+      /** Atomic increment of the global anonymous run counter. Migration 014.
+       *  Returns the post-increment count, so the cap check is on a number
+       *  that is already true rather than one two requests can both pass. */
+      bump_anon_runs: {
+        Args: { p_day: string }
+        Returns: number
       }
     }
     Enums: Record<never, never>

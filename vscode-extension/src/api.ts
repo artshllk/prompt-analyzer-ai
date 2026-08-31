@@ -21,8 +21,6 @@ export interface ClarifyingResult {
   type: 'clarifying'
   question: string
   targetsGap: string
-  confidenceSoFar: number
-  scoreBeforeImprovement: number
   tier: 'anon' | 'free' | 'pro'
 }
 
@@ -31,8 +29,6 @@ export interface ImprovedResult {
   improvedPrompt: string
   explanation: string
   improvementTags: string[]
-  clarityScoreAfter: number
-  scoreBeforeImprovement: number
   tier: 'anon' | 'free' | 'pro'
 }
 
