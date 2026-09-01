@@ -129,6 +129,24 @@ export const FACTCHECK_FREE_LIMIT = 10
 export const FACTCHECK_WINDOW_HOURS = 24
 export const ANON_FACTCHECK_LIMIT = 2
 
+/**
+ * PRO IS CAPPED TOO, and it has to be.
+ *
+ * A check costs roughly four cents a document. Pro is $4.99 a month. Unmetered
+ * checking therefore goes underwater somewhere around 125 documents, and the
+ * pricing page was promising exactly that. "Unlimited" on a per-unit cost this
+ * high is a promise to lose money on your best customer.
+ *
+ * 100 a month is far above any real use. Nobody publishes 100 articles a month,
+ * so this bounds the loss without ever being the thing a genuine subscriber
+ * notices. It is a guard, not a shape, same as the free numbers.
+ *
+ * Rolling 30 days rather than calendar month, matching PRO_VERIFY_WINDOW_HOURS,
+ * so there is no month-boundary rush and no reset date to explain.
+ */
+export const PRO_FACTCHECK_LIMIT = 100
+export const PRO_FACTCHECK_WINDOW_HOURS = 24 * 30
+
 export const HISTORY_FREE_DAYS = 7
 
 /**

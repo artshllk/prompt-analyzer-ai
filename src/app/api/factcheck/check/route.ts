@@ -99,7 +99,13 @@ export async function POST(req: NextRequest) {
     const serviceRole = auth.via === 'token'
     const allowance = await getFactcheckAllowance(auth.userId, auth.tier, serviceRole)
     if (allowance.isAtLimit) {
-      return json({ error: 'user_daily_limit', limit: allowance.limit }, 429)
+      return json(
+        {
+          error: auth.tier === 'pro' ? 'pro_monthly_limit' : 'user_daily_limit',
+          limit: allowance.limit,
+        },
+        429
+      )
     }
     try {
       await recordFactcheckUsage(auth.userId, serviceRole)

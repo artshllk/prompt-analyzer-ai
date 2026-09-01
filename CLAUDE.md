@@ -77,12 +77,17 @@ These are verified from code and get re-derived or mistaken every session.
 - **The prompt engine uses OpenAI + Gemini, not Anthropic.** See `architecture/prompt-engine.md`.
 - **`analyzePrompt()` in `lib/engine/index.ts` is a pure, portable function** — no
   Next/Supabase/HTTP deps. This is why new clients (VS Code, MCP) are cheap. See `roadmap.md`.
-- **Source checker limits: 2 a day anonymous per IP, 10 a day signed in, plus
-  the global daily bucket.** The signed-in count lives in `usage_events` as
-  `factcheck_run` (no new table). The anonymous one is in-memory and BEST
-  EFFORT, since serverless instances recycle; the global bucket in
-  `anon-budget.ts` is what actually bounds the bill and it fails closed. Before
-  this, a signed-in caller had no per-user ceiling at all.
+- **Source checker limits: 2 a day anonymous per IP, 10 a day free, 100 a
+  month Pro, plus the global daily bucket.** The per-user counts live in
+  `usage_events` as `factcheck_run` (no new table). The anonymous one is
+  in-memory and BEST EFFORT, since serverless instances recycle; the global
+  bucket in `anon-budget.ts` is what actually bounds the bill and it fails
+  closed. Before this, a signed-in caller had no per-user ceiling at all.
+- **Pro is capped on checking and that is deliberate.** A check costs roughly
+  four cents a document against $4.99 a month, so unmetered checking goes
+  underwater around 125 documents. Prompt improvements stay unlimited for Pro
+  because they cost about a cent. "Unlimited" is a pricing decision about unit
+  cost, not a tier badge.
 - **Pro is $4.99/mo right now, a launch discount from $9.99 (Paddle).** The
   launch flag is `LAUNCH` in `components/marketing/EditorialPricing.tsx`; Paddle
   charges 499¢ (`lib/paddle.ts`). Free tier: 10 improvements per rolling 24h

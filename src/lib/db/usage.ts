@@ -11,6 +11,8 @@ import {
   windowStart,
   FACTCHECK_FREE_LIMIT,
   FACTCHECK_WINDOW_HOURS,
+  PRO_FACTCHECK_LIMIT,
+  PRO_FACTCHECK_WINDOW_HOURS,
 } from '@/lib/limits'
 
 const REWRITE_EVENT = 'prompt_analyzed'
@@ -145,7 +147,11 @@ export async function getVerifyAllowance(
 
 /**
  * Source checker allowance: FACTCHECK_FREE_LIMIT per rolling 24h for free
- * users, unlimited for Pro.
+ * users, PRO_FACTCHECK_LIMIT per rolling 30 days for Pro.
+ *
+ * Pro is capped, not unlimited. At about four cents a document against $4.99 a
+ * month, unmetered checking goes underwater around 125 documents. See
+ * limits.ts for why 100 is the number.
  *
  * Takes `tier` from the caller rather than re-reading profiles, because
  * resolveCaller has already established it and already refused the case where
@@ -165,20 +171,15 @@ export async function getFactcheckAllowance(
    *  reads 0 under RLS and the gate never closes. */
   serviceRole = false
 ): Promise<{ used: number; limit: number | null; isAtLimit: boolean; remaining: number }> {
-  if (tier === 'pro') {
-    return { used: 0, limit: null, isAtLimit: false, remaining: Infinity }
-  }
-  const used = await countEvents(
-    userId,
-    FACTCHECK_EVENT,
-    windowStart(FACTCHECK_WINDOW_HOURS),
-    serviceRole
-  )
+  const isPro = tier === 'pro'
+  const limit = isPro ? PRO_FACTCHECK_LIMIT : FACTCHECK_FREE_LIMIT
+  const windowHours = isPro ? PRO_FACTCHECK_WINDOW_HOURS : FACTCHECK_WINDOW_HOURS
+  const used = await countEvents(userId, FACTCHECK_EVENT, windowStart(windowHours), serviceRole)
   return {
     used,
-    limit: FACTCHECK_FREE_LIMIT,
-    isAtLimit: used >= FACTCHECK_FREE_LIMIT,
-    remaining: Math.max(0, FACTCHECK_FREE_LIMIT - used),
+    limit,
+    isAtLimit: used >= limit,
+    remaining: Math.max(0, limit - used),
   }
 }
 

@@ -50,6 +50,8 @@ const MESSAGES: Record<string, string> = {
   anon_daily_limit:
     'That is 2 checks today. Sign in for 10 a day, or come back tomorrow.',
   user_daily_limit: 'That is 10 checks today. Come back tomorrow.',
+  pro_monthly_limit:
+    'That is 100 checks this month, which is the Pro cap. Email us if you need more.',
   daily_capacity: 'We have hit today’s free limit. It resets tomorrow.',
   identity_unavailable:
     'We can see you are signed in but cannot read your account. That is our problem. Try again in a few minutes.',

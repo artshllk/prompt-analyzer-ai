@@ -40,7 +40,10 @@ const FREE_FEATURES = [
 ];
 
 const PRO_FEATURES = [
-  "No daily limit",
+  "100 source checks a month",
+  // Prompt improvements stay unmetered for Pro. They cost about a cent, so
+  // unlimited is affordable there in a way it is not for checking.
+  "Unlimited prompt improvements",
   "A stronger model on every improve",
   "Full history, kept forever (Free keeps 7 days)",
   "Priority processing on every request",

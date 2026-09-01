@@ -7,7 +7,12 @@ import { createClient } from '@/lib/supabase/server'
 import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
-  title: 'Free AI text detector',
+  // A title and an H1 have different jobs. The H1 is for somebody who has
+  // already arrived, so plain wins. The title is for a results page full of
+  // near-identical entries, where its job is to earn the click, and "Shows Its
+  // Work" is the only thing on that SERP that separates us. Same split as the
+  // homepage. The on-page copy stays plain.
+  title: 'Free AI Text Detector - Shows Its Work',
   description:
     'Paste the text. We show you the signs we found. We never give a score out of 100, because nobody can.',
   alternates: { canonical: 'https://deepclario.com/detector' },
