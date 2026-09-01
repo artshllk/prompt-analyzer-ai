@@ -8,24 +8,52 @@ the pointer instead of expanding this file.
 
 ## What Deepclario is
 
-A web toolkit for people who use ChatGPT, Claude, and Gemini. Four tools:
+Pivoting. One product being built, two frozen or secondary.
 
-- **Prompt improver** — rewrites a rough prompt, asking one question first when
-  two readings would give different answers. `/playground`, the homepage hero,
-  and the extension.
+- **Fact checker (being built).** Paste a document, get every checkable claim
+  marked verified, unverifiable or contradicted, plus a report you can attach
+  when you send the work on. `/check`. The governing rule is that a false
+  "contradicted" kills the product: absence of evidence is always
+  unverifiable, never contradicted.
 - **AI text detector** — reports the signals that say text reads as AI-written.
   Never a percentage. `/detector`.
-- **Token counter** — counts tokens (`gpt-tokenizer`). Logic exists; no public page yet.
+- **Prompt improver — FROZEN.** See the section below. Still works at
+  `/playground`, off the nav, not being developed.
+- **Token counter** — counts tokens (`gpt-tokenizer`). Logic exists, no page.
 
-Backed by a large SEO blog (`/blog`, 37+ posts), a free prompt library
-(`/prompts`), and a browser extension. Audience is smart but non-technical.
-Pre-revenue. Live at deepclario.com. Two-person team: Art Shllaku, Agon.
+Backed by a large SEO blog (`/blog`, 56 posts) and a free prompt library
+(`/prompts`). Note the blog is entirely prompt-engineering content, so it
+feeds the frozen product and not the new one: do not count it as distribution
+for the fact checker. Audience is smart but non-technical. Pre-revenue. Live at
+deepclario.com. Two-person team: Art Shllaku, Agon.
 
 ## Stack
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · Supabase
 (DB + auth) · Paddle (billing) · Vercel (host) · Resend (email) · Sentry.
 Prompt engine calls **OpenAI + Gemini**. Detector explanations use **Gemini**.
+
+## THE PROMPT IMPROVER IS FROZEN
+
+**No changes, no features, no extension work, without an explicit decision to
+revisit it.** That includes `src/lib/engine/`, `src/components/marketing/DemoChat.tsx`,
+`/playground`, `/api/anon/{analyze,sharpen,fork,explain,verify}` and all of
+`extension/`.
+
+Why: no prompt improver has public individual-paid revenue, a near identical
+Show HN in April 2026 drew 23 points and no demand signal, and 90 days of
+Search Console showed 31 clicks on 5,360 impressions at average position 29.9,
+with every top query being someone learning about prompts or hunting a free
+scoring tool. Those people do not buy.
+
+It is frozen, not deleted. It still works at `/playground`, and it stays there
+because 48 links across 42 files point at it, including one inside an email
+already delivered (`lib/email/templates.ts:169`). No code change reaches an
+inbox. Moving or redirecting the route breaks those links and gains nothing.
+
+It is off the nav and off the footer. Its anonymous ceiling is its own budget
+bucket, set low, so a legacy page cannot cost real money or starve the current
+product.
 
 ## Load-bearing facts (do not get these wrong)
 
@@ -57,8 +85,11 @@ These are verified from code and get re-derived or mistaken every session.
 - **Auth: Google Identity Services + `signInWithIdToken`**, not Supabase OAuth
   redirect — so the consent screen shows Deepclario, never supabase.co. See
   `.claude/decisions/0003-auth-gis-no-supabase-co.md`.
-- **Design is locked: editorial dark, no 3D.** `three`/`react-three-fiber` are
-  installed but 3D hero treatments are rejected. See `decisions/0004-design-aesthetic-locked.md`.
+- **Design is paper and markup, light only.** Warm paper ground, ink text, one
+  brand red, and three meaning colours that are never decoration: `--machine`
+  blue, `--guess` amber, `--confirm` green. There is no dark mode and none is
+  planned. See `.claude/decisions/0006-paper-and-markup.md`, which supersedes
+  0004. Any doc still saying "editorial dark" is stale.
 - **The blog runs off `lib/blog-posts.ts`.** Adding a `BLOG_POSTS` entry auto-updates
   the index, sitemap, and RSS. Posts are React pages, not markdown. See
   `architecture/blog-system.md` and `workflows/add-blog-post.md`.

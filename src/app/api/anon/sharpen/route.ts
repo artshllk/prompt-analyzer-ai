@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     // The global ceiling. The bucket above is in-memory and per-instance, so
     // it stops one impatient person and not a script. Anonymous only:
     // signed-in users have their own quotas and are never blocked by this.
-    const budget = await consumeAnonRun()
+    const budget = await consumeAnonRun('improver')
     if (!budget.allowed) {
       return corsJson({ error: 'daily_capacity', resetAt: budget.resetAt }, 429)
     }

@@ -46,6 +46,8 @@ export type ExtensionSurface = 'chatgpt' | 'claude' | 'gemini' | 'web'
  */
 export type AnonDailyUsageRow = {
   day: string
+  /** Which product spent the run. Migration 015. */
+  bucket: string
   runs: number
 }
 
@@ -293,7 +295,7 @@ export type Database = {
        *  Returns the post-increment count, so the cap check is on a number
        *  that is already true rather than one two requests can both pass. */
       bump_anon_runs: {
-        Args: { p_day: string }
+        Args: { p_day: string; p_bucket: string }
         Returns: number
       }
     }

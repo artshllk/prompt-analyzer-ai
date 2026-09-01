@@ -14,8 +14,7 @@ and removes the limit, runs a stronger model, and keeps your history for good.
 
 ## Core pages
 
-- [Homepage](https://deepclario.com): what it does, the live tool, and pricing.
-- [Try it](https://deepclario.com/playground): paste a prompt and get it improved. Free, no account needed.
+- [Homepage](https://deepclario.com): what Deepclario does, and pricing.
 - [Chrome extension](https://deepclario.com/extension): improve a prompt inside ChatGPT, Claude, or Gemini without leaving the page.
 - [AI text detector](https://deepclario.com/detector): check whether a piece of text reads as AI-written. It reports the signals it measured and a confidence label, never a percentage.
 - [Prompt library](https://deepclario.com/prompts): free, ready-to-use prompt templates for common tasks (cover letters, emails, code review, blog posts, marketing copy, business plans, and more).

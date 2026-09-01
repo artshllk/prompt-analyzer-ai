@@ -29,9 +29,18 @@ export type NavKey =
   | 'faq'
   | 'blog'
 
+/**
+ * The prompt improver is FROZEN and off the nav. It still lives and works at
+ * /playground, which is deliberate: 48 links across 42 files point there,
+ * including one inside an email already sitting in people's inboxes
+ * (lib/email/templates.ts). Moving or redirecting the route breaks those and
+ * gains nothing. Taking it off the nav is the whole demotion.
+ *
+ * The 'playground' NavKey stays in the union below so `current="playground"`
+ * still type-checks on the page itself.
+ */
 const LINKS: { key: NavKey; href: string; label: string }[] = [
   { key: 'extension', href: '/extension', label: 'Extension' },
-  { key: 'playground', href: '/playground', label: 'Try it' },
   { key: 'detector', href: '/detector', label: 'Detector' },
   { key: 'prompts', href: '/prompts', label: 'Prompts' },
   { key: 'pricing', href: '/pricing', label: 'Pricing' },
