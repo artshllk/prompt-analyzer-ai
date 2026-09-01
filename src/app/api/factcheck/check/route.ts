@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
+import {
+  take,
+  getClientIp,
+  ANON_LIMIT,
+  ANON_FACTCHECK_DAY,
+  USER_LIMIT,
+  PRO_USER_LIMIT,
+} from '@/lib/rate-limit'
 import { resolveCaller } from '@/lib/auth/caller'
 import { consumeAnonRun } from '@/lib/db/anon-budget'
+import { getFactcheckAllowance, recordFactcheckUsage } from '@/lib/db/usage'
 import { extractClaims } from '@/lib/factcheck/extract'
 import { streamCitations } from '@/lib/factcheck/citation'
 import { rankFlags } from '@/lib/factcheck/flags'
@@ -43,8 +51,16 @@ export async function POST(req: NextRequest) {
   const auth = who.state === 'known' ? who.caller : null
 
   if (!auth) {
-    const limit = take(`factcheck:anon:${getClientIp(req)}`, ANON_LIMIT)
+    const ip = getClientIp(req)
+    const limit = take(`factcheck:anon:${ip}`, ANON_LIMIT)
     if (!limit.allowed) return json({ error: 'rate_limited', retryAfterMs: limit.retryAfterMs }, 429)
+
+    // 2 a day per IP. In memory, so best effort: an instance that recycles
+    // forgets it. The global bucket below is what actually bounds the bill.
+    const daily = take(`factcheck:anon:day:${ip}`, ANON_FACTCHECK_DAY)
+    if (!daily.allowed) {
+      return json({ error: 'anon_daily_limit', retryAfterMs: daily.retryAfterMs }, 429)
+    }
   } else {
     const burst = take(
       `factcheck:user:${auth.userId}`,
@@ -68,6 +84,30 @@ export async function POST(req: NextRequest) {
   if (!auth) {
     const budget = await consumeAnonRun('factcheck')
     if (!budget.allowed) return json({ error: 'daily_capacity', resetAt: budget.resetAt }, 429)
+  } else {
+    /**
+     * THE PER-USER CEILING, and until now there was none.
+     *
+     * consumeAnonRun only ran when there was no auth, so a signed-in caller
+     * passed straight through to the model with nothing counting. One account
+     * could have run five hundred documents. That is unbounded cost per user
+     * and it becomes real the first time somebody signs up.
+     *
+     * Recorded BEFORE the work rather than after, so aborting a stream cannot
+     * be used to avoid the count. Same reasoning as settling in `finally`.
+     */
+    const serviceRole = auth.via === 'token'
+    const allowance = await getFactcheckAllowance(auth.userId, auth.tier, serviceRole)
+    if (allowance.isAtLimit) {
+      return json({ error: 'user_daily_limit', limit: allowance.limit }, 429)
+    }
+    try {
+      await recordFactcheckUsage(auth.userId, serviceRole)
+    } catch (err) {
+      // Never block a run because the counter write failed. Same direction as
+      // the read: our infrastructure problem, not theirs.
+      console.error('[factcheck] usage record failed, continuing:', err)
+    }
   }
 
   // Extraction happens BEFORE the stream opens, because its failure modes are

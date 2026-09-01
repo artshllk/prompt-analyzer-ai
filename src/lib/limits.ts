@@ -104,6 +104,31 @@ export const ANON_REWRITE_LIMIT = 1
 export const ANON_DETECT_LIMIT = 1
 
 /** Session history retention for free users, in days. Pro keeps everything. */
+/**
+ * Source checker limits.
+ *
+ * WHY THIS EXISTS AT ALL: before it, `consumeAnonRun` only ran when there was
+ * no auth, so a SIGNED-IN user had no per-user ceiling whatsoever. One account
+ * could have run five hundred documents, and the only thing preventing it was
+ * that nobody had an account yet. That is unbounded cost per user, and it
+ * stops being theoretical the moment outreach works.
+ *
+ * Two different guarantees, deliberately:
+ *
+ *   signed in   10 a day, per user, counted in usage_events. Durable, survives
+ *               restarts, and is the real limit.
+ *   anonymous   2 a day, per IP, in memory. BEST EFFORT ONLY. Serverless
+ *               instances recycle, so the true figure is somewhere above 2.
+ *               The global daily bucket is what actually bounds the bill, and
+ *               it fails closed.
+ *
+ * Nobody legitimately checks ten documents a day, so these are guards against
+ * casual abuse rather than a product shape.
+ */
+export const FACTCHECK_FREE_LIMIT = 10
+export const FACTCHECK_WINDOW_HOURS = 24
+export const ANON_FACTCHECK_LIMIT = 2
+
 export const HISTORY_FREE_DAYS = 7
 
 /**

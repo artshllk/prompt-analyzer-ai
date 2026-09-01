@@ -83,6 +83,17 @@ export const PRO_USER_LIMIT: LimitConfig = { capacity: 30, refillPerSecond: 30 /
  * On its own key namespace, like every other endpoint, so a burst of counters
  * can never consume the budget that gates real work.
  */
+/**
+ * Anonymous source checks: 2 a day per IP.
+ *
+ * In memory, so it is BEST EFFORT. A serverless instance that recycles forgets
+ * the bucket, which means the real number is somewhere above 2. That is
+ * acceptable because it is not the thing bounding the bill: the global daily
+ * bucket in anon-budget is, and that one is in Postgres and fails closed.
+ * This exists to stop one person casually running twenty.
+ */
+export const ANON_FACTCHECK_DAY: LimitConfig = { capacity: 2, refillPerSecond: 2 / 86400 }
+
 export const EVENT_LIMIT: LimitConfig = { capacity: 120, refillPerSecond: 120 / 3600 } // 120/hour
 
 export function getClientIp(req: Request): string {

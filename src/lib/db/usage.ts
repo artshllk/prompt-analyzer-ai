@@ -9,11 +9,15 @@ import {
   PRO_VERIFY_WINDOW_HOURS,
   FREE_VERIFY_LIFETIME_CREDITS,
   windowStart,
+  FACTCHECK_FREE_LIMIT,
+  FACTCHECK_WINDOW_HOURS,
 } from '@/lib/limits'
 
 const REWRITE_EVENT = 'prompt_analyzed'
 const DETECT_EVENT = 'text_detected'
 const VERIFY_EVENT = 'verify_run'
+/** Reuses the generic usage_events table. No new table, no migration. */
+const FACTCHECK_EVENT = 'factcheck_run'
 
 /**
  * Count a user's events of one type inside a rolling window, and read
@@ -137,6 +141,51 @@ export async function getVerifyAllowance(
   )
   const limit = isPro ? PRO_VERIFY_LIMIT : FREE_VERIFY_LIFETIME_CREDITS
   return { used, limit, isAtLimit: used >= limit, remaining: Math.max(0, limit - used) }
+}
+
+/**
+ * Source checker allowance: FACTCHECK_FREE_LIMIT per rolling 24h for free
+ * users, unlimited for Pro.
+ *
+ * Takes `tier` from the caller rather than re-reading profiles, because
+ * resolveCaller has already established it and already refused the case where
+ * it could not be read. A second read here would be a second chance to get
+ * that wrong.
+ *
+ * FAILS OPEN on a database error, and that is deliberate and consistent:
+ * countEvents returns `count ?? 0`, so an unreadable count reads as zero used.
+ * Locking a real user out of the product over our own infrastructure is worse
+ * than one extra check. The anonymous path fails CLOSED for the opposite
+ * reason. Both are documented in CLAUDE.md.
+ */
+export async function getFactcheckAllowance(
+  userId: string,
+  tier: string,
+  /** True when authenticated by bearer token. Without it the count silently
+   *  reads 0 under RLS and the gate never closes. */
+  serviceRole = false
+): Promise<{ used: number; limit: number | null; isAtLimit: boolean; remaining: number }> {
+  if (tier === 'pro') {
+    return { used: 0, limit: null, isAtLimit: false, remaining: Infinity }
+  }
+  const used = await countEvents(
+    userId,
+    FACTCHECK_EVENT,
+    windowStart(FACTCHECK_WINDOW_HOURS),
+    serviceRole
+  )
+  return {
+    used,
+    limit: FACTCHECK_FREE_LIMIT,
+    isAtLimit: used >= FACTCHECK_FREE_LIMIT,
+    remaining: Math.max(0, FACTCHECK_FREE_LIMIT - used),
+  }
+}
+
+/** Same bearer-token caveat as the allowance above. */
+export async function recordFactcheckUsage(userId: string, serviceRole = false): Promise<void> {
+  const supabase = serviceRole ? await createServiceClient() : await createClient()
+  await supabase.from('usage_events').insert({ user_id: userId, event_type: FACTCHECK_EVENT })
 }
 
 /** Same bearer-token caveat as getVerifyAllowance: a token-authed write under

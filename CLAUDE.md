@@ -77,6 +77,12 @@ These are verified from code and get re-derived or mistaken every session.
 - **The prompt engine uses OpenAI + Gemini, not Anthropic.** See `architecture/prompt-engine.md`.
 - **`analyzePrompt()` in `lib/engine/index.ts` is a pure, portable function** — no
   Next/Supabase/HTTP deps. This is why new clients (VS Code, MCP) are cheap. See `roadmap.md`.
+- **Source checker limits: 2 a day anonymous per IP, 10 a day signed in, plus
+  the global daily bucket.** The signed-in count lives in `usage_events` as
+  `factcheck_run` (no new table). The anonymous one is in-memory and BEST
+  EFFORT, since serverless instances recycle; the global bucket in
+  `anon-budget.ts` is what actually bounds the bill and it fails closed. Before
+  this, a signed-in caller had no per-user ceiling at all.
 - **Pro is $4.99/mo right now, a launch discount from $9.99 (Paddle).** The
   launch flag is `LAUNCH` in `components/marketing/EditorialPricing.tsx`; Paddle
   charges 499¢ (`lib/paddle.ts`). Free tier: 10 improvements per rolling 24h
@@ -219,6 +225,19 @@ test to copy.
    stream closes, which is the regression described above, or compute a running
    estimate and accept that the number moves while the reader watches. Neither
    is obviously right, and this is the actual design decision, not the parser.
+
+## A freeze does not cover privacy or security
+
+The prompt improver and the extension are frozen: no features, no changes. That
+freeze covers PRODUCT work. It does not cover privacy fixes, security fixes, or
+anything that makes a published promise true.
+
+Those land wherever they need to, frozen or not. `src/lib/engine/` is frozen and
+its model clients were logging user text; the fix went in without ceremony,
+because a leak in shared code is not a feature request.
+
+If a change is needed to keep a promise the site already makes, it is not
+covered by the freeze. Make it, and say in the commit why.
 
 ## Error reporting must never capture request bodies
 
