@@ -28,7 +28,7 @@ export function WorkedExample() {
       <p className="eyebrow mb-4">A real example</p>
 
       <p className="text-[15px] leading-relaxed mb-4" style={{ color: 'var(--ink-soft)' }}>
-        One of the biggest SEO tools wrote this. It is still on their site.
+        A big SEO site wrote this. It is still up.
       </p>
 
       {/* The sentence, marked the way the product marks it. The two swapped
@@ -84,10 +84,7 @@ export function WorkedExample() {
         </p>
 
         <p className="mt-4 text-[15px] leading-relaxed" style={{ color: 'var(--ink)' }}>
-          Same numbers. The two words are the wrong way round.
-        </p>
-        <p className="mt-1 text-[14px] leading-relaxed" style={{ color: 'var(--ink-soft)' }}>
-          Nobody caught it. It has been up for years.
+          Same numbers. The two words are swapped.
         </p>
       </div>
     </section>
@@ -104,8 +101,7 @@ export function WorkedExample() {
 export function NoLinkNote() {
   return (
     <p className="text-[15px] leading-relaxed" style={{ color: 'var(--ink-soft)' }}>
-      Half the numbers in posts like this have no link at all. We tell you which
-      ones.
+      Half the numbers in posts like this have no link. We list those too.
     </p>
   )
 }

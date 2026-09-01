@@ -7,12 +7,12 @@ import { defaultOGImage } from '@/lib/og-image'
 export const metadata: Metadata = {
   title: 'FAQ - Common Questions',
   description:
-    'Common questions about Deepclario. What it does, who it is for, how the free plan works, what data we store, and how the Chrome extension fits in.',
+    'What the source checker does, what it will not say, what it costs, and who sees the text you paste.',
   alternates: { canonical: 'https://deepclario.com/faq' },
   openGraph: {
     title: 'FAQ - Deepclario',
     description:
-      'Common questions about Deepclario. Free plan, Pro plan, the Chrome extension, and how the engine works.',
+      'What the source checker does, what it costs, and who sees the text you paste.',
     url: 'https://deepclario.com/faq',
     type: 'website',
     // Pages with their own openGraph object need an explicit image - see
@@ -36,8 +36,14 @@ export default function FAQPage() {
             className="display text-4xl md:text-[3.75rem] leading-[1.05] tracking-tight mb-10 md:mb-14"
             style={{ color: 'var(--color-paper)' }}
           >
-            Asked and answered.
+            Questions people ask.
           </h1>
+          <p
+            className="mt-4 text-lg leading-relaxed"
+            style={{ color: 'var(--ink-soft)' }}
+          >
+            Short answers. Ask us anything we missed.
+          </p>
           <FAQSection />
 
           {/* Closing CTA so the page does not dead-end. */}

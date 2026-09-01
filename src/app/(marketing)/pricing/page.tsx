@@ -4,7 +4,7 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
-  title: 'Pricing - Free Plan and Pro at $4.99/month',
+  title: 'Pricing',
   description: 'Free until you outgrow it. Pro is $4.99/month right now, a launch discount from $9.99, for unlimited improvements, a stronger model on every one, and full history.',
   alternates: { canonical: 'https://deepclario.com/pricing' },
   openGraph: {

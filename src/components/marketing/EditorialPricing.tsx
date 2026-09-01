@@ -29,16 +29,18 @@ import Link from "next/link";
  * bigger model than MODELS.sharpen on every single improve (see models.ts).
  */
 
+// Source checker numbers are real, not aspirational: 2 a day per IP for
+// anonymous and 10 a day per user for signed-in, both enforced in the check
+// route. See limits.ts.
 const FREE_FEATURES = [
+  "10 source checks a day",
+  "2 a day without an account",
+  "AI text detector",
   "10 prompt improvements a day",
-  "Works inside ChatGPT, Claude, and Gemini",
-  "One question first, when your prompt could mean two things",
-  "Chrome extension and AI text detector",
-  "7-day history",
 ];
 
 const PRO_FEATURES = [
-  "Unlimited improvements",
+  "No daily limit",
   "A stronger model on every improve",
   "Full history, kept forever (Free keeps 7 days)",
   "Priority processing on every request",
@@ -85,8 +87,14 @@ export function EditorialPricing({
           className="display text-4xl md:text-5xl"
           style={{ color: "var(--color-paper)" }}
         >
-          Pricing
+          Free to start. Pay when you need more.
         </Heading>
+        <p
+          className="mt-4 text-lg leading-relaxed"
+          style={{ color: "var(--ink-soft)" }}
+        >
+          No card to try it. Cancel any time.
+        </p>
 
         {/* Billing toggle */}
         <div
@@ -158,7 +166,7 @@ export function EditorialPricing({
             className="text-sm mb-4"
             style={{ color: "var(--color-paper-mute)" }}
           >
-            For people who prompt every day.
+            For people who publish every day.
           </p>
           {/* Anchor row: struck list price + saving chip, sitting above
               the big current price so the discount reads at a glance. */}

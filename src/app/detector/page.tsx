@@ -7,9 +7,9 @@ import { createClient } from '@/lib/supabase/server'
 import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
-  title: 'Free AI Text Detector - Shows Its Work',
+  title: 'Free AI text detector',
   description:
-    'Paste any text and see whether it leans human or AI-generated. We show every signal we measured, explain what each one means, and never invent a percentage we cannot defend.',
+    'Paste the text. We show you the signs we found. We never give a score out of 100, because nobody can.',
   alternates: { canonical: 'https://deepclario.com/detector' },
   openGraph: {
     title: 'AI Text Detector - Deepclario',
@@ -95,20 +95,26 @@ export default async function DetectorPage() {
         className="font-serif text-2xl md:text-3xl tracking-tight"
         style={{ color: 'var(--color-paper)', fontWeight: 400 }}
       >
-        Paste text, see the verdict.
+        Was this written by a machine?
       </h1>
     </div>
   ) : (
-    // Anonymous: marketing hero for the public landing surface.
+    // Anonymous: marketing hero. One headline, one line, then the tool.
+    // The eyebrow is gone: it was a keyword, not a sentence anyone needed.
     <div>
-      <p className="eyebrow mb-6">Free AI Text Detector</p>
       <h1
         className="display text-4xl md:text-[3.75rem] leading-[1.05] tracking-tight"
-        style={{ color: 'var(--color-paper)' }}
+        style={{ color: 'var(--ink)' }}
       >
-        The AI text detector that{' '}
-        <span className="accent">shows its work.</span>
+        Was this written{' '}
+        <span className="accent">by a machine?</span>
       </h1>
+      <p
+        className="mt-4 md:mt-5 text-lg md:text-xl leading-relaxed max-w-2xl"
+        style={{ color: 'var(--ink-soft)' }}
+      >
+        Paste the text. We show you the signs we found.
+      </p>
     </div>
   )
 
@@ -126,7 +132,7 @@ export default async function DetectorPage() {
           className="mt-14 pt-5 text-xs leading-relaxed"
           style={{ borderTop: '1px solid var(--color-rule)', color: 'var(--color-paper-mute)' }}
         >
-          AI detection is not solved. Paid detectors run 5–20% false positives and often flag non-native English as AI, so we never invent a percentage - just three honest bands and the signals behind them. Use it as one input, not a verdict.
+          We never give a score out of 100. Nobody can. We show the signs we found and let you judge.
         </p>
       </div>
     </main>

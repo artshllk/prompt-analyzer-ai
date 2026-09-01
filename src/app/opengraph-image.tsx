@@ -22,7 +22,7 @@ import { ImageResponse } from 'next/og'
  * and cached instead of on every request.
  */
 export const alt =
-  'Deepclario: a published sentence with two swapped words marked, above the sentence its own source actually contains'
+  'Does your source really say that? A published sentence with two swapped words marked, above the sentence its own source actually contains'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -108,7 +108,7 @@ export default async function Image() {
               display: 'flex',
             }}
           >
-            Does your link say what you think it says?
+            Does your source really say that?
           </div>
 
           {/* The published sentence, with the mistake marked. */}

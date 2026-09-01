@@ -21,26 +21,28 @@ export const metadata: Metadata = {
   // this string. Leads on what someone actually searches for when they have
   // this problem, which is a broken or missing source, not a product category
   // nobody types.
-  title: "Check the Links and Sources in Your Writing",
+  // Searchable variant. It must not contradict the H1, which is the sentence
+  // a person sees on the page and on the share card.
+  title: "Check the sources in your article",
   description:
-    "Paste your post. Deepclario opens every link and checks the page really says the number you put next to it. It also finds the numbers with no source at all.",
+    "Paste your article. We open every link and check that the page really says it. Free, 2 a day.",
   alternates: { canonical: "https://deepclario.com" },
   openGraph: {
-    title: "Does your link say what you think it says?",
+    title: "Does your source really say that?",
     description:
-      "Paste your post. We open every link and check the page really says the number you put next to it.",
+      "Paste your article. We open every link and check.",
     url: "https://deepclario.com",
     type: "website",
     // This page defines its own openGraph object, which replaces (does not
     // merge with) the root layout's openGraph - including its image. See
     // defaultOGImage() for the full explanation.
-    images: defaultOGImage("Does your link say what you think it says?"),
+    images: defaultOGImage("Does your source really say that?"),
   },
   twitter: {
     card: "summary_large_image",
-    title: "Does your link say what you think it says?",
+    title: "Does your source really say that?",
     description:
-      "Paste your post. We open every link and check the page really says the number you put next to it.",
+      "Paste your article. We open every link and check.",
     images: ["/opengraph-image"],
   },
 };
@@ -146,27 +148,59 @@ export default function LandingPage() {
               never heard of this needs to see what it catches before they will
               paste their own writing into it.
             */}
+            {/*
+              15 WORDS BEFORE THE BOX. One headline, one line, then the tool.
+              Everything else that used to sit here was reassurance stacking or
+              a description of our internals, and both are ways of talking
+              instead of letting someone try it.
+
+              The worked example moved BELOW the box. It used to sit above,
+              because the old copy did not explain itself and the example had
+              to do that job. The copy explains itself now, so the example's
+              job changed from explaining to proving, and proof goes after the
+              ask.
+            */}
             <Reveal>
-              <p className="eyebrow mb-5">Free, no account</p>
-            </Reveal>
-            <Reveal index={1}>
               <h1
                 className="display text-[2.6rem] sm:text-5xl md:text-[4.5rem] leading-[1.05] tracking-tight"
                 style={{ color: "var(--ink)" }}
               >
-                Does your link{" "}
-                <span style={{ color: "var(--brand)" }}>
-                  say what you think it says?
-                </span>
+                Does your source{" "}
+                <span style={{ color: "var(--brand)" }}>really say that?</span>
               </h1>
             </Reveal>
-            <Reveal index={3}>
+            <Reveal index={1}>
               <p
-                className="mt-4 md:mt-5 text-base sm:text-lg md:text-xl leading-relaxed max-w-2xl"
+                className="mt-4 md:mt-5 text-lg md:text-xl leading-relaxed max-w-2xl"
                 style={{ color: "var(--ink-soft)" }}
               >
-                Paste your post. We open every link and check that the page
-                really says the number you put next to it.
+                Paste your article. We open every link and check.
+              </p>
+            </Reveal>
+
+            <Reveal index={3}>
+              <div className="mt-8 md:mt-10">
+                <CheckClient />
+              </div>
+            </Reveal>
+
+            {/* Said before the machine does it, not after. Somebody pasting an
+                internal draft deserves to know we will open what is in it. */}
+            <Reveal index={3}>
+              <p
+                className="mt-3 text-[13px] leading-relaxed"
+                style={{ color: "var(--ink-soft)" }}
+              >
+                We open every link in your text. Do not paste private links.
+              </p>
+            </Reveal>
+
+            <Reveal index={5}>
+              <p
+                className="mt-6 text-[15px] leading-relaxed"
+                style={{ color: "var(--ink)" }}
+              >
+                We never say a number is wrong. We show you what the page says.
               </p>
             </Reveal>
 
@@ -180,22 +214,6 @@ export default function LandingPage() {
               <div className="mt-5">
                 <NoLinkNote />
               </div>
-            </Reveal>
-
-            <Reveal index={5}>
-              <div className="mt-8 md:mt-10">
-                <CheckClient />
-              </div>
-            </Reveal>
-
-            <Reveal index={5}>
-              <p
-                className="mt-5 text-[13px] leading-relaxed"
-                style={{ color: "var(--ink-soft)" }}
-              >
-                We never say a number is wrong. We show you what the page you
-                linked to actually says, and you decide.
-              </p>
             </Reveal>
           </div>
         </section>

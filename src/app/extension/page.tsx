@@ -79,14 +79,14 @@ export default async function ExtensionPage() {
             <span className="accent">Get a better prompt.</span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed max-w-md" style={{ color: 'var(--color-paper-mute)' }}>
-            Type your prompt in ChatGPT, Claude, or Gemini. Press <Hotkey />.
-            It gets improved right there in the box. You never leave the chat.
+            Type in ChatGPT. Press <Hotkey />. Your prompt gets better,
+            right there in the box.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <AddToChrome />
             <span className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-              Free. No account needed to try it.
+              Free. No account.
             </span>
           </div>
         </div>
