@@ -11,7 +11,7 @@
 
 import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import { findQuote, checkCitations } from './citation'
+import { findQuote, checkCitations, partitionForStream, streamCitations } from './citation'
 import { readResponse, TavilyProvider, cleanRetrievedText } from './providers/tavily'
 import { isPermanent, type ProviderFailure } from './providers/types'
 import { domainsFor, PUBLISHER_NAMES } from './publishers'
@@ -520,6 +520,73 @@ test('claims with no source never reach the provider', async () => {
   assert.deepEqual(seen.extracted, [])
   assert.deepEqual(seen.searched, [])
   assert.equal(run.results.get('a')!.check, 'not_applicable')
+})
+
+/* --------------------------------------------------------- streaming */
+
+test('refusals never stream individually, they collapse into one line', async () => {
+  // Every refusal resolves in zero milliseconds, so emitting them first would
+  // wash amber across half the document in the first frame. A reader would
+  // learn "this tool cannot check anything" before a single real answer
+  // arrived, which is the opposite of true.
+  const claims = [
+    claim('f', { sourceForm: 'linked', sourceUrl: 'https://ahrefs.com/x' }),
+    claim('p', { sourceForm: 'linked', sourceUrl: 'https://www.statista.com/y' }),
+    claim('l', { sourceForm: 'linked', sourceUrl: 'https://gs.statcounter.com/z' }),
+    claim('n'),
+  ]
+  const { provider } = fakeProvider({
+    async extract(urls): Promise<RetrievalResult> {
+      return { ok: true, pages: [], unretrieved: urls.map(u => ({ url: u, detail: '404' })) }
+    },
+  })
+  const types: string[] = []
+  let counts: Record<string, number> | undefined
+  for await (const e of streamCitations(claims, provider)) {
+    types.push(e.type)
+    if (e.type === 'refusals') counts = e.counts as unknown as Record<string, number>
+  }
+  assert.equal(types.indexOf('refusals'), types.length - 1, 'refusals must be the LAST event')
+  assert.equal(types.filter(t => t === 'refusals').length, 1, 'one line, not one per claim')
+  assert.deepEqual(counts, { paywalled: 1, dead: 0, live: 1, noSource: 1 })
+})
+
+test('a known paywalled host is refused before it costs a credit', async () => {
+  const { provider, seen } = fakeProvider()
+  const { fetchable, refused } = partitionForStream([
+    claim('p', { sourceForm: 'linked', sourceUrl: 'https://www.statista.com/statistics/1/' }),
+  ])
+  assert.equal(fetchable.length, 0, 'must never be fetched')
+  assert.equal(refused.get('p')!.unreadable, 'paywalled')
+  for await (const _ of streamCitations([claim('p', { sourceForm: 'linked', sourceUrl: 'https://www.statista.com/statistics/1/' })], provider)) void _
+  assert.deepEqual(seen.extracted, [])
+})
+
+test('fetchable claims are opened in document order', async () => {
+  const claims = ['c', 'a', 'b'].map(id =>
+    claim(id, { sourceForm: 'linked', sourceUrl: `https://ahrefs.com/${id}` })
+  )
+  const { provider } = fakeProvider()
+  const opened: string[] = []
+  for await (const e of streamCitations(claims, provider)) {
+    if (e.type === 'opening') opened.push(e.id)
+  }
+  assert.deepEqual(opened, ['c', 'a', 'b'], 'the order they appear in the document')
+})
+
+test('a provider failure ends the stream and says so', async () => {
+  const { provider } = fakeProvider({
+    async extract(): Promise<RetrievalResult> {
+      return { ok: false, failure: 'out_of_credit' }
+    },
+  })
+  const types: string[] = []
+  for await (const e of streamCitations(
+    [claim('a', { sourceForm: 'linked', sourceUrl: 'https://ahrefs.com/x' })],
+    provider
+  )) types.push(e.type)
+  assert.ok(types.includes('failed'))
+  assert.ok(!types.includes('resolved'), 'nothing is concluded after a provider failure')
 })
 
 mock.reset()

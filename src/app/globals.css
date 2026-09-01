@@ -118,6 +118,33 @@
   --color-contradicted-bg: var(--contradicted-bg);
 }
 
+/* ===================================================================
+   THE CHECK MARK TRANSITION
+   ===================================================================
+   The subject is somebody's credibility, so this should read as a proof
+   reader working, not as a loading screen. One colour change over 200ms and
+   nothing else: no pulse, no bounce, no skeleton shimmer, no spinner.
+
+   Under prefers-reduced-motion the duration goes to zero rather than being
+   softened. A fade is still motion, and the honest response to "I do not want
+   movement" is for the state to simply be different, not to arrive gently.
+   ================================================================== */
+.claim-mark {
+  transition: background-color 200ms ease-out, color 200ms ease-out,
+    box-shadow 200ms ease-out, text-decoration-color 200ms ease-out;
+}
+
+.claim-status {
+  transition: opacity 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .claim-mark,
+  .claim-status {
+    transition-duration: 0ms;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

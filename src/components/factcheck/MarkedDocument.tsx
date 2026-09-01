@@ -76,10 +76,16 @@ export function MarkedDocument({
   text,
   claims,
   density,
+  progress,
+  live,
 }: {
   text: string
   claims: Claim[]
   density: CitationDensity
+  /** Which claims are mid-check, and what is happening to them. */
+  progress?: Record<string, { stage: string; host?: string }>
+  /** True while the stream is still running. Suppresses end-of-run summaries. */
+  live?: boolean
 }) {
   const [openId, setOpenId] = useState<string | null>(null)
 
@@ -121,7 +127,7 @@ export function MarkedDocument({
                 /* Inline, so it sits in the paragraph rather than breaking it.
                    -my-1 py-1 grows the hit area without pushing the line
                    height around mid-paragraph. */
-                className="inline text-left -my-1 py-1 px-1 rounded-md transition-shadow focus:outline-none focus:ring-2 focus:ring-offset-1"
+                className="claim-mark inline text-left -my-1 py-1 px-1 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1"
                 style={{
                   background: s.bg,
                   color: s.fg,
@@ -137,13 +143,61 @@ export function MarkedDocument({
         </p>
       </div>
 
+      {progress && <NowChecking claims={claims} progress={progress} />}
+
       {open && <ClaimPanel claim={open} onClose={() => setOpenId(null)} />}
 
-      {findings.total > 0 && <Findings findings={findings} />}
+      {/* Findings are an end-of-run summary. Showing them while claims are
+          still resolving would let the counts jump around under the reader,
+          which reads as the tool changing its mind. */}
+      {!live && findings.total > 0 && <Findings findings={findings} />}
       {flags.shown.length > 0 && <WorthChecking flags={flags} />}
-      {listed.length > 0 && <UnplacedList claims={listed} />}
-      {mine.length > 0 && <FirstPartyList claims={mine} />}
+      {!live && listed.length > 0 && <UnplacedList claims={listed} />}
+      {!live && mine.length > 0 && <FirstPartyList claims={mine} />}
     </div>
+  )
+}
+
+/**
+ * What is happening right now, in words rather than a spinner.
+ *
+ * A named action makes a wait feel like work being done, and a spinner makes
+ * it feel like nothing being done. "Opening ahrefs.com" also tells the reader
+ * something true and specific that they can check against their own document.
+ *
+ * Host only, never the URL. "Opening ahrefs.com" is a sentence a person reads;
+ * "Opening https://ahrefs.com/blog/seo-statistics/?utm_source=..." is noise
+ * they have to skip.
+ */
+function NowChecking({
+  claims,
+  progress,
+}: {
+  claims: Claim[]
+  progress: Record<string, { stage: string; host?: string }>
+}) {
+  const active = claims
+    .filter(c => progress[c.id])
+    .slice(0, 3)
+    .map(c => ({ claim: c, ...progress[c.id] }))
+  if (active.length === 0) return null
+
+  return (
+    <ul className="mt-4 space-y-1">
+      {active.map(({ claim, stage, host }) => (
+        <li
+          key={claim.id}
+          className="claim-status text-[13px]"
+          style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}
+        >
+          {stage === 'slow'
+            ? `${host} is slow to respond`
+            : stage === 'reading'
+              ? `Reading ${host}`
+              : `Opening ${host}`}
+        </li>
+      ))}
+    </ul>
   )
 }
 

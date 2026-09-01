@@ -4,7 +4,7 @@ import { asText, asEnum } from '@/lib/engine/coerce'
 import { TavilyProvider } from './providers/tavily'
 import { domainsFor } from './publishers'
 import { isLiveSource } from './live-sources'
-import { classifySource, READABILITY_COPY } from './readability'
+import { classifySource, READABILITY_COPY, isPaywalledHost } from './readability'
 import type { ProviderFailure, RetrievalProvider, RetrievedPage } from './providers/types'
 import type { Claim, CitationResult, Evidence } from './types'
 
@@ -433,4 +433,261 @@ export function findQuote(source: string, quote: string): boolean {
       .trim()
       .toLowerCase()
   return fold(source).includes(fold(quote))
+}
+
+/* ===================================================================
+   STREAMING
+   =================================================================== */
+
+/** One thing that happened, in the order the reader should learn about it. */
+export type CheckEvent =
+  | { type: 'opening'; id: string; host: string }
+  | { type: 'reading'; id: string; host: string }
+  | { type: 'slow'; id: string; host: string }
+  | { type: 'resolved'; id: string; citation: CitationResult }
+  | {
+      type: 'refusals'
+      /** Never emitted per claim. See the comment on partitionForStream. */
+      claimReasons: Record<string, 'live_source'>
+      results: Record<string, CitationResult>
+      counts: { paywalled: number; dead: number; live: number; noSource: number }
+    }
+  | { type: 'failed'; failure: ProviderFailure }
+
+/** How many pages we judge at once. Cost control first, latency second. */
+const JUDGE_CONCURRENCY = 5
+
+/** After this long with no page back, say the source is slow rather than hang. */
+const SLOW_AFTER_MS = 6_000
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return 'that source'
+  }
+}
+
+/**
+ * Split claims into the ones worth streaming and the ones that are already
+ * answered.
+ *
+ * REFUSALS ARE NOT STREAMED INDIVIDUALLY, and this is a deliberate reversal of
+ * the obvious design. They resolve in zero milliseconds, because "no source
+ * given", "live dashboard" and "known paywalled host" are all decided from the
+ * URL with no network call at all. Emitting them first would therefore open
+ * the run with a wave of amber washing across half the document in the first
+ * frame, and on a real article that is close to half the claims. What the
+ * reader would take from that is "this tool cannot check anything", which is
+ * the opposite of true and would be learned before a single real answer
+ * arrived.
+ *
+ * So they are held and collapsed into one line at the end: "12 we could not
+ * check: 9 paywalled, 2 no source, 1 dead." That is one honest finding
+ * instead of twelve non-findings.
+ */
+export function partitionForStream(claims: Claim[]): {
+  fetchable: Claim[]
+  refused: Map<string, CitationResult>
+  liveIds: Set<string>
+} {
+  const fetchable: Claim[] = []
+  const refused = new Map<string, CitationResult>()
+  const liveIds = new Set<string>()
+
+  for (const c of claims) {
+    if (c.sourceUrl && isLiveSource(c.sourceUrl)) {
+      liveIds.add(c.id)
+      refused.set(c.id, {
+        check: 'not_applicable',
+        unreadable: 'live_source',
+        evidence: [],
+        note: READABILITY_COPY.live_source,
+      })
+      continue
+    }
+    if (c.sourceForm === 'linked' && c.sourceUrl) {
+      // A known paywalled host is refused before it costs a credit, because we
+      // already know we will not be allowed to read it.
+      if (isPaywalledHost(c.sourceUrl)) {
+        refused.set(c.id, {
+          check: 'source_unreachable',
+          unreadable: 'paywalled',
+          evidence: [],
+          note: READABILITY_COPY.paywalled,
+        })
+        continue
+      }
+      fetchable.push(c)
+      continue
+    }
+    if (c.sourceForm === 'named' && c.sourceName && domainsFor(c.sourceName).length > 0) {
+      fetchable.push(c)
+      continue
+    }
+    refused.set(c.id, {
+      check: 'not_applicable',
+      unreadable: 'no_source',
+      evidence: [],
+      note: c.subject === 'first_party' ? undefined : READABILITY_COPY.no_source,
+    })
+  }
+  return { fetchable, refused, liveIds }
+}
+
+/**
+ * Check citations, yielding as each one resolves.
+ *
+ * FETCHABLE CLAIMS GO IN DOCUMENT ORDER. Five-wide concurrency already stops a
+ * slow first source blocking everything behind it, so document order costs
+ * nothing and gives the reader a rhythm they can follow: it reads like someone
+ * working down the page, which is what it is.
+ *
+ * Retrieval stays BATCHED even though judging is streamed. One /extract of 20
+ * URLs is 4 credits and twenty separate ones are 20, so per-claim fetching
+ * would be a five-fold cost increase bought purely for a nicer progress bar.
+ * The judge calls are the slow part anyway, so streaming those is where the
+ * waiting actually is.
+ */
+export async function* streamCitations(
+  claims: Claim[],
+  provider: RetrievalProvider = new TavilyProvider()
+): AsyncGenerator<CheckEvent, void, unknown> {
+  const { fetchable, refused, liveIds } = partitionForStream(claims)
+
+  const linked = fetchable.filter(c => c.sourceForm === 'linked' && c.sourceUrl)
+  const named = fetchable.filter(c => c.sourceForm === 'named')
+
+  for (const c of fetchable) {
+    yield { type: 'opening', id: c.id, host: hostOf(c.sourceUrl ?? c.sourceName ?? '') }
+  }
+
+  const pages = new Map<string, RetrievedPage>()
+  const failedUrls = new Set<string>()
+  let failure: ProviderFailure | undefined
+
+  if (linked.length > 0) {
+    const urls = [...new Set(linked.map(c => c.sourceUrl!))]
+    // Say a source is slow rather than letting the line sit there. The timer is
+    // cleared either way, so a fast batch never emits it.
+    let slowTimer: ReturnType<typeof setTimeout> | undefined
+    const slowEvents: CheckEvent[] = []
+    const slowPromise = new Promise<void>(resolve => {
+      slowTimer = setTimeout(() => {
+        for (const c of linked) slowEvents.push({ type: 'slow', id: c.id, host: hostOf(c.sourceUrl!) })
+        resolve()
+      }, SLOW_AFTER_MS)
+    })
+
+    const fetchPromise = (async () => {
+      for (let i = 0; i < urls.length; i += 20) {
+        const res = await provider.extract(urls.slice(i, i + 20))
+        if (!res.ok) { failure = res.failure; return }
+        for (const p of res.pages) pages.set(p.url, p)
+        for (const u of res.unretrieved) failedUrls.add(u.url)
+      }
+    })()
+
+    await Promise.race([fetchPromise, slowPromise])
+    for (const e of slowEvents) yield e
+    await fetchPromise
+    if (slowTimer) clearTimeout(slowTimer)
+  }
+
+  if (failure) {
+    yield { type: 'failed', failure }
+    return
+  }
+
+  /**
+   * Judge in document order, five at a time.
+   *
+   * Results are yielded in COMPLETION order rather than held back to restore
+   * document order, because holding them would reintroduce exactly the "reveal
+   * everything at the end" behaviour this whole design exists to avoid. The
+   * marks live in the document, so the reader sees position from the page
+   * itself and does not need the stream to carry it.
+   */
+  const queue = [...linked, ...named]
+  let next = 0
+
+  /**
+   * A five-wide pool that yields each result the moment it lands.
+   *
+   * Each in-flight job is wrapped so it resolves to its own slot key, which is
+   * what makes `Promise.race` usable here: racing the bare promises tells you
+   * the value but not which one produced it, and you cannot then remove it
+   * from the pool.
+   */
+  type Slot = { key: number; event: CheckEvent }
+  const pool = new Map<number, Promise<Slot>>()
+  let key = 0
+
+  const launch = (claim: Claim): CheckEvent => {
+    const k = key++
+    const host = hostOf(claim.sourceUrl ?? claim.sourceName ?? '')
+    pool.set(
+      k,
+      resolveOne(claim, provider, pages, failedUrls).then(citation => ({
+        key: k,
+        event: { type: 'resolved' as const, id: claim.id, citation },
+      }))
+    )
+    return { type: 'reading', id: claim.id, host }
+  }
+
+  while (next < queue.length && pool.size < JUDGE_CONCURRENCY) {
+    yield launch(queue[next++])
+  }
+
+  while (pool.size > 0) {
+    const { key: settled, event } = await Promise.race(pool.values())
+    pool.delete(settled)
+    yield event
+    if (next < queue.length) yield launch(queue[next++])
+  }
+
+  const counts = { paywalled: 0, dead: 0, live: 0, noSource: 0 }
+  for (const r of refused.values()) {
+    if (r.unreadable === 'paywalled') counts.paywalled++
+    else if (r.unreadable === 'dead') counts.dead++
+    else if (r.unreadable === 'live_source') counts.live++
+    else counts.noSource++
+  }
+  yield {
+    type: 'refusals',
+    claimReasons: Object.fromEntries([...liveIds].map(id => [id, 'live_source' as const])),
+    results: Object.fromEntries(refused),
+    counts,
+  }
+}
+
+/** One claim, once its page is in hand. */
+async function resolveOne(
+  claim: Claim,
+  provider: RetrievalProvider,
+  pages: Map<string, RetrievedPage>,
+  failedUrls: Set<string>
+): Promise<CitationResult> {
+  if (claim.sourceForm === 'named' && claim.sourceName) {
+    const domains = domainsFor(claim.sourceName)
+    const res = await provider.searchDomains(claim.claimText, domains)
+    if (!res.ok) return NOT_APPLICABLE
+    if (res.pages.length === 0) {
+      return {
+        check: 'does_not_contain',
+        evidence: [],
+        note: `Searched ${domains.join(', ')} and found nothing matching this.`,
+      }
+    }
+    return judgeAgainst(claim, res.pages[0])
+  }
+
+  const url = claim.sourceUrl!
+  const page = pages.get(url) ?? matchLoosely(pages, url)
+  if (page) return judgeAgainst(claim, page)
+  if (failedUrls.has(url)) {
+    return { check: 'source_unreachable', unreadable: 'dead', evidence: [], note: READABILITY_COPY.dead }
+  }
+  return NOT_APPLICABLE
 }

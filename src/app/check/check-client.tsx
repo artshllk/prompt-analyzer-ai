@@ -2,136 +2,93 @@
 
 import { useState } from 'react'
 import { MarkedDocument } from '@/components/factcheck/MarkedDocument'
-import { MAX_DOC_CHARS, MIN_DOC_CHARS } from '@/lib/factcheck/types'
-import type { Claim, CitationDensity } from '@/lib/factcheck/types'
+import { useCheckStream } from '@/components/factcheck/useCheckStream'
+import { MAX_DOC_CHARS } from '@/lib/factcheck/types'
 
 /**
- * Paste a document, get its checkable claims marked.
+ * Paste, then watch it get checked.
  *
- * NOTHING HERE VERIFIES ANYTHING. Every claim comes back `unverifiable`,
- * and the copy says so in those words rather than dressing it up. Saying
- * "we found fourteen claims" is true and useful. Implying we checked them
- * would be the first lie the product ever told, in a product whose only
- * asset is being trusted.
+ * THE ORDER IS THE DESIGN. Extraction is one fast call, so every claim appears
+ * at once, marked "not checked", and the document is on screen and readable
+ * within a few seconds. There is never a blank page behind a spinner, and
+ * nothing is held back to be revealed at the end.
+ *
+ * After that each claim resolves on its own as its check returns, with a line
+ * saying what is happening to it. A named action makes a wait feel like work.
  */
-
-type State =
-  | { kind: 'idle' }
-  | { kind: 'working' }
-  | {
-      kind: 'done'
-      text: string
-      claims: Claim[]
-      density: CitationDensity
-      truncated: boolean
-      foundCount: number
-      citationsChecked: boolean
-    }
-  | { kind: 'error'; message: string }
-
-// Every server error we can produce, in the user's language. The fallback
-// matters as much as the entries: an unmapped code must still read as a
-// sentence, never as `daily_capacity`.
-const MESSAGES: Record<string, string> = {
-  empty: 'Paste something first.',
-  too_short: `That is too short to be worth checking. Around ${MIN_DOC_CHARS} characters is the minimum.`,
-  too_long: `That is longer than we handle right now. Trim it to ${MAX_DOC_CHARS.toLocaleString()} characters or fewer and try again.`,
-  rate_limited: 'You are going faster than we can keep up with. Wait a moment and try again.',
-  daily_capacity: 'We have hit the free limit for today. It resets tomorrow.',
-  identity_unavailable:
-    'We can see you are signed in but cannot read your account right now. This is our problem, not yours. Try again in a few minutes.',
-  invalid_body: 'Something went wrong sending that. Try again.',
-  unavailable:
-    'The model did not answer. Nothing was checked, so nothing here is a verdict. Try again.',
-}
-
 export function CheckClient() {
   const [text, setText] = useState('')
-  const [state, setState] = useState<State>({ kind: 'idle' })
+  const { state, run, reset } = useCheckStream()
 
   const chars = text.length
   const overLimit = chars > MAX_DOC_CHARS
-  const working = state.kind === 'working'
+  const busy = state.kind === 'extracting' || state.kind === 'checking'
 
-  async function run() {
-    if (working || !text.trim() || overLimit) return
-    setState({ kind: 'working' })
-    try {
-      const res = await fetch('/api/factcheck/extract', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      })
-      const data = await res.json().catch(() => null)
-      if (!res.ok || !data) {
-        const code = data?.error as string | undefined
-        setState({
-          kind: 'error',
-          message: (code && MESSAGES[code]) || 'Something went wrong on our end. Try again.',
-        })
-        return
-      }
-      setState({
-        kind: 'done',
-        text: data.text,
-        claims: data.claims,
-        density: data.density,
-        truncated: Boolean(data.truncated),
-        foundCount: data.foundCount ?? data.claims.length,
-        citationsChecked: Boolean(data.citationsChecked),
-      })
-    } catch {
-      setState({
-        kind: 'error',
-        message: 'Could not reach the server. Check your connection and try again.',
-      })
-    }
-  }
-
-  if (state.kind === 'done') {
+  if (state.kind === 'checking' || state.kind === 'done') {
+    const live = state.kind === 'checking'
     return (
       <div>
-        <MarkedDocument text={state.text} claims={state.claims} density={state.density} />
+        {/* The counter. Quiet, factual, and it stops existing when it is
+            finished rather than sitting there saying 19 of 19. */}
+        {live && (
+          <p
+            className="claim-status mb-4 text-[14px]"
+            style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}
+          >
+            {state.checkable === 0
+              ? 'Looking at your links'
+              : `Checked ${state.checked} of ${state.checkable}`}
+          </p>
+        )}
 
-        {/* The cap, said out loud. Silently dropping claims in a product
-            about honesty would be disqualifying. */}
-        {state.truncated && (
+        <MarkedDocument
+          text={state.text}
+          claims={state.claims}
+          density={state.density}
+          progress={live ? state.progress : undefined}
+          live={live}
+        />
+
+        {/* Refusals, collapsed into one line at the end.
+            Never streamed individually: they resolve instantly, so emitting
+            them one by one would open the run with a wave of amber across half
+            the document, and a reader would learn "this tool cannot check
+            anything" before a single real answer arrived. */}
+        {!live && state.refusals && <RefusalLine refusals={state.refusals} />}
+
+        {!live && state.failure && (
           <p
             className="mt-5 text-[14px] leading-relaxed rounded-xl p-3"
             style={{ background: 'var(--guess-bg)', color: 'var(--guess)' }}
           >
-            This document had {state.foundCount} checkable claims and we list the
-            first {state.claims.length}. The rest are not marked. Run a shorter
-            section to see them.
+            We could not finish checking. That is our problem, not something
+            about your writing. Nothing below is a judgement on the links we did
+            not reach.
           </p>
         )}
 
-        {!state.citationsChecked && (
+        {!live && state.truncated && (
           <p
             className="mt-5 text-[14px] leading-relaxed rounded-xl p-3"
             style={{ background: 'var(--guess-bg)', color: 'var(--guess)' }}
           >
-            We could not check the sources on this run. That is our problem, not
-            a finding about your links. Nothing below says anything about
-            whether your citations hold up.
+            This post had {state.foundCount} numbers in it. We show the first{' '}
+            {state.claims.length}. Try one section at a time to see the rest.
           </p>
         )}
 
-        <div className="mt-6 flex flex-wrap items-center gap-4">
-          <button
-            type="button"
-            onClick={() => setState({ kind: 'idle' })}
-            className="text-[14px] px-4 py-2 rounded-full"
-            style={{ background: 'var(--brand)', color: '#fff' }}
-          >
-            Check another
-          </button>
-          <p className="text-[13px]" style={{ color: 'var(--ink-soft)' }}>
-            {state.citationsChecked
-              ? 'Sources checked. Whether each claim is true is a separate question we do not answer yet.'
-              : 'Nothing has been checked against a source yet.'}
-          </p>
-        </div>
+        {!live && (
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={reset}
+              className="text-[14px] px-4 py-2 rounded-full"
+              style={{ background: 'var(--brand)', color: '#fff' }}
+            >
+              Check another
+            </button>
+          </div>
+        )}
       </div>
     )
   }
@@ -139,15 +96,15 @@ export function CheckClient() {
   return (
     <div>
       <label htmlFor="doc" className="sr-only">
-        Paste your document
+        Paste your post
       </label>
       <textarea
         id="doc"
         value={text}
         onChange={e => setText(e.target.value)}
-        rows={12}
-        placeholder="Paste the document you are about to send."
-        disabled={working}
+        rows={10}
+        placeholder="Paste your post here."
+        disabled={busy}
         className="w-full rounded-2xl p-4 text-[15px] leading-[1.7] resize-y focus:outline-none focus:ring-2"
         style={{
           background: 'var(--card)',
@@ -159,12 +116,12 @@ export function CheckClient() {
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
         <button
           type="button"
-          onClick={run}
-          disabled={working || !text.trim() || overLimit}
+          onClick={() => run(text)}
+          disabled={busy || !text.trim() || overLimit}
           className="text-[15px] px-5 py-2.5 rounded-full disabled:opacity-45 disabled:cursor-not-allowed"
           style={{ background: 'var(--brand)', color: '#fff' }}
         >
-          {working ? 'Reading...' : 'Find the claims'}
+          {state.kind === 'extracting' ? 'Reading your post' : 'Check my links'}
         </button>
         <span
           className="text-[13px]"
@@ -185,6 +142,44 @@ export function CheckClient() {
           {state.message}
         </p>
       )}
+    </div>
+  )
+}
+
+/**
+ * One line for everything we could not open.
+ *
+ * This is a finding, not an apology. A paywall stops the writer's reader at
+ * the same wall we hit, a dead link lands them on nothing, and a live
+ * dashboard shows them a different number. Saying so needs no judgement and
+ * cannot be a false accusation.
+ */
+function RefusalLine({
+  refusals,
+}: {
+  refusals: { paywalled: number; dead: number; live: number; noSource: number }
+}) {
+  const parts: string[] = []
+  if (refusals.paywalled) parts.push(`${refusals.paywalled} behind a paywall`)
+  if (refusals.dead) parts.push(`${refusals.dead} dead`)
+  if (refusals.live) parts.push(`${refusals.live} showing live data`)
+  if (refusals.noSource) parts.push(`${refusals.noSource} with no link`)
+  const total = refusals.paywalled + refusals.dead + refusals.live + refusals.noSource
+  if (total === 0) return null
+
+  return (
+    <div
+      className="mt-5 rounded-xl p-4"
+      style={{ background: 'var(--guess-bg)', border: '1px solid var(--rule)' }}
+    >
+      <p className="text-[15px] leading-relaxed" style={{ color: 'var(--ink)' }}>
+        {total} {total === 1 ? 'number' : 'numbers'} we could not check:{' '}
+        {parts.join(', ')}.
+      </p>
+      <p className="mt-1 text-[13px] leading-relaxed" style={{ color: 'var(--ink-soft)' }}>
+        Your reader will hit the same wall. Where you can, link to the page the
+        number came from.
+      </p>
     </div>
   )
 }
