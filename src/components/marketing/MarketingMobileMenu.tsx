@@ -160,7 +160,7 @@ export function MarketingMobileMenu({ links, current }: MarketingMobileMenuProps
     <div>
       <p
         className="px-3 pb-2 text-[11px] font-medium uppercase tracking-[0.14em]"
-        style={{ color: 'var(--color-paper-mute)', opacity: 0.7 }}
+        style={{ color: 'var(--ink-soft)' }}
       >
         {label}
       </p>
@@ -301,7 +301,7 @@ export function MarketingMobileMenu({ links, current }: MarketingMobileMenuProps
                     <div style={{ borderTop: '1px solid var(--color-rule)' }} className="pt-6">
                       <p
                         className="px-3 pb-3 text-[11px] font-medium uppercase tracking-[0.14em]"
-                        style={{ color: 'var(--color-paper-mute)', opacity: 0.7 }}
+                        style={{ color: 'var(--ink-soft)' }}
                       >
                         Account
                       </p>

@@ -447,8 +447,12 @@ export default function LandingPage() {
             <FooterCol
               title="Product"
               links={[
-                { href: "/extension", label: "Extension" },
+                { href: "/check", label: "Check your sources" },
                 { href: "/detector", label: "AI text detector" },
+                // Extension and Prompt library came off the main nav because
+                // they point at the frozen prompt improver. They stay here, and
+                // their routes are untouched, so every existing link resolves.
+                { href: "/extension", label: "Extension" },
                 { href: "/prompts", label: "Prompt library" },
                 { href: "/pricing", label: "Pricing" },
               ]}

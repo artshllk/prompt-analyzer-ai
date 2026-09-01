@@ -21,6 +21,7 @@ import { MarketingMobileMenu } from './MarketingMobileMenu'
 // had not changed.
 export type NavKey =
   | 'home'
+  | 'check'
   | 'playground'
   | 'detector'
   | 'prompts'
@@ -40,9 +41,15 @@ export type NavKey =
  * still type-checks on the page itself.
  */
 const LINKS: { key: NavKey; href: string; label: string }[] = [
-  { key: 'extension', href: '/extension', label: 'Extension' },
+  // Check is first because it is the product now.
+  //
+  // Extension and Prompts came out of here and moved to the footer. Both point
+  // at the frozen prompt improver, and a frozen product sitting beside the live
+  // one in the same nav tells a visitor they are equals. The routes are
+  // untouched: every existing link still resolves, which is the same rule that
+  // kept /playground where it is.
+  { key: 'check', href: '/check', label: 'Check' },
   { key: 'detector', href: '/detector', label: 'Detector' },
-  { key: 'prompts', href: '/prompts', label: 'Prompts' },
   { key: 'pricing', href: '/pricing', label: 'Pricing' },
   { key: 'faq', href: '/faq', label: 'FAQ' },
   { key: 'blog', href: '/blog', label: 'Blog' },
@@ -71,22 +78,23 @@ export function MarketingNav({ current }: MarketingNavProps = {}) {
             Deepclario
           </span>
         </Link>
-        <nav
-          className="hidden md:flex items-center gap-7 text-sm"
-          style={{ color: 'var(--color-paper-mute)' }}
-        >
+        {/* CONTRAST. --ink-soft measures 5.07:1 on the paper ground, which
+            passes AA at 14px. The old `opacity-80` on inactive links dropped
+            that to an effective #868176 and 3.40:1, which fails. Opacity is a
+            contrast decision wearing a costume, so state is carried by colour
+            and weight instead and every item stays measurably legible. */}
+        <nav className="hidden md:flex items-center gap-7 text-sm">
           {LINKS.map(link => {
             const isCurrent = current === link.key
             return (
               <Link
                 key={link.key}
                 href={link.href}
-                className={
-                  isCurrent
-                    ? 'opacity-100'
-                    : 'hover:opacity-100 transition-opacity opacity-80'
-                }
-                style={isCurrent ? { color: 'var(--color-paper)' } : undefined}
+                className="transition-colors hover:text-[var(--ink)]"
+                style={{
+                  color: isCurrent ? 'var(--ink)' : 'var(--ink-soft)',
+                  fontWeight: isCurrent ? 500 : 400,
+                }}
               >
                 {link.label}
               </Link>
