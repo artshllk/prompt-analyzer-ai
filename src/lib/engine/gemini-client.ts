@@ -77,10 +77,21 @@ async function callModel(model: string, req: GeminiRequest): Promise<ModelResult
     }
 
     if (!res.ok) {
+      /**
+       * STATUS AND LENGTH, NEVER THE BODY.
+       *
+       * A provider error payload can echo the offending input straight back
+       * (content filters and invalid_request both do it), so `detail` is the
+       * user's own text often enough to treat it as always being so. It used
+       * to go to the log AND to error reporting, which is two copies of
+       * somebody's private document in two places we do not control.
+       *
+       * The FAQ says "we save nothing". These lines are what makes that true.
+       */
       const detail = await res.text().catch(() => '')
-      console.error(`[gemini] ${model} error ${res.status} in ${ms}ms: ${detail.slice(0, 300)}`)
+      console.error(`[gemini] ${model} error ${res.status} in ${ms}ms (${detail.length} chars)`)
       const { captureError } = await import('../observability')
-      captureError(new Error(`Gemini ${model} ${res.status}`), { detail: detail.slice(0, 500) })
+      captureError(new Error(`Gemini ${model} ${res.status}`), { detailLength: detail.length })
       return { text: '', transient: false, reason: `http_${res.status}` }
     }
 

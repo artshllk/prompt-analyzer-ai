@@ -220,6 +220,34 @@ test to copy.
    estimate and accept that the number moves while the reader watches. Neither
    is obviously right, and this is the actual design decision, not the parser.
 
+## Error reporting must never capture request bodies
+
+`src/lib/observability.ts` is a Sentry wrapper that is wired but INERT:
+`@sentry/nextjs` is not installed and `NEXT_PUBLIC_SENTRY_DSN` is not set, so
+`captureError()` is a no-op in production today. One env var and one `npm
+install` switch it on.
+
+**The FAQ says "we save nothing" about text pasted into the source checker.**
+That is a published promise, and it is only true while nothing writes that text
+anywhere. Error reporting is the easiest place for it to leak, because a leak
+there looks like diagnostics.
+
+**It already happened once.** Both model clients passed a provider error body
+into `captureError`, and a provider error body echoes the offending input
+straight back (content filters and `invalid_request` both do it). Enabling
+Sentry would have shipped users' documents to a third party as "context". Fixed:
+they now pass `detailLength`, a number.
+
+If you ever turn it on:
+
+- Pass lengths, status codes, model names and counts. **Never text.**
+- Do not enable `sendDefaultPii`, Replay, or any integration that serialises a
+  request.
+- If you need the body to debug something, reproduce it locally with your own
+  input.
+- If you decide to capture bodies anyway, **change the FAQ first.** The order
+  matters: the promise is already published.
+
 ## Commands
 
 - `npm run dev` — local dev. `npm run build` — production build (real verification).

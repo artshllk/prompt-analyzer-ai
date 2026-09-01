@@ -57,7 +57,9 @@ export interface LLMOutcome<T> {
 }
 
 interface OpenAIResponse {
-  choices?: Array<{ message?: { content?: string } }>
+  // finish_reason is the one diagnostic worth having on an empty response, and
+  // unlike the body it can never carry the user's text.
+  choices?: Array<{ message?: { content?: string }; finish_reason?: string }>
 }
 
 /**
@@ -158,8 +160,11 @@ export async function* streamLLM(req: {
     })
 
     if (!res.ok || !res.body) {
-      const detail = await res.text().catch(() => '')
-      console.error(`[openai] ${model} stream error ${res.status}: ${detail.slice(0, 200)}`)
+      // Status only. An OpenAI error payload can echo the offending input
+      // back at us (content filters, invalid_request), so it is not safe to
+      // log for the same reason the completion body is not.
+      await res.text().catch(() => '')
+      console.error(`[openai] ${model} stream error ${res.status}`)
       throw new Error(`OpenAI stream ${res.status}`)
     }
 
@@ -258,23 +263,55 @@ export async function callLLMDetailed<T>(req: LLMRequest): Promise<LLMOutcome<T>
     const ms = Date.now() - started
 
     if (!res.ok) {
+      /**
+       * STATUS AND LENGTH, NEVER THE BODY.
+       *
+       * A provider error payload can echo the offending input straight back
+       * (content filters and invalid_request both do it), so `detail` is the
+       * user's own text often enough to treat it as always being so. It used
+       * to go to the log AND to error reporting, which is two copies of
+       * somebody's private document in two places we do not control.
+       *
+       * The FAQ says "we save nothing". These lines are what makes that true.
+       */
       const detail = await res.text().catch(() => '')
-      console.error(`[openai] ${model} error ${res.status} in ${ms}ms: ${detail.slice(0, 300)}`)
+      console.error(`[openai] ${model} error ${res.status} in ${ms}ms (${detail.length} chars)`)
       const { captureError } = await import('../observability')
-      captureError(new Error(`OpenAI ${model} ${res.status}`), { detail: detail.slice(0, 500) })
+      captureError(new Error(`OpenAI ${model} ${res.status}`), { detailLength: detail.length })
       return { data: null, failure: 'http', ms }
     }
 
     const data: OpenAIResponse = await res.json()
     const text = data.choices?.[0]?.message?.content ?? ''
     if (!text) {
-      console.error(`[openai] ${model} empty content in ${ms}ms: ${JSON.stringify(data).slice(0, 400)}`)
+      /**
+       * NEVER LOG THE RESPONSE BODY. See the block on parse failure below for
+       * why; an empty-content response can still carry a partial completion.
+       */
+      console.error(
+        `[openai] ${model} empty content in ${ms}ms ` +
+          `(finish_reason=${data.choices?.[0]?.finish_reason ?? 'unknown'})`
+      )
       return { data: null, failure: 'empty', ms }
     }
 
     const parsed = parseJSON<T>(text)
     if (parsed === null) {
-      console.error(`[openai] ${model} unparseable JSON in ${ms}ms: ${text.slice(0, 300)}`)
+      /**
+       * THE ERROR AND THE LENGTH, NEVER THE CONTENT.
+       *
+       * This used to log `text.slice(0, 300)`, which looked harmless and was
+       * not. The fact checker's extractor asks the model for claim quotes
+       * "copied from the document CHARACTER FOR CHARACTER", so the reply
+       * embeds verbatim excerpts of whatever the user pasted. A malformed
+       * response therefore put up to 300 characters of somebody's private
+       * document into the server log.
+       *
+       * The FAQ now says "we save nothing". This is the line that has to be
+       * true for that to be true, so it stays as it is: if you need more to
+       * debug a parse failure, reproduce it locally with your own input.
+       */
+      console.error(`[openai] ${model} unparseable JSON in ${ms}ms (${text.length} chars)`)
       return { data: null, failure: 'parse', ms }
     }
     return { data: parsed, ms }

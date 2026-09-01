@@ -4,6 +4,25 @@
  *
  * Why a wrapper: avoids forcing every route handler to import Sentry directly,
  * keeps the install optional, and lets us swap providers later without churn.
+ *
+ * ===================================================================
+ * IT MUST NEVER CAPTURE A REQUEST BODY. THIS IS A PROMISE, NOT A
+ * PREFERENCE.
+ * ===================================================================
+ *
+ * The FAQ tells people "we save nothing" about the text they paste into the
+ * source checker. That sentence is only true while nothing writes it anywhere,
+ * and error reporting is the easiest place for it to leak, because the leak
+ * looks like diagnostics.
+ *
+ * It already happened once. Both model clients used to pass a provider error
+ * body into captureError, and a provider error body echoes the offending input
+ * back at you. Turning Sentry on would have shipped users' documents to a
+ * third party as "context".
+ *
+ * So: pass lengths, status codes, model names and counts. Never text. If you
+ * add `sendDefaultPii`, `Replay`, or any integration that serialises a request,
+ * you have broken a published promise and the FAQ has to change first.
  */
 
 type CaptureFn = (err: unknown, context?: Record<string, unknown>) => void

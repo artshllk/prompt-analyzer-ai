@@ -110,17 +110,39 @@ export default function PrivacyPage() {
 
       <Section title="Companies that process your data">
         <p className="mb-3">
-          Improving a prompt means sending it to an AI model, so it is handled by
-          the company running that model. Their terms apply to that processing.
+          Checking your writing means sending it to an AI model, so it is handled
+          by the company running that model. Their terms apply to that
+          processing. The same is true of the prompt improver and the detector.
         </p>
         <ul className="list-disc pl-5 space-y-1.5">
-          <li><Strong>OpenAI</Strong> - runs most prompt improvements.</li>
-          <li><Strong>Google (Gemini)</Strong> - runs some improvements, and writes the plain-English explanation in the AI text detector.</li>
+          <li><Strong>OpenAI</Strong> - reads the text you paste into the source checker to find the claims in it, and reads each page we open to judge whether it supports the claim. Also runs most prompt improvements.</li>
+          <li><Strong>Tavily</Strong> - opens the links in your text and returns the page contents so we can check them. It receives the URLs found in what you paste, and, when a source is named but not linked, the sentence we search for.</li>
+          <li><Strong>Google (Gemini)</Strong> - runs some prompt improvements, and writes the plain-English explanation in the AI text detector.</li>
           <li><Strong>Supabase</Strong> - our database and sign-in.</li>
           <li><Strong>Paddle</Strong> - payments for Pro. Paddle is the merchant of record.</li>
           <li><Strong>Vercel</Strong> - hosting.</li>
           <li><Strong>Resend</Strong> - sends our emails.</li>
         </ul>
+      </Section>
+
+      <Section title="The source checker">
+        <p className="mb-3">
+          <Strong>We do not store the text you paste into the source checker.</Strong>{' '}
+          It is not written to our database, it is not kept in your history, and
+          it is not written to our logs. We count that a check happened, and
+          nothing else about it.
+        </p>
+        <p className="mb-3">
+          It is sent to OpenAI to find the claims in it, and the links inside it
+          are sent to Tavily so the pages can be opened and read. Neither we nor
+          they use it to train models.
+        </p>
+        <p>
+          One consequence worth stating plainly: if your text contains a private
+          link, that URL is sent to Tavily and the page behind it is fetched. Do
+          not paste anything whose links point somewhere you would not want
+          opened.
+        </p>
       </Section>
 
       <Section title="Your rights">
