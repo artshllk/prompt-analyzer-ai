@@ -21,9 +21,21 @@
      correctly in one place, and new code uses the honest names.
      ================================================================== */
 
-  /* --- surfaces --- */
+  /* --- surfaces ---
+     Three grounds and no more. --paper reads, --card holds the tool and any
+     panel, --sunk marks a break without changing the palette.
+
+     --sunk is the DARKEST tint that keeps --ink-soft at AA for body text
+     (4.58:1). #E4E1D7 was one step further and measured 4.42, which fails, and
+     a break the eye can see is not worth body text the eye cannot read.
+
+     --mute-on-ink exists because --ink-soft is 3.21:1 on the dark ground and
+     therefore unusable there. It is the muted voice for the single dark
+     section, at 7.31:1. Do not use it anywhere else. */
   --paper: #F1F0EA;
   --card: #FFFFFF;
+  --sunk: #E7E5DC;
+  --mute-on-ink: #A8A296;
 
   /* --- text --- */
   --ink: #15130F;

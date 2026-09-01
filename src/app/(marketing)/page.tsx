@@ -124,7 +124,7 @@ export default function LandingPage() {
             section directly below so the page reads "promise -> proof". */}
         <section
           id="try"
-          className="pt-24 md:pt-32 pb-14 md:pb-20 px-5 sm:px-6 md:px-10 relative"
+          className="pt-24 md:pt-32 pb-20 md:pb-28 px-5 sm:px-6 md:px-10 relative"
         >
           <div className="max-w-5xl mx-auto">
             {/* Entrance choreography: eyebrow -> headline -> subhead -> tool,
@@ -204,17 +204,36 @@ export default function LandingPage() {
               </p>
             </Reveal>
 
-            <Reveal index={5}>
-              <div className="mt-8 md:mt-10">
-                <WorkedExample />
-              </div>
-            </Reveal>
+          </div>
+        </section>
 
-            <Reveal index={5}>
-              <div className="mt-5">
-                <NoLinkNote />
-              </div>
-            </Reveal>
+        {/*
+          THE ONE DARK SECTION ON THE PAGE, AND IT STAYS THE ONLY ONE.
+
+          A page that flips light and dark repeatedly stops reading as
+          editorial and starts reading as a template, so this is spent once, on
+          the part that has to land: the proof that the tool finds something
+          real.
+
+          Dark ground with the white document card on it is also the right
+          picture for what this is. It makes the marked-up page look like a
+          page on a desk, which is what a proof reader sees.
+        */}
+        <section
+          className="px-5 sm:px-6 md:px-10 py-20 md:py-28"
+          style={{ background: "var(--ink)" }}
+        >
+          <div className="max-w-5xl mx-auto">
+            <p
+              className="text-[12px] uppercase tracking-[0.14em] mb-6"
+              style={{ color: "var(--mute-on-ink)" }}
+            >
+              A real example
+            </p>
+            <WorkedExample onDark />
+            <div className="mt-6">
+              <NoLinkNote onDark />
+            </div>
           </div>
         </section>
 
@@ -325,8 +344,8 @@ export default function LandingPage() {
             business ideas, so the data-handling answer lives on the page,
             not just in the FAQ. Every claim here must match /privacy. */}
         <section
-          className="px-6 md:px-10 py-24 md:py-32"
-          style={{ borderTop: "1px solid var(--color-rule)" }}
+          className="px-6 md:px-10 py-20 md:py-28"
+          style={{ background: "var(--sunk)" }}
         >
           <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
             <div className="md:col-span-3">
@@ -380,7 +399,7 @@ export default function LandingPage() {
         {/* Pricing */}
         <section
           id="pricing"
-          className="px-6 md:px-10 py-24 md:py-32"
+          className="px-6 md:px-10 py-20 md:py-28"
           style={{ borderTop: "1px solid var(--color-rule)" }}
         >
           <div className="max-w-6xl mx-auto">
@@ -389,7 +408,26 @@ export default function LandingPage() {
         </section>
 
         {/* Footer */}
-        <footer
+          {/* The detector gets ONE line, not a section. It has its own page and
+            it is not what this site is for. The prompt improver gets nothing
+            here at all: footer link only. */}
+        <section className="px-6 md:px-10 pb-20 md:pb-28">
+          <div className="max-w-6xl mx-auto">
+            <p className="text-[15px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+              We also have a{" "}
+              <Link
+                href="/detector"
+                className="underline underline-offset-4"
+                style={{ color: "var(--brand-text)" }}
+              >
+                free AI text detector
+              </Link>
+              .
+            </p>
+          </div>
+        </section>
+
+      <footer
           className="px-6 md:px-10 py-16"
           style={{ borderTop: "1px solid var(--color-rule)" }}
         >

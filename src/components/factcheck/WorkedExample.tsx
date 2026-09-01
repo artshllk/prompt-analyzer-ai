@@ -18,14 +18,24 @@
  * once and understood. The words "citation", "verify", "claim" and "coverage"
  * do not appear. It says link, check, number, source.
  */
-export function WorkedExample() {
+/**
+ * `onDark` changes ONE thing: the card's border. Everything inside it sits on
+ * white either way, so every colour in here is measured against white and none
+ * of them move. A component that restyled its own contents based on what is
+ * behind it would need every ratio checked twice.
+ */
+export function WorkedExample({ onDark }: { onDark?: boolean } = {}) {
   return (
     <section
       className="rounded-2xl p-5 sm:p-7"
-      style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}
+      /* The card stays white on both grounds. That is the point of it: a
+         marked-up page looks like paper, and paper does not go dark. */
+      style={{
+        background: 'var(--card)',
+        border: `1px solid ${onDark ? 'transparent' : 'var(--rule)'}`,
+      }}
       aria-label="An example of a mistake this finds"
     >
-      <p className="eyebrow mb-4">A real example</p>
 
       <p className="text-[15px] leading-relaxed mb-4" style={{ color: 'var(--ink-soft)' }}>
         A big SEO site wrote this. It is still up.
@@ -98,9 +108,14 @@ export function WorkedExample() {
  * no link at all. Rounded to "half" because the exact figure invites a
  * question the sentence does not need to answer.
  */
-export function NoLinkNote() {
+export function NoLinkNote({ onDark }: { onDark?: boolean } = {}) {
   return (
-    <p className="text-[15px] leading-relaxed" style={{ color: 'var(--ink-soft)' }}>
+    <p
+      className="text-[15px] leading-relaxed"
+      /* --ink-soft is 3.21:1 on the dark ground, so the dark section gets its
+         own mute rather than the same token at a worse ratio. */
+      style={{ color: onDark ? 'var(--mute-on-ink)' : 'var(--ink-soft)' }}
+    >
       Half the numbers in posts like this have no link. We list those too.
     </p>
   )
