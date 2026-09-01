@@ -343,9 +343,12 @@ export default function LandingPage() {
         {/* Trust - the product asks people to paste work emails, code, and
             business ideas, so the data-handling answer lives on the page,
             not just in the FAQ. Every claim here must match /privacy. */}
+        {/* Same ground as the section above it, so it takes a rule. The rule
+            convention on this page: a border only where the ground does not
+            change, never on top of a surface change. */}
         <section
           className="px-6 md:px-10 py-20 md:py-28"
-          style={{ background: "var(--sunk)" }}
+          style={{ borderTop: "1px solid var(--rule)" }}
         >
           <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
             <div className="md:col-span-3">
