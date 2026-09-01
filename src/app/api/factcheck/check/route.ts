@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     if (allowance.isAtLimit) {
       return json(
         {
-          error: auth.tier === 'pro' ? 'pro_monthly_limit' : 'user_daily_limit',
+          error: auth.tier === 'pro' ? 'pro_monthly_limit' : 'free_monthly_limit',
           limit: allowance.limit,
         },
         429

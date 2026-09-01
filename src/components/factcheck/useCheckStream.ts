@@ -48,8 +48,8 @@ const MESSAGES: Record<string, string> = {
   too_long: 'That is too long. Try one section at a time.',
   rate_limited: 'Slow down a moment, then try again.',
   anon_daily_limit:
-    'That is 2 checks today. Sign in for 10 a day, or come back tomorrow.',
-  user_daily_limit: 'That is 10 checks today. Come back tomorrow.',
+    'That is 2 checks today. Make a free account for 10 a month.',
+  free_monthly_limit: 'That is your 10 checks this month. Pro gives you 100.',
   pro_monthly_limit:
     'That is 100 checks this month, which is the Pro cap. Email us if you need more.',
   daily_capacity: 'We have hit today’s free limit. It resets tomorrow.',

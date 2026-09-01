@@ -77,8 +77,11 @@ These are verified from code and get re-derived or mistaken every session.
 - **The prompt engine uses OpenAI + Gemini, not Anthropic.** See `architecture/prompt-engine.md`.
 - **`analyzePrompt()` in `lib/engine/index.ts` is a pure, portable function** — no
   Next/Supabase/HTTP deps. This is why new clients (VS Code, MCP) are cheap. See `roadmap.md`.
-- **Source checker limits: 2 a day anonymous per IP, 10 a day free, 100 a
-  month Pro, plus the global daily bucket.** The per-user counts live in
+- **Source checker limits: 2 a day anonymous per IP, 10 a MONTH free, 100 a
+  month Pro, plus the global daily bucket.** Accounts are metered monthly and
+  only the anonymous trial is daily. Mixing the units is what broke the pricing
+  table once: free at 10 a DAY is 300 a month against a Pro cap of 100, so Pro
+  was a third of Free and a free user cost about $12 a month. The per-user counts live in
   `usage_events` as `factcheck_run` (no new table). The anonymous one is
   in-memory and BEST EFFORT, since serverless instances recycle; the global
   bucket in `anon-budget.ts` is what actually bounds the bill and it fails

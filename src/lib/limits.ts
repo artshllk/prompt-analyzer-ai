@@ -113,20 +113,25 @@ export const ANON_DETECT_LIMIT = 1
  * that nobody had an account yet. That is unbounded cost per user, and it
  * stops being theoretical the moment outreach works.
  *
- * Two different guarantees, deliberately:
+ * ACCOUNTS ARE METERED MONTHLY, THE TRIAL IS METERED DAILY, and mixing the
+ * two units is how the pricing table broke. Free at 10 a DAY is 300 a month,
+ * which was three times the Pro cap of 100 a month: Pro was a downgrade, and
+ * a free user could cost about $12 a month while paying nothing.
  *
- *   signed in   10 a day, per user, counted in usage_events. Durable, survives
- *               restarts, and is the real limit.
- *   anonymous   2 a day, per IP, in memory. BEST EFFORT ONLY. Serverless
+ *   anonymous   2 a day, per IP, in memory. BEST EFFORT ONLY: serverless
  *               instances recycle, so the true figure is somewhere above 2.
- *               The global daily bucket is what actually bounds the bill, and
- *               it fails closed.
+ *               A trial, not a plan. The global daily bucket in
+ *               anon-budget.ts is what actually bounds the bill, and it fails
+ *               closed.
+ *   free        10 a month. About $0.40 of cost at worst.
+ *   pro         100 a month. About $4 against $4.99, so it stays above water.
  *
- * Nobody legitimately checks ten documents a day, so these are guards against
- * casual abuse rather than a product shape.
+ * Pro is ten times Free and both are bounded. Rolling 30 days rather than
+ * calendar months, so there is no month-boundary rush and no reset date to
+ * explain.
  */
 export const FACTCHECK_FREE_LIMIT = 10
-export const FACTCHECK_WINDOW_HOURS = 24
+export const FACTCHECK_WINDOW_HOURS = 24 * 30
 export const ANON_FACTCHECK_LIMIT = 2
 
 /**
@@ -141,8 +146,7 @@ export const ANON_FACTCHECK_LIMIT = 2
  * so this bounds the loss without ever being the thing a genuine subscriber
  * notices. It is a guard, not a shape, same as the free numbers.
  *
- * Rolling 30 days rather than calendar month, matching PRO_VERIFY_WINDOW_HOURS,
- * so there is no month-boundary rush and no reset date to explain.
+ * Rolling 30 days, matching FACTCHECK_WINDOW_HOURS and PRO_VERIFY_WINDOW_HOURS.
  */
 export const PRO_FACTCHECK_LIMIT = 100
 export const PRO_FACTCHECK_WINDOW_HOURS = 24 * 30

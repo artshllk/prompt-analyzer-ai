@@ -29,24 +29,36 @@ import Link from "next/link";
  * bigger model than MODELS.sharpen on every single improve (see models.ts).
  */
 
-// Source checker numbers are real, not aspirational: 2 a day per IP for
-// anonymous and 10 a day per user for signed-in, both enforced in the check
-// route. See limits.ts.
+/**
+ * THE TWO LISTS ARE READ SIDE BY SIDE, SO THEY HAVE TO PAIR LINE FOR LINE.
+ *
+ * The table broke once already by mixing units: Free at "10 a day" is 300 a
+ * month against a Pro cap of 100 a month, so Pro was a third of Free. Accounts
+ * are now both monthly and Pro is ten times Free on the line that matters.
+ *
+ * A feature that appears in Free and not in Pro reads as parity even when Pro
+ * is better, so every Free line has a Pro line above it that beats it. The
+ * anonymous trial is not a plan and is stated under the table, not inside the
+ * Free column, where it made "2 a day" look like a Free limit.
+ *
+ * Every number here is enforced in limits.ts. None of it is aspirational.
+ */
 const FREE_FEATURES = [
-  "10 source checks a day",
-  "2 a day without an account",
-  "AI text detector",
+  "10 source checks a month",
   "10 prompt improvements a day",
+  "5 AI text detections a day",
+  "7 days of history",
 ];
 
 const PRO_FEATURES = [
   "100 source checks a month",
-  // Prompt improvements stay unmetered for Pro. They cost about a cent, so
-  // unlimited is affordable there in a way it is not for checking.
+  // Improvements and detections stay unmetered for Pro. They cost about a cent
+  // each, so unlimited is affordable there in a way it is not for checking at
+  // four cents a document.
   "Unlimited prompt improvements",
+  "Unlimited AI text detections",
+  "History kept forever",
   "A stronger model on every improve",
-  "Full history, kept forever (Free keeps 7 days)",
-  "Priority processing on every request",
   "Priority support",
 ];
 
@@ -147,7 +159,7 @@ export function EditorialPricing({
             className="text-sm mb-7"
             style={{ color: "var(--color-paper-mute)" }}
           >
-            Enough to try everything.
+            Enough to see if it helps.
           </p>
           <Link
             href="/extension"
@@ -239,8 +251,17 @@ export function EditorialPricing({
         </PricingCard>
       </div>
 
+      {/* The trial belongs here, not in the Free column. Inside it, "2 a day"
+          read as a Free limit and made the plan look worse than it is. */}
       <p
-        className="mt-8 text-xs text-center md:text-left"
+        className="mt-8 text-sm text-center md:text-left"
+        style={{ color: "var(--ink-soft)" }}
+      >
+        No account? You can run 2 checks a day without one.
+      </p>
+
+      <p
+        className="mt-2 text-xs text-center md:text-left"
         style={{ color: "var(--color-paper-mute)" }}
       >
         Payments by Paddle. VAT and sales tax handled automatically.

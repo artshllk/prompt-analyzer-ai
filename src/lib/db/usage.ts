@@ -146,8 +146,8 @@ export async function getVerifyAllowance(
 }
 
 /**
- * Source checker allowance: FACTCHECK_FREE_LIMIT per rolling 24h for free
- * users, PRO_FACTCHECK_LIMIT per rolling 30 days for Pro.
+ * Source checker allowance: 10 a month for free, 100 a month for Pro, both on
+ * a rolling 30-day window.
  *
  * Pro is capped, not unlimited. At about four cents a document against $4.99 a
  * month, unmetered checking goes underwater around 125 documents. See
