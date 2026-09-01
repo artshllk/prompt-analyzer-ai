@@ -297,6 +297,15 @@ export interface CitationResult {
    * all of them and costs nothing.
    */
   figureOnPage?: boolean
+  /**
+   * Why we could not read the source, when check is 'source_unreachable'.
+   *
+   * Carried so the report can say WHICH kind of unreadable, because the three
+   * are different problems for the writer with different fixes, and because
+   * "your reader cannot verify this either" is a finding rather than an
+   * absence of one.
+   */
+  unreadable?: 'paywalled' | 'dead' | 'live_source' | 'no_source'
   /** Same indexOf discipline as the claim axis. Same reason. */
   evidence: Evidence[]
   note?: string

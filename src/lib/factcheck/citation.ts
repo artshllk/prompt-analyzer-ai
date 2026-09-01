@@ -4,6 +4,7 @@ import { asText, asEnum } from '@/lib/engine/coerce'
 import { TavilyProvider } from './providers/tavily'
 import { domainsFor } from './publishers'
 import { isLiveSource } from './live-sources'
+import { classifySource, READABILITY_COPY } from './readability'
 import type { ProviderFailure, RetrievalProvider, RetrievedPage } from './providers/types'
 import type { Claim, CitationResult, Evidence } from './types'
 
@@ -67,24 +68,7 @@ export interface CitationRun {
 
 const NOT_APPLICABLE: CitationResult = { check: 'not_applicable', evidence: [] }
 
-/**
- * Below this many characters, a "page" is not a page.
- *
- * FOUND IN THE AUDIT. Two SproutSocial citations were flagged off pages whose
- * entire retrieved text was 649 and 913 characters: a consent wall, a nav
- * shell, a JavaScript stub. We treated them as retrieved, the judge honestly
- * reported that the claim was not in them, and the writer would have been told
- * their link was wrong on the strength of a cookie banner.
- *
- * The rule everywhere else in this file applies here too: never conclude
- * anything from a page we did not really get. A stub is `source_unreachable`,
- * which is true, useful, and about the fetch rather than about their writing.
- *
- * Set well below a real article and well above any shell. Erring low is the
- * safe direction: it costs recall on genuinely tiny pages and buys precision
- * everywhere else.
- */
-const MIN_READABLE_CHARS = 1_200
+
 
 /**
  * Check every claim that has something to check against.
@@ -151,7 +135,12 @@ export async function checkCitations(
         } else if (failedUrls.has(claim.sourceUrl!)) {
           // This one IS about their link. The page did not load for us and
           // very likely will not load for their reader either.
-          results.set(claim.id, { check: 'source_unreachable', evidence: [] })
+          results.set(claim.id, {
+            check: 'source_unreachable',
+            unreadable: 'dead',
+            evidence: [],
+            note: READABILITY_COPY.dead,
+          })
         }
         // Neither returned nor named as failed: we know nothing. Leave it.
       }
@@ -294,13 +283,26 @@ Return JSON matching the schema.`
 async function judgeAgainst(claim: Claim, page: RetrievedPage): Promise<CitationResult> {
   const body = page.content.slice(0, 24_000)
 
-  // Not enough page to conclude from. See MIN_READABLE_CHARS.
-  if (body.trim().length < MIN_READABLE_CHARS) {
-    console.warn(`[citation] ${page.url} returned ${body.trim().length} chars, treating as unreachable`)
+  /**
+   * Refuse before judging anything we cannot honestly read.
+   *
+   * A PARTLY readable page is worse than an unreadable one: Statista renders
+   * masked figures as asterisks, so the number can be sitting right there
+   * behind the mask while the judge confidently reports it absent. Ten of
+   * thirteen SproutSocial citations in the audit were Statista, and all nine
+   * of that article's flags came from this.
+   *
+   * This is not coverage lost. `readability` is a finding of its own, and the
+   * writer gets a sentence they can act on without us judging anything.
+   */
+  const readable = classifySource(page.url, body)
+  if (readable !== 'readable') {
+    console.warn(`[citation] ${page.url} classified ${readable} at ${body.trim().length} chars`)
     return {
       check: 'source_unreachable',
+      unreadable: readable,
       evidence: [],
-      note: 'We could not read enough of that page to check it. It may be behind a consent wall or need JavaScript.',
+      note: READABILITY_COPY[readable],
     }
   }
 
@@ -325,8 +327,25 @@ async function judgeAgainst(claim: Claim, page: RetrievedPage): Promise<Citation
 
   const check = asEnum(res.check, CHECKS, 'does_not_contain')
   const quote = asText(res.quote)
-  const note = asText(res.note) || undefined
-  const sourceFigure = asText(res.source_figure) || undefined
+
+  /**
+   * THE GATE APPLIES TO EVERY NUMBER WE PUT IN FRONT OF A WRITER, not just to
+   * the evidence quote.
+   *
+   * `note` and `sourceFigure` were ungated. Both are read by a person, and
+   * both make an assertion about what the source says, so a model that
+   * invents one is telling the writer their source contains a figure it does
+   * not. Across 33 real samples it never misfired, and nothing whatsoever
+   * stopped it.
+   *
+   * A figure that is not in the retrieved text is dropped rather than shown.
+   * The note is kept only if every number in it survives that test, because a
+   * sentence with one phantom number in it is not partly true.
+   */
+  const rawFigure = asText(res.source_figure) || undefined
+  const sourceFigure = rawFigure && body.includes(rawFigure) ? rawFigure : undefined
+  const rawNote = asText(res.note) || undefined
+  const note = rawNote && numbersAreGrounded(rawNote, body, claim) ? rawNote : undefined
 
   // THE indexOf GATE. A quote the model invented is not in the page, so it
   // cannot carry a conclusion. This is the single defence against both a
@@ -382,6 +401,27 @@ function toEvidence(page: RetrievedPage, quote: string): Evidence {
  * Nothing looser than that. A fuzzy match here would let a paraphrase through,
  * and the whole value of the gate is that it cannot.
  */
+/**
+ * Every figure a note asserts about the source must be in the source.
+ *
+ * The writer's OWN figure is exempt, because a note legitimately restates it
+ * to contrast: "the source says 91.31%, not 90.39%". The 90.39% is the claim
+ * being quoted back, not an assertion about the page.
+ */
+export function numbersAreGrounded(note: string, source: string, claim: Claim): boolean {
+  const own = new Set<string>()
+  if (claim.figure) own.add(claim.figure.replace(/[^0-9.]/g, ''))
+  for (const m of claim.claimText.matchAll(/\d[\d.,]*/g)) own.add(m[0].replace(/[^0-9.]/g, ''))
+
+  for (const m of note.matchAll(/\d[\d.,]*/g)) {
+    const bare = m[0].replace(/[^0-9.]/g, '')
+    if (!bare || bare.length < 2) continue // a lone digit is prose, not a figure
+    if (own.has(bare)) continue
+    if (!source.includes(m[0]) && !source.includes(bare)) return false
+  }
+  return true
+}
+
 export function findQuote(source: string, quote: string): boolean {
   if (source.includes(quote)) return true
   const fold = (s: string) =>

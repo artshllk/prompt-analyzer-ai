@@ -29,8 +29,8 @@ import type { Claim } from './types'
 export type FindingGroup =
   | 'unsupported'    // the citation does not support the claim. Their work.
   | 'changed'        // correct when published, source has moved on. Maintenance.
-  | 'live_source'    // cites a page that only shows now. Add a date.
-  | 'unchecked'      // we could not check it. Ours, never theirs.
+  | 'unverifiable'   // the READER cannot check it either. A finding, not a gap.
+  | 'unchecked'      // WE could not check it. Ours, never theirs.
 
 /**
  * Context mismatch gets its own wording, because it is a different mistake
@@ -42,7 +42,14 @@ export type FindingGroup =
  * problem: the fix is to find the right page. Telling someone to go looking
  * for a source they already have is the wrong instruction.
  */
-export type FindingKind = 'context_mismatch' | 'not_present' | 'changed' | 'live' | 'unreadable'
+export type FindingKind =
+  | 'context_mismatch'
+  | 'not_present'
+  | 'changed'
+  | 'live'
+  | 'paywalled'
+  | 'dead'
+  | 'unreadable'
 
 export interface Finding {
   claim: Claim
@@ -74,11 +81,36 @@ const COPY: Record<FindingKind, { headline: string; fix: string }> = {
     headline: 'This cites a page that only ever shows current data.',
     fix: 'Quote the figure with the date you read it, so a reader knows what they are comparing against.',
   },
+  paywalled: {
+    headline: 'Your reader hits a paywall here, the same one we did.',
+    fix: 'Cite the primary source instead. A citation nobody can open does not support anything.',
+  },
+  dead: {
+    headline: 'That link is gone.',
+    fix: 'Repoint it. Your reader currently lands on nothing, or on something else entirely.',
+  },
   unreadable: {
     headline: 'We could not read that page.',
     fix: 'Nothing to do. This is our problem, not a finding about your writing.',
   },
 }
+
+/**
+ * WHY `unverifiable` IS A FINDING AND NOT A GAP.
+ *
+ * The instinct is to treat a source we could not read as coverage lost. That
+ * undersells the honest answer badly, because the reason we could not read it
+ * is almost always a reason the WRITER'S READER cannot read it either.
+ *
+ * A paywall stops them the same way it stopped us. A dead link lands them on a
+ * product page. A live dashboard shows them a different number from the one in
+ * the sentence. Each is a real credibility problem with an unambiguous fix,
+ * and each can be stated with total confidence WITHOUT reading the page or
+ * judging anything, so it carries no risk of false accusation at all.
+ *
+ * `unchecked` is the genuinely empty group: our own failures, which are never
+ * described as the writer having done something wrong.
+ */
 
 /**
  * Turn checked claims into findings.
@@ -107,9 +139,14 @@ export function toFindings(claims: Claim[]): Finding[] {
       const kind: FindingKind = onPage ? 'context_mismatch' : 'not_present'
       out.push({ claim, group: 'unsupported', kind, ...COPY[kind] })
     } else if (check === 'source_unreachable') {
-      out.push({ claim, group: 'unchecked', kind: 'unreadable', ...COPY.unreadable })
+      // WHICH kind of unreadable decides whether this is the writer's problem
+      // or ours, and they are different sentences.
+      const why = claim.citation.unreadable
+      if (why === 'paywalled') out.push({ claim, group: 'unverifiable', kind: 'paywalled', ...COPY.paywalled })
+      else if (why === 'dead') out.push({ claim, group: 'unverifiable', kind: 'dead', ...COPY.dead })
+      else out.push({ claim, group: 'unchecked', kind: 'unreadable', ...COPY.unreadable })
     } else if (claim.judgement.reason === 'live_source') {
-      out.push({ claim, group: 'live_source', kind: 'live', ...COPY.live })
+      out.push({ claim, group: 'unverifiable', kind: 'live', ...COPY.live })
     }
   }
   return out
@@ -119,7 +156,10 @@ export interface GroupedFindings {
   /** The group the writer has to act on. Shown first, always. */
   unsupported: Finding[]
   changed: Finding[]
-  liveSource: Finding[]
+  /** Their reader cannot verify these either. A finding, not a gap. */
+  unverifiable: Finding[]
+  /** Counts within unverifiable, because the fixes differ. */
+  unverifiableBreakdown: { paywalled: number; dead: number; live: number }
   unchecked: Finding[]
   /** The leading group, cut to FINDINGS_SHOWN. */
   lead: Finding[]
@@ -143,10 +183,16 @@ export function groupFindings(claims: Claim[]): GroupedFindings {
     .filter(f => f.group === 'unsupported')
     .sort((a, b) => rank(a.kind) - rank(b.kind) || a.claim.id.localeCompare(b.claim.id))
 
+  const unverifiable = all.filter(f => f.group === 'unverifiable')
   return {
     unsupported,
     changed: all.filter(f => f.group === 'changed'),
-    liveSource: all.filter(f => f.group === 'live_source'),
+    unverifiable,
+    unverifiableBreakdown: {
+      paywalled: unverifiable.filter(f => f.kind === 'paywalled').length,
+      dead: unverifiable.filter(f => f.kind === 'dead').length,
+      live: unverifiable.filter(f => f.kind === 'live').length,
+    },
     unchecked: all.filter(f => f.group === 'unchecked'),
     lead: unsupported.slice(0, FINDINGS_SHOWN),
     leadHidden: Math.max(0, unsupported.length - FINDINGS_SHOWN),
@@ -174,9 +220,17 @@ export function summaryLines(g: GroupedFindings): string[] {
   if (g.changed.length) {
     lines.push(`${n(g.changed.length, 'has', 'have')} changed since you published.`)
   }
-  if (g.liveSource.length) {
+  if (g.unverifiable.length) {
+    // The sentence Art asked for. It is a finding stated with total
+    // confidence, not an apology for coverage we did not get.
+    const b = g.unverifiableBreakdown
+    const parts: string[] = []
+    if (b.paywalled) parts.push(`${b.paywalled} paywalled`)
+    if (b.dead) parts.push(`${b.dead} dead`)
+    if (b.live) parts.push(`${b.live} live ${b.live === 1 ? 'dashboard' : 'dashboards'}`)
     lines.push(
-      `${n(g.liveSource.length, 'cites', 'cite')} a live dashboard your reader cannot check.`
+      `${n(g.unverifiable.length, 'citation your', 'citations your')} reader cannot verify either: ` +
+        `${parts.join(', ')}.`
     )
   }
   if (g.unchecked.length) {

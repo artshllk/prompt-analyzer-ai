@@ -468,9 +468,9 @@ function Findings({ findings }: { findings: GroupedFindings }) {
         </button>
       )}
 
-      {(findings.liveSource.length > 0 || findings.unchecked.length > 0) && (
+      {(findings.unverifiable.length > 0 || findings.unchecked.length > 0) && (
         <div className="mt-5 pt-4 space-y-3" style={{ borderTop: '1px solid var(--rule)' }}>
-          {findings.liveSource.map(f => <QuietFinding key={f.claim.id} finding={f} />)}
+          {findings.unverifiable.map(f => <QuietFinding key={f.claim.id} finding={f} />)}
           {findings.unchecked.map(f => <QuietFinding key={f.claim.id} finding={f} />)}
         </div>
       )}

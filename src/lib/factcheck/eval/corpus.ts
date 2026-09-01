@@ -49,6 +49,63 @@ export type DefectClass =
   | 'year_off_by_one'
   | 'unit_confusion'
 
+/**
+ * Realistic page furniture, wrapped around every fixture source.
+ *
+ * WRITTEN BECAUSE THE FIXTURES BROKE THE PRODUCT'S OWN GUARD. Raising
+ * MIN_READABLE_CHARS to 3,000, from measurements on real paywalled pages,
+ * classified every source in this file as a shell, and recall went to zero.
+ * The product was right and the corpus was wrong: no real article is four
+ * hundred characters long.
+ *
+ * That is the synthetic-corpus problem in miniature, and it is why this file
+ * cannot measure anything. Padding it is a patch on the symptom. Deliberately
+ * carries NO digits, so it cannot become a distractor or accidentally satisfy
+ * a claim.
+ */
+const PAGE_FURNITURE = `
+
+About the research
+
+This page is part of an ongoing series looking at how organisations work, how
+they buy, and how those patterns shift over time. The series draws on survey
+responses gathered across several markets, on interviews with practitioners,
+and on data shared with us by participating companies under agreement.
+
+Methodology notes are published alongside each release. Where a figure has been
+revised, the revision is recorded in the changelog rather than applied silently
+to the original text. Where a question changed wording between waves, we say so,
+because a comparison across a changed question is not a comparison.
+
+Readers are welcome to quote from this page. We ask only that quotations name
+the wave they came from, since several of the measures here move meaningfully
+between releases and a number without its date invites a reader to compare
+things that were never comparable.
+
+Related reading
+
+Our earlier work in this area covers adoption patterns, buying committees, and
+the gap between what teams say they will do next year and what they turn out to
+have done. Those pages are linked from the series index.
+
+Questions about the underlying data, requests for the full crosstabs, and
+corrections should go to the research team through the contact page. We publish
+corrections in full and we do not remove them.
+`.trim()
+
+/**
+ * Wrap a fixture source in furniture until it is the length of a real page.
+ *
+ * Pads to a length rather than a fixed number of repetitions, so a short
+ * fixture body cannot quietly fall back under the product's readability floor
+ * the next time that floor moves.
+ */
+function page(body: string): string {
+  let out = body
+  while (out.length < 4_000) out += `\n\n${PAGE_FURNITURE}`
+  return out
+}
+
 export interface Fixture {
   id: string
   /** What kind of real-world defect, or `clean` for a citation that is fine. */
@@ -65,7 +122,7 @@ export interface Fixture {
   because: string
 }
 
-const AHREFS_STUDY = `Ahrefs Study: 96.55% of Pages Get No Traffic
+const AHREFS_STUDY = page(`Ahrefs Study: 96.55% of Pages Get No Traffic
 
 We studied 1 billion pages and found that 96.55% of all pages in our index get
 zero organic search traffic from Google. Another 1.94% get between one and ten
@@ -73,9 +130,9 @@ monthly visits. Only 0.63% of pages receive more than 1,000 monthly visits.
 
 The study was run in March 2025 on a sample drawn from the Ahrefs Content
 Explorer index. 87% of marketers surveyed use AI to create or help create
-content, based on 769 out of 879 respondents.`
+content, based on 769 out of 879 respondents.`)
 
-const AHREFS_ROUNDUP = `SEO Statistics for 2026
+const AHREFS_ROUNDUP = page(`SEO Statistics for 2026
 
 A roundup of the SEO numbers worth knowing this year, updated December 2025.
 
@@ -84,18 +141,18 @@ Overviews are associated with a 58% lower average click-through rate for the
 top-ranking organic page.
 
 For the underlying research on indexing and traffic distribution, see our
-earlier study.`
+earlier study.`)
 
-const COLLAB_REPORT = `The State of Work, 2025
+const COLLAB_REPORT = page(`The State of Work, 2025
 
 Our annual survey covers 9,000 respondents across six countries.
 
 Teams using the platform daily reported saving 4.1 hours per week on average.
 Adoption among Teams grew 34.2% year over year.
 
-Respondents outside of Teams were not asked this question.`
+Respondents outside of Teams were not asked this question.`)
 
-const MARKET_SHARE = `Search Engine Market Share, Full Year 2025
+const MARKET_SHARE = page(`Search Engine Market Share, Full Year 2025
 
 Ranked by global share across all devices for the twelve months to December
 2025:
@@ -105,12 +162,12 @@ Ranked by global share across all devices for the twelve months to December
 3. Yandex, 2.6%
 4. DuckDuckGo, 1.3%
 5. Yahoo, 0.8%
-6. Baidu, 0.7%`
+6. Baidu, 0.7%`)
 
-const REVENUE_NOTE = `Quarterly Results
+const REVENUE_NOTE = page(`Quarterly Results
 
 Revenue for the quarter was $10,240,000, up from $7.8 million a year earlier.
-The company added 34,219 net new customers over the same period.`
+The company added 34,219 net new customers over the same period.`)
 
 export const CORPUS: Fixture[] = [
   /* ------------------------------------------------- clean, must not flag */

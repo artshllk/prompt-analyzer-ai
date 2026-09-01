@@ -24,6 +24,10 @@ const unsupported = (id: string, figureOnPage?: boolean) =>
   claim(id, { citation: { check: 'does_not_contain', evidence: [], figureOnPage } })
 const unreachable = (id: string) =>
   claim(id, { citation: { check: 'source_unreachable', evidence: [] } })
+const paywalled = (id: string) =>
+  claim(id, { citation: { check: 'source_unreachable', unreadable: 'paywalled', evidence: [] } })
+const dead = (id: string) =>
+  claim(id, { citation: { check: 'source_unreachable', unreadable: 'dead', evidence: [] } })
 const live = (id: string) =>
   claim(id, { judgement: { verdict: 'unchecked', reason: 'live_source', evidence: [] } })
 
@@ -60,7 +64,7 @@ test('nothing is dropped, and every count is reported', () => {
   assert.equal(g.lead.length + g.leadHidden, g.unsupported.length)
   const text = summaryLines(g).join(' ')
   assert.match(text, /5 citations do not support/)
-  assert.match(text, /1 cites a live dashboard/)
+  assert.match(text, /1 citation your reader cannot verify either: 1 live dashboard/)
   assert.match(text, /1 could not be checked/)
 })
 
@@ -79,8 +83,31 @@ test('our own failures are never described as the writer doing something wrong',
 
 test('a live source is its own group with its own fix', () => {
   const [f] = toFindings([live('a')])
-  assert.equal(f.group, 'live_source')
+  assert.equal(f.group, 'unverifiable')
   assert.match(f.fix, /date you read it/)
+})
+
+test('cannot-check is a finding about the reader, not a gap in our coverage', () => {
+  // A paywall stops the writer's reader the same way it stopped us, and a dead
+  // link lands them on nothing. Both are real credibility problems with an
+  // unambiguous fix, statable with total confidence without judging anything.
+  const g = groupFindings([paywalled('a'), paywalled('b'), dead('c'), live('d')])
+  assert.equal(g.unverifiable.length, 4)
+  assert.deepEqual(g.unverifiableBreakdown, { paywalled: 2, dead: 1, live: 1 })
+  assert.equal(
+    summaryLines(g)[0],
+    '4 citations your reader cannot verify either: 2 paywalled, 1 dead, 1 live dashboard.'
+  )
+})
+
+test('a paywall and a dead link get different fixes', () => {
+  assert.match(toFindings([paywalled('a')])[0].fix, /Cite the primary source/)
+  assert.match(toFindings([dead('b')])[0].fix, /Repoint it/)
+})
+
+test('our own failure is still ours, and never blamed on the reader', () => {
+  const [f] = toFindings([unreachable('a')])
+  assert.equal(f.group, 'unchecked')
 })
 
 test('the mismatch split is deterministic, not a model judgement', () => {
