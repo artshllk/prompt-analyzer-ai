@@ -32,13 +32,13 @@ export default function CheckPage() {
             className="display text-4xl md:text-[3.25rem] leading-[1.06] tracking-tight"
             style={{ color: 'var(--ink)' }}
           >
-            Every claim someone could <span className="accent">challenge you on.</span>
+            Check your sources <span className="accent">before someone else does.</span>
           </h1>
           <p className="mt-5 text-base md:text-lg leading-[1.7]" style={{ color: 'var(--ink-soft)' }}>
-            Paste a document. We find the statements in it that a reader could
-            look up: the numbers, the citations, the quotes, the links, and the
-            things attributed to someone. Right now we find them. We do not yet
-            check them.
+            Paste a stats-heavy post. We find every number, citation, quote and
+            ranking a reader could look up, and tell you how many of them your
+            document actually links. Right now we find them. Checking whether
+            each link shows what you say it shows comes next.
           </p>
 
           <div className="mt-10 md:mt-12">
@@ -49,8 +49,8 @@ export default function CheckPage() {
             className="mt-14 pt-5 text-xs leading-relaxed"
             style={{ borderTop: '1px solid var(--rule)', color: 'var(--ink-soft)' }}
           >
-            Nothing on this page is a verdict. Every claim is marked
-            unverifiable, which is the honest state for a document nobody has
+            Nothing on this page is a verdict. Every claim is marked not
+            checked, which is the honest state for a document nobody has
             checked against a source. A claim being listed is not a suggestion
             it is wrong.
           </p>

@@ -9,22 +9,50 @@
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { resolveOverlaps, toRenderRuns, unanchoredClaims, countByState } from './spans'
-import type { Claim, ClaimState } from './types'
+import {
+  resolveOverlaps,
+  toRenderRuns,
+  unanchoredClaims,
+  markableClaims,
+  firstPartyClaims,
+  countByVerdict,
+  citationsToFix,
+  citationDensity,
+} from './spans'
+import {
+  attentionFlag,
+  CITATION_CHECKS,
+  CLAIM_VERDICTS,
+  type Claim,
+  type ClaimVerdict,
+  type ClaimSubject,
+  type SourceForm,
+} from './types'
 
 function claim(
   id: string,
   span?: [number, number],
-  state: ClaimState = 'unverifiable'
+  verdict: ClaimVerdict = 'unchecked',
+  extra: Partial<Claim> = {}
 ): Claim {
   return {
     id,
     quote: 'q',
     claimText: 'q',
     kind: 'assertion',
+    subject: 'population',
+    sourceForm: 'none',
+    looksPublished: false,
     span: span ? { start: span[0], end: span[1], precision: 'exact' } : undefined,
-    verdict: { state, evidence: [] },
+    judgement: { verdict, evidence: [] },
+    citation: { check: 'not_applicable', evidence: [] },
+    ...extra,
   }
+}
+
+/** A claim shaped only by the fields the density and axis helpers read. */
+function shaped(id: string, subject: ClaimSubject, sourceForm: SourceForm): Claim {
+  return claim(id, undefined, 'unchecked', { subject, sourceForm })
 }
 
 const DOC = 'Revenue grew 40% last year. The team doubled. Profit fell 12%.'
@@ -143,12 +171,131 @@ test('counts add up to the total, always', () => {
   const claims = [
     claim('a', [0, 5], 'verified'),
     claim('b', [6, 10], 'contradicted'),
-    claim('c', undefined, 'unverifiable'),
+    claim('c', undefined, 'unchecked'),
     claim('d', undefined, 'verified'),
   ]
-  const c = countByState(claims)
+  const c = countByVerdict(claims)
   assert.equal(c.verified, 2)
   assert.equal(c.contradicted, 1)
-  assert.equal(c.unverifiable, 1)
-  assert.equal(c.verified + c.unverifiable + c.contradicted, c.total)
+  assert.equal(c.unchecked, 1)
+  assert.equal(c.verified + c.unchecked + c.contradicted, c.total)
+})
+
+/* --------------------------------------------------------- the two axes */
+
+test('the two axes share no values, so a citation defect cannot accuse', () => {
+  // The whole extension of the governing rule rests on this. A citation check
+  // returning `does_not_contain` must be unable to become `contradicted`, and
+  // the guarantee is that no value of one union is a value of the other. A
+  // future careless edit that adds one to the other breaks here rather than in
+  // front of a writer.
+  const overlap = (CITATION_CHECKS as readonly string[]).filter(v =>
+    (CLAIM_VERDICTS as readonly string[]).includes(v)
+  )
+  assert.deepEqual(overlap, [])
+  assert.ok(!(CITATION_CHECKS as readonly string[]).includes('contradicted'))
+})
+
+test('a first-party claim is never marked and never counted as uncited', () => {
+  // 84% of a case study is the author's own numbers. Marking them paints a
+  // wall of amber over a document that has done nothing wrong.
+  const claims = [
+    shaped('own', 'first_party', 'none'),
+    shaped('theirs', 'population', 'linked'),
+  ]
+  assert.deepEqual(markableClaims(claims).map(c => c.id), ['theirs'])
+  assert.deepEqual(firstPartyClaims(claims).map(c => c.id), ['own'])
+
+  const d = citationDensity(claims)
+  assert.equal(d.firstParty, 1)
+  assert.equal(d.linked, 1)
+  assert.equal(d.none, 0, 'a first-party claim must not count as an uncited one')
+  assert.equal(d.ratio, 1)
+})
+
+test('a first-party claim is never given a span, even when it has one', () => {
+  const claims = [
+    claim('own', [0, 10], 'unchecked', { subject: 'first_party' }),
+    claim('theirs', [11, 20]),
+  ]
+  assert.deepEqual(resolveOverlaps(claims).map(c => c.id), ['theirs'])
+  // And it does not fall through into the "could not place it" list either,
+  // which would explain it wrongly.
+  assert.deepEqual(unanchoredClaims(claims).map(c => c.id), [])
+})
+
+test('citation density bands match the measured distribution', () => {
+  const doc = (linked: number, total: number) =>
+    citationDensity([
+      ...Array.from({ length: linked }, (_, i) => shaped(`l${i}`, 'population', 'linked')),
+      ...Array.from({ length: total - linked }, (_, i) => shaped(`n${i}`, 'population', 'none')),
+    ])
+
+  // Ahrefs 100%, Semrush 98%, Backlinko 77% -> well cited.
+  assert.equal(doc(77, 100).band, 'well_cited')
+  // SproutSocial 55% -> mixed. The observed gap sits below this.
+  assert.equal(doc(55, 100).band, 'mixed')
+  // Wyzowl 13%, DemandSage 11% -> uncited.
+  assert.equal(doc(12, 100).band, 'uncited')
+})
+
+test('a document of only first-party claims does not divide by zero', () => {
+  const d = citationDensity([shaped('a', 'first_party', 'none')])
+  assert.equal(d.ratio, 0)
+  assert.equal(d.band, 'uncited')
+  assert.ok(Number.isFinite(d.ratio))
+})
+
+test('citations to fix counts only real defects, and never first-party ones', () => {
+  const claims = [
+    claim('a', undefined, 'verified', {
+      citation: { check: 'does_not_contain', evidence: [] },
+    }),
+    claim('b', undefined, 'verified', {
+      citation: { check: 'supports', evidence: [] },
+    }),
+    claim('c', undefined, 'unchecked', {
+      subject: 'first_party',
+      citation: { check: 'does_not_contain', evidence: [] },
+    }),
+  ]
+  assert.equal(citationsToFix(claims), 1)
+})
+
+/* ------------------------------------------------------ attention flag */
+
+test('the attention flag never fires on anything it could be wrong about', () => {
+  const base = (extra: Partial<Claim>) => claim('x', undefined, 'unchecked', extra)
+
+  // Fires: population-shaped, searched properly, nothing found.
+  assert.ok(
+    attentionFlag(
+      base({ looksPublished: true, judgement: { verdict: 'unchecked', reason: 'not_found', evidence: [] } })
+    )
+  )
+
+  // Silent on a first-party number. Finding nothing there means nothing.
+  assert.equal(
+    attentionFlag(
+      base({
+        looksPublished: true,
+        subject: 'first_party',
+        judgement: { verdict: 'unchecked', reason: 'not_found', evidence: [] },
+      })
+    ),
+    null
+  )
+  // Silent when the silence was OUR fault rather than the web's.
+  for (const reason of ['search_failed', 'judge_failed', 'deadline', 'not_checked'] as const) {
+    assert.equal(
+      attentionFlag(base({ looksPublished: true, judgement: { verdict: 'unchecked', reason, evidence: [] } })),
+      null,
+      `must stay silent when the reason is ${reason}`
+    )
+  }
+  // Silent on anything we actually settled.
+  assert.equal(
+    attentionFlag(base({ looksPublished: true, judgement: { verdict: 'verified', evidence: [] } })),
+    null
+  )
 })

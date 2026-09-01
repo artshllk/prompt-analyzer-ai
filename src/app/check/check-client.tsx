@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { MarkedDocument } from '@/components/factcheck/MarkedDocument'
 import { MAX_DOC_CHARS, MIN_DOC_CHARS } from '@/lib/factcheck/types'
-import type { Claim } from '@/lib/factcheck/types'
+import type { Claim, CitationDensity } from '@/lib/factcheck/types'
 
 /**
  * Paste a document, get its checkable claims marked.
@@ -18,7 +18,14 @@ import type { Claim } from '@/lib/factcheck/types'
 type State =
   | { kind: 'idle' }
   | { kind: 'working' }
-  | { kind: 'done'; text: string; claims: Claim[]; truncated: boolean; foundCount: number }
+  | {
+      kind: 'done'
+      text: string
+      claims: Claim[]
+      density: CitationDensity
+      truncated: boolean
+      foundCount: number
+    }
   | { kind: 'error'; message: string }
 
 // Every server error we can produce, in the user's language. The fallback
@@ -67,6 +74,7 @@ export function CheckClient() {
         kind: 'done',
         text: data.text,
         claims: data.claims,
+        density: data.density,
         truncated: Boolean(data.truncated),
         foundCount: data.foundCount ?? data.claims.length,
       })
@@ -81,7 +89,7 @@ export function CheckClient() {
   if (state.kind === 'done') {
     return (
       <div>
-        <MarkedDocument text={state.text} claims={state.claims} />
+        <MarkedDocument text={state.text} claims={state.claims} density={state.density} />
 
         {/* The cap, said out loud. Silently dropping claims in a product
             about honesty would be disqualifying. */}
@@ -106,7 +114,7 @@ export function CheckClient() {
             Check another
           </button>
           <p className="text-[13px]" style={{ color: 'var(--ink-soft)' }}>
-            Nothing has been verified against a source yet.
+            Nothing has been checked against a source yet.
           </p>
         </div>
       </div>

@@ -106,16 +106,23 @@ export async function POST(req: NextRequest) {
   if (result === 'too_long') return json({ error: 'too_long', limit: MAX_DOC_CHARS }, 400)
   if (result === 'unavailable') return json({ error: 'unavailable' }, 503)
 
+  // The density band is logged because it is the number that decides how much
+  // this tool can do for a document, and the distribution of bands across real
+  // traffic is the thing worth knowing before 4b picks its search budget.
+  const d = result.density
   console.log(
     `[factcheck] claims=${result.claims.length}/${result.foundCount} ` +
       `unanchored=${result.unanchoredCount} chars=${text.length} ` +
-      `auth=${auth ? auth.tier : 'anon'} ts=${new Date().toISOString()}`
+      `band=${d.band} linked=${d.linked} named=${d.named} none=${d.none} ` +
+      `firstParty=${d.firstParty} auth=${auth ? auth.tier : 'anon'} ` +
+      `ts=${new Date().toISOString()}`
   )
 
   return json(
     {
       text: result.text,
       claims: result.claims,
+      density: result.density,
       truncated: result.truncated,
       foundCount: result.foundCount,
       anon: !auth,

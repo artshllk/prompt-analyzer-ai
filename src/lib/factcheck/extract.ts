@@ -2,9 +2,17 @@ import { callLLM } from '@/lib/engine/openai-client'
 import { MODELS } from '@/lib/engine/models'
 import { asText, asEnum, asObjectArray } from '@/lib/engine/coerce'
 import { normalizeDocument, locateAll } from './locate'
+import { citationDensity } from './spans'
 import {
   type Claim,
-  type ClaimKind,
+  type ClaimSubject,
+  type CitationDensity,
+  type SourceForm,
+  CLAIM_KINDS,
+  CLAIM_SUBJECTS,
+  SOURCE_FORMS,
+  initialJudgement,
+  initialCitation,
   MAX_CLAIMS_PER_DOC,
   MAX_DOC_CHARS,
   MIN_DOC_CHARS,
@@ -38,15 +46,6 @@ import {
  * instruction to "find claims" reliably does not catch it.
  */
 
-const KINDS: readonly ClaimKind[] = [
-  'statistic',
-  'citation',
-  'url',
-  'quote',
-  'attribution',
-  'assertion',
-] as const
-
 const SCHEMA = {
   type: 'object',
   properties: {
@@ -68,10 +67,52 @@ const SCHEMA = {
           },
           kind: {
             type: 'string',
-            enum: [...KINDS],
+            enum: [...CLAIM_KINDS],
+          },
+          subject: {
+            type: 'string',
+            enum: [...CLAIM_SUBJECTS],
+            description:
+              'first_party if this is the document author\'s own number or their own client\'s. population if it is about a general group the author has no special access to (marketers, US adults, small businesses). entity if it is about one named organisation or product that is not the author.',
+          },
+          source_form: {
+            type: 'string',
+            enum: [...SOURCE_FORMS],
+            description:
+              'linked if the claim carries or sits directly beside a hyperlink to its source. named if a publisher is named in the prose with no link. none if there is no source of any kind.',
+          },
+          source_url: {
+            type: 'string',
+            description:
+              'The URL, copied exactly, when source_form is linked. Empty string otherwise. Never invent or complete a URL.',
+          },
+          source_name: {
+            type: 'string',
+            description:
+              'The publisher as the author named them, when source_form is named. "Ahrefs", "Gartner", "the Pew Research Center". Empty string otherwise.',
+          },
+          figure: {
+            type: 'string',
+            description:
+              'The number exactly as written in the document, including its symbol: "89%", "$4.2 billion", "4th". Empty string when the claim has no number.',
+          },
+          looks_published: {
+            type: 'boolean',
+            description:
+              'True if this claim is shaped like something a survey, study or report would have published, so a source SHOULD exist if it is real. False for anything private, internal, or specific to one company\'s own operations.',
           },
         },
-        required: ['quote', 'claim_text', 'kind'],
+        required: [
+          'quote',
+          'claim_text',
+          'kind',
+          'subject',
+          'source_form',
+          'source_url',
+          'source_name',
+          'figure',
+          'looks_published',
+        ],
       },
     },
   },
@@ -85,6 +126,7 @@ const SYSTEM_PROMPT = `You find the factual claims in a document that a careful 
 Something that is either true or false about the world, and that someone could look up.
 
 - statistic: any number, percentage, quantity, money amount, date range or growth figure
+- ranking: an ordinal or a ranked position. "the fourth largest", "the second most common", "our top five". Extract these even though they look soft: a ranked list with one entry quietly dropped moves everything below it up a place, and that is a real and common defect that is invisible unless the rank itself is a claim.
 - citation: a named study, paper, report, book or dataset
 - url: a link, which either resolves or does not
 - quote: words put in someone's mouth
@@ -111,6 +153,32 @@ These read like background. They are stated flatly, they sound about right, and 
 
 DO NOT SKIP THEM BECAUSE THEY LOOK UNREMARKABLE. They are the reason this tool exists. If a sentence contains a specific number and no source, extract it, every time, however ordinary it sounds.
 
+# WHO THE CLAIM IS ABOUT
+
+Set subject from whose numbers these are, RELATIVE TO THE AUTHOR OF THIS DOCUMENT.
+
+- first_party: the author's own figures. "We surveyed 200 customers", "our pilot cut resolution time to 9 hours", "our client saw a 30% lift". Nobody outside the author's own records can check these, so they are handled separately and never marked as doubtful.
+- population: a general group the author has no special access to. "89% of small business owners", "two thirds of US adults", "the average B2B buyer".
+- entity: one named organisation, product or person that is not the author. "Shopify processed $X", "Gartner employs Y analysts".
+
+The relative part matters. In an article on YOUR blog, "Asana reported that its own users saved four hours a week" is entity, not first_party. It is Asana's own number, but it is not yours, and someone outside can go and read what Asana published.
+
+# WHAT THE AUTHOR CITED
+
+Set source_form from what is actually there, not from what should be there.
+
+- linked: the claim carries a hyperlink, or one sits immediately beside it. Copy the URL into source_url exactly as written. Never repair, complete or guess a URL.
+- named: a publisher is named in the prose and there is no link. "According to Ahrefs", "a 2025 Gartner study". Put the publisher in source_name.
+- none: no source of any kind. This is extremely common and it is not an error. Report it plainly.
+
+# LOOKS PUBLISHED
+
+Set looks_published true when the claim is shaped like a finding somebody would have PUBLISHED, so a source should exist if the claim is real. A percentage of a named population is the clearest case.
+
+Set it false for anything private or internal, and for anything about one company's own operations, even when it carries a number.
+
+This never becomes an accusation. It exists so that finding nothing can mean something: finding no source for "our client saw a 30% lift" means nothing at all, and finding no source for "89% of small business owners use AI" is worth the writer's attention.
+
 # HOW TO CHOOSE WHEN THERE ARE MANY
 
 Rank by one question: WOULD A READER BE MISLED IF THIS WERE WRONG?
@@ -131,6 +199,8 @@ export interface ExtractResult {
   /** The normalized document. Everything downstream indexes into THIS. */
   text: string
   claims: Claim[]
+  /** How well the document cites itself. Computed here, free, no network. */
+  density: CitationDensity
   /** True when more claims were found than we were willing to carry forward. */
   truncated: boolean
   /** How many the model returned before the cap. */
@@ -173,11 +243,37 @@ export async function extractClaims(
   const foundCount = raw_claims.length
 
   const cleaned = raw_claims
-    .map(c => ({
-      quote: asText(c.quote),
-      claimText: asText(c.claim_text),
-      kind: asEnum(c.kind, KINDS, 'assertion'),
-    }))
+    .map(c => {
+      const subject = asEnum(c.subject, CLAIM_SUBJECTS, 'entity') as ClaimSubject
+      const sourceUrl = asText(c.source_url)
+      const sourceName = asText(c.source_name)
+      // The model's own source_form is a suggestion, not the answer. A `linked`
+      // with no usable URL is worthless downstream and would route a claim to
+      // an endpoint with nothing to send it, so the form is re-derived from
+      // what actually arrived. Same discipline as the claim cap: the thing
+      // that costs money is decided in code.
+      const declared = asEnum(c.source_form, SOURCE_FORMS, 'none') as SourceForm
+      const form: SourceForm =
+        declared === 'linked' && isFetchableUrl(sourceUrl) ? 'linked'
+          : declared !== 'none' && sourceName ? 'named'
+          : 'none'
+      return {
+        quote: asText(c.quote),
+        claimText: asText(c.claim_text),
+        kind: asEnum(c.kind, CLAIM_KINDS, 'assertion'),
+        subject,
+        sourceForm: form,
+        sourceUrl: form === 'linked' ? sourceUrl : undefined,
+        sourceName: form === 'named' ? sourceName : undefined,
+        figure: asText(c.figure) || undefined,
+        // A first-party claim is never "publishable elsewhere" by definition,
+        // whatever the model says, so the flag is forced off rather than
+        // trusted. It is the input to a sentence shown to a writer, and the
+        // sentence is only safe when the flag cannot be wrong in that
+        // direction.
+        looksPublished: subject !== 'first_party' && c.looks_published === true,
+      }
+    })
     // A claim with no quote cannot be located and a claim with no claimText
     // cannot be searched for. Either way it is not usable, so it is dropped
     // rather than shown as an empty mark.
@@ -194,17 +290,45 @@ export async function extractClaims(
     quote: l.claim.quote,
     claimText: l.claim.claimText,
     kind: l.claim.kind,
+    subject: l.claim.subject,
+    sourceForm: l.claim.sourceForm,
+    sourceUrl: l.claim.sourceUrl,
+    sourceName: l.claim.sourceName,
+    figure: l.claim.figure,
+    looksPublished: l.claim.looksPublished,
     span: l.span,
-    // Nothing has checked anything yet, and the resting state says so
-    // honestly rather than implying a clean bill of health.
-    verdict: { state: 'unverifiable', reason: 'not_checked', evidence: [] },
+    // Nothing has checked anything yet on either axis, and the resting states
+    // say so honestly rather than implying a clean bill of health.
+    judgement: initialJudgement(l.claim.subject),
+    citation: initialCitation(),
   }))
 
   return {
     text,
     claims,
+    density: citationDensity(claims),
     truncated: cleaned.length > MAX_CLAIMS_PER_DOC,
     foundCount,
     unanchoredCount: claims.filter(c => !c.span).length,
+  }
+}
+
+/**
+ * Is this string something the citation axis could actually fetch?
+ *
+ * Deliberately strict, and deliberately not a validation of whether the page
+ * exists. It rejects the two things that cause real damage: a scheme we will
+ * not follow, and a relative or malformed string the model produced by
+ * summarising a link rather than copying it. Anything that fails here becomes
+ * `named` or `none`, which is a weaker claim about the document and therefore
+ * the safe direction to fall.
+ */
+function isFetchableUrl(u: string): boolean {
+  if (!u) return false
+  try {
+    const parsed = new URL(u)
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:'
+  } catch {
+    return false
   }
 }
