@@ -218,20 +218,31 @@ export default function LandingPage() {
           Dark ground with the white document card on it is also the right
           picture for what this is. It makes the marked-up page look like a
           page on a desk, which is what a proof reader sees.
+
+          IT IS A CONTAINED BLOCK, NOT A FULL-BLEED BAND, and that is the
+          difference between the two readings. Full bleed, the dark ran edge to
+          edge while the card stayed capped at max-w-5xl, so on a wide screen
+          there was about 490px of black down each side and 112px above and
+          below. The card was roughly a third of the dark area and read as
+          something lost in a void.
+
+          Contained, the black becomes a mount around the document. A mount is
+          narrow by definition: the moment it is wider than the thing it holds,
+          it stops framing and starts swallowing.
         */}
-        <section
-          className="px-5 sm:px-6 md:px-10 py-20 md:py-28"
-          style={{ background: "var(--ink)" }}
-        >
-          <div className="max-w-5xl mx-auto">
+        <section className="px-5 sm:px-6 md:px-10 pb-20 md:pb-28">
+          <div
+            className="max-w-5xl mx-auto rounded-3xl px-5 sm:px-8 md:px-10 py-12 md:py-14"
+            style={{ background: "var(--ink)" }}
+          >
             <p
-              className="text-[12px] uppercase tracking-[0.14em] mb-6"
+              className="text-[12px] uppercase tracking-[0.14em] mb-5"
               style={{ color: "var(--mute-on-ink)" }}
             >
               A real example
             </p>
             <WorkedExample onDark />
-            <div className="mt-6">
+            <div className="mt-5">
               <NoLinkNote onDark />
             </div>
           </div>

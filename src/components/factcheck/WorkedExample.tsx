@@ -32,7 +32,11 @@ export function WorkedExample({ onDark }: { onDark?: boolean } = {}) {
          marked-up page looks like paper, and paper does not go dark. */
       style={{
         background: 'var(--card)',
-        border: `1px solid ${onDark ? 'transparent' : 'var(--rule)'}`,
+        border: onDark ? 'none' : '1px solid var(--rule)',
+        // On the mount the card is paper resting on something, not a panel
+        // painted onto it. One soft shadow does that; a border would fight the
+        // dark edge already framing it.
+        boxShadow: onDark ? '0 1px 3px rgba(0,0,0,0.28)' : 'none',
       }}
       aria-label="An example of a mistake this finds"
     >
