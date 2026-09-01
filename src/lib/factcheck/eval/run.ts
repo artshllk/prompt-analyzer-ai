@@ -28,11 +28,31 @@ import type { CitationCheck } from '../types'
  * not in the source and was therefore discarded. That is not a scoring metric,
  * it is a health check on the one defence against a confabulating judge.
  *
- * A NOTE FOR WHOEVER READS THE OUTPUT. This corpus is 16 fixtures drawn from
- * five defects seen in two documents. It is enough to catch a judge that
- * flags near-misses and nowhere near enough to estimate a real-world rate.
- * `golden.ts` in the detector records the same lesson learned the hard way at
- * 16 cases. Treat a pass as "not obviously broken", never as a measurement.
+ * ===================================================================
+ * THIS CORPUS CANNOT MEASURE THE PRODUCT, AND SAYS SO
+ * ===================================================================
+ *
+ * Every fixture here is SYNTHETIC: I wrote the claim, I wrote the source, and
+ * I wrote the expected answer. That is fine for catching a judge that flags
+ * near-misses, and it is worthless as an estimate of anything.
+ *
+ * It scored 16/16 with a false-defect rate of zero while the same code, run on
+ * real pages, produced a 32% false-accusation rate against hand verification.
+ * It could not have caught any of the causes:
+ *
+ *   - percent-encoded SVG data faking a figure match: my sources have no markup
+ *   - paywalled pages returning masked figures: my sources are never truncated
+ *     by a paywall
+ *   - the judge answering in Spanish: my sources are all clean English
+ *   - sources that changed after publication: my sources have no history
+ *
+ * A synthetic corpus tests the judge against the author's own idea of what a
+ * source looks like. Real input has textures invented input does not.
+ *
+ * So this stays as a REGRESSION GUARD and is never quoted as a rate. The
+ * measurement corpus is real-citations, held out and hand-verified, and
+ * `assertNotSelfMeasuring` below refuses to score anything whose verdicts came
+ * from the same run that produced them.
  */
 
 /** Serves the frozen corpus text. Never touches the network. */
@@ -84,6 +104,38 @@ export interface EvalReport {
   groundingFailureRate: number
   /** Anything that came back not_applicable: the judge or the stub said nothing. */
   silentRate: number
+}
+
+/**
+ * Refuse to score a corpus that grades itself.
+ *
+ * The first real-article audit wrote the judge's own verdicts into
+ * real-citations.json as `observed`. Scoring against those would have reported
+ * perfect agreement, because the answer key was a copy of the answers. A
+ * fixture may only be scored when a HUMAN set `verified`, and when it comes
+ * from an article the audit did not produce the verdict on.
+ *
+ * Called by anything that computes a rate. It throws rather than warns,
+ * because a number that quietly measures itself is worse than no number.
+ */
+export function assertNotSelfMeasuring(
+  rows: { id: string; provenance?: string; verified?: string | null }[]
+): void {
+  const ungraded = rows.filter(r => !r.verified)
+  if (ungraded.length > 0) {
+    throw new Error(
+      `${ungraded.length} of ${rows.length} fixtures have no human verdict ` +
+        `(first: ${ungraded[0].id}). A fixture the judge graded itself cannot ` +
+        `measure the judge. Hand-verify them or exclude them.`
+    )
+  }
+  const selfGraded = rows.filter(r => r.provenance === 'audit-observed')
+  if (selfGraded.length > 0) {
+    throw new Error(
+      `${selfGraded.length} fixtures are audit-observed, meaning their expected ` +
+        `answer came from the run being measured. Exclude them.`
+    )
+  }
 }
 
 export async function runEval(fixtures: Fixture[] = CORPUS): Promise<EvalReport> {
@@ -163,8 +215,11 @@ export function formatReport(r: EvalReport): string {
     lines.push('')
   }
 
-  lines.push('  16 fixtures from five defects in two documents. Enough to catch a judge')
-  lines.push('  that flags near-misses. Not a measurement of a real-world rate.')
+  lines.push('  SYNTHETIC REGRESSION GUARD, NOT A MEASUREMENT. Every claim, source and')
+  lines.push('  expected answer here was written by hand. This corpus scored 16/16 with a')
+  lines.push('  zero false-defect rate while the same code produced a 32% false-accusation')
+  lines.push('  rate on real pages. Never quote these numbers as a rate.')
+  lines.push('  The measurement corpus is real-citations, held out and hand-verified.')
   lines.push('')
   return lines.join('\n')
 }
