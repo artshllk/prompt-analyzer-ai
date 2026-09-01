@@ -176,6 +176,50 @@ the hook itself.
 Until then, option 1 stands: unknown is refused, and Pro takes the outage with
 everyone else.
 
+## Deferred: streaming the claim extraction
+
+`/check` streams its CITATION checks one claim at a time, but extraction is
+still a single blocking call over the whole document, about **7.5 seconds**
+before anything appears. During it the page shows the user's own pasted text in
+the reading view under "Reading your document", so the wait is a page waiting
+to be marked up rather than a spinner.
+
+Streaming extraction would drop the perceived wait to roughly **1 second**.
+It is deliberately NOT built, and this is the note for the day it is.
+
+**Why it was deferred.** It is not strictly better. Claims can only be counted
+once extraction finishes, so the citation-density banner would move from first
+position to last, and that banner is the thing that stops a low-citation
+document reading as a broken tool. Losing it costs more than 6.5 seconds gains.
+It also touches `streamLLM` in the shared engine client, which the frozen
+prompt improver uses, and nobody has used the fact checker yet.
+
+**Build it when a real user mentions the wait, or when latency shows up in the
+counters.** Not before.
+
+**How it would work.** `callLLM` already builds the `response_format` block, so
+adding schema support to `streamLLM` is about five lines. The work is a partial
+JSON scanner that pulls balanced `{...}` objects out of the growing `claims`
+array as tokens arrive, tracking brace depth while respecting strings and
+escapes. `segments.ts` is the same shape and already has a 3,000-iteration fuzz
+test to copy.
+
+**Three things that will bite, in order of how quietly they fail:**
+
+1. **Truncated tails under `strict: false`.** Structured Outputs are not strict
+   here, so a run can end mid-object. The scanner must emit what closed and
+   drop the rest, never throw. Same rule as the marker parser: malformed model
+   output degrades to clean output, never to visible junk.
+2. **The 20-claim cap must be enforced as objects arrive**, not on a finished
+   array. `MAX_CLAIMS_PER_DOC` is a cost control on model-controlled input, and
+   a streaming reader that only checks the total at the end has already paid
+   for claim 200.
+3. **The density banner ordering.** `citationDensity()` needs every claim, so a
+   streaming extractor cannot show it first. Either hold the banner until the
+   stream closes, which is the regression described above, or compute a running
+   estimate and accept that the number moves while the reader watches. Neither
+   is obviously right, and this is the actual design decision, not the parser.
+
 ## Commands
 
 - `npm run dev` — local dev. `npm run build` — production build (real verification).
