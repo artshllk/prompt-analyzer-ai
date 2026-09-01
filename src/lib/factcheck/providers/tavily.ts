@@ -144,6 +144,43 @@ export class TavilyProvider implements RetrievalProvider {
 }
 
 /**
+ * Strip the machine junk out of retrieved markdown.
+ *
+ * FOUND BY RUNNING ON REAL PAGES, and it was producing wrong answers rather
+ * than merely wasting space. Extracted markdown carries inline SVG and image
+ * data URIs, which are percent-encoded, which means they are full of things
+ * like `%2011.0418` and `%2068%25`. A literal search for the writer's figure
+ * therefore matched an icon's path data and told the judge "67% appears in
+ * this source" about a page that never mentions 67% in prose.
+ *
+ * A false hint in that direction is the dangerous one: it nudges the judge
+ * toward believing a source supports a claim it does not.
+ *
+ * It is also most of the page. On the Semrush report page the encoded blobs
+ * ran to thousands of characters, crowding the 24,000-character window the
+ * judge actually reads.
+ *
+ * Deliberately conservative. It removes data URIs, long runs of percent
+ * escapes, and single tokens too long to be a word. It does not try to strip
+ * navigation or boilerplate, because those are prose and a rule that removes
+ * prose will eventually remove the sentence that mattered.
+ */
+export function cleanRetrievedText(raw: string): string {
+  return raw
+    // data: URIs, inline images and fonts. The main offender.
+    .replace(/data:[a-z0-9/+.-]*;?[a-z0-9=,]*[^\s)"'\]]{40,}/gi, ' ')
+    // Runs of percent escapes, which is what an inline SVG path looks like
+    // once it has been URL-encoded.
+    .replace(/(?:%[0-9A-Fa-f]{2}){6,}/g, ' ')
+    // Any single unbroken token longer than a long word: base64, hashes,
+    // tracking blobs. Real prose does not contain these.
+    .replace(/\S{200,}/g, ' ')
+    .replace(/[ \t]{3,}/g, '  ')
+    .replace(/\n{4,}/g, '\n\n')
+    .trim()
+}
+
+/**
  * Read a 200 response into pages.
  *
  * Everything is treated as unknown and coerced, for the same reason coerce.ts
@@ -174,11 +211,12 @@ export function readResponse(json: unknown): RetrievalResult {
       typeof r.raw_content === 'string' ? r.raw_content
         : typeof r.content === 'string' ? r.content
         : ''
-    if (content.trim()) {
+    const cleaned = cleanRetrievedText(content)
+    if (cleaned) {
       pages.push({
         url,
         title: typeof r.title === 'string' ? r.title : '',
-        content,
+        content: cleaned,
         retrievedAt: new Date().toISOString(),
       })
     } else {

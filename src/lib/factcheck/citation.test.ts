@@ -12,7 +12,7 @@
 import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { findQuote, checkCitations } from './citation'
-import { readResponse, TavilyProvider } from './providers/tavily'
+import { readResponse, TavilyProvider, cleanRetrievedText } from './providers/tavily'
 import { isPermanent, type ProviderFailure } from './providers/types'
 import { domainsFor, PUBLISHER_NAMES } from './publishers'
 import { rankFlags, flagScore, FLAGS_SHOWN } from './flags'
@@ -188,6 +188,43 @@ test('no key configured is a failure, not a silent empty result', async () => {
   assert.equal(res.ok, false)
   if (res.ok) return
   assert.equal(res.failure, 'not_configured')
+})
+
+/* -------------------------------------------------- retrieved-text hygiene */
+
+test('encoded image data cannot masquerade as a figure in the page', () => {
+  // Found on a real Semrush page. An inline SVG path, percent-encoded, contains
+  // "%2011.0418" and friends, so a literal search for the writer's "67%"
+  // matched an icon and told the judge the source contained a statistic it
+  // never mentions. A false hint in that direction is the dangerous one.
+  const junk =
+    "![](data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M6.06879%205.85555C5.35426%206.44066%204.86422%207.25499%204.68182%208.16033L2.2998%204.03435Z'/%3e%3c/svg%3e)"
+  const page = `Our report found that 73% of marketers use AI.\n\n${junk}\n\nRead more.`
+  const cleaned = cleanRetrievedText(page)
+  assert.ok(!cleaned.includes('%2011'), 'encoded path data must not survive')
+  assert.ok(cleaned.includes('73% of marketers use AI'), 'prose must survive intact')
+})
+
+test('cleaning never eats real prose, including percentages and numbers', () => {
+  const prose =
+    'Adoption rose 34.2% in Q2 2025, from $10,240,000 to $12.1 million, across 9,000 respondents.'
+  assert.equal(cleanRetrievedText(prose), prose)
+})
+
+test('an unbroken token too long to be a word is removed', () => {
+  const cleaned = cleanRetrievedText(`before ${'a'.repeat(400)} after`)
+  assert.ok(cleaned.includes('before') && cleaned.includes('after'))
+  assert.ok(!cleaned.includes('aaaaaaaaaa'.repeat(5)))
+})
+
+test('a page that is nothing but junk reads as no page at all', () => {
+  const r = readResponse({
+    results: [{ url: 'https://a.com', raw_content: `data:image/png;base64,${'A'.repeat(300)}` }],
+  })
+  assert.ok(r.ok)
+  if (!r.ok) return
+  assert.equal(r.pages.length, 0, 'nothing readable is left, so it is not a retrieved page')
+  assert.deepEqual(r.unretrieved.map(u => u.url), ['https://a.com'])
 })
 
 /* ------------------------------------------------------- publisher names */
