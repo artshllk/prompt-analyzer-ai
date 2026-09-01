@@ -44,6 +44,20 @@ const nextConfig: NextConfig = {
    */
   async redirects() {
     return [
+      /**
+       * The fact checker moved to the homepage. One product, one URL, and
+       * "deepclario.com" is what gets said to people.
+       *
+       * A config redirect runs BEFORE filesystem routing, which is normally
+       * the trap this file exists to warn about. Here it is exactly what we
+       * want: src/app/check/page.tsx is deleted, and /check must resolve to
+       * the homepage rather than serve a second copy of the same tool at a
+       * second URL.
+       */
+      // statusCode 301, not `permanent: true`. Next's `permanent` emits a 308,
+      // which preserves the request method. This is a GET-only marketing URL
+      // and 301 is what search engines and every link checker expect to see.
+      { source: '/check', destination: '/', statusCode: 301 },
       { source: '/blog/what-is-deep-rewrite', destination: '/pricing', permanent: true },
       { source: '/blog/deep-rewrite-vs-standard-rewrite', destination: '/pricing', permanent: true },
     ]

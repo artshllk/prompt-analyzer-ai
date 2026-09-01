@@ -38,8 +38,10 @@ export default function NotFound() {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4">
+            {/* The 404 is a site-wide surface, so its primary action has to
+                be the live product rather than the frozen one. */}
             <Link
-              href="/playground"
+              href="/"
               className="inline-flex items-center px-7 py-3.5 rounded-full text-[15px] transition-all btn-paper"
               style={{
                 background: 'var(--color-paper)',
@@ -47,7 +49,7 @@ export default function NotFound() {
                 fontWeight: 500,
               }}
             >
-              Try the prompt improver
+              Check your links
             </Link>
             <Link
               href="/blog"

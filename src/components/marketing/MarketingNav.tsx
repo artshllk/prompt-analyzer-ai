@@ -48,7 +48,9 @@ const LINKS: { key: NavKey; href: string; label: string }[] = [
   // one in the same nav tells a visitor they are equals. The routes are
   // untouched: every existing link still resolves, which is the same rule that
   // kept /playground where it is.
-  { key: 'check', href: '/check', label: 'Check' },
+  // The tool IS the homepage now. /check 301s here, so pointing the nav at
+  // the old URL would send every visitor through a redirect for nothing.
+  { key: 'check', href: '/', label: 'Check' },
   { key: 'detector', href: '/detector', label: 'Detector' },
   { key: 'pricing', href: '/pricing', label: 'Pricing' },
   { key: 'faq', href: '/faq', label: 'FAQ' },

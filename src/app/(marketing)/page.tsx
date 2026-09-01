@@ -4,11 +4,13 @@ import Image from "next/image";
 // { /* CUT - redundant with demo + steps */ }
 // import { StaticTransform } from '@/components/marketing/StaticTransform'
 import { EditorialPricing } from "@/components/marketing/EditorialPricing";
-import { DemoChat } from "@/components/marketing/DemoChat";
-import { UseCases } from "@/components/marketing/UseCases";
 import { EarlyDays } from "@/components/marketing/EarlyDays";
-import { FAQSection } from "@/components/marketing/FAQSection";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { CheckClient } from "@/components/factcheck/CheckClient";
+import {
+  WorkedExample,
+  NoLinkNote,
+} from "@/components/factcheck/WorkedExample";
 import { Reveal } from "@/components/ui/Reveal";
 import { defaultOGImage } from "@/lib/og-image";
 // { /* CUT - redundant with demo + steps */ }
@@ -16,27 +18,29 @@ import { defaultOGImage } from "@/lib/og-image";
 
 export const metadata: Metadata = {
   // The layout template appends "| Deepclario", so the brand stays out of
-  // this string. Primary keyword ("ai prompt improver") leads the SERP title.
-  title: "AI Prompt Improver for ChatGPT, Claude & Gemini",
+  // this string. Leads on what someone actually searches for when they have
+  // this problem, which is a broken or missing source, not a product category
+  // nobody types.
+  title: "Check the Links and Sources in Your Writing",
   description:
-    "Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it so ChatGPT, Claude, and Gemini get it right the first time.",
+    "Paste your post. Deepclario opens every link and checks the page really says the number you put next to it. It also finds the numbers with no source at all.",
   alternates: { canonical: "https://deepclario.com" },
   openGraph: {
-    title: "Deepclario - Turn a rough prompt into a great one",
+    title: "Does your link say what you think it says?",
     description:
-      "Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it. Works with ChatGPT, Claude, and Gemini.",
+      "Paste your post. We open every link and check the page really says the number you put next to it.",
     url: "https://deepclario.com",
     type: "website",
     // This page defines its own openGraph object, which replaces (does not
     // merge with) the root layout's openGraph - including its image. See
     // defaultOGImage() for the full explanation.
-    images: defaultOGImage("Deepclario - Turn a rough prompt into a great one"),
+    images: defaultOGImage("Does your link say what you think it says?"),
   },
   twitter: {
     card: "summary_large_image",
-    title: "Deepclario - Turn a rough prompt into a great one",
+    title: "Does your link say what you think it says?",
     description:
-      "Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it. Works with ChatGPT, Claude, and Gemini.",
+      "Paste your post. We open every link and check the page really says the number you put next to it.",
     images: ["/opengraph-image"],
   },
 };
@@ -47,16 +51,16 @@ const structuredData = {
     {
       "@type": "SoftwareApplication",
       name: "Deepclario",
-      applicationCategory: "ProductivityApplication",
+      applicationCategory: "UtilityApplication",
       operatingSystem: "Web",
       url: "https://deepclario.com",
       description:
-        "Paste a rough prompt. Deepclario spots what is missing, asks one quick question if it has to, and rewrites the prompt so ChatGPT, Claude, and Gemini get it right the first time.",
+        "Paste a blog post or report. Deepclario opens every link in it and checks whether that page really contains the number it is cited for, and lists the numbers that carry no source at all.",
       offers: {
         "@type": "Offer",
         price: "0",
         priceCurrency: "USD",
-        description: "Free plan with 10 prompt improvements a day",
+        description: "Free to use with no account",
       },
     },
     {
@@ -64,26 +68,34 @@ const structuredData = {
       mainEntity: [
         {
           "@type": "Question",
-          name: "What is prompt engineering?",
+          name: "How do you check a link?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Prompt engineering is the practice of writing inputs for AI models that are specific enough to produce useful outputs. A good prompt names the role, the audience, the format, and the constraints. A bad prompt forces the model to guess.",
+            text: "We open the page your text links to and look for the number you put next to it. If the page says it, we say so. If the page does not say it, we show you the closest sentence that is actually there, so you can see the difference yourself.",
           },
         },
         {
           "@type": "Question",
-          name: "How does Deepclario improve my prompts?",
+          name: "Does it tell me if a number is false?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "You paste a rough prompt. Deepclario spots the gaps a fresh-eyes reviewer would catch, asks one quick question if it has to, and rewrites the prompt so ChatGPT, Claude, or Gemini can return the right output on the first try.",
+            text: "No, and that is on purpose. We only tell you what the page you linked to says. A number can be completely true and still sit behind a link that does not show it, which is the most common problem we find.",
           },
         },
         {
           "@type": "Question",
-          name: "Is Deepclario free?",
+          name: "What about numbers with no link?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes. The free plan gives you 10 prompt improvements a day, no card required. Pro is $4.99 a month right now (a launch discount from $9.99). It removes the daily limit, runs a stronger model on every improve, and keeps your full history.",
+            text: "We list them. Across eleven real statistics posts we measured, about half the numbers had no source of any kind, which is usually the largest group in a document.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is it free?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. You can paste a post and check it without an account.",
           },
         },
       ],
@@ -117,67 +129,72 @@ export default function LandingPage() {
                 staggered so the hero assembles in under a second. The page
                 paints and stays interactive throughout - this is a reveal,
                 never a gate. Only the headline gets the resolve. */}
+            {/*
+              THE TOOL IS THE HERO, and it is the FACT CHECKER now.
+
+              The prompt improver used to be here. It is frozen and lives at
+              /playground, where 48 links across 42 files still point at it,
+              including one inside an email already sitting in inboxes.
+
+              Same lesson as the extension install wall and as the scripted
+              demo this replaced: someone arriving from a Reddit thread should
+              be able to paste something without clicking anything first. A
+              description with a button is one click too many, and the click is
+              where they leave.
+
+              The worked example sits ABOVE the box on purpose. Someone who has
+              never heard of this needs to see what it catches before they will
+              paste their own writing into it.
+            */}
             <Reveal>
-              <p className="eyebrow mb-5">For ChatGPT, Claude &amp; Gemini users</p>
+              <p className="eyebrow mb-5">Free, no account</p>
             </Reveal>
             <Reveal index={1}>
               <h1
                 className="display text-[2.6rem] sm:text-5xl md:text-[4.5rem] leading-[1.05] tracking-tight"
-                style={{ color: "var(--color-paper)" }}
+                style={{ color: "var(--ink)" }}
               >
-                Turn a rough prompt{" "}
-                <span style={{ color: "var(--color-accent)" }}>
-                  into a great one.
+                Does your link{" "}
+                <span style={{ color: "var(--brand)" }}>
+                  say what you think it says?
                 </span>
               </h1>
             </Reveal>
             <Reveal index={3}>
               <p
                 className="mt-4 md:mt-5 text-base sm:text-lg md:text-xl leading-relaxed max-w-2xl"
-                style={{ color: "var(--color-paper-mute)" }}
+                style={{ color: "var(--ink-soft)" }}
               >
-                Paste your prompt below. Deepclario rewrites it and marks
-                everything it added, so you can take back anything you did not
-                ask for. No account, no install.
+                Paste your post. We open every link and check that the page
+                really says the number you put next to it.
               </p>
             </Reveal>
 
-            {/*
-              THE TOOL IS THE HERO.
-
-              What was here was a scripted animation of the product playing a
-              hardcoded script, hidden entirely below 1024px, next to a button
-              that opened the real thing in a modal. So the strongest asset on
-              the page - a working tool that needs no account - was one click
-              away and invisible on a phone, while a cartoon of it took the
-              space. The demo modal, HeroRefinement and its five supporting
-              components are deleted.
-            */}
             <Reveal index={5}>
-              <div
-                className="mt-8 md:mt-10 rounded-3xl p-4 sm:p-6 md:p-8"
-                style={{
-                  background: "var(--color-ink-card)",
-                  border: "1px solid var(--color-rule-strong)",
-                }}
-              >
-                <DemoChat />
+              <div className="mt-8 md:mt-10">
+                <WorkedExample />
+              </div>
+            </Reveal>
+
+            <Reveal index={5}>
+              <div className="mt-5">
+                <NoLinkNote />
+              </div>
+            </Reveal>
+
+            <Reveal index={5}>
+              <div className="mt-8 md:mt-10">
+                <CheckClient />
               </div>
             </Reveal>
 
             <Reveal index={5}>
               <p
-                className="mt-5 text-[13px] flex flex-wrap items-center gap-x-4 gap-y-2"
-                style={{ color: "var(--color-paper-mute)" }}
+                className="mt-5 text-[13px] leading-relaxed"
+                style={{ color: "var(--ink-soft)" }}
               >
-                <span>Your prompts are private. We do not train on them.</span>
-                <Link
-                  href="/pricing"
-                  className="underline underline-offset-4 transition-opacity hover:opacity-100 opacity-80"
-                  style={{ color: "var(--color-paper)" }}
-                >
-                  See pricing
-                </Link>
+                We never say a number is wrong. We show you what the page you
+                linked to actually says, and you decide.
               </p>
             </Reveal>
           </div>
@@ -245,73 +262,11 @@ export default function LandingPage() {
           </div>
         </section> */}
 
-        {/* Extension - promoted above UseCases. The inline-in-ChatGPT
-            angle is the most distinctive distribution surface, so it
-            earns upper-half placement now. */}
-        <section
-          className="px-6 md:px-10 py-24 md:py-32"
-          style={{ borderTop: "1px solid var(--color-rule)" }}
-        >
-          <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
-            <div className="md:col-span-3">
-              {/* <p className="eyebrow">Works where you already work</p> */}
-            </div>
-            <div className="md:col-span-9">
-              <h2
-                className="font-serif text-3xl md:text-5xl leading-tight tracking-tight mb-6"
-                style={{ color: "var(--color-paper)", fontWeight: 400 }}
-              >
-                One click inside ChatGPT, Claude, and Gemini.
-              </h2>
-              <p
-                className="text-base md:text-lg leading-[1.6] max-w-xl mb-4"
-                style={{ color: "var(--color-paper-mute)" }}
-              >
-                Install the extension and an Improve button shows up in the chat
-                box. Click it. Your prompt gets rewritten in place.
-              </p>
-              <p
-                className="text-base md:text-lg leading-[1.6] max-w-xl mb-8"
-                style={{ color: "var(--color-paper-mute)" }}
-              >
-                No copy-paste. No new tab. No panel to dig into. Just better
-                output, with one keystroke.
-              </p>
-              <div className="flex flex-wrap items-center gap-6">
-                <Link
-                  href="/extension"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] transition-all btn-paper"
-                  style={{
-                    background: "var(--color-paper)",
-                    color: "var(--color-ink)",
-                    fontWeight: 500,
-                  }}
-                >
-                  Install the extension
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path
-                      d="M2 7H12M12 7L7 2M12 7L7 12"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </Link>
-                {/* <span
-                  className="text-sm"
-                  style={{ color: "var(--color-paper-mute)" }}
-                >
-                  Chrome and Brave. Free, no account.
-                </span> */}
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* REMOVED: the extension promo, the use cases, and the prompt
+            engineering FAQ. All three sold the prompt improver, which is
+            frozen and lives at /playground. None of the routes are touched,
+            so every link into them still resolves. */}
 
-        {/* Use cases - 6 concrete scenarios linked to real prompt pages.
-            Translates "what is this" into "what does it do for me." */}
-        <UseCases />
 
         {/* CUT - "A fair question" folded into FAQSection as one richer answer */}
         {/*
@@ -364,7 +319,7 @@ export default function LandingPage() {
                 className="font-serif text-3xl md:text-5xl leading-tight tracking-tight mb-10"
                 style={{ color: "var(--color-paper)", fontWeight: 400 }}
               >
-                Your prompts stay yours.
+                Your writing stays yours.
               </h2>
               <div className="grid sm:grid-cols-3 gap-8">
                 {TRUST_POINTS.map((t) => (
@@ -440,14 +395,14 @@ export default function LandingPage() {
                 className="text-sm leading-[1.7] max-w-sm"
                 style={{ color: "var(--color-paper-mute)" }}
               >
-                Deepclario rewrites your prompts before you send them, so
-                ChatGPT, Claude, and Gemini give you better answers.
+                Deepclario opens the links in your writing and checks that the
+                page really says the number you put next to it.
               </p>
             </div>
             <FooterCol
               title="Product"
               links={[
-                { href: "/check", label: "Check your sources" },
+                { href: "/", label: "Check your sources" },
                 { href: "/detector", label: "AI text detector" },
                 // Extension and Prompt library came off the main nav because
                 // they point at the frozen prompt improver. They stay here, and
@@ -460,17 +415,20 @@ export default function LandingPage() {
             <FooterCol
               title="Reading"
               links={[
+                // Swapped from three prompt-engineering posts. Those are still
+                // published and still linked from /blog; they just no longer
+                // sit in the footer of a page about checking sources.
                 {
-                  href: "/blog/what-is-prompt-engineering",
-                  label: "What is prompt engineering",
+                  href: "/blog/why-ai-makes-mistakes",
+                  label: "Why AI makes things up",
                 },
                 {
-                  href: "/blog/how-to-write-better-prompts",
-                  label: "How to write better prompts",
+                  href: "/blog/are-ai-detectors-accurate",
+                  label: "Are AI detectors accurate",
                 },
                 {
-                  href: "/blog/what-is-a-good-prompt",
-                  label: "What makes a good prompt",
+                  href: "/blog/human-text-vs-ai-text",
+                  label: "Human text vs AI text",
                 },
                 {
                   href: "/blog/prompt-engineering-examples",
@@ -512,7 +470,7 @@ export default function LandingPage() {
 const TRUST_POINTS = [
   {
     title: "Never used to train AI",
-    body: "Your prompts are only used to generate your rewrite. We never use them to train models or sell them.",
+    body: "Your text is only used to run the check you asked for. We never use it to train models or sell it.",
   },
   {
     title: "Delete everything anytime",
@@ -524,65 +482,7 @@ const TRUST_POINTS = [
   },
 ];
 
-const STEPS = [
-  {
-    title: "We read your prompt",
-    description:
-      "Paste rough notes, a one-liner, or a request you have not finished writing. No prompt-engineering degree required.",
-  },
-  {
-    title: "We ask one question if something is missing",
-    description:
-      "Deepclario spots the gap a careful reader would catch and asks one quick question. Answer it, and the rewrite fills in the rest.",
-  },
-  {
-    title: "You get a rewrite ready to send",
-    description:
-      "Copy the improved prompt into your AI chat and get the answer you wanted on the first try. No five-prompt rewrite spiral.",
-  },
-];
 
-function Step({
-  index,
-  title,
-  description,
-}: {
-  index: number;
-  title: string;
-  description: string;
-}) {
-  return (
-    <>
-      <div className="grid grid-cols-12 gap-4 md:gap-8 py-8 md:py-10 group">
-        <div className="col-span-2 md:col-span-1">
-          <p
-            className="font-serif text-2xl md:text-3xl tabular-nums"
-            style={{ color: "var(--color-paper-mute)" }}
-          >
-            0{index + 1}
-          </p>
-        </div>
-        <div className="col-span-10 md:col-span-4">
-          <h3
-            className="font-serif text-2xl md:text-3xl"
-            style={{ color: "var(--color-paper)", fontWeight: 400 }}
-          >
-            {title}
-          </h3>
-        </div>
-        <div className="col-span-12 md:col-span-7">
-          <p
-            className="text-base md:text-lg leading-[1.6]"
-            style={{ color: "var(--color-paper-mute)" }}
-          >
-            {description}
-          </p>
-        </div>
-      </div>
-      <div className="rule" />
-    </>
-  );
-}
 
 function FooterCol({
   title,

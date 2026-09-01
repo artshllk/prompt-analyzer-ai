@@ -46,7 +46,9 @@ export const metadata: Metadata = {
     template: '%s | Deepclario',
   },
   description: 'Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it so ChatGPT, Claude, and Gemini get it right the first time.',
-  keywords: ['prompt improver', 'AI prompt improver', 'prompt analyzer', 'prompt engineering', 'improve AI prompts', 'ChatGPT prompts', 'better prompts', 'prompt optimization', 'how to write better prompts'],
+  // Site-wide, so it must describe what Deepclario IS, not what it used to
+  // be. Every one of these used to name the frozen prompt improver.
+  keywords: ['check citations', 'link checker', 'source checker', 'fact check a blog post', 'broken citation', 'unsourced statistics', 'AI text detector'],
   authors: [{ name: 'Deepclario', url: 'https://deepclario.com' }],
   creator: 'Deepclario',
   openGraph: {
@@ -99,7 +101,7 @@ const orgSchema = {
       '@id': 'https://deepclario.com/#website',
       url: 'https://deepclario.com',
       name: 'Deepclario',
-      description: 'Deepclario is an AI prompt improver and AI text detector for ChatGPT, Claude, and Gemini.',
+      description: 'Deepclario checks the links in your writing. It opens every link and checks whether that page really says the number you put next to it, and lists the numbers with no source at all.',
       publisher: { '@id': 'https://deepclario.com/#organization' },
       potentialAction: {
         '@type': 'SearchAction',

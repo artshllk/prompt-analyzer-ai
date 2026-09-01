@@ -3,20 +3,26 @@ import { ImageResponse } from 'next/og'
 /**
  * The share card.
  *
- * This is the first and often the only thing a stranger sees. The old one was
- * a dark gradient with a headline on it, which said nothing a hundred other
- * AI tools' cards do not also say, and it was still on the retired palette.
+ * THIS IS THE FIRST AND OFTEN THE ONLY THING A STRANGER SEES. When someone
+ * drops deepclario.com into a Reddit thread or a DM, most people who see it
+ * never click, so the card has to carry the whole idea on its own.
  *
- * So it shows the product's actual idea instead: a prompt with the tool's own
- * additions marked on it. Amber is a guess you can take back, blue came from
- * your answer. Those two chips are legible at thumbnail size in a Slack
- * unfurl, which is the real test, and nobody else's card looks like it.
+ * It shows the real mistake the product was built to find, marked the way the
+ * product marks it: two swapped words in a published sentence, and what the
+ * cited page actually says underneath. Nobody else's card looks like this,
+ * because nobody else's card is a proof.
  *
- * Runs on the default Node runtime rather than edge, so the image can be
- * generated once and cached instead of on every request.
+ * LEGIBLE AS A THUMBNAIL is the constraint that decides the layout. A Slack
+ * unfurl renders this around 360px wide, roughly a third of full size, so
+ * body text sits at 30px and up, the marked words carry both a background AND
+ * an underline so they survive being shrunk, and there are exactly two blocks
+ * to compare rather than a paragraph to read.
+ *
+ * Runs on the default Node runtime rather than edge, so it is generated once
+ * and cached instead of on every request.
  */
 export const alt =
-  'Deepclario: a rewritten prompt with every added constraint marked, and the guesses removable'
+  'Deepclario: a published sentence with two swapped words marked, above the sentence its own source actually contains'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -26,10 +32,32 @@ const INK = '#15130F'
 const INK_SOFT = '#6B6559'
 const RULE = '#DFDCD2'
 const BRAND = '#C9452F'
-const MACHINE = '#2C5FD4'
-const MACHINE_BG = '#E8EEFC'
-const GUESS = '#B8791A'
-const GUESS_BG = '#FBF1DE'
+/* Text colour on the tint. Plain --brand is only 3.99:1 there, so the deeper
+   red is used for anything a person has to read. Same rule as globals.css. */
+const BRAND_TEXT = '#A93520'
+const CONTRADICTED_BG = '#F6E7E3'
+const CONFIRM = '#2E6F4E'
+
+function Marked({ children }: { children: string }) {
+  return (
+    <span
+      style={{
+        display: 'flex',
+        background: CONTRADICTED_BG,
+        color: BRAND_TEXT,
+        borderRadius: '8px',
+        padding: '2px 12px',
+        // Satori supports only solid and dashed, never dotted. Dashed reads
+        // as the same "check this" gesture at thumbnail size, which is the
+        // only size that matters here.
+        borderBottom: `3px dashed ${BRAND_TEXT}`,
+        fontWeight: 600,
+      }}
+    >
+      {children}
+    </span>
+  )
+}
 
 export default async function Image() {
   return new ImageResponse(
@@ -41,7 +69,7 @@ export default async function Image() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          padding: '64px 72px',
+          padding: '56px 68px',
           background: PAPER,
           color: INK,
           fontFamily: 'system-ui',
@@ -69,71 +97,67 @@ export default async function Image() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
           <div
             style={{
-              fontSize: '62px',
+              fontSize: '58px',
               fontWeight: 700,
               lineHeight: 1.04,
               letterSpacing: '-0.03em',
-              maxWidth: '1000px',
+              maxWidth: '1010px',
               display: 'flex',
             }}
           >
-            It shows you every word it added.
+            Does your link say what you think it says?
           </div>
 
-          {/* The product, not a description of it. */}
+          {/* The published sentence, with the mistake marked. */}
           <div
             style={{
               display: 'flex',
               flexWrap: 'wrap',
               alignItems: 'center',
-              gap: '10px',
+              gap: '9px',
               background: CARD,
               border: `1px solid ${RULE}`,
               borderRadius: '18px',
-              padding: '26px 30px',
-              fontSize: '27px',
-              lineHeight: 1.5,
-              maxWidth: '1010px',
+              padding: '22px 28px',
+              fontSize: '31px',
+              lineHeight: 1.45,
+              maxWidth: '1030px',
             }}
           >
-            <span style={{ display: 'flex' }}>Write a launch email for</span>
-            <span
-              style={{
-                display: 'flex',
-                background: MACHINE_BG,
-                color: MACHINE,
-                borderRadius: '8px',
-                padding: '2px 10px',
-              }}
-            >
-              existing free users
-            </span>
-            <span style={{ display: 'flex' }}>in</span>
-            <span
-              style={{
-                display: 'flex',
-                background: GUESS_BG,
-                color: GUESS,
-                borderRadius: '8px',
-                padding: '2px 10px',
-              }}
-            >
-              under 150 words
-            </span>
-            <span style={{ display: 'flex' }}>, warm but direct.</span>
+            <span style={{ display: 'flex' }}>61.5% of</span>
+            <Marked>desktop</Marked>
+            <span style={{ display: 'flex' }}>searches and 34.4% of</span>
+            <Marked>mobile</Marked>
+            <span style={{ display: 'flex' }}>searches end without a click.</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '26px', fontSize: '22px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '9px', color: INK_SOFT }}>
-              <div style={{ display: 'flex', width: '13px', height: '13px', borderRadius: '4px', background: MACHINE }} />
-              you answered this
+          {/* What the cited page actually contains. */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '7px',
+              borderLeft: `4px solid ${CONFIRM}`,
+              paddingLeft: '20px',
+              maxWidth: '1030px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                fontSize: '19px',
+                letterSpacing: '0.1em',
+                color: CONFIRM,
+                fontWeight: 600,
+              }}
+            >
+              THE PAGE THEY LINK TO SAYS
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '9px', color: INK_SOFT }}>
-              <div style={{ display: 'flex', width: '13px', height: '13px', borderRadius: '4px', background: GUESS }} />
-              we guessed this, remove it
+            <div style={{ display: 'flex', fontSize: '30px', lineHeight: 1.35 }}>
+              61.5% of mobile and 34.3% of desktop.
             </div>
           </div>
         </div>
@@ -143,13 +167,13 @@ export default async function Image() {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            fontSize: '20px',
+            fontSize: '21px',
             color: INK_SOFT,
             borderTop: `1px solid ${RULE}`,
-            paddingTop: '22px',
+            paddingTop: '20px',
           }}
         >
-          <div style={{ display: 'flex' }}>For ChatGPT, Claude and Gemini</div>
+          <div style={{ display: 'flex' }}>Real, and still published</div>
           <div style={{ display: 'flex' }}>deepclario.com</div>
         </div>
       </div>
