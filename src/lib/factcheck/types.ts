@@ -310,6 +310,17 @@ export interface Claim {
   /** Present when sourceForm is 'named'. The publisher as the author wrote it. */
   sourceName?: string
   /**
+   * Whether the cited page can even be checked, decided from the URL alone.
+   *
+   * Same shape of idea as SourceForm, and here for the same reason: this is a
+   * property of the SOURCE, known before any network call, not a result. A
+   * dashboard that only renders the current month cannot support or fail to
+   * support a figure written six months ago, so asking is meaningless and
+   * answering is worse than meaningless. Deciding it up front also means we
+   * never spend a credit fetching one.
+   */
+  sourceKind?: 'stable' | 'live'
+  /**
    * The literal number as written, when there is one. Lets the citation check
    * start with a free substring test before it spends a model call.
    */

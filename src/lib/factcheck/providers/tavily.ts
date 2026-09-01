@@ -1,3 +1,4 @@
+import { meter } from './meter'
 import type {
   ProviderFailure,
   RetrievalProvider,
@@ -86,6 +87,9 @@ export class TavilyProvider implements RetrievalProvider {
       console.error('[tavily] /extract returned nothing for', unique.length, 'urls')
       return { ok: false, failure: 'malformed' }
     }
+    // Counted here rather than in post(), because only a successful response
+    // tells us how many URLs were actually billable.
+    if (res.ok) meter.extract(res.pages.length, res.unretrieved.length)
     return res
   }
 
@@ -100,13 +104,15 @@ export class TavilyProvider implements RetrievalProvider {
     if (clean.length === 0 || !query.trim()) {
       return { ok: true, pages: [], unretrieved: [] }
     }
-    return this.post('/search', {
+    const res = await this.post('/search', {
       query: query.slice(0, 400),
       include_domains: clean,
       include_raw_content: 'markdown',
       search_depth: 'basic',
       max_results: 5,
     })
+    if (res.ok) meter.search()
+    return res
   }
 
   private async post(path: string, body: Record<string, unknown>): Promise<RetrievalResult> {

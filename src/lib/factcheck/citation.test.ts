@@ -15,6 +15,8 @@ import { findQuote, checkCitations } from './citation'
 import { readResponse, TavilyProvider, cleanRetrievedText } from './providers/tavily'
 import { isPermanent, type ProviderFailure } from './providers/types'
 import { domainsFor, PUBLISHER_NAMES } from './publishers'
+import { isLiveSource, LIVE_SOURCE_HOSTS } from './live-sources'
+import { meter, formatMeter } from './providers/meter'
 import { rankFlags, flagScore, FLAGS_SHOWN } from './flags'
 import type { Claim } from './types'
 import type { RetrievalProvider, RetrievalResult } from './providers/types'
@@ -305,6 +307,105 @@ test('no flags fire on a document that has nothing to flag', () => {
   assert.equal(r.fired, 0)
   assert.equal(r.shown.length, 0)
   assert.equal(r.hidden, 0)
+})
+
+test('a consent wall is unreachable, not evidence the claim is missing', async () => {
+  // Two SproutSocial flags in the audit came off pages whose entire retrieved
+  // text was 649 and 913 characters. The judge honestly said the claim was not
+  // in them, and the writer would have been told their link was wrong on the
+  // strength of a cookie banner.
+  const { provider } = fakeProvider({
+    async extract(): Promise<RetrievalResult> {
+      return {
+        ok: true,
+        pages: [{
+          url: 'https://a.com', title: 'A',
+          content: 'We value your privacy. Accept all cookies. Manage preferences.',
+          retrievedAt: '2026-09-01T00:00:00.000Z',
+        }],
+        unretrieved: [],
+      }
+    },
+  })
+  const run = await checkCitations(
+    [claim('a', { sourceForm: 'linked', sourceUrl: 'https://a.com', figure: '42%' })],
+    provider
+  )
+  assert.equal(run.results.get('a')!.check, 'source_unreachable')
+  assert.notEqual(run.results.get('a')!.check, 'does_not_contain')
+})
+
+/* ------------------------------------------------------- live sources */
+
+test('a live dashboard is recognised, and an article about one is not', () => {
+  assert.ok(isLiveSource('https://gs.statcounter.com/search-engine-market-share'))
+  assert.ok(isLiveSource('https://statcounter.com/anything'))
+  assert.ok(isLiveSource('https://www.similarweb.com/website/example.com/'))
+  // Matching the host, never a substring of the whole URL. This one is an
+  // ordinary article that happens to mention a dashboard.
+  assert.ok(!isLiveSource('https://example.com/why-statcounter-is-wrong'))
+  assert.ok(!isLiveSource('https://ahrefs.com/blog/seo-statistics/'))
+  assert.ok(!isLiveSource('not a url'))
+})
+
+test('a path-scoped live entry does not swallow the whole domain', () => {
+  // ahrefs.com/websites is a live tool. ahrefs.com/blog is not, and blocking
+  // it would blind us to a publisher we check constantly.
+  assert.ok(isLiveSource('https://ahrefs.com/websites/example.com'))
+  assert.ok(!isLiveSource('https://ahrefs.com/blog/seo-statistics/'))
+  assert.ok(isLiveSource('https://www.semrush.com/trending/'))
+  assert.ok(!isLiveSource('https://www.semrush.com/blog/content-marketing-statistics/'))
+})
+
+test('every live-source entry is a bare host or host with a path', () => {
+  for (const h of LIVE_SOURCE_HOSTS) {
+    assert.ok(!h.includes('://'), `${h} must not carry a scheme`)
+    assert.ok(!h.startsWith('www.'), `${h} must not carry www`)
+    assert.ok(isLiveSource(`https://${h}`), `${h} does not match itself`)
+  }
+})
+
+test('a live source is never fetched and never called a defect', async () => {
+  // Ahrefs cite StatCounter for a market-share figure. StatCounter shows only
+  // today, so the number moved and the citation check called it wrong. The
+  // article was right when it was written, and this is our false accusation
+  // to avoid, not their error.
+  const { provider, seen } = fakeProvider()
+  const run = await checkCitations(
+    [claim('a', { sourceForm: 'linked', sourceUrl: 'https://gs.statcounter.com/search-engine-market-share' })],
+    provider
+  )
+  assert.deepEqual(seen.extracted, [], 'a live source must not cost a credit')
+  assert.equal(run.results.get('a')!.check, 'not_applicable')
+  assert.equal(run.claimReasons.get('a'), 'live_source')
+  assert.match(run.results.get('a')!.note ?? '', /only shows current data/)
+})
+
+/* ------------------------------------------------------------- the meter */
+
+test('we count credits ourselves, by their billing rules', () => {
+  meter.reset()
+  meter.extract(5, 0)
+  assert.equal(meter.read().credits, 1, '5 successful extractions is 1 credit')
+  meter.extract(1, 4)
+  assert.equal(meter.read().credits, 2, 'failures are free, and the request rounds up')
+  meter.search()
+  assert.equal(meter.read().credits, 3, 'a basic search is 1 credit')
+  meter.extract(0, 3)
+  assert.equal(meter.read().credits, 3, 'a request that retrieved nothing costs nothing')
+  assert.match(formatMeter(), /counted by us not by their meter/)
+  meter.reset()
+  assert.equal(meter.read().credits, 0)
+})
+
+test('the meter rounds up per request, never across them', () => {
+  // Three requests of one URL each is three credits, not one. Rounding the
+  // other way would understate spend, and a guard should never be wrong in
+  // the cheap-looking direction.
+  meter.reset()
+  for (let i = 0; i < 3; i++) meter.extract(1, 0)
+  assert.equal(meter.read().credits, 3)
+  meter.reset()
 })
 
 /* -------------------------------------------------- orchestration */

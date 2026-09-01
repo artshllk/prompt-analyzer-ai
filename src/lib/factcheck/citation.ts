@@ -3,6 +3,7 @@ import { MODELS } from '@/lib/engine/models'
 import { asText, asEnum } from '@/lib/engine/coerce'
 import { TavilyProvider } from './providers/tavily'
 import { domainsFor } from './publishers'
+import { isLiveSource } from './live-sources'
 import type { ProviderFailure, RetrievalProvider, RetrievedPage } from './providers/types'
 import type { Claim, CitationResult, Evidence } from './types'
 
@@ -47,6 +48,15 @@ export interface CitationRun {
   /** Same order as the claims passed in. */
   results: Map<string, CitationResult>
   /**
+   * Claim-axis reasons this run established. The citation axis does not write
+   * to the claim axis, so it hands these back and the caller applies them.
+   *
+   * Only ever `live_source` today. It belongs on the claim axis because it is
+   * the answer to "why is this unchecked", and it is discovered here because
+   * here is where we look at the URL.
+   */
+  claimReasons: Map<string, 'live_source'>
+  /**
    * Set when a whole request failed. Document-wide, always OUR problem, and
    * surfaced to the writer as such rather than as a fact about their links.
    */
@@ -56,6 +66,25 @@ export interface CitationRun {
 }
 
 const NOT_APPLICABLE: CitationResult = { check: 'not_applicable', evidence: [] }
+
+/**
+ * Below this many characters, a "page" is not a page.
+ *
+ * FOUND IN THE AUDIT. Two SproutSocial citations were flagged off pages whose
+ * entire retrieved text was 649 and 913 characters: a consent wall, a nav
+ * shell, a JavaScript stub. We treated them as retrieved, the judge honestly
+ * reported that the claim was not in them, and the writer would have been told
+ * their link was wrong on the strength of a cookie banner.
+ *
+ * The rule everywhere else in this file applies here too: never conclude
+ * anything from a page we did not really get. A stub is `source_unreachable`,
+ * which is true, useful, and about the fetch rather than about their writing.
+ *
+ * Set well below a real article and well above any shell. Erring low is the
+ * safe direction: it costs recall on genuinely tiny pages and buys precision
+ * everywhere else.
+ */
+const MIN_READABLE_CHARS = 1_200
 
 /**
  * Check every claim that has something to check against.
@@ -70,13 +99,36 @@ export async function checkCitations(
   provider: RetrievalProvider = new TavilyProvider()
 ): Promise<CitationRun> {
   const results = new Map<string, CitationResult>()
+  const claimReasons = new Map<string, 'live_source'>()
   for (const c of claims) results.set(c.id, NOT_APPLICABLE)
+
+  /**
+   * A live source is checked by NOT checking it, and the decision is made from
+   * the URL before anything is spent.
+   *
+   * A dashboard that renders only the current month cannot confirm or refuse a
+   * figure written six months ago. Asking produces `does_not_contain`, which
+   * tells the writer their link is wrong when it was right the day they wrote
+   * it. That is a false accusation manufactured entirely by us, and it showed
+   * up on a real Ahrefs article citing StatCounter the first time this ran
+   * against real pages.
+   */
+  const live = claims.filter(c => c.sourceUrl && isLiveSource(c.sourceUrl))
+  const liveIds = new Set(live.map(c => c.id))
+  for (const c of live) {
+    claimReasons.set(c.id, 'live_source')
+    results.set(c.id, {
+      check: 'not_applicable',
+      evidence: [],
+      note: 'This cites a page that only shows current data, so your reader cannot check it either. Quote the figure with the date you read it.',
+    })
+  }
 
   // Linked claims INCLUDE first-party ones. That is the whole of addition 1:
   // the author's own linked methodology page is checkable even though the
   // author's own number is not.
-  const linked = claims.filter(c => c.sourceForm === 'linked' && c.sourceUrl)
-  const named = claims.filter(c => c.sourceForm === 'named' && c.sourceName)
+  const linked = claims.filter(c => c.sourceForm === 'linked' && c.sourceUrl && !liveIds.has(c.id))
+  const named = claims.filter(c => c.sourceForm === 'named' && c.sourceName && !liveIds.has(c.id))
 
   let failure: ProviderFailure | undefined
   let retrieved = 0
@@ -129,7 +181,7 @@ export async function checkCitations(
     results.set(claim.id, await judgeAgainst(claim, res.pages[0]))
   }
 
-  return { results, failure, retrieved }
+  return { results, claimReasons, failure, retrieved }
 }
 
 /**
@@ -241,6 +293,17 @@ Return JSON matching the schema.`
  */
 async function judgeAgainst(claim: Claim, page: RetrievedPage): Promise<CitationResult> {
   const body = page.content.slice(0, 24_000)
+
+  // Not enough page to conclude from. See MIN_READABLE_CHARS.
+  if (body.trim().length < MIN_READABLE_CHARS) {
+    console.warn(`[citation] ${page.url} returned ${body.trim().length} chars, treating as unreachable`)
+    return {
+      check: 'source_unreachable',
+      evidence: [],
+      note: 'We could not read enough of that page to check it. It may be behind a consent wall or need JavaScript.',
+    }
+  }
+
   const figurePresent = claim.figure ? body.includes(claim.figure) : false
 
   const res = await callLLM<Record<string, unknown>>({

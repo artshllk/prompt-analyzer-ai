@@ -5,6 +5,7 @@ import { consumeAnonRun } from '@/lib/db/anon-budget'
 import { extractClaims } from '@/lib/factcheck/extract'
 import { rankFlags } from '@/lib/factcheck/flags'
 import { checkCitations } from '@/lib/factcheck/citation'
+import { meter, formatMeter } from '@/lib/factcheck/providers/meter'
 import { MAX_DOC_CHARS } from '@/lib/factcheck/types'
 
 /**
@@ -126,11 +127,19 @@ export async function POST(req: NextRequest) {
    * with unchecked citations is a fine outcome while a 503 is not.
    */
   let citationFailure: string | undefined
+  const spentBefore = meter.read().credits
   try {
     const run = await checkCitations(result.claims)
     for (const claim of result.claims) {
       const found = run.results.get(claim.id)
       if (found) claim.citation = found
+      // The citation axis never writes to the claim axis itself. It reports
+      // what it learned and the reason is applied here, and only ever onto a
+      // claim that is still unchecked.
+      const reason = run.claimReasons.get(claim.id)
+      if (reason && claim.judgement.verdict === 'unchecked') {
+        claim.judgement = { ...claim.judgement, reason }
+      }
     }
     citationFailure = run.failure
     if (run.failure) {
@@ -153,6 +162,7 @@ export async function POST(req: NextRequest) {
       `band=${d.band} linked=${d.linked} named=${d.named} none=${d.none} ` +
       `firstParty=${d.firstParty} flags=${flags.fired} ` +
       `citations=${citationFailure ?? 'ok'} ` +
+      `credits=${meter.read().credits - spentBefore} ` +
       `auth=${auth ? auth.tier : 'anon'} ts=${new Date().toISOString()}`
   )
 
