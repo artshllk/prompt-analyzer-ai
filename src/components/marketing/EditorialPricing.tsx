@@ -43,15 +43,26 @@ import Link from "next/link";
  *
  * Every number here is enforced in limits.ts. None of it is aspirational.
  */
+/**
+ * The lead line, rendered on its own above "Also included".
+ *
+ * Source checking is the product now, so the table has to agree with the
+ * homepage about that. A flat list of six made it one bullet among six.
+ *
+ * Split into number and unit because that is where the confusion lives: "10 a
+ * month" and "10 a day" sat next to each other and read as the same thing at a
+ * glance. The number carries the weight, the unit carries the muted colour.
+ */
+const FREE_LEAD = { n: "10", unit: "source checks a month" };
+const PRO_LEAD = { n: "100", unit: "source checks a month" };
+
 const FREE_FEATURES = [
-  "10 source checks a month",
   "10 prompt improvements a day",
   "5 AI text detections a day",
   "7 days of history",
 ];
 
 const PRO_FEATURES = [
-  "100 source checks a month",
   // Improvements and detections stay unmetered for Pro. They cost about a cent
   // each, so unlimited is affordable there in a way it is not for checking at
   // four cents a document.
@@ -171,6 +182,8 @@ export function EditorialPricing({
           >
             Start free
           </Link>
+          <LeadFeature n={FREE_LEAD.n} unit={FREE_LEAD.unit} />
+          <AlsoIncluded />
           <FeatureList items={FREE_FEATURES} />
         </PricingCard>
 
@@ -247,6 +260,8 @@ export function EditorialPricing({
           >
             Get Pro
           </Link>
+          <LeadFeature n={PRO_LEAD.n} unit={PRO_LEAD.unit} accent />
+          <AlsoIncluded />
           <FeatureList items={PRO_FEATURES} accent />
         </PricingCard>
       </div>
@@ -341,9 +356,49 @@ function BillingToggle({
   );
 }
 
+/**
+ * The headline allowance, alone, with real space under it.
+ *
+ * Number bold and full-strength, unit muted and lighter, because "10 a month"
+ * and "10 a day" have to read differently at a glance and the unit is the part
+ * that distinguishes them.
+ */
+function LeadFeature({ n, unit, accent }: { n: string; unit: string; accent?: boolean }) {
+  return (
+    <div className="mt-8 pb-7" style={{ borderBottom: "1px solid var(--rule)" }}>
+      <div className="flex items-baseline gap-2">
+        <span
+          className="text-3xl tabular-nums"
+          style={{
+            color: accent ? "var(--color-accent-bright)" : "var(--ink)",
+            fontWeight: 600,
+          }}
+        >
+          {n}
+        </span>
+        <span className="text-[15px]" style={{ color: "var(--ink-soft)" }}>
+          {unit}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/** Quiet, so it separates without competing with the number above it. */
+function AlsoIncluded() {
+  return (
+    <p
+      className="mt-6 text-[11px] uppercase tracking-[0.14em]"
+      style={{ color: "var(--ink-soft)" }}
+    >
+      Also included
+    </p>
+  );
+}
+
 function FeatureList({ items, accent }: { items: string[]; accent?: boolean }) {
   return (
-    <ul className="mt-8 space-y-3.5">
+    <ul className="mt-5 space-y-3.5">
       {items.map((item) => (
         <li
           key={item}
