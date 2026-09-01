@@ -285,6 +285,18 @@ export interface CitationResult {
    * decide, which is both more honest and more useful.
    */
   sourceFigure?: string
+  /**
+   * Whether the writer's literal figure appears anywhere in the page we
+   * retrieved. Computed by indexOf, not asked of the model.
+   *
+   * It decides which of two different mistakes we describe: the number is
+   * there but attached to something else, or the number is not there at all.
+   * Those have different fixes, so getting it wrong gives the writer the wrong
+   * instruction. Measured on real articles, asking the judge for the source's
+   * figure only distinguished 8 of 13 cases. A substring test distinguishes
+   * all of them and costs nothing.
+   */
+  figureOnPage?: boolean
   /** Same indexOf discipline as the claim axis. Same reason. */
   evidence: Evidence[]
   note?: string

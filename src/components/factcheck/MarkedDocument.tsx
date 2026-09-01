@@ -9,6 +9,8 @@ import {
   citationsToFix,
 } from '@/lib/factcheck/spans'
 import { rankFlags } from '@/lib/factcheck/flags'
+import { groupFindings, summaryLines, FINDINGS_SHOWN } from '@/lib/factcheck/severity'
+import type { Finding, GroupedFindings } from '@/lib/factcheck/severity'
 import type { Claim, ClaimVerdict, CitationDensity } from '@/lib/factcheck/types'
 
 /**
@@ -83,6 +85,7 @@ export function MarkedDocument({
 
   const runs = useMemo(() => toRenderRuns(text, claims), [text, claims])
   const flags = useMemo(() => rankFlags(claims, text.length), [claims, text])
+  const findings = useMemo(() => groupFindings(claims), [claims])
   const listed = useMemo(() => unanchoredClaims(claims), [claims])
   const mine = useMemo(() => firstPartyClaims(claims), [claims])
   const byId = useMemo(() => new Map(claims.map(c => [c.id, c])), [claims])
@@ -136,6 +139,7 @@ export function MarkedDocument({
 
       {open && <ClaimPanel claim={open} onClose={() => setOpenId(null)} />}
 
+      {findings.total > 0 && <Findings findings={findings} />}
       {flags.shown.length > 0 && <WorthChecking flags={flags} />}
       {listed.length > 0 && <UnplacedList claims={listed} />}
       {mine.length > 0 && <FirstPartyList claims={mine} />}
@@ -402,6 +406,116 @@ function EvidenceList({
         </li>
       ))}
     </ul>
+  )
+}
+
+/**
+ * The findings, sorted by whose fault they are.
+ *
+ * 44% of checked claims on real articles carry a citation that does not
+ * support them. That rate is true and a flat list of twenty is still a wall.
+ * Nothing is hidden here: every count is shown, and every group expands. What
+ * changes is the order, because the group the writer can act on has to come
+ * first. Leading with something they cannot act on teaches them to ignore the
+ * whole panel.
+ */
+function Findings({ findings }: { findings: GroupedFindings }) {
+  const [expanded, setExpanded] = useState(false)
+  const lines = summaryLines(findings)
+  const rest = expanded ? findings.unsupported.slice(FINDINGS_SHOWN) : []
+
+  return (
+    <div
+      className="mt-6 rounded-2xl p-4 sm:p-5"
+      style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}
+    >
+      <p className="eyebrow mb-3">What to fix</p>
+
+      <ul className="mb-4 space-y-1">
+        {lines.map((line, i) => (
+          <li
+            key={i}
+            className="text-[15px] leading-relaxed"
+            /* The first line is the one they can act on. The rest are context
+               and are deliberately quieter, not hidden. */
+            style={{
+              color: i === 0 ? 'var(--ink)' : 'var(--ink-soft)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            {line}
+          </li>
+        ))}
+      </ul>
+
+      {findings.lead.length > 0 && (
+        <div className="space-y-4">
+          {findings.lead.map(f => <FindingCard key={f.claim.id} finding={f} />)}
+          {rest.map(f => <FindingCard key={f.claim.id} finding={f} />)}
+        </div>
+      )}
+
+      {findings.leadHidden > 0 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="mt-4 text-[14px] underline underline-offset-4"
+          style={{ color: 'var(--brand-text)' }}
+        >
+          {expanded
+            ? 'Show fewer'
+            : `Show the other ${findings.leadHidden} ${findings.leadHidden === 1 ? 'citation' : 'citations'}`}
+        </button>
+      )}
+
+      {(findings.liveSource.length > 0 || findings.unchecked.length > 0) && (
+        <div className="mt-5 pt-4 space-y-3" style={{ borderTop: '1px solid var(--rule)' }}>
+          {findings.liveSource.map(f => <QuietFinding key={f.claim.id} finding={f} />)}
+          {findings.unchecked.map(f => <QuietFinding key={f.claim.id} finding={f} />)}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** One thing to fix: what is wrong, then what to do about it. */
+function FindingCard({ finding }: { finding: Finding }) {
+  const { claim, headline, fix } = finding
+  return (
+    <div
+      className="pl-3"
+      style={{ borderLeft: `2px solid ${STYLE[displayVerdict(claim)].fg}` }}
+    >
+      <p className="text-[14px] leading-relaxed" style={{ color: 'var(--ink)' }}>
+        {claim.claimText}
+      </p>
+      <p className="mt-1 text-[14px] leading-relaxed" style={{ color: 'var(--guess)' }}>
+        {headline}
+      </p>
+      <p className="mt-1 text-[13px] leading-relaxed" style={{ color: 'var(--ink-soft)' }}>
+        {fix}
+      </p>
+      {claim.sourceUrl && (
+        <a
+          href={claim.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+          className="mt-1 inline-block text-[12px] underline underline-offset-4 wrap-break-word"
+          style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}
+        >
+          {claim.sourceUrl.slice(0, 90)}
+        </a>
+      )}
+    </div>
+  )
+}
+
+/** Things that are not the writer's fault. Present, quiet, never leading. */
+function QuietFinding({ finding }: { finding: Finding }) {
+  return (
+    <div className="text-[13px] leading-relaxed" style={{ color: 'var(--ink-soft)' }}>
+      <span style={{ color: 'var(--ink)' }}>{finding.headline}</span> {finding.fix}
+    </div>
   )
 }
 

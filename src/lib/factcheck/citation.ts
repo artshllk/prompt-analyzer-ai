@@ -342,6 +342,7 @@ async function judgeAgainst(claim: Claim, page: RetrievedPage): Promise<Citation
     return {
       check: 'supports',
       sourceFigure,
+      figureOnPage: claim.figure ? figurePresent : undefined,
       evidence: [toEvidence(page, quote)],
       note,
     }
@@ -354,6 +355,7 @@ async function judgeAgainst(claim: Claim, page: RetrievedPage): Promise<Citation
   return {
     check: 'does_not_contain',
     sourceFigure,
+    figureOnPage: claim.figure ? figurePresent : undefined,
     evidence: grounded ? [toEvidence(page, quote)] : [],
     note,
   }
