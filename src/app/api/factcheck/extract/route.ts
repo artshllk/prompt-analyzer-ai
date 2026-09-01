@@ -3,6 +3,8 @@ import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib
 import { resolveCaller } from '@/lib/auth/caller'
 import { consumeAnonRun } from '@/lib/db/anon-budget'
 import { extractClaims } from '@/lib/factcheck/extract'
+import { rankFlags } from '@/lib/factcheck/flags'
+import { checkCitations } from '@/lib/factcheck/citation'
 import { MAX_DOC_CHARS } from '@/lib/factcheck/types'
 
 /**
@@ -109,13 +111,49 @@ export async function POST(req: NextRequest) {
   // The density band is logged because it is the number that decides how much
   // this tool can do for a document, and the distribution of bands across real
   // traffic is the thing worth knowing before 4b picks its search budget.
+  /**
+   * The citation axis.
+   *
+   * INERT WITHOUT A KEY. With no TAVILY_API_KEY the provider returns
+   * `not_configured`, every claim keeps `not_applicable`, and the response is
+   * byte for byte what it was before this existed. That is the correct
+   * degradation: a missing credential must never produce a sentence about
+   * somebody's link.
+   *
+   * Wrapped in its own catch for the same reason the audit stage is in the
+   * prompt engine. The claims are what the user came for. Losing them because
+   * a retrieval threw would trade the whole result for a panel, and a document
+   * with unchecked citations is a fine outcome while a 503 is not.
+   */
+  let citationFailure: string | undefined
+  try {
+    const run = await checkCitations(result.claims)
+    for (const claim of result.claims) {
+      const found = run.results.get(claim.id)
+      if (found) claim.citation = found
+    }
+    citationFailure = run.failure
+    if (run.failure) {
+      console.error(`[factcheck] citation axis unavailable: ${run.failure}`)
+    }
+  } catch (err) {
+    console.error('[factcheck] citation axis threw, shipping claims without it:', err)
+    citationFailure = 'unavailable'
+  }
+
   const d = result.density
+  // flags= is instrumentation, not a feature. If the median across real
+  // documents sits above three or four the flag is firing too often to be a
+  // to-do list, and the answer is to rank harder or drop it. That is a number
+  // worth having rather than guessing at.
+  const flags = rankFlags(result.claims, result.text.length)
   console.log(
     `[factcheck] claims=${result.claims.length}/${result.foundCount} ` +
       `unanchored=${result.unanchoredCount} chars=${text.length} ` +
       `band=${d.band} linked=${d.linked} named=${d.named} none=${d.none} ` +
-      `firstParty=${d.firstParty} auth=${auth ? auth.tier : 'anon'} ` +
-      `ts=${new Date().toISOString()}`
+      `firstParty=${d.firstParty} flags=${flags.fired} ` +
+      `citations=${citationFailure ?? 'ok'} ` +
+      `auth=${auth ? auth.tier : 'anon'} ts=${new Date().toISOString()}`
   )
 
   return json(
@@ -125,6 +163,10 @@ export async function POST(req: NextRequest) {
       density: result.density,
       truncated: result.truncated,
       foundCount: result.foundCount,
+      // Told plainly rather than hidden. A run where we could not check the
+      // citations is a different thing from a run where every citation was
+      // fine, and conflating them is how a report stops meaning anything.
+      citationsChecked: !citationFailure,
       anon: !auth,
     },
     200

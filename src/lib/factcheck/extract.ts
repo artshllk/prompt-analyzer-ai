@@ -181,9 +181,11 @@ This never becomes an accusation. It exists so that finding nothing can mean som
 
 # HOW TO CHOOSE WHEN THERE ARE MANY
 
-Rank by one question: WOULD A READER BE MISLED IF THIS WERE WRONG?
+Choose by one question: WOULD A READER BE MISLED IF THIS WERE WRONG?
 
-A fabricated statistic in the opening paragraph outranks a correct-looking date in a footnote. A named study that may not exist outranks a round number used as an illustration. Order the list so the most consequential claims come first.
+A fabricated statistic in the opening paragraph matters more than a correct-looking date in a footnote. A named study that may not exist matters more than a round number used as an illustration. When you have to leave something out, leave out the one whose wrongness would cost the reader least.
+
+RETURN THEM IN DOCUMENT ORDER, first to last, always. Do not sort by importance. Importance is decided downstream, and the order you return is used to find each quote in the text, so re-ordering breaks the anchoring.
 
 # COPYING THE QUOTE
 

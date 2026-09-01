@@ -8,7 +8,7 @@ import {
   countByVerdict,
   citationsToFix,
 } from '@/lib/factcheck/spans'
-import { attentionFlag } from '@/lib/factcheck/types'
+import { rankFlags } from '@/lib/factcheck/flags'
 import type { Claim, ClaimVerdict, CitationDensity } from '@/lib/factcheck/types'
 
 /**
@@ -82,6 +82,7 @@ export function MarkedDocument({
   const [openId, setOpenId] = useState<string | null>(null)
 
   const runs = useMemo(() => toRenderRuns(text, claims), [text, claims])
+  const flags = useMemo(() => rankFlags(claims, text.length), [claims, text])
   const listed = useMemo(() => unanchoredClaims(claims), [claims])
   const mine = useMemo(() => firstPartyClaims(claims), [claims])
   const byId = useMemo(() => new Map(claims.map(c => [c.id, c])), [claims])
@@ -135,6 +136,7 @@ export function MarkedDocument({
 
       {open && <ClaimPanel claim={open} onClose={() => setOpenId(null)} />}
 
+      {flags.shown.length > 0 && <WorthChecking flags={flags} />}
       {listed.length > 0 && <UnplacedList claims={listed} />}
       {mine.length > 0 && <FirstPartyList claims={mine} />}
     </div>
@@ -255,8 +257,6 @@ function Tally({ n, label, verdict }: { n: number; label: string; verdict: Claim
 function ClaimPanel({ claim, onClose }: { claim: Claim; onClose: () => void }) {
   const v = displayVerdict(claim)
   const s = STYLE[v]
-  const flag = attentionFlag(claim)
-
   return (
     <div
       className="mt-4 rounded-2xl p-4 sm:p-5"
@@ -294,18 +294,6 @@ function ClaimPanel({ claim, onClose }: { claim: Claim; onClose: () => void }) {
       ) : (
         <p className="mt-4 text-[14px] leading-relaxed" style={{ color: 'var(--ink-soft)' }}>
           <UncheckedLine claim={claim} />
-        </p>
-      )}
-
-      {/* The attention flag. Never a verdict, and phrased against our search
-          rather than against the claim, because one search is not entitled to
-          say the world contains no source. */}
-      {flag && (
-        <p
-          className="mt-3 text-[14px] leading-relaxed rounded-xl p-3"
-          style={{ background: 'var(--guess-bg)', color: 'var(--guess)' }}
-        >
-          {flag}
         </p>
       )}
 
@@ -414,6 +402,46 @@ function EvidenceList({
         </li>
       ))}
     </ul>
+  )
+}
+
+/**
+ * The unsourced claims worth a second look, ranked, three at a time.
+ *
+ * On an aggregator post a third of claims carry no attribution at all, so an
+ * unranked version of this fires a dozen times on one document. Twelve things
+ * to check is a wall, not a to-do list, and frequency destroys usefulness
+ * independently of accuracy. Three ranked items is a task.
+ *
+ * The heading and the sentences are deliberately about OUR search rather than
+ * about the claim. One search is not entitled to say the world contains no
+ * source, and this is the closest the product gets to catching a fabrication
+ * without ever accusing anyone of one.
+ */
+function WorthChecking({ flags }: { flags: ReturnType<typeof rankFlags> }) {
+  return (
+    <div
+      className="mt-6 rounded-2xl p-4 sm:p-5"
+      style={{ background: 'var(--guess-bg)', border: '1px solid var(--rule)' }}
+    >
+      <p className="eyebrow mb-3">Worth checking first</p>
+      <ul className="space-y-3">
+        {flags.shown.map(({ claim }) => (
+          <li
+            key={claim.id}
+            className="text-[14px] leading-relaxed pl-3"
+            style={{ borderLeft: '2px solid var(--guess)', color: 'var(--ink)' }}
+          >
+            {claim.claimText}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-[13px] leading-relaxed" style={{ color: 'var(--guess)' }}>
+        {flags.shown.length === 1 ? 'This reads' : 'These read'} like published statistics and we
+        could not find a source for {flags.shown.length === 1 ? 'it' : 'them'}.
+        {flags.hidden > 0 && ` ${flags.hidden} more like this.`}
+      </p>
+    </div>
   )
 }
 

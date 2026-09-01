@@ -25,6 +25,7 @@ type State =
       density: CitationDensity
       truncated: boolean
       foundCount: number
+      citationsChecked: boolean
     }
   | { kind: 'error'; message: string }
 
@@ -77,6 +78,7 @@ export function CheckClient() {
         density: data.density,
         truncated: Boolean(data.truncated),
         foundCount: data.foundCount ?? data.claims.length,
+        citationsChecked: Boolean(data.citationsChecked),
       })
     } catch {
       setState({
@@ -104,6 +106,17 @@ export function CheckClient() {
           </p>
         )}
 
+        {!state.citationsChecked && (
+          <p
+            className="mt-5 text-[14px] leading-relaxed rounded-xl p-3"
+            style={{ background: 'var(--guess-bg)', color: 'var(--guess)' }}
+          >
+            We could not check the sources on this run. That is our problem, not
+            a finding about your links. Nothing below says anything about
+            whether your citations hold up.
+          </p>
+        )}
+
         <div className="mt-6 flex flex-wrap items-center gap-4">
           <button
             type="button"
@@ -114,7 +127,9 @@ export function CheckClient() {
             Check another
           </button>
           <p className="text-[13px]" style={{ color: 'var(--ink-soft)' }}>
-            Nothing has been checked against a source yet.
+            {state.citationsChecked
+              ? 'Sources checked. Whether each claim is true is a separate question we do not answer yet.'
+              : 'Nothing has been checked against a source yet.'}
           </p>
         </div>
       </div>
