@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     // to, so counting it would bill one user action twice and halve the real
     // ceiling. It still has to stop once the ceiling is hit, or this endpoint
     // becomes the way around it.
-    if (await anonBudgetExhausted()) {
+    if (await anonBudgetExhausted('improver')) {
       return corsJson({ error: 'daily_capacity' }, 429)
     }
   } else {

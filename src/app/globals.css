@@ -53,6 +53,15 @@
   --guess-accent: #B8791A;
   --guess-bg: #FBF1DE;
   --confirm: #2E6F4E;      /* verified, removed, done */
+  /* Added for the fact checker's three states, which are body text at body
+     size and therefore inherit the AA constraint documented above.
+     Measured: --confirm on --confirm-bg is 5.14:1. For the contradicted
+     state the text colour is --brand-text (#A93520) on --contradicted-bg,
+     which is 5.43:1. Plain --brand (#C9452F) on that tint is only 3.99:1,
+     so it is the fill colour and never the text colour. */
+  --confirm-bg: #E6F0E9;
+  --contradicted: var(--brand-text);
+  --contradicted-bg: #F6E7E3;
 
   /* --- type ---
      Bricolage Grotesque for display, IBM Plex Sans for body, IBM Plex Mono
@@ -104,6 +113,9 @@
   --color-guess: var(--guess);
   --color-guess-bg: var(--guess-bg);
   --color-confirm: var(--confirm);
+  --color-confirm-bg: var(--confirm-bg);
+  --color-contradicted: var(--contradicted);
+  --color-contradicted-bg: var(--contradicted-bg);
 }
 
 * {

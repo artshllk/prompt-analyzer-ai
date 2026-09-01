@@ -26,15 +26,40 @@ import { createServiceClient } from '@/lib/supabase/server'
  */
 
 /**
- * Tunable without a code change. 500 anonymous runs a day is far more than
- * the site's real traffic and caps the worst case at roughly ten dollars,
- * which is the number that matters for something pre-revenue.
+ * Which product is spending. Each has its own daily ceiling, because they
+ * have wildly different unit costs and because both guards fail closed: with
+ * one shared counter, a busy day on one product takes the other offline.
+ * See migration 015.
  */
-const DEFAULT_CAP = 500
+export type BudgetBucket = 'improver' | 'factcheck'
 
-export function anonDailyCap(): number {
-  const raw = Number(process.env.ANON_DAILY_GLOBAL_CAP)
-  return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : DEFAULT_CAP
+/**
+ * Per-bucket daily ceilings, each tunable without a code change.
+ *
+ * improver: FROZEN PRODUCT. It was 500 a day when it was the homepage. It is
+ * now a legacy page kept alive so 48 existing links and one already-sent
+ * email keep resolving, and it should not cost real money to keep that
+ * promise. 60 a day is roughly a dollar, which is the right price for a
+ * page nobody is being sent to on purpose. The browser extension shares this
+ * bucket, which is deliberate: it is the same frozen product.
+ *
+ * factcheck: set when the route that spends it exists. A fact-check run is
+ * 5x to 50x a rewrite, so this number is not comparable to the one above and
+ * a shared counter could never have expressed that.
+ */
+const DEFAULT_CAPS: Record<BudgetBucket, number> = {
+  improver: 60,
+  factcheck: 40,
+}
+
+const CAP_ENV: Record<BudgetBucket, string> = {
+  improver: 'ANON_DAILY_GLOBAL_CAP',
+  factcheck: 'FACTCHECK_DAILY_CAP',
+}
+
+export function anonDailyCap(bucket: BudgetBucket = 'improver'): number {
+  const raw = Number(process.env[CAP_ENV[bucket]])
+  return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : DEFAULT_CAPS[bucket]
 }
 
 /**
@@ -98,11 +123,16 @@ function nextMidnightUtc(): string {
  * Everyone signed in is unaffected. That is the right trade for a product
  * with no revenue and a public, unauthenticated model call.
  */
-export async function consumeAnonRun(): Promise<AnonBudget> {
-  const cap = anonDailyCap()
+export async function consumeAnonRun(
+  bucket: BudgetBucket = 'improver'
+): Promise<AnonBudget> {
+  const cap = anonDailyCap(bucket)
   try {
     const supabase = await createServiceClient()
-    const { data, error } = await supabase.rpc('bump_anon_runs', { p_day: today() })
+    const { data, error } = await supabase.rpc('bump_anon_runs', {
+      p_day: today(),
+      p_bucket: bucket,
+    })
     if (error || typeof data !== 'number') {
       console.error('[anon-budget] bump failed, failing CLOSED:', error?.message ?? data)
       return { allowed: false, used: cap, cap, resetAt: nextMidnightUtc() }
@@ -127,24 +157,31 @@ export async function consumeAnonRun(): Promise<AnonBudget> {
  * still behind the per-IP bucket, and blocking it on a database blip would
  * break the extension for people who are not the problem.
  */
-let cached: { at: number; exhausted: boolean } | null = null
+// Cached PER BUCKET. One shared cache entry would let a busy improver day
+// answer a factcheck question, which is the exact confusion buckets exist to
+// remove.
+const cached = new Map<BudgetBucket, { at: number; exhausted: boolean }>()
 const CACHE_MS = 30_000
 
-export async function anonBudgetExhausted(): Promise<boolean> {
-  if (cached && Date.now() - cached.at < CACHE_MS) return cached.exhausted
+export async function anonBudgetExhausted(
+  bucket: BudgetBucket = 'improver'
+): Promise<boolean> {
+  const hit = cached.get(bucket)
+  if (hit && Date.now() - hit.at < CACHE_MS) return hit.exhausted
   try {
     const supabase = await createServiceClient()
     const { data, error } = await supabase
       .from('anon_daily_usage')
       .select('runs')
       .eq('day', today())
+      .eq('bucket', bucket)
       .maybeSingle()
     if (error) {
       console.error('[anon-budget] read failed, allowing:', error.message)
       return false
     }
-    const exhausted = (data?.runs ?? 0) > anonDailyCap()
-    cached = { at: Date.now(), exhausted }
+    const exhausted = (data?.runs ?? 0) > anonDailyCap(bucket)
+    cached.set(bucket, { at: Date.now(), exhausted })
     return exhausted
   } catch {
     return false

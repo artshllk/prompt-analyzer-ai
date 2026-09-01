@@ -127,14 +127,14 @@ export async function POST(req: NextRequest) {
   const budgetAction = budgetActionFor({ signedIn: !!auth, turn: priorAnswers.length })
 
   if (budgetAction === 'consume') {
-    const budget = await consumeAnonRun()
+    const budget = await consumeAnonRun('improver')
     if (!budget.allowed) {
       return withCors(NextResponse.json(
         { error: 'daily_capacity', resetAt: budget.resetAt },
         { status: 429, headers: { 'Retry-After': '3600' } }
       ))
     }
-  } else if (budgetAction === 'check' && (await anonBudgetExhausted())) {
+  } else if (budgetAction === 'check' && (await anonBudgetExhausted('improver'))) {
     return withCors(NextResponse.json(
       { error: 'daily_capacity' },
       { status: 429, headers: { 'Retry-After': '3600' } }
