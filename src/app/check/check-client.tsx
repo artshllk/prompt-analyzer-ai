@@ -22,7 +22,44 @@ export function CheckClient() {
 
   const chars = text.length
   const overLimit = chars > MAX_DOC_CHARS
-  const busy = state.kind === 'extracting' || state.kind === 'checking'
+  // `extracting` and `checking` both render their own view, so anything left
+  // here is idle or an error and the box is always usable.
+
+  /**
+   * THE WAIT SHOWS THEIR OWN DOCUMENT, NOT A SPINNER OR A SKELETON.
+   *
+   * Extraction is one model call over the whole document and takes about seven
+   * seconds. A spinner makes that seven seconds feel like nothing happening. A
+   * skeleton makes it feel like a page loading. Their own text, in the reading
+   * view, unmarked, makes it feel like a page waiting to be marked up, which is
+   * exactly what it is.
+   *
+   * The transition is then marks appearing ON a page rather than a page
+   * appearing, and nothing on screen is ever replaced.
+   */
+  if (state.kind === 'extracting') {
+    return (
+      <div>
+        <p
+          className="claim-status mb-4 text-[14px]"
+          style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}
+        >
+          Reading your document.
+        </p>
+        <div
+          className="rounded-2xl p-4 sm:p-6"
+          style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}
+        >
+          <p
+            className="text-[15px] sm:text-base leading-[1.9] whitespace-pre-wrap wrap-break-word"
+            style={{ color: 'var(--ink)' }}
+          >
+            {text}
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   if (state.kind === 'checking' || state.kind === 'done') {
     const live = state.kind === 'checking'
@@ -104,7 +141,6 @@ export function CheckClient() {
         onChange={e => setText(e.target.value)}
         rows={10}
         placeholder="Paste your post here."
-        disabled={busy}
         className="w-full rounded-2xl p-4 text-[15px] leading-[1.7] resize-y focus:outline-none focus:ring-2"
         style={{
           background: 'var(--card)',
@@ -117,11 +153,11 @@ export function CheckClient() {
         <button
           type="button"
           onClick={() => run(text)}
-          disabled={busy || !text.trim() || overLimit}
+          disabled={!text.trim() || overLimit}
           className="text-[15px] px-5 py-2.5 rounded-full disabled:opacity-45 disabled:cursor-not-allowed"
           style={{ background: 'var(--brand)', color: '#fff' }}
         >
-          {state.kind === 'extracting' ? 'Reading your post' : 'Check my links'}
+          Check my links
         </button>
         <span
           className="text-[13px]"

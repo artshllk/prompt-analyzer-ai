@@ -3,6 +3,7 @@ import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
+import { CheckCTA } from '@/components/blog/CheckCTA'
 
 export const metadata: Metadata = {
   title: 'Are AI Detectors Accurate? What They Can and Cannot Tell You',
@@ -222,6 +223,8 @@ export default function AreAIDetectorsAccuratePage() {
               </ul>
             </section>
           </article>
+
+          <CheckCTA variant="detector" />
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Check a piece of text</h2>

@@ -28,6 +28,13 @@ const paywalled = (id: string) =>
   claim(id, { citation: { check: 'source_unreachable', unreadable: 'paywalled', evidence: [] } })
 const dead = (id: string) =>
   claim(id, { citation: { check: 'source_unreachable', unreadable: 'dead', evidence: [] } })
+const noSource = (id: string, over: Partial<Claim> = {}) =>
+  claim(id, {
+    sourceForm: 'none',
+    sourceUrl: undefined,
+    citation: { check: 'not_applicable', unreadable: 'no_source', evidence: [] },
+    ...over,
+  })
 const live = (id: string) =>
   claim(id, { judgement: { verdict: 'unchecked', reason: 'live_source', evidence: [] } })
 
@@ -120,6 +127,34 @@ test('the mismatch split is deterministic, not a model judgement', () => {
     citation: { check: 'does_not_contain', evidence: [], sourceFigure: '34.2%' },
   })
   assert.equal(toFindings([legacy])[0].kind, 'context_mismatch', 'falls back when unset')
+})
+
+test('numbers with no link get their own line, and it is usually the biggest', () => {
+  // 55 of 114 across 11 real articles, 48%, larger than every other category
+  // combined. It was silently producing no finding at all.
+  const g = groupFindings([noSource('a'), noSource('b'), noSource('c'), unsupported('d')])
+  assert.equal(g.noSource.length, 3)
+  assert.deepEqual(summaryLines(g), [
+    '1 citation does not support their claim.',
+    '3 numbers have no source at all.',
+  ])
+})
+
+test('a first-party number is never told it has no source', () => {
+  // Telling somebody their own figure needs a citation is telling them to
+  // cite themselves.
+  const g = groupFindings([noSource('own', { subject: 'first_party' })])
+  assert.equal(g.noSource.length, 0)
+  assert.deepEqual(summaryLines(g), [])
+})
+
+test('the summary reads in the order the writer should act', () => {
+  const g = groupFindings([unsupported('a'), noSource('b'), live('c')])
+  assert.deepEqual(summaryLines(g), [
+    '1 citation does not support their claim.',
+    '1 number has no source at all.',
+    '1 citation your reader cannot verify either: 1 live dashboard.',
+  ])
 })
 
 test('a clean document produces no findings and no lines', () => {

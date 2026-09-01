@@ -3,6 +3,7 @@ import { getBlogPost } from '@/lib/blog-posts'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
+import { CheckCTA } from '@/components/blog/CheckCTA'
 
 export const metadata: Metadata = {
   title: 'How to Use ChatGPT for Writing - A Practical Guide',
@@ -235,6 +236,7 @@ export default function HowToUseChatGPTForWritingPage() {
             <Link href="/prompts" className="text-sm hover:opacity-70 transition-opacity" style={{ color: 'var(--color-paper)' }}>Browse all free prompt templates →</Link>
           </div>
         </div>
+        <CheckCTA variant="hallucination" />
         <PostFooter slug="how-to-use-chatgpt-for-writing" />
       </main>
     </div>
