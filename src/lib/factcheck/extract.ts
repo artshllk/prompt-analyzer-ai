@@ -205,6 +205,8 @@ A fabricated statistic in the opening paragraph matters more than a correct-look
 
 RETURN THEM IN DOCUMENT ORDER, first to last, always. Do not sort by importance. Importance is decided downstream, and the order you return is used to find each quote in the text, so re-ordering breaks the anchoring.
 
+STOP AFTER 25. Return the FIRST 25 claims you meet reading the document from the top, then stop. Not the best 25, not a selection: the first 25 in order. If the document holds more, that is fine and expected, and they are not your problem.
+
 # COPYING THE QUOTE
 
 The quote field is searched for in the original document. If you change even one character it will not be found and the claim cannot be shown in place.
@@ -223,7 +225,14 @@ export interface ExtractResult {
   density: CitationDensity
   /** True when more claims were found than we were willing to carry forward. */
   truncated: boolean
-  /** How many the model returned, before dedupe and before the cap. */
+  /**
+   * How many the model returned, before dedupe and before the code cap.
+   *
+   * NOT A PROPERTY OF THE DOCUMENT ANY MORE, and never printed. The prompt
+   * stops the model at 25, so this saturates there on anything dense and says
+   * "at least 25" rather than "89". It stayed useful for one thing only:
+   * `truncated` still means honestly that there were more than we kept.
+   */
   foundCount: number
   /**
    * Links in the document, counted by us and not by the model.
@@ -271,17 +280,19 @@ export async function extractClaims(
     userMessage: `<document>\n${text}\n</document>`,
     temperature: 0.1,
     /**
-     * Sized for the WORST DOCUMENT AT THE CAP, not for the twenty claims we
-     * keep. The model returns everything it finds and the cap is applied in
-     * code below, so the budget has to hold the full list or the whole
-     * document fails and the user gets nothing.
+     * Sized for 25 claims and the reasoning that goes with them.
      *
-     * Measured on a stats listicle at 11,800 visible characters: 89 claims
-     * found, 8,498 output tokens. This was 2000, which the client doubles and
-     * pads to 5,000 shared with reasoning, so that article overflowed before
-     * it emitted a single character and the reader got nothing at all.
+     * It was 10,000, sized for a WHOLE dense document, because the prompt used
+     * to ask for every claim in it. One article returned 89 claims and 8,646
+     * output tokens, of which 69 claims were thrown away by the cap below.
+     * That waste was 87% of the wait: 48 of the 55 seconds a reader spent
+     * looking at an unmarked page.
+     *
+     * The prompt now stops at 25. This still has to hold that comfortably,
+     * because an overflow costs the whole document, so it is roughly double
+     * what 25 claims measure at.
      */
-    maxOutputTokens: 10_000,
+    maxOutputTokens: 4_000,
     /**
      * The 25s default in the client was tuned for the improver's diagnose
      * call, which lands in 2-6s. This is a different job: the same listicle
