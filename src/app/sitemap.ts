@@ -48,6 +48,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/playground`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
     ...categoryPages,
     ...promptPages,
+    { url: `${base}/how-it-works`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/pricing`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${base}/faq`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     ...blogPages,

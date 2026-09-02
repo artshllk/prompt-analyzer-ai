@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { MarkedDocument } from '@/components/factcheck/MarkedDocument'
 import { PrintReport } from '@/components/factcheck/PrintReport'
 import { useCheckStream } from '@/components/factcheck/useCheckStream'
@@ -187,6 +188,15 @@ export function CheckClient() {
           {chars.toLocaleString()} / {MAX_DOC_CHARS.toLocaleString()}
         </span>
       </div>
+
+      {/* One quiet line, not a button and not a card. Someone arriving cold
+          from a shared link needs a way in; someone who already knows should
+          not have to step over it. */}
+      <p className="mt-4 text-[13px] leading-relaxed" style={{ color: 'var(--ink-soft)' }}>
+        <Link href="/how-it-works" className="underline underline-offset-4">
+          How we check a link, and what we found in 114 real numbers
+        </Link>
+      </p>
 
       {state.kind === 'error' && (
         <p
