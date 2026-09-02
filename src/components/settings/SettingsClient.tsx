@@ -5,17 +5,18 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { markSignedOut } from '@/lib/auth/local-hints'
-import { USAGE_DAILY_LIMIT } from '@/lib/limits'
 import { MemorySection } from './MemorySection'
 
 interface SettingsClientProps {
   email: string
+  /** Accepted and unused: the old Account card listed it, and a name is not
+   *  something anyone comes to a settings page to read. */
   fullName: string | null
   tier: string
   subscriptionStatus: string | null
 }
 
-export function SettingsClient({ email, fullName, tier, subscriptionStatus }: SettingsClientProps) {
+export function SettingsClient({ email, tier, subscriptionStatus }: SettingsClientProps) {
   const router = useRouter()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [confirmText, setConfirmText] = useState('')
@@ -80,125 +81,118 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
   }
 
   return (
-    <div className="space-y-6">
-      {/* Account info */}
-      <section className="card-editorial p-6 space-y-4">
-        <p className="eyebrow">Account</p>
-        <div className="space-y-3 text-sm">
-          <Row label="Email" value={email} />
-          <Row label="Name" value={fullName ?? '-'} />
-          <Row
-            label="Plan"
-            value={
-              <span className="flex items-center gap-2">
-                <span className="capitalize" style={{ color: 'var(--color-paper)' }}>{tier}</span>
-                {isPro && (
-                  <span
-                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider"
-                    style={{ background: 'var(--color-accent-soft)', color: 'var(--color-accent-bright)' }}
-                  >
-                    Pro
-                  </span>
-                )}
-                {subscriptionStatus && subscriptionStatus !== 'active' && (
-                  <span className="text-[10px] capitalize" style={{ color: '#E89A6B' }}>
-                    {subscriptionStatus.replace('_', ' ')}
-                  </span>
-                )}
-              </span>
-            }
-          />
-        </div>
-      </section>
+    <div>
+      {/*
+        ONE PANEL WITH HAIRLINE DIVIDERS, not four floating cards. Four cards
+        gave four unrelated settings equal weight and equal prominence, so
+        nothing looked more important than anything else.
 
-      <MemorySection />
-
-      {/* Browser extension */}
-      <section className="card-editorial p-6 space-y-4">
-        <p className="eyebrow">Browser extension for prompt improvements</p>
-        <p className="text-sm leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
-          Connect the Deepclario extension to this account so it uses your plan{' '}
-          {isPro
-            ? '(unlimited improvements, no daily limit)'
-            : `(${USAGE_DAILY_LIMIT} free improvements a day)`}{' '}
-          instead of the public free quota.
-        </p>
-        <a
-          href="/extension/connect"
-          className="inline-block px-4 py-2.5 rounded-full text-sm transition-all btn-outline"
-          style={{ border: '1px solid var(--color-rule-strong)', color: 'var(--color-paper)', fontWeight: 500 }}
-        >
-          Get connection code →
-        </a>
-      </section>
-
-      {/* Session - Sign out lives here now that the sidebar footer
-          is gone. Compact section, no need for theatre. */}
-      <section className="card-editorial p-6 space-y-4">
-        <p className="eyebrow">Session</p>
-        <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-          Signed in as <span style={{ color: 'var(--color-paper)' }}>{email}</span>.
-        </p>
-        <button
-          onClick={handleSignOut}
-          disabled={signingOut}
-          className="px-4 py-2.5 rounded-full text-sm transition-all btn-outline disabled:opacity-50"
-          style={{ border: '1px solid var(--color-rule-strong)', color: 'var(--color-paper)', fontWeight: 500 }}
-        >
-          {signingOut ? 'Signing out…' : 'Sign out'}
-        </button>
-      </section>
-
-      {/* Billing */}
-      <section className="card-editorial p-6 space-y-4">
-        <p className="eyebrow">Billing</p>
-        {isPro ? (
-          <>
-            <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-              Manage your subscription, payment method, and invoices.
-            </p>
-            <button
-              onClick={handleManageBilling}
-              disabled={billingLoading}
-              className="px-4 py-2.5 rounded-full text-sm transition-all btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ border: '1px solid var(--color-rule-strong)', color: 'var(--color-paper)', fontWeight: 500 }}
-            >
-              {billingLoading ? 'Opening…' : 'Manage billing →'}
-            </button>
-            {billingError && (
-              <p className="text-sm" style={{ color: '#E89A6B' }}>{billingError}</p>
-            )}
-          </>
-        ) : (
-          <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-            You&apos;re on the free plan: 10 source checks a month. Pro gives you 100.
-          </p>
-        )}
-      </section>
-
-      {/* Danger zone */}
-      <section
-        className="rounded-2xl p-6 space-y-4"
-        style={{ border: '1px solid rgba(239,68,68,0.25)', background: 'rgba(239,68,68,0.05)' }}
+        Order is orientation first, then action. "Signed in as" answers whose
+        settings these are, which comes before every other question a person
+        has here. Billing is what a paying user came for. The extension is last
+        because it belongs to the frozen product.
+      */}
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}
       >
-        <p className="eyebrow" style={{ color: '#F2A0A0' }}>Danger zone</p>
-        <p className="text-sm leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
-          Permanently delete your account and all associated data, including your sessions and history. This cannot be undone.
-          {isPro && (
-            <span className="block mt-2" style={{ color: '#E89A6B' }}>
-              Cancel your subscription via &quot;Manage billing&quot; first to avoid further charges.
-            </span>
-          )}
+        <SettingRow
+          title="Session"
+          body={<>Signed in as <span style={{ color: 'var(--ink)' }}>{email}</span>.</>}
+          action={
+            <button
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="px-4 py-2.5 rounded-full text-[15px] transition-all btn-outline disabled:opacity-50"
+              style={{ border: '1px solid var(--rule)', color: 'var(--ink)', fontWeight: 500 }}
+            >
+              {signingOut ? 'Signing out...' : 'Sign out'}
+            </button>
+          }
+        />
+
+        <SettingRow
+          title="Billing"
+          body={
+            isPro
+              ? 'Manage your plan, card, and invoices.'
+              : 'You are on the free plan. 10 source checks a month.'
+          }
+          /* A subscription that is not active means a payment failed. Without
+             this the first they hear of it is Pro switching off. */
+          warning={
+            isPro && subscriptionStatus && subscriptionStatus !== 'active'
+              ? `Your subscription is ${subscriptionStatus.replace(/_/g, ' ')}. Update your card to keep Pro.`
+              : null
+          }
+          action={
+            isPro ? (
+              <button
+                onClick={handleManageBilling}
+                disabled={billingLoading}
+                className="px-4 py-2.5 rounded-full text-[15px] transition-all btn-outline disabled:opacity-50"
+                style={{ border: '1px solid var(--rule)', color: 'var(--ink)', fontWeight: 500 }}
+              >
+                {billingLoading ? 'Opening...' : 'Manage billing'}
+              </button>
+            ) : (
+              <a
+                href="/pricing"
+                className="inline-block px-4 py-2.5 rounded-full text-[15px] transition-all btn-outline"
+                style={{ border: '1px solid var(--rule)', color: 'var(--ink)', fontWeight: 500 }}
+              >
+                See Pro
+              </a>
+            )
+          }
+          note={billingError}
+        />
+
+        <SettingRow
+          title="Browser extension"
+          body="Improves prompts inside ChatGPT, Claude, and Gemini. No longer updated."
+          action={
+            <a
+              href="/extension/connect"
+              className="inline-block px-4 py-2.5 rounded-full text-[15px] transition-all btn-outline"
+              style={{ border: '1px solid var(--rule)', color: 'var(--ink)', fontWeight: 500 }}
+            >
+              Get connection code
+            </a>
+          }
+          last
+        />
+      </div>
+
+      {/* Improver memory. Self-hides when there is none, so a new account
+          never sees it. Kept because it is a data-deletion control, and
+          removing it would take a privacy action away from anyone who has
+          some. */}
+      <div className="mt-6">
+        <MemorySection />
+      </div>
+
+      {/*
+        NO DANGER ZONE. That is a GitHub convention from 2010 that ended up in
+        every template: a red box shouting about something the person has not
+        done, which makes deletion the loudest thing on a settings page. The
+        confirmation dialog does the protecting. The heading is plain, the
+        container has no tint and no border, and only the button is red.
+      */}
+      <section className="mt-12">
+        <h2 className="text-[17px] mb-2" style={{ color: 'var(--ink)', fontWeight: 600 }}>
+          Delete account
+        </h2>
+        <p className="text-[16px] leading-[1.6] mb-1" style={{ color: 'var(--ink-soft)' }}>
+          This erases your account and all your data. It cannot be undone.
+        </p>
+        <p className="text-[16px] leading-[1.6] mb-4" style={{ color: 'var(--ink-soft)' }}>
+          Cancel your subscription first to avoid further charges.
         </p>
         <button
           onClick={() => setConfirmOpen(true)}
-          className="px-4 py-2.5 rounded-full text-sm transition-all"
-          style={{
-            background: 'rgba(239,68,68,0.10)',
-            border: '1px solid rgba(239,68,68,0.30)',
-            color: '#F2A0A0',
-            fontWeight: 500,
-          }}
+          className="text-[15px] underline underline-offset-4"
+          style={{ color: 'var(--brand-text)', fontWeight: 500 }}
         >
           Delete account
         </button>
@@ -222,10 +216,10 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
               style={{ background: 'var(--color-ink-card)', border: '1px solid rgba(239,68,68,0.30)' }}
             >
               <h3 className="font-serif text-xl" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
-                Delete account permanently?
+                Delete account for good?
               </h3>
               <p className="text-sm leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
-                Type <strong className="font-mono" style={{ color: '#F2A0A0' }}>DELETE</strong> to confirm. Your account, sessions, and all data will be erased immediately.
+                Type <strong className="font-mono" style={{ color: '#F2A0A0' }}>DELETE</strong> to confirm. Your account and all data go at once.
               </p>
               <input
                 type="text"
@@ -266,14 +260,58 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
   )
 }
 
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
+/**
+ * One row in the panel.
+ *
+ * Heading at 17px semibold in sentence case, not tiny uppercase mono. The
+ * uppercase mono labels were the main reason this page read as small and
+ * generic, and mono now survives only on the connection code, where the
+ * characters have to be distinguishable from each other.
+ *
+ * Body at 16px with 1.6 line height. Action right on desktop, stacked on
+ * mobile, because a button squeezed beside text on a phone is a button nobody
+ * hits.
+ */
+function SettingRow({
+  title,
+  body,
+  action,
+  note,
+  warning,
+  last,
+}: {
+  title: string
+  body: React.ReactNode
+  action: React.ReactNode
+  note?: string | null
+  warning?: string | null
+  last?: boolean
+}) {
   return (
     <div
-      className="flex items-center justify-between py-2 last:border-b-0"
-      style={{ borderBottom: '1px solid var(--color-rule)' }}
+      className="flex flex-col gap-4 p-5 sm:p-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8"
+      style={last ? undefined : { borderBottom: '1px solid var(--rule)' }}
     >
-      <span style={{ color: 'var(--color-paper-mute)' }}>{label}</span>
-      <span style={{ color: 'var(--color-paper)' }}>{value}</span>
+      <div className="min-w-0">
+        <h2 className="text-[17px] mb-1" style={{ color: 'var(--ink)', fontWeight: 600 }}>
+          {title}
+        </h2>
+        <p className="text-[16px] leading-[1.6] wrap-break-word" style={{ color: 'var(--ink-soft)' }}>
+          {body}
+        </p>
+        {warning && (
+          <p className="mt-2 text-[15px] leading-[1.6]" style={{ color: 'var(--brand-text)' }}>
+            {warning}
+          </p>
+        )}
+        {note && (
+          <p className="mt-2 text-[15px] leading-[1.6]" style={{ color: 'var(--brand-text)' }}>
+            {note}
+          </p>
+        )}
+      </div>
+      <div className="shrink-0">{action}</div>
     </div>
   )
 }
+

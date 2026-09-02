@@ -104,8 +104,11 @@ function SidebarProfile() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className="mt-auto px-4 pb-6 pt-4 space-y-3"
-      style={{ borderTop: "1px solid var(--color-rule)" }}
+      /* Directly under the nav with a rule, not pushed to the bottom by
+         mt-auto. The gap that created was dead space, and a sidebar with four
+         items does not need its account block a screen away from them. */
+      className="px-4 pb-6 pt-4 space-y-3"
+      style={{ borderTop: "1px solid var(--rule)" }}
     >
       {/* 1. Upgrade button gets its own full-width row if present */}
       {isFree && (
@@ -132,7 +135,7 @@ function SidebarProfile() {
           />
         </div>
         <p
-          className="text-[13px] font-medium transition-colors group-hover:text-[color:var(--ink)]"
+          className="text-[15px] font-medium transition-colors group-hover:text-[color:var(--ink)]"
           style={{ color: "var(--color-paper)" }}
         >
           Manage account
@@ -325,7 +328,7 @@ export function AppShell({ children, hasHistory }: AppShellProps) {
         {/* Nav. Roomier vertical rhythm and an accent-blue active
             indicator make the active item feel intentional rather
             than the default "highlighted row" of a template. */}
-        <nav className="flex-1 px-3 pb-6">
+        <nav className="px-3 pb-5">
           <ul className="space-y-0.5">
             {navItems.map((item) => {
               const isActive = pathname.startsWith(item.href);
@@ -333,26 +336,29 @@ export function AppShell({ children, hasHistory }: AppShellProps) {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="relative flex items-center justify-between gap-3 pl-5 pr-3 py-2.5 text-[14px] nav-item-hover"
+                    /* 15px, and both states measured on the sidebar's ground
+                       (--paper #F1F0EA): inactive --ink-soft is 5.07:1 and
+                       active --ink is 16.25:1, so both pass AA at this size
+                       and no new colour was needed. The active state read
+                       weak before because both sat at 14px with a 100-weight
+                       gap, not because the colours were wrong. --brand is
+                       4.20:1 here and stays the bar, never a label. */
+                    className="relative flex items-center justify-between gap-3 pl-5 pr-3 py-2.5 text-[15px] nav-item-hover"
                     style={{
-                      color: isActive
-                        ? "var(--color-paper)"
-                        : "var(--color-paper-mute)",
+                      color: isActive ? "var(--ink)" : "var(--ink-soft)",
                       fontWeight: isActive ? 500 : 400,
                     }}
                     onMouseEnter={(e) => {
-                      if (!isActive)
-                        e.currentTarget.style.color = "var(--color-paper)";
+                      if (!isActive) e.currentTarget.style.color = "var(--ink)";
                     }}
                     onMouseLeave={(e) => {
-                      if (!isActive)
-                        e.currentTarget.style.color = "var(--color-paper-mute)";
+                      if (!isActive) e.currentTarget.style.color = "var(--ink-soft)";
                     }}
                   >
                     {isActive && (
                       <span
                         aria-hidden
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-full"
                         style={{ background: "var(--color-accent)" }}
                       />
                     )}

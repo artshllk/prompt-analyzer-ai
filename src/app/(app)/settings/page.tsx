@@ -14,20 +14,29 @@ export default async function SettingsPage() {
     .single()
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10 md:py-14 space-y-8">
-      <header>
-        <p className="eyebrow mb-3">Settings</p>
-        <h1 className="display text-3xl md:text-4xl tracking-tight" style={{ color: 'var(--color-paper)' }}>
-          Your account.
+    /**
+     * Anchored, not centred. The column used to be centred in the space left
+     * over beside the sidebar, which put about 500px of nothing between the
+     * nav and the content on a wide screen. Now it sits a fixed distance from
+     * the sidebar and the space falls on the right, where empty space is
+     * ordinary rather than a gap.
+     */
+    <div className="px-6 md:pl-14 md:pr-10 py-10 md:py-14">
+      <div className="max-w-[680px]">
+        <h1
+          className="display text-3xl md:text-4xl tracking-tight mb-8 md:mb-10"
+          style={{ color: 'var(--ink)' }}
+        >
+          Settings
         </h1>
-      </header>
 
-      <SettingsClient
-        email={profile?.email ?? user.email ?? ''}
-        fullName={profile?.full_name ?? null}
-        tier={profile?.tier ?? 'free'}
-        subscriptionStatus={profile?.subscription_status ?? null}
-      />
+        <SettingsClient
+          email={profile?.email ?? user.email ?? ''}
+          fullName={profile?.full_name ?? null}
+          tier={profile?.tier ?? 'free'}
+          subscriptionStatus={profile?.subscription_status ?? null}
+        />
+      </div>
     </div>
   )
 }
