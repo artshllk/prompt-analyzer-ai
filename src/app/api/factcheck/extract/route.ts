@@ -108,9 +108,12 @@ export async function POST(req: NextRequest) {
     return json({ error: 'unavailable' }, 503)
   }
 
-  if (result === 'too_short') return json({ error: 'too_short' }, 400)
-  if (result === 'too_long') return json({ error: 'too_long', limit: MAX_DOC_CHARS }, 400)
-  if (result === 'unavailable') return json({ error: 'unavailable' }, 503)
+  // Narrow on the SHAPE, not on a list of names. A new ExtractError should
+  // never be able to fall through here typed as a result.
+  if (typeof result === 'string') {
+    if (result === 'too_long') return json({ error: result, limit: MAX_DOC_CHARS }, 400)
+    return json({ error: result }, result === 'unavailable' ? 503 : 400)
+  }
 
   // The density band is logged because it is the number that decides how much
   // this tool can do for a document, and the distribution of bands across real

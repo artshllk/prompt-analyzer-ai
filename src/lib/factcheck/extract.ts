@@ -1,4 +1,4 @@
-import { callLLM } from '@/lib/engine/openai-client'
+import { callLLMDetailed } from '@/lib/engine/openai-client'
 import { MODELS } from '@/lib/engine/models'
 import { asText, asEnum, asObjectArray } from '@/lib/engine/coerce'
 import { normalizeDocument, locateAll } from './locate'
@@ -228,7 +228,7 @@ export interface ExtractResult {
   unanchoredCount: number
 }
 
-export type ExtractError = 'too_short' | 'too_long' | 'unavailable'
+export type ExtractError = 'too_short' | 'too_long' | 'too_dense' | 'unavailable'
 
 /**
  * Extract claims from a document.
@@ -250,21 +250,46 @@ export async function extractClaims(
    */
   if (visibleLength(text) > MAX_DOC_CHARS) return 'too_long'
 
-  const res = await callLLM<{ claims: unknown }>({
+  const res = await callLLMDetailed<{ claims: unknown }>({
     model: MODELS.diagnose,
     systemPrompt: SYSTEM_PROMPT,
     userMessage: `<document>\n${text}\n</document>`,
     temperature: 0.1,
-    maxOutputTokens: 2000,
+    /**
+     * Sized for the WORST DOCUMENT AT THE CAP, not for the twenty claims we
+     * keep. The model returns everything it finds and the cap is applied in
+     * code below, so the budget has to hold the full list or the whole
+     * document fails and the user gets nothing.
+     *
+     * Measured on a stats listicle at 11,800 visible characters: 89 claims
+     * found, 8,498 output tokens. This was 2000, which the client doubles and
+     * pads to 5,000 shared with reasoning, so that article overflowed before
+     * it emitted a single character and the reader got nothing at all.
+     */
+    maxOutputTokens: 10_000,
+    /**
+     * The 25s default in the client was tuned for the improver's diagnose
+     * call, which lands in 2-6s. This is a different job: the same listicle
+     * measures 20-35s, so the default was clipping calls that were seconds
+     * from finishing. Every failure here costs the whole document, so the
+     * ceiling sits well clear of the work rather than close to it.
+     */
+    timeoutMs: 90_000,
     responseSchema: SCHEMA as unknown as Record<string, unknown>,
   })
 
-  if (!res) return 'unavailable'
+  /**
+   * Overflow is not "something went wrong". The document had more claims in
+   * it than one reply can hold, and the reader can act on that by sending a
+   * shorter section. Every other failure is ours and says so.
+   */
+  const answer = res.data
+  if (!answer) return res.failure === 'overflow' ? 'too_dense' : 'unavailable'
 
   // Every field goes through the coercers. Structured Outputs run with
   // strict:false, so a field typed string can arrive as an array and
   // TypeScript will say nothing about it.
-  const raw_claims = asObjectArray(res.claims)
+  const raw_claims = asObjectArray(answer.claims)
   const foundCount = raw_claims.length
 
   const cleaned = raw_claims

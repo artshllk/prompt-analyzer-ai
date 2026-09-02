@@ -56,14 +56,14 @@ try {
 const words = raw.trim().split(/\s+/).filter(Boolean).length
 const result = await extractClaims(raw)
 
-if (result === 'too_short') {
-  die(`too short: needs a bit more text to find claims in`)
+const REASONS: Record<string, string> = {
+  too_short: 'too short: needs a bit more text to find claims in',
+  too_long: `too long: ${raw.length} characters, the limit is ${MAX_DOC_CHARS} (about 2000 words)`,
+  too_dense: 'too dense: more claims in there than one reply can hold, try a shorter section',
+  unavailable: 'the model did not answer, try again',
 }
-if (result === 'too_long') {
-  die(`too long: ${raw.length} characters, the limit is ${MAX_DOC_CHARS} (about 2000 words)`)
-}
-if (result === 'unavailable') {
-  die('the model did not come back. Nothing was charged for a failed call. Try again.')
+if (typeof result === 'string') {
+  die(REASONS[result] ?? result)
 }
 
 console.log('')

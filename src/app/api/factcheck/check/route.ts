@@ -1,4 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+
+/**
+ * Stated, not inherited. A full-size document measures at about 43 seconds end
+ * to end: 35 for extraction, the rest for the citation checks. The platform
+ * default happens to be 300 today, but a ceiling this route depends on should
+ * be readable in this file rather than looked up.
+ */
+export const maxDuration = 300
 import {
   take,
   getClientIp,
@@ -130,6 +138,8 @@ export async function POST(req: NextRequest) {
     return json({ error: 'unavailable' }, 503)
   }
   if (typeof extracted === 'string') {
+    // too_short, too_long and too_dense are all about the document, so 400.
+    // Only `unavailable` is us failing, and that is the one 503.
     return json({ error: extracted }, extracted === 'unavailable' ? 503 : 400)
   }
 

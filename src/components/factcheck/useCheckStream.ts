@@ -56,7 +56,13 @@ const MESSAGES: Record<string, string> = {
   identity_unavailable:
     'We can see you are signed in but cannot read your account. That is our problem. Try again in a few minutes.',
   invalid_body: 'Something went wrong sending that. Try again.',
-  unavailable: 'That did not work. Nothing was checked. Try again.',
+  too_dense:
+    'There are too many claims in there to check at once. Nothing was charged. Try a shorter section.',
+  // The honest floor. Every cause we can name has its own line above, so this
+  // one only ever shows for something we did not see coming. It still says
+  // the two things the reader needs: nothing was checked, nothing was charged.
+  unavailable:
+    'Something broke on our side. Nothing was checked and nothing was charged. Try again.',
 }
 
 export function useCheckStream() {

@@ -48,7 +48,14 @@ interface LLMRequest {
  * burned the full budget doubles the user's wait for another coin flip. A
  * `parse` or `empty` failure comes back fast and is worth a second try.
  */
-export type LLMFailure = 'no_key' | 'http' | 'empty' | 'parse' | 'timeout' | 'network'
+export type LLMFailure =
+  | 'no_key'
+  | 'http'
+  | 'empty'
+  | 'overflow'
+  | 'parse'
+  | 'timeout'
+  | 'network'
 
 export interface LLMOutcome<T> {
   data: T | null
@@ -60,6 +67,8 @@ interface OpenAIResponse {
   // finish_reason is the one diagnostic worth having on an empty response, and
   // unlike the body it can never carry the user's text.
   choices?: Array<{ message?: { content?: string }; finish_reason?: string }>
+  // Counts only. Never text. See CLAUDE.md on error reporting.
+  usage?: { prompt_tokens?: number; completion_tokens?: number }
 }
 
 /**
@@ -283,16 +292,24 @@ export async function callLLMDetailed<T>(req: LLMRequest): Promise<LLMOutcome<T>
 
     const data: OpenAIResponse = await res.json()
     const text = data.choices?.[0]?.message?.content ?? ''
+    // Output tokens are what the bill is made of, and on the fact checker they
+    // scale with how many claims a document holds, which we cannot see from
+    // here. Counts only, never content.
+    const out = data.usage?.completion_tokens
+    if (out !== undefined) console.info(`[openai] ${model} ${out} output tokens in ${ms}ms`)
     if (!text) {
       /**
        * NEVER LOG THE RESPONSE BODY. See the block on parse failure below for
        * why; an empty-content response can still carry a partial completion.
        */
-      console.error(
-        `[openai] ${model} empty content in ${ms}ms ` +
-          `(finish_reason=${data.choices?.[0]?.finish_reason ?? 'unknown'})`
-      )
-      return { data: null, failure: 'empty', ms }
+      const finish = data.choices?.[0]?.finish_reason ?? 'unknown'
+      console.error(`[openai] ${model} empty content in ${ms}ms (finish_reason=${finish})`)
+      /**
+       * `length` means the model ran out of budget, not that anything broke.
+       * It is the one empty response a caller can act on: ask for less, or
+       * give it more room. Every other caller still sees a null return.
+       */
+      return { data: null, failure: finish === 'length' ? 'overflow' : 'empty', ms }
     }
 
     const parsed = parseJSON<T>(text)
