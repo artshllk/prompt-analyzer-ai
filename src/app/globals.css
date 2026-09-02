@@ -38,6 +38,24 @@
   --card: #FFFFFF;
   --mute-on-ink: #A8A296;
 
+  /* --- the sidebar, which is a REGION rather than a break ---
+     This does not contradict dropping --sunk. That was an alternating tint on
+     a scrolling page, where four values of separation did nothing because
+     there was nothing persistent to separate. A sidebar is present the whole
+     time and has to read as its own area, so the same small step does a job
+     here that it could not do there.
+
+     Measured on #EAE8E1: --ink-soft is 4.72:1 and --ink is 15.13:1, both AA at
+     15px.
+
+     THE HOVER FILL IS WHY HOVER ALSO DARKENS THE TEXT. --ink-soft on
+     --sidebar-hover measures 4.34:1 and fails, so a fill alone would have put
+     the nav below AA on hover. Hover moves the text to --ink instead, which is
+     13.92:1 and reads as more responsive anyway. The active fill reuses --rule
+     rather than inventing a third value. */
+  --sidebar: #EAE8E1;
+  --sidebar-hover: #E2DFD6;
+
   /* --- text --- */
   --ink: #15130F;
   --ink-soft: #6B6559;

@@ -94,6 +94,8 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
 function SidebarProfile() {
   const authUser = useAuthUser();
+  const pathname = usePathname();
+  const settingsActive = pathname.startsWith("/settings");
   if (!authUser) return null;
 
   const initials = getInitials(authUser.fullName ?? authUser.email);
@@ -104,10 +106,11 @@ function SidebarProfile() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      /* Directly under the nav with a rule, not pushed to the bottom by
-         mt-auto. The gap that created was dead space, and a sidebar with four
-         items does not need its account block a screen away from them. */
-      className="px-4 pb-6 pt-4 space-y-3"
+      /* Bottom-pinned, which is the convention in every app and where a hand
+         goes looking. I moved this up to close what looked like a dead gap;
+         that was wrong. The space between nav and account is normal, not a
+         bug. */
+      className="mt-auto px-2 pb-4 pt-3 space-y-3"
       style={{ borderTop: "1px solid var(--rule)" }}
     >
       {/* 1. Upgrade button gets its own full-width row if present */}
@@ -117,26 +120,52 @@ function SidebarProfile() {
         </UpgradeButton>
       )}
 
-      {/* 2. Manage account stays pinned to the bottom left */}
-      <Link href="/settings" className="flex items-center gap-3 group">
+      {/*
+        /settings is reachable only through here, so it needs an active state
+        like every other destination. Without one the sidebar showed nothing
+        highlighted on the page you were standing on.
+
+        THE RED DOT IS GONE. It was unconditional: no state behind it, nothing
+        it could ever mean. A badge that is always on teaches people to ignore
+        badges. Its `border-black` ring was a leftover from the dark theme too.
+      */}
+      <Link
+        href="/settings"
+        aria-current={settingsActive ? "page" : undefined}
+        className="relative flex items-center gap-3 rounded-lg px-3 py-2 transition-colors"
+        style={{
+          background: settingsActive ? "var(--rule)" : "transparent",
+        }}
+        onMouseEnter={(e) => {
+          if (!settingsActive) e.currentTarget.style.background = "var(--sidebar-hover)";
+        }}
+        onMouseLeave={(e) => {
+          if (!settingsActive) e.currentTarget.style.background = "transparent";
+        }}
+      >
+        {settingsActive && (
+          <span
+            aria-hidden
+            className="absolute left-0 top-1/2 -translate-y-1/2 -ml-2 w-[3px] h-5 rounded-full"
+            style={{ background: "var(--brand)" }}
+          />
+        )}
         <div
-          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-medium transition-transform group-hover:scale-105"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-medium"
           style={{
             background: "var(--card)",
-            color: "var(--color-paper)",
+            color: "var(--ink)",
             border: "1px solid var(--rule)",
           }}
         >
           {initials}
-
-          <span
-            className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-black"
-            style={{ background: "var(--color-accent)" }}
-          />
         </div>
         <p
-          className="text-[15px] font-medium transition-colors group-hover:text-[color:var(--ink)]"
-          style={{ color: "var(--color-paper)" }}
+          className="text-[15px]"
+          style={{
+            color: settingsActive ? "var(--ink)" : "var(--ink-soft)",
+            fontWeight: settingsActive ? 500 : 400,
+          }}
         >
           Manage account
         </p>
@@ -293,15 +322,20 @@ export function AppShell({ children, hasHistory }: AppShellProps) {
           transition-transform duration-300 ease-out
           ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
+        /* Its own ground. It was the same --paper as the content with a
+           hairline between, so it read as text floating on the left rather
+           than a region. */
         style={{
-          background: "var(--color-ink)",
-          borderRight: "1px solid var(--color-rule)",
+          background: "var(--sidebar)",
+          borderRight: "1px solid var(--rule)",
         }}
       >
-        {/* Logo (desktop only - mobile uses top bar).
-            No bottom border: the sidebar reads as one continuous
-            surface from logo to nav, not as a stacked template. */}
-        <div className="hidden md:block px-6 pt-7 pb-8">
+        {/* A rule under the logo. Without one it merged into the first nav
+            item and the wordmark read as another row. */}
+        <div
+          className="hidden md:block px-5 pt-6 pb-5 mb-3"
+          style={{ borderBottom: "1px solid var(--rule)" }}
+        >
           <Link
             href="/check"
             className="inline-flex items-center gap-2.5 group"
@@ -328,37 +362,44 @@ export function AppShell({ children, hasHistory }: AppShellProps) {
         {/* Nav. Roomier vertical rhythm and an accent-blue active
             indicator make the active item feel intentional rather
             than the default "highlighted row" of a template. */}
-        <nav className="px-3 pb-5">
-          <ul className="space-y-0.5">
+        <nav className="px-2 pb-5">
+          <ul className="space-y-1">
             {navItems.map((item) => {
               const isActive = pathname.startsWith(item.href);
               return (
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    /* 15px, and both states measured on the sidebar's ground
-                       (--paper #F1F0EA): inactive --ink-soft is 5.07:1 and
-                       active --ink is 16.25:1, so both pass AA at this size
-                       and no new colour was needed. The active state read
-                       weak before because both sat at 14px with a 100-weight
-                       gap, not because the colours were wrong. --brand is
-                       4.20:1 here and stays the bar, never a label. */
-                    className="relative flex items-center justify-between gap-3 pl-5 pr-3 py-2.5 text-[15px] nav-item-hover"
+                    /* A FULL-WIDTH FILLED ROW, because that is what reads as
+                       clickable. A colour change on bare text does not, which
+                       is what this was.
+
+                       Measured on --sidebar #EAE8E1: --ink-soft 4.72:1 and
+                       --ink 15.13:1, both AA at 15px. Hover moves the text to
+                       --ink as well as adding the fill, because --ink-soft on
+                       --sidebar-hover is 4.34:1 and would have dropped the nav
+                       below AA exactly when someone is looking at it. */
+                    className="relative flex items-center gap-3 rounded-lg px-3 py-2 text-[15px] transition-colors"
                     style={{
                       color: isActive ? "var(--ink)" : "var(--ink-soft)",
                       fontWeight: isActive ? 500 : 400,
+                      background: isActive ? "var(--rule)" : "transparent",
                     }}
                     onMouseEnter={(e) => {
-                      if (!isActive) e.currentTarget.style.color = "var(--ink)";
+                      if (isActive) return;
+                      e.currentTarget.style.background = "var(--sidebar-hover)";
+                      e.currentTarget.style.color = "var(--ink)";
                     }}
                     onMouseLeave={(e) => {
-                      if (!isActive) e.currentTarget.style.color = "var(--ink-soft)";
+                      if (isActive) return;
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "var(--ink-soft)";
                     }}
                   >
                     {isActive && (
                       <span
                         aria-hidden
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-full"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -ml-2 w-[3px] h-5 rounded-full"
                         style={{ background: "var(--color-accent)" }}
                       />
                     )}
