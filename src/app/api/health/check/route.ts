@@ -15,6 +15,14 @@ import { meter } from '@/lib/factcheck/providers/meter'
  *
  * See lib/factcheck/health.ts for why this asserts on the result and not on a
  * status code.
+ *
+ * ONCE A DAY, BECAUSE HOBBY ALLOWS NOTHING FASTER. Vercel refuses any cron
+ * expression that would fire more than daily on this plan, verified by a
+ * deploy being rejected for a six-hourly expression. So the worst case is a day of
+ * silence, which is still the difference between finding an outage on a
+ * schedule and finding it by using the product. Anything faster needs either
+ * Pro or an external scheduler hitting this same URL, and the cost of that
+ * decision is one run: about 1.7 cents and one Tavily credit.
  */
 export const maxDuration = 120
 
