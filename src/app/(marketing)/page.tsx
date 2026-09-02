@@ -5,6 +5,7 @@ import Image from "next/image";
 // import { StaticTransform } from '@/components/marketing/StaticTransform'
 import { EditorialPricing } from "@/components/marketing/EditorialPricing";
 import { EarlyDays } from "@/components/marketing/EarlyDays";
+import { CannotCheck } from "@/components/factcheck/CannotCheck";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { CheckClient } from "@/components/factcheck/CheckClient";
 import {
@@ -354,6 +355,8 @@ export default function LandingPage() {
         {/* Trust - the product asks people to paste work emails, code, and
             business ideas, so the data-handling answer lives on the page,
             not just in the FAQ. Every claim here must match /privacy. */}
+        <CannotCheck />
+
         {/* Same ground as the section above it, so it takes a rule. The rule
             convention on this page: a border only where the ground does not
             change, never on top of a surface change. */}
