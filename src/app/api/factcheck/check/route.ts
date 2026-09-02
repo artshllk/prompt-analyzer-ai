@@ -180,6 +180,7 @@ export async function POST(req: NextRequest) {
           truncated: result.truncated,
           foundCount: result.foundCount,
           duplicates: result.duplicates,
+          linkCount: result.linkCount,
         })
 
         /**

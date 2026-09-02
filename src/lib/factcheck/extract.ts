@@ -3,7 +3,7 @@ import { MODELS } from '@/lib/engine/models'
 import { dedupeClaims } from './dedupe'
 import { asText, asEnum, asObjectArray } from '@/lib/engine/coerce'
 import { normalizeDocument, locateAll } from './locate'
-import { visibleLength } from './paste'
+import { visibleLength, countLinks } from './paste'
 import { citationDensity } from './spans'
 import {
   type Claim,
@@ -226,6 +226,12 @@ export interface ExtractResult {
   /** How many the model returned, before dedupe and before the cap. */
   foundCount: number
   /**
+   * Links in the document, counted by us and not by the model.
+   *
+   * The only count we are willing to print. See countLinks().
+   */
+  linkCount: number
+  /**
    * Repeats of a claim already counted, folded away before the cap.
    *
    * Reported rather than swallowed: `foundCount` minus this is the number of
@@ -379,6 +385,7 @@ export async function extractClaims(
     truncated: deduped.kept.length > MAX_CLAIMS_PER_DOC,
     /** Repeats of a claim already counted. Reported, never silent. */
     duplicates: deduped.removed,
+    linkCount: countLinks(text),
     foundCount,
     unanchoredCount: claims.filter(c => !c.span).length,
   }

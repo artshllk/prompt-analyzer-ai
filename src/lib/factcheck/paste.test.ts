@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { htmlToMarkdown, visibleLength, stripLinkSyntax } from './paste'
+import { htmlToMarkdown, visibleLength, stripLinkSyntax, countLinks } from './paste'
 
 test('a pasted link survives as markdown', () => {
   // The whole point. A textarea gets text/plain and drops every href, so the
@@ -85,4 +85,33 @@ test('text with no links counts as itself', () => {
 test('a bracket that is not a link is left alone', () => {
   const t = 'an aside [like this] and (a note)'
   assert.equal(stripLinkSyntax(t), t)
+})
+
+// ---------------------------------------------------------------------------
+// countLinks
+//
+// The reader is told this number and invited to check it, so the only property
+// that matters is that it counts what a person looking at the document counts.
+// ---------------------------------------------------------------------------
+
+test('links are counted as they appear, repeats included', () => {
+  assert.equal(countLinks('no links here'), 0)
+  assert.equal(countLinks('one [a](https://x.com/a) link'), 1)
+  assert.equal(
+    countLinks('[a](https://x.com/a) and [b](https://x.com/a) point at the same page'),
+    2,
+    'two links are two links to anyone reading the page'
+  )
+})
+
+test('the same input always gives the same count', () => {
+  const doc = 'See [the study](https://x.com/s) and [the follow-up](https://y.com/f).'
+  assert.equal(countLinks(doc), countLinks(doc))
+  assert.equal(countLinks(doc), 2)
+})
+
+test('bare URLs and non-links are not counted', () => {
+  assert.equal(countLinks('https://x.com/a on its own'), 0)
+  assert.equal(countLinks('[not a link](mailto:x@y.com)'), 0)
+  assert.equal(countLinks('[brackets] and (parens) apart'), 0)
 })

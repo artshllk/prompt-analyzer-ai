@@ -33,7 +33,13 @@ export type StreamState =
       claims: Claim[]
       density: CitationDensity
       truncated: boolean
+      /**
+       * The model's own count. NEVER PRINTED. It swings 3.8x on the same
+       * paste, so it is instrumentation, not copy.
+       */
       foundCount: number
+      /** Links we counted ourselves. The only count we print. */
+      linkCount: number
       progress: Record<string, ClaimProgress>
       checked: number
       checkable: number
@@ -149,6 +155,7 @@ function apply(prev: StreamState, event: Record<string, unknown>): StreamState {
       density: event.density as CitationDensity,
       truncated: Boolean(event.truncated),
       foundCount: (event.foundCount as number) ?? claims.length,
+      linkCount: (event.linkCount as number) ?? 0,
       progress: {},
       checked: 0,
       // Only claims that will actually be opened count toward the visible

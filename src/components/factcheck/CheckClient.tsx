@@ -166,10 +166,23 @@ export function CheckClient() {
             className="mt-5 text-[14px] leading-relaxed rounded-xl p-3"
             style={{ background: 'var(--guess-bg)', color: 'var(--guess)' }}
           >
-            {/* Never tell someone to split their own document. Say the cap
-                and why it exists. */}
-            We check the first {state.claims.length} claims in a document. This
-            one had {state.foundCount}.
+            {/* Never tell someone to split their own document. Say the cap.
+                THE NUMBER HERE IS THE LINK COUNT, NEVER THE CLAIM COUNT. The
+                claim count is the model's own, and it came back 91 on one run
+                of a document and 24 on the next. A tool that finds
+                contradictions cannot print one. Links we parse ourselves, so
+                the number is the same every time and a reader who doubts it
+                can count them. When there are no links there is no number we
+                can stand behind, so we print none. */}
+            {state.linkCount > 0 ? (
+              <>
+                This document has {state.linkCount}{' '}
+                {state.linkCount === 1 ? 'link' : 'links'}. We checked the first{' '}
+                {state.claims.length} claims.
+              </>
+            ) : (
+              <>We checked the first {state.claims.length} statements. There were more.</>
+            )}
           </p>
         )}
 

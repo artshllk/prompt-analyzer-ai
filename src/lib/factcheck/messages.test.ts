@@ -41,3 +41,37 @@ test('no failure message blames the reader for our outage', () => {
     'a failed run must say the reader was not charged for it'
   )
 })
+
+// ---------------------------------------------------------------------------
+// The claim-count sentence
+//
+// It printed the model's own count, which came back 91 on one run of a
+// document and 24 on the next. This asserts the source of the number, because
+// that is the property that broke, and no unit test of the component would
+// have caught it.
+// ---------------------------------------------------------------------------
+
+const checkClient = readFileSync('src/components/factcheck/CheckClient.tsx', 'utf8')
+
+test('the truncation sentence never prints the model\'s claim count', () => {
+  const block = checkClient.slice(
+    checkClient.indexOf('state.truncated'),
+    checkClient.indexOf('state.truncated') + 1400
+  )
+  assert.ok(block.length > 100, 'could not find the truncation block')
+  assert.match(block, /state\.linkCount/, 'the number shown must be the link count')
+  assert.doesNotMatch(
+    block.replace(/\{\/\*[\s\S]*?\*\/\}/g, ''),
+    /\{state\.foundCount\}/,
+    'foundCount is the model\'s own guess and swings 3.8x on identical input'
+  )
+})
+
+test('a document with no links gets no number', () => {
+  // The fallback branch must not interpolate linkCount, because zero links is
+  // not a number worth printing and "0 links" reads as a failure.
+  const idx = checkClient.indexOf('There were more')
+  assert.ok(idx > 0, 'no-links fallback sentence not found')
+  const sentence = checkClient.slice(idx - 200, idx + 40)
+  assert.doesNotMatch(sentence, /linkCount/)
+})

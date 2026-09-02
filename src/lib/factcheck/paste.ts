@@ -170,7 +170,31 @@ export function visibleLength(text: string): number {
   return stripLinkSyntax(text).length
 }
 
+/** The one place the link shape is written down. */
+const MARKDOWN_LINK = /\[([^\]]*)\]\((https?:\/\/[^)\s]*)\)/g
+
 /** `[anchor](url)` becomes `anchor`. Everything else is untouched. */
 export function stripLinkSyntax(text: string): string {
-  return text.replace(/\[([^\]]*)\]\((https?:\/\/[^)\s]*)\)/g, '$1')
+  return text.replace(MARKDOWN_LINK, '$1')
+}
+
+/**
+ * How many links are in the document.
+ *
+ * A NUMBER THE READER CAN CHECK BY HAND. This exists because the sentence
+ * about the claim cap used to print the model's own count of claims, and that
+ * count swung between 24 and 91 on the same paste. A tool that catches
+ * contradictions cannot contradict itself on screen, and the fix is not a
+ * better estimate, it is counting something we own.
+ *
+ * Links are that thing. We parse them ourselves, the same input always gives
+ * the same answer, and a reader who does not believe us can count the links in
+ * their own document and get our number.
+ *
+ * Occurrences, not unique URLs. Two links to the same page are two links to
+ * anyone looking at the page, and a deduplicated count would be a number the
+ * reader cannot reproduce, which is the whole problem this replaces.
+ */
+export function countLinks(text: string): number {
+  return text.match(MARKDOWN_LINK)?.length ?? 0
 }
