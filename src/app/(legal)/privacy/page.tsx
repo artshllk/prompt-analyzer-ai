@@ -190,11 +190,11 @@ export default function PrivacyPage() {
         <p>
           A person reads this address, usually the same day.{' '}
           <a
-            href="mailto:contact@deepclario.com"
+            href="mailto:support@deepclario.com"
             className="underline underline-offset-4 transition-opacity hover:opacity-80"
             style={{ color: 'var(--color-paper)' }}
           >
-            contact@deepclario.com
+            support@deepclario.com
           </a>
         </p>
         <p className="mt-2 text-sm">

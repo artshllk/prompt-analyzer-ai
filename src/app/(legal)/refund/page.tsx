@@ -100,11 +100,11 @@ function Strong({ children }: { children: React.ReactNode }) {
 function MailLink() {
   return (
     <a
-      href="mailto:contact@deepclario.com"
+      href="mailto:support@deepclario.com"
       className="underline underline-offset-4 transition-opacity hover:opacity-80"
       style={{ color: 'var(--color-paper)' }}
     >
-      contact@deepclario.com
+      support@deepclario.com
     </a>
   )
 }
