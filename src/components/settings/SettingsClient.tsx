@@ -115,7 +115,7 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
 
       {/* Browser extension */}
       <section className="card-editorial p-6 space-y-4">
-        <p className="eyebrow">Browser extension</p>
+        <p className="eyebrow">Browser extension for prompt improvements</p>
         <p className="text-sm leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
           Connect the Deepclario extension to this account so it uses your plan{' '}
           {isPro
@@ -171,7 +171,7 @@ export function SettingsClient({ email, fullName, tier, subscriptionStatus }: Se
           </>
         ) : (
           <p className="text-sm" style={{ color: 'var(--color-paper-mute)' }}>
-            You&apos;re on the free plan. Upgrade in the sidebar for unlimited improvements and a stronger model.
+            You&apos;re on the free plan: 10 source checks a month. Pro gives you 100.
           </p>
         )}
       </section>

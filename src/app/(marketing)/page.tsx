@@ -16,6 +16,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { defaultOGImage } from "@/lib/og-image";
 import { createClient } from "@/lib/supabase/server";
 import { getFactcheckAllowance } from "@/lib/db/usage";
+import { viewerPlan } from "@/lib/db/viewer-plan";
 // { /* CUT - redundant with demo + steps */ }
 // import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
 
@@ -138,6 +139,7 @@ async function checksLeft(): Promise<{ remaining: number; limit: number } | null
 
 export default async function LandingPage() {
   const left = await checksLeft();
+  const { plan, renewsOn } = await viewerPlan();
   return (
     <>
       <script
@@ -462,7 +464,7 @@ export default async function LandingPage() {
           style={{ borderTop: "1px solid var(--color-rule)" }}
         >
           <div className="max-w-6xl mx-auto">
-            <EditorialPricing />
+            <EditorialPricing plan={plan} renewsOn={renewsOn} />
           </div>
         </section>
 

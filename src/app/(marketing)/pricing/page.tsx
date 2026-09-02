@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { EditorialPricing } from '@/components/marketing/EditorialPricing'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { defaultOGImage } from '@/lib/og-image'
+import { viewerPlan } from '@/lib/db/viewer-plan'
 
 export const metadata: Metadata = {
   title: 'Pricing',
@@ -62,7 +63,8 @@ const pricingSchema = {
   ],
 }
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const { plan, renewsOn } = await viewerPlan()
   return (
     <div className="editorial grain min-h-screen relative" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingSchema) }} />
@@ -70,7 +72,7 @@ export default function PricingPage() {
 
       <section className="pt-28 md:pt-36 pb-20 md:pb-28 px-6 md:px-10">
         <div className="max-w-6xl mx-auto">
-          <EditorialPricing headingLevel="h1" />
+          <EditorialPricing headingLevel="h1" plan={plan} renewsOn={renewsOn} />
         </div>
       </section>
     </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { UpgradeButton } from "@/components/ui/UpgradeButton";
+import { ManageSubscription } from "@/components/ui/ManageSubscription";
 import Link from "next/link";
 
 /**
@@ -91,11 +93,37 @@ const LAUNCH = {
   yearly: { list: "7.99", now: "3.99", billedTotal: "47.88" },
 };
 
+/**
+ * FOUR STATES, AND EVERY ONE OF THEM GETS A USEFUL ACTION.
+ *
+ * This component knew nothing about who was looking. Both buttons rendered for
+ * everyone, so "Get Pro" linked to /login, and the proxy bounces a signed-in
+ * visitor off /login straight back to /check. That made the button dead for
+ * Pro users AND for signed-in free users, who are the people most likely to
+ * press it.
+ *
+ * The badge marks the card you are on, and that card's button becomes the next
+ * thing you could want rather than disappearing. A disabled button does not
+ * say why it is dead and leaves you stuck.
+ *
+ *   anon   Free "Start free" -> sign up      Pro "Get Pro" -> sign up, then here
+ *   free   Free badge, no button             Pro "Get Pro" -> checkout
+ *   pro    Free nothing at all               Pro badge + "Manage subscription"
+ *
+ * On `pro`, the Free card gets no badge and no button: you cannot "get" the
+ * free plan while paying for Pro, and a badge there would say you are on it.
+ */
 export function EditorialPricing({
   headingLevel = "h2",
+  plan = "anon",
+  renewsOn,
 }: {
   /** "h1" on the standalone /pricing page (its top-level heading); "h2" when embedded as a section. */
   headingLevel?: "h1" | "h2";
+  /** Who is looking. Decides which card carries the badge and what each button does. */
+  plan?: "anon" | "free" | "pro";
+  /** ISO date from profiles.subscription_period_end. Shown under the Pro badge. */
+  renewsOn?: string | null;
 }) {
   const [annual, setAnnual] = useState(false);
   const Heading = headingLevel;
@@ -172,16 +200,21 @@ export function EditorialPricing({
           >
             Enough to see if it helps.
           </p>
-          <Link
-            href="/extension"
-            className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-outline"
-            style={{
-              border: "1px solid var(--color-rule-strong)",
-              color: "var(--color-paper)",
-            }}
-          >
-            Start free
-          </Link>
+          {plan === "anon" && (
+            <Link
+              href="/login?signup=1"
+              className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-outline"
+              style={{
+                border: "1px solid var(--color-rule-strong)",
+                color: "var(--color-paper)",
+              }}
+            >
+              Start free
+            </Link>
+          )}
+          {plan === "free" && <PlanBadge />}
+          {/* plan === "pro": nothing. You cannot get the free plan while
+              paying for Pro, and a badge here would say you are on it. */}
           <LeadFeature n={FREE_LEAD.n} unit={FREE_LEAD.unit} />
           <AlsoIncluded />
           <FeatureList items={FREE_FEATURES} />
@@ -250,16 +283,37 @@ export function EditorialPricing({
             </p>
           )}
           {!LAUNCH.active && <div className="mb-7" />}
-          <Link
-            href="/login"
-            className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-paper"
-            style={{
-              background: "var(--color-paper)",
-              color: "var(--color-ink)",
-            }}
-          >
-            Get Pro
-          </Link>
+          {plan === "anon" && (
+            <Link
+              /* Comes back here after signing up, so the next click is
+                 checkout rather than a hunt for the page they were on. */
+              href="/login?signup=1&redirectTo=%2Fpricing"
+              className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-paper"
+              style={{ background: "var(--color-paper)", color: "var(--color-ink)" }}
+            >
+              Get Pro
+            </Link>
+          )}
+          {plan === "free" && (
+            <UpgradeButton
+              plan={annual ? "pro_annual" : "pro_monthly"}
+              className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-paper"
+            >
+              Get Pro
+            </UpgradeButton>
+          )}
+          {plan === "pro" && (
+            <>
+              <PlanBadge renewsOn={renewsOn} />
+              <ManageSubscription
+                className="mt-3 block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-outline"
+                style={{
+                  border: "1px solid var(--color-rule-strong)",
+                  color: "var(--color-paper)",
+                }}
+              />
+            </>
+          )}
           <LeadFeature n={PRO_LEAD.n} unit={PRO_LEAD.unit} accent />
           <AlsoIncluded />
           <FeatureList items={PRO_FEATURES} accent />
@@ -380,6 +434,42 @@ function LeadFeature({ n, unit, accent }: { n: string; unit: string; accent?: bo
           {unit}
         </span>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Marks the card the person is on.
+ *
+ * It replaces the button rather than sitting beside it, because on the card
+ * you are already on there is nothing to buy, and a badge next to a live
+ * button asks you to work out which one applies to you.
+ *
+ * The renewal date comes from profiles.subscription_period_end, which the
+ * webhook already keeps up to date, so it costs no extra read.
+ */
+function PlanBadge({ renewsOn }: { renewsOn?: string | null }) {
+  let renews: string | null = null
+  if (renewsOn) {
+    const d = new Date(renewsOn)
+    if (!Number.isNaN(d.getTime())) {
+      renews = d.toLocaleDateString("en-GB", { day: "numeric", month: "long" })
+    }
+  }
+  return (
+    <div
+      className="w-full text-center py-3 rounded-full text-sm font-medium"
+      style={{
+        border: "1px solid var(--color-rule-strong)",
+        color: "var(--color-paper-mute)",
+      }}
+    >
+      Your plan
+      {renews && (
+        <span className="block text-[12px] mt-0.5" style={{ color: "var(--color-paper-mute)" }}>
+          Renews {renews}
+        </span>
+      )}
     </div>
   );
 }

@@ -102,8 +102,7 @@ These are verified from code and get re-derived or mistaken every session.
 - **Design is paper and markup, light only.** Warm paper ground, ink text, one
   brand red, and three meaning colours that are never decoration: `--machine`
   blue, `--guess` amber, `--confirm` green. There is no dark mode and none is
-  planned. See `.claude/decisions/0006-paper-and-markup.md`, which supersedes
-  0004. Any doc still saying "editorial dark" is stale.
+  planned. See `.claude/decisions/0006-paper-and-markup.md`, which supersedes 0004. Any doc still saying "editorial dark" is stale.
 - **The blog runs off `lib/blog-posts.ts`.** Adding a `BLOG_POSTS` entry auto-updates
   the index, sitemap, and RSS. Posts are React pages, not markdown. See
   `architecture/blog-system.md` and `workflows/add-blog-post.md`.
@@ -136,11 +135,11 @@ Full procedure, including what to re-check and how to roll back:
 The three gates fail in different directions, on purpose, and the combination
 has a hole in it. Written down because it is not visible from any one file.
 
-| Gate | On a DB error | Why |
-|---|---|---|
-| Anonymous daily cap | **closed** | The model still bills. A limiter a script walks past is not a cost control. |
-| Signed-in free quota | **open** | Locking out a real user over our own infrastructure is worse than one extra rewrite. |
-| `analyzePrompt()` | unaffected | It has no DB access at all. Verified: zero supabase/db/next imports across its whole graph. |
+| Gate                 | On a DB error | Why                                                                                         |
+| -------------------- | ------------- | ------------------------------------------------------------------------------------------- |
+| Anonymous daily cap  | **closed**    | The model still bills. A limiter a script walks past is not a cost control.                 |
+| Signed-in free quota | **open**      | Locking out a real user over our own infrastructure is worse than one extra rewrite.        |
+| `analyzePrompt()`    | unaffected    | It has no DB access at all. Verified: zero supabase/db/next imports across its whole graph. |
 
 So an outage refuses anonymous visitors and leaves signed-in users uncapped.
 
@@ -345,3 +344,5 @@ Treat production as READ-ONLY at all times.
 - Migrations are applied by a human in the Supabase SQL Editor. Never by you,
   and never via supabase db push.
 - If you believe a write to production is genuinely necessary, stop and ask.
+
+Every destination in the app sidebar must render the app shell. A sidebar item pointing at a marketing-layout route silently drops the user out of the app.
