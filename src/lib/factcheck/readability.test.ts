@@ -1,7 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  classifySource, isPaywalledHost, looksGated, MIN_READABLE_CHARS, PAYWALLED_HOST_LIST,
+  classifySource, isPaywalledHost, looksGated, stripEmphasis,
+  MIN_READABLE_CHARS, PAYWALLED_HOST_LIST,
 } from './readability'
 
 const real = 'Adoption rose to 34.2% in the second quarter. '.repeat(120)
@@ -53,4 +54,50 @@ test('refusing is biased toward refusing, on purpose', () => {
   // produces a false accusation about somebody's writing.
   assert.equal(classifySource('https://example.com/x', 'a'.repeat(MIN_READABLE_CHARS - 1)), 'paywalled')
   assert.equal(classifySource('https://example.com/x', 'a'.repeat(MIN_READABLE_CHARS + 1)), 'readable')
+})
+
+// ---------------------------------------------------------------------------
+// The mask test versus markdown
+//
+// A bare /\*{3,}/ called 11 of 20 readable sources paywalled on one article,
+// because markdown bold-italic is also three asterisks. These cases are the
+// line between a hidden figure and ordinary formatting.
+// ---------------------------------------------------------------------------
+
+test('markdown bold-italic is not a paywall', () => {
+  // The exact text that caused it, from firstpagesage.com.
+  const page = '| ***What changed this year*: *Over the past year, CTRs have shifted.* |'
+  assert.equal(looksGated(page), false)
+})
+
+test('a horizontal rule is not a paywall', () => {
+  assert.equal(looksGated('One paragraph.\n\n***\n\nAnother paragraph.'), false)
+  assert.equal(looksGated('One paragraph.\n\n* * *\n\nAnother paragraph.'), false)
+})
+
+test('bold, italic and bold-italic all survive', () => {
+  assert.equal(looksGated('**bold** and *italic* and ***both***'), false)
+  assert.equal(looksGated('Growth was ***42%*** last year.'), false)
+})
+
+test('a masked figure is still a paywall', () => {
+  // Statista's shape: the run replaces the number, so it has no partner.
+  assert.equal(looksGated('Share of respondents: *** percent'), true)
+  assert.equal(looksGated('| Revenue | *** | *** |'), true)
+  assert.equal(looksGated('Total: $***,***'), true)
+})
+
+test('an unbalanced run in otherwise bold text is still a paywall', () => {
+  assert.equal(looksGated('**Revenue** grew to *** in 2024.'), true)
+})
+
+test('the prose gates are read on the original, not the stripped text', () => {
+  // Stripping emphasis must never eat the words a gate is made of.
+  assert.equal(looksGated('**Subscribe to read** the rest.'), true)
+  assert.equal(looksGated('*Sign in to view* this chart.'), true)
+})
+
+test('stripEmphasis leaves the words alone', () => {
+  assert.equal(stripEmphasis('**bold** and *italic*'), 'bold and italic')
+  assert.equal(stripEmphasis('no markup here'), 'no markup here')
 })

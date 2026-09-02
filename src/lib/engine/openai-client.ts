@@ -12,6 +12,7 @@
 // remains as a backstop.
 
 import { MODELS } from './models'
+import { tokenMeter } from '@/lib/factcheck/providers/tokens'
 
 const MODEL = MODELS.diagnose
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
@@ -296,7 +297,10 @@ export async function callLLMDetailed<T>(req: LLMRequest): Promise<LLMOutcome<T>
     // scale with how many claims a document holds, which we cannot see from
     // here. Counts only, never content.
     const out = data.usage?.completion_tokens
-    if (out !== undefined) console.info(`[openai] ${model} ${out} output tokens in ${ms}ms`)
+    if (out !== undefined) {
+      console.info(`[openai] ${model} ${out} output tokens in ${ms}ms`)
+      tokenMeter.record(model, data.usage?.prompt_tokens ?? 0, out, ms)
+    }
     if (!text) {
       /**
        * NEVER LOG THE RESPONSE BODY. See the block on parse failure below for

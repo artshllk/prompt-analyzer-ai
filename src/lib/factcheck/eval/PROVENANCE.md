@@ -45,3 +45,35 @@ way. `sourceTruncatedAt` records it on every row.
 
 Until those four hold, this directory reports "not obviously broken" and
 nothing else.
+
+## The paywall rate we were measuring was inflated by a bug
+
+Added 2026-09-02, because the `source_unreachable` rate has been informing
+product decisions and roughly two fifths of it was not real.
+
+The gate detector tested `/\*{3,}/` against the retrieved page. That was meant
+to catch Statista, which renders a masked figure as `***`. It also matches
+`***bold italic***` and a `***` horizontal rule, both of which are ordinary
+markdown and appear on most extracted pages.
+
+Measured both ways over this corpus:
+
+| | readable | paywalled |
+| --- | --- | --- |
+| frozen sources, before | 37 (63%) | 22 (37%) |
+| frozen sources, after  | 44 (75%) | 15 (25%) |
+| live re-fetch, before  | 23 (53%) | 20 (47%) |
+| live re-fetch, after   | 31 (72%) | 12 (28%) |
+
+**On live text, 8 of 43 sources, 19%, were called paywalled when they were
+fully readable, and the paywalled rate falls from 47% to 28%.** The live number
+is the one to use: the frozen sources are cut to 12,000 characters while the
+pipeline reads 24,000, so the frozen copy simply has fewer characters in which
+to find a stray asterisk, and it undercounts.
+
+The hosts affected were ahrefs.com, sparktoro.com, seerinteractive.com,
+searchenginejournal.com, demandsage.com and wyzowl.com. Every one an ordinary
+readable blog.
+
+Any coverage figure quoted from before this date is wrong in the same
+direction: it understates how much of the web we can actually read.

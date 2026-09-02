@@ -38,6 +38,8 @@ export type StreamState =
       checked: number
       checkable: number
       refusals?: Refusals
+      /** How many claims we stopped ourselves before reaching. */
+      outOfTime?: number
       failure?: string
     }
   | { kind: 'error'; message: string }
@@ -212,6 +214,26 @@ function apply(prev: StreamState, event: Record<string, unknown>): StreamState {
                 : c.judgement,
           }
         }),
+      }
+    }
+    case 'deadline': {
+      /**
+       * We stopped ourselves, and everything already resolved stays exactly
+       * as it is. The only thing this changes is the claims still spinning:
+       * they get a reason instead of an animation that never ends.
+       */
+      const ids = new Set(event.ids as string[])
+      const progress = { ...prev.progress }
+      for (const id of ids) delete progress[id]
+      return {
+        ...prev,
+        progress,
+        outOfTime: ids.size,
+        claims: prev.claims.map(c =>
+          ids.has(c.id) && c.judgement.verdict === 'unchecked'
+            ? { ...c, judgement: { ...c.judgement, reason: 'deadline' as const } }
+            : c
+        ),
       }
     }
     case 'failed':

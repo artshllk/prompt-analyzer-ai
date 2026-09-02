@@ -135,6 +135,21 @@ export function CheckClient() {
             anything" before a single real answer arrived. */}
         {!live && state.refusals && <RefusalLine refusals={state.refusals} />}
 
+        {/* We stopped ourselves. Everything above this line is real and stays.
+            The sentence says what we did not get to, and says whose fault it
+            is, because a reader who is not told will assume the silence is a
+            verdict. */}
+        {!live && state.outOfTime ? (
+          <p
+            className="mt-5 text-[14px] leading-relaxed rounded-xl p-3"
+            style={{ background: 'var(--guess-bg)', color: 'var(--guess)' }}
+          >
+            We ran out of time on {state.outOfTime === 1 ? 'one source' : `${state.outOfTime} sources`} and
+            stopped. Everything above is checked and nothing was charged for
+            the part we missed. A shorter section will finish.
+          </p>
+        ) : null}
+
         {!live && state.failure && (
           <p
             className="mt-5 text-[14px] leading-relaxed rounded-xl p-3"

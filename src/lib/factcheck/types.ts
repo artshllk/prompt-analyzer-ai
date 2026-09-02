@@ -477,6 +477,38 @@ export function attentionFlag(claim: Claim): string | null {
   if (!claim.looksPublished) return null
   if (claim.subject === 'first_party') return null
   if (claim.judgement.verdict !== 'unchecked') return null
-  if (claim.judgement.reason !== 'not_found') return null
-  return 'This reads like a published statistic and we could not find a source for it. Worth checking before you publish.'
+
+  // We searched, properly, and came back with nothing either way.
+  if (claim.judgement.reason === 'not_found') {
+    return 'This reads like a published statistic and we could not find a source for it. Worth checking before you publish.'
+  }
+
+  /**
+   * Nothing was searched, because there was nothing to open.
+   *
+   * This is a DIFFERENT and stronger sentence, and it needs its own, because
+   * the streaming route runs the citation axis only. It never searches for an
+   * unsourced claim, so "we could not find a source" would be a claim about a
+   * search we did not run. What we can say without any search at all is that
+   * the document cites nothing, which is both true and the more actionable of
+   * the two.
+   *
+   * Deliberately gated on `not_checked`. A claim carrying `deadline`,
+   * `search_failed` or `judge_failed` must stay silent here, because those
+   * are our failures and this sentence would read as a finding about their
+   * writing.
+   */
+  // `undefined` means the same thing as `not_checked`: nothing has tried yet.
+  // Accepting both matters because the gate that has to hold is the one
+  // BELOW - the named failures - and a path that forgets to set a reason
+  // should not silently lose a finding.
+  const untried = claim.judgement.reason === undefined || claim.judgement.reason === 'not_checked'
+  if (
+    untried &&
+    claim.citation.check === 'not_applicable' &&
+    claim.citation.unreadable === 'no_source'
+  ) {
+    return 'This reads like a published statistic and the document cites nothing for it. Worth adding a source before you publish.'
+  }
+  return null
 }

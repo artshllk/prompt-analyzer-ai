@@ -331,3 +331,49 @@ test('the attention flag never fires on anything it could be wrong about', () =>
     null
   )
 })
+
+// ---------------------------------------------------------------------------
+// The attention flag on the citation axis
+//
+// The streaming route runs the citation axis only, so a claim with no source
+// is never searched for. It still has to produce a flag, and it has to be a
+// different sentence, because we cannot report a search we did not run.
+// ---------------------------------------------------------------------------
+
+function unsourced(over: Partial<Claim> = {}): Claim {
+  return claim('c1', undefined, 'unchecked', {
+    looksPublished: true,
+    subject: 'population',
+    kind: 'statistic',
+    judgement: { verdict: 'unchecked', reason: 'not_checked', evidence: [] },
+    citation: { check: 'not_applicable', unreadable: 'no_source', evidence: [] },
+    ...over,
+  })
+}
+
+test('an unsourced published-looking claim flags without a search', () => {
+  const msg = attentionFlag(unsourced())
+  assert.ok(msg)
+  assert.match(msg, /cites nothing/)
+  // It must never claim we looked.
+  assert.doesNotMatch(msg, /could not find/)
+})
+
+test('the citation-axis flag stays off the writer\'s own figures', () => {
+  assert.equal(attentionFlag(unsourced({ subject: 'first_party' })), null)
+})
+
+test('the citation-axis flag stays silent on our own failures', () => {
+  for (const reason of ['deadline', 'search_failed', 'judge_failed'] as const) {
+    const c = unsourced()
+    c.judgement = { ...c.judgement, reason }
+    assert.equal(attentionFlag(c), null, `${reason} must not produce a finding`)
+  }
+})
+
+test('a claim that DID have a source does not get the unsourced flag', () => {
+  assert.equal(
+    attentionFlag(unsourced({ citation: { check: 'supports', evidence: [] } })),
+    null
+  )
+})

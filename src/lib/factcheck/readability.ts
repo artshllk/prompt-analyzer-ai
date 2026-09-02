@@ -70,11 +70,55 @@ const PAYWALLED_HOSTS: readonly string[] = [
 ]
 
 /**
+ * Markdown emphasis and rules, removed before we look for a mask.
+ *
+ * THIS IS THE FIX FOR A BUG THAT MADE THE PRODUCT LIE. The mask test used to
+ * be a bare /\*{3,}/, which matches `***bold italic***` and a `***` horizontal
+ * rule as readily as it matches a hidden figure. On one Ahrefs article that
+ * marked 11 of 20 fully readable sources "your reader hits the same paywall we
+ * did", which is the exact sentence this product exists not to get wrong.
+ *
+ * The discriminator is balance. Emphasis WRAPS something, so its asterisks
+ * come in pairs around text. A mask REPLACES a figure, so its run stands on
+ * its own with no partner. Strip the balanced pairs and anything left over is
+ * a mask.
+ *
+ * Order matters: rules first, because `* * *` would otherwise survive as three
+ * unbalanced runs and read as three masks.
+ */
+const EMPHASIS_PATTERNS: readonly [RegExp, string][] = [
+  // A horizontal rule: a line that is nothing but asterisks and spaces.
+  [/^[ \t]*(?:\*[ \t]*){3,}$/gm, ''],
+  // Balanced emphasis: one to three asterisks around a run with none inside.
+  //
+  // Three conditions, and each one is load-bearing:
+  //   (?=[^*\s])          - cannot open on a space or another asterisk, so
+  //                          `*** percent` is not read as emphasis.
+  //   (?=[^*\n]*[\dA-Za-z]) - what is wrapped must contain a letter or a
+  //                          digit. Emphasis wraps words; `***,***` wraps a
+  //                          comma and is a masked figure, not formatting.
+  //   [^*\s] at the end    - the closing character cannot itself be an
+  //                          asterisk, which would let a run eat itself.
+  [/\*{1,3}(?=[^*\s])((?=[^*\n]*[\dA-Za-z])[^*\n]*?[^*\s])\*{1,3}/g, '$1'],
+]
+
+/** Remove the asterisks that belong to markdown, leaving only orphans. */
+export function stripEmphasis(text: string): string {
+  let out = text
+  // Twice, because emphasis nests and the inner pair has to go first.
+  for (let pass = 0; pass < 2; pass++) {
+    for (const [rx, to] of EMPHASIS_PATTERNS) out = out.replace(rx, to)
+  }
+  return out
+}
+
+/**
  * Text that a gate leaves behind.
  *
- * Asterisk runs are the strongest single signal and the reason this is not
- * just a length test: Statista renders a masked figure as `***`, so the page
- * can be long and still have had every number removed from it.
+ * Asterisk runs are still the strongest single signal and the reason this is
+ * not just a length test: Statista renders a masked figure as `***`, so the
+ * page can be long and still have had every number removed from it. They are
+ * now tested against `stripEmphasis`ed text, not the raw page.
  */
 const GATE_MARKERS: readonly RegExp[] = [
   /\*{3,}/,
@@ -111,7 +155,12 @@ export function isPaywalledHost(url: string): boolean {
 
 /** Does the retrieved text carry the marks of a gate? */
 export function looksGated(content: string): boolean {
-  return GATE_MARKERS.some(rx => rx.test(content))
+  // Only the first marker is about asterisks, and it is the only one that
+  // markdown can forge. The prose markers are tested on the original, because
+  // stripping emphasis out of "**subscribe to read**" must not hide it.
+  const [asterisks, ...prose] = GATE_MARKERS
+  if (asterisks.test(stripEmphasis(content))) return true
+  return prose.some(rx => rx.test(content))
 }
 
 /**

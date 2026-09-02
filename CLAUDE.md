@@ -94,11 +94,40 @@ These are verified from code and get re-derived or mistaken every session.
   in-memory and BEST EFFORT, since serverless instances recycle; the global
   bucket in `anon-budget.ts` is what actually bounds the bill and it fails
   closed. Before this, a signed-in caller had no per-user ceiling at all.
-- **Pro is capped on checking and that is deliberate.** A check costs roughly
-  four cents a document against $4.99 a month, so unmetered checking goes
-  underwater around 125 documents. Prompt improvements stay unlimited for Pro
-  because they cost about a cent. "Unlimited" is a pricing decision about unit
-  cost, not a tier badge.
+- **A check is not billed per document. It is billed per document AND per
+  claim, and the two parts behave differently.** Measured 2026-09-02 on real
+  articles, gpt-5.4-mini plus Tavily at $0.0075 a credit:
+
+  | document | kept | extract | fetch | judge | total | wall |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | short note, 1.6k chars, uncited | 2 | $0.004 | — | — | **$0.004** | 5s |
+  | normal post, 6k chars, uncited | 16 | $0.010 | — | — | **$0.010** | 9s |
+  | cited article, 8k chars | 20 | $0.019 | $0.023 | $0.067 | **$0.108** | 23s |
+  | dense listicle, 17k chars | 20 | $0.040 | $0.023 | $0.067 | **$0.129** | 40s |
+
+  **Extraction is per document and scales with how many claims are in it**,
+  because the model emits every claim it finds and the cap is applied in code
+  afterwards. **Fetch and judge are per claim checked**, and they only happen
+  for claims that carry a link, which is why the two uncited documents cost
+  nothing beyond extraction. A blanket "four cents a document" averaged over
+  that difference; the real spread is 0.4¢ to 13¢, thirty-fold.
+
+  The old note said four cents for a whole check. Four cents is now roughly
+  what EXTRACTION ALONE costs on a dense document.
+
+- **Pro is capped on checking and that is deliberate.** At 13¢ for a dense
+  cited document against $4.99 a month, unmetered checking goes underwater
+  around 38 documents, not 125. The 100-a-month Pro cap is already past that
+  if every check is a dense one, and survives on the mix. Prompt improvements
+  stay unlimited for Pro because they cost about a cent. "Unlimited" is a
+  pricing decision about unit cost, not a tier badge.
+
+- **Raising the claim cap costs less than it looks.** Measured on the same
+  dense listicle at a cap of 60 instead of 20: 49 claims checked, 51 seconds,
+  $0.257. So roughly double the money and 1.3x the time for 2.5x the claims,
+  and the cost PER CLAIM falls from 0.65¢ to 0.52¢ because extraction is paid
+  once either way. Judging runs five wide, so it is close to linear in claim
+  count; the wall time is not the thing that stops you raising the cap.
 - **Pro is $4.99/mo right now, a launch discount from $9.99 (Paddle).** The
   launch flag is `LAUNCH` in `components/marketing/EditorialPricing.tsx`; Paddle
   charges 499¢ (`lib/paddle.ts`). Free tier: 10 improvements per rolling 24h
