@@ -158,6 +158,62 @@
   }
 }
 
+/* ===================================================================
+   THE PRINTED REPORT
+   ===================================================================
+   No route and no storage. The report is a block that exists only when
+   printing, rendered from the result already on screen, so "Save as PDF"
+   sends nothing anywhere and the promise that we save nothing stays true.
+
+   Hide-everything-then-show-one rather than marking every section
+   `no-print`: the report lives inside the homepage, so the alternative is
+   tagging the nav, the hero, four sections and the footer, and forgetting
+   one later. `visibility` rather than `display` because collapsing the
+   layout of an ancestor would take the report down with it.
+   ================================================================== */
+.print-report {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .print-report,
+  .print-report * {
+    visibility: visible;
+  }
+
+  .print-report {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    background: #fff;
+    color: #000;
+  }
+
+  /* A URL a reader has to type is not a source they can follow, so links
+     print as text and the href is written out in the markup beside them. */
+  .print-report a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* An entry split across a page break is one a reader has to reassemble. */
+  .print-entry {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  @page {
+    margin: 16mm 14mm;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

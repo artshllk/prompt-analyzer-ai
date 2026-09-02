@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { MarkedDocument } from '@/components/factcheck/MarkedDocument'
+import { PrintReport } from '@/components/factcheck/PrintReport'
 import { useCheckStream } from '@/components/factcheck/useCheckStream'
 import { MAX_DOC_CHARS } from '@/lib/factcheck/types'
 
@@ -115,7 +116,7 @@ export function CheckClient() {
         )}
 
         {!live && (
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <button
               type="button"
               onClick={reset}
@@ -124,8 +125,25 @@ export function CheckClient() {
             >
               Check another
             </button>
+            {/* The browser does the work. Nothing is uploaded, nothing is
+                stored, and no route exists, so the promise that we save
+                nothing is untouched by the report existing. */}
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="text-[14px] px-4 py-2 rounded-full"
+              style={{ border: '1px solid var(--rule)', color: 'var(--ink)' }}
+            >
+              Save as PDF
+            </button>
+            <span className="text-[13px]" style={{ color: 'var(--ink-soft)' }}>
+              Nothing is uploaded. Your browser makes the file.
+            </span>
           </div>
         )}
+
+        {/* Hidden on screen, and the only thing on the page when printing. */}
+        {!live && <PrintReport text={state.text} claims={state.claims} />}
       </div>
     )
   }
