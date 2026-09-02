@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     items: [{ price_id: selectedPlan.priceId, quantity: 1 }],
     custom_data: { supabase_user_id: user.id },
     checkout: {
-      url: `${appUrl}/?upgraded=true`,
+      url: `${appUrl}/check?upgraded=true`,
     },
   }
 

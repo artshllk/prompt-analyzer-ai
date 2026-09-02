@@ -1,7 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// /dashboard is gone. '/' is the checker and is public.
+// /check is deliberately NOT here. It handles its own signed-out case by
+// sending people to '/', which has the same tool and needs no account, rather
+// than to /login, which would be a wall in front of something already free.
 const PROTECTED_PATHS = ['/history', '/settings']
 const AUTH_PATHS = ['/login', '/signup']
 
@@ -58,7 +60,7 @@ export async function proxy(request: NextRequest) {
 
   if (isAuthPath && user) {
     const url = request.nextUrl.clone()
-    url.pathname = '/'
+    url.pathname = '/check'
     return redirectWithCookies(url)
   }
 

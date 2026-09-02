@@ -1,5 +1,6 @@
 /**
- * Where to land after sign-in: the checker, for everybody.
+ * Where to land after sign-in: /check, the checker inside the app, for
+ * everybody.
  *
  * An explicit destination (?redirectTo= / ?next=) still always wins.
  *
@@ -10,10 +11,12 @@
  * keep checking and the checks-left count lives on the checker itself.
  *
  * There is no longer a new-user branch. There is one product, so there is one
- * destination.
+ * destination. It is /check rather than / because / renders the marketing
+ * layout, and landing a signed-in user there gives them a page with no way
+ * back into their own account's navigation.
  */
 
-export const DEFAULT_SIGNIN_DEST = '/'
+export const DEFAULT_SIGNIN_DEST = '/check'
 
 export function postSignInDestination(requested: string): string {
   return requested

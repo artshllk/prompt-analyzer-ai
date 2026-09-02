@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
   const code = searchParams.get('code')
   const tokenHash = searchParams.get('token_hash')
   const type = searchParams.get('type')
-  const next = searchParams.get('next') ?? '/'
+  const next = searchParams.get('next') ?? '/check'
 
   const errorParam = searchParams.get('error')
   const errorDescription = searchParams.get('error_description')

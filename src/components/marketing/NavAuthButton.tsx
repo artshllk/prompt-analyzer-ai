@@ -17,7 +17,10 @@ export function NavAuthButton() {
   if (isSignedIn) {
     return (
       <Link
-        href="/extension"
+        /* Was /extension, the frozen product's marketing page, which is what
+           put a signed-in user into the app shell by accident and started the
+           loop. The label stays: it is what this button says in every app. */
+        href="/check"
         className="inline-flex items-center px-4 py-2 rounded-full text-sm transition-all btn-paper"
         style={{
           background: 'var(--color-paper)',

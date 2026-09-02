@@ -161,7 +161,16 @@ function SidebarProfile() {
  * "we save nothing" about pasted text, and that promise is worth more than the
  * feature.
  */
-const CHECK_ITEM = { href: "/", label: "Check" };
+const CHECK_ITEM = { href: "/check", label: "Check" };
+/**
+ * The detector is in the sidebar even though the landing page gives it one
+ * line. That is not a contradiction: the landing page sells one product, and
+ * the app navigation exposes everything the account has quota for. A signed-in
+ * user has a detector allowance tied to their account, so they need to be able
+ * to reach it, and a sidebar that omits the page you are standing on is worse
+ * than no sidebar.
+ */
+const DETECTOR_ITEM = { href: "/detector", label: "Detector" };
 const HISTORY_ITEM = { href: "/history", label: "History" };
 
 interface AppShellProps {
@@ -177,7 +186,9 @@ export function AppShell({ children, hasHistory }: AppShellProps) {
   const pathname = usePathname();
 
   // History only exists for people who have some. Everyone gets Check.
-  const navItems = hasHistory ? [CHECK_ITEM, HISTORY_ITEM] : [CHECK_ITEM];
+  const navItems = hasHistory
+    ? [CHECK_ITEM, DETECTOR_ITEM, HISTORY_ITEM]
+    : [CHECK_ITEM, DETECTOR_ITEM];
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Close mobile drawer on navigation
@@ -211,7 +222,7 @@ export function AppShell({ children, hasHistory }: AppShellProps) {
           borderBottom: "1px solid var(--color-rule)",
         }}
       >
-        <Link href="/" className="flex items-center gap-2.5">
+        <Link href="/check" className="flex items-center gap-2.5">
           <Image
             src="/logo.png"
             alt="Deepclario"
@@ -289,7 +300,7 @@ export function AppShell({ children, hasHistory }: AppShellProps) {
             surface from logo to nav, not as a stacked template. */}
         <div className="hidden md:block px-6 pt-7 pb-8">
           <Link
-            href="/"
+            href="/check"
             className="inline-flex items-center gap-2.5 group"
           >
             <Image

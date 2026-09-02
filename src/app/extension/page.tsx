@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
-import { AppShell } from '@/components/ui/AppShell'
 import { createClient } from '@/lib/supabase/server'
 import { CHROME_STORE_URL } from '@/lib/constants'
 import { ExtensionHeroVisual } from '@/components/extension/ExtensionHeroVisual'
@@ -208,14 +207,11 @@ export default async function ExtensionPage() {
     </main>
   )
 
-  if (user) {
-    return (
-      <div className="editorial grain no-page-transition min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
-        <AppShell>{mainContent}</AppShell>
-      </div>
-    )
-  }
-
+  // No app-shell variant. This is a marketing page for a frozen product,
+  // written for people with no account: its CTA reads "Add to Chrome. Free. No
+  // account." Wrapping it in the signed-in sidebar contradicted its own copy,
+  // and it was half of the navigation loop, because "Open Deepclario" pointed
+  // here and this is where the sidebar appeared from.
   return (
     <div className="editorial grain min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
       <MarketingNav current="extension" />

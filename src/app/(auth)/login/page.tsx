@@ -39,7 +39,7 @@ function LoginInner() {
     // account is to keep checking, and the checks-left count lives there, so
     // a dashboard in between was a click in front of the only thing they came
     // for.
-    searchParams.get('redirectTo') ?? searchParams.get('next') ?? '/'
+    searchParams.get('redirectTo') ?? searchParams.get('next') ?? '/check'
   const errorFromUrl = searchParams.get('error')
 
   const [email, setEmail] = useState('')
