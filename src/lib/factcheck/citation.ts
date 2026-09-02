@@ -5,6 +5,7 @@ import { TavilyProvider } from './providers/tavily'
 import { domainsFor } from './publishers'
 import { isLiveSource } from './live-sources'
 import { classifySource, READABILITY_COPY, isPaywalledHost } from './readability'
+import { excerptAround, isDerivedFrom } from './excerpt'
 import type { ProviderFailure, RetrievalProvider, RetrievedPage } from './providers/types'
 import type { Claim, CitationResult, Evidence } from './types'
 
@@ -353,29 +354,52 @@ async function judgeAgainst(claim: Claim, page: RetrievedPage): Promise<Citation
   // rather than trusted as a convention.
   const grounded = quote.length > 0 && findQuote(body, quote)
 
+  /**
+   * THE PROOF IS CUT FROM THE PAGE, NOT ASKED FOR.
+   *
+   * We already know where the figure is, so the sentence around it is
+   * available for free and cannot be wrong about containing the number. Two
+   * real findings went out with proof that proved nothing before this: one
+   * with no quote, because the judge's failed the gate and was dropped, and
+   * one quoting the header above a list of numbers with none of the numbers
+   * in it.
+   *
+   * `isDerivedFrom` is belt and braces on a function that builds its own
+   * evidence. If it ever stops being a slice of the page we show nothing
+   * rather than something unverified.
+   */
+  const built = excerptAround(body, [sourceFigure, claim.figure])
+  const excerpt = built && isDerivedFrom(built, body) ? built : null
+  const best = excerpt ?? (grounded ? quote : null)
+
   if (check === 'supports') {
-    // A supporting verdict with no findable quote is an unevidenced claim that
-    // the writer's link is fine. That is the quieter mistake but it is the
-    // worse one in a report someone forwards as proof, so it is refused too.
+    /**
+     * The ADMISSION gate is unchanged, deliberately.
+     *
+     * A supporting verdict still requires the judge to have produced a quote
+     * that is really on the page. A wrong green check is the quieter mistake
+     * and the worse one in a report someone forwards as proof, so the bar for
+     * reaching it does not move just because we got better at illustrating it.
+     * The excerpt improves what we SHOW, never what we ALLOW.
+     */
     if (!grounded) return NOT_APPLICABLE
     return {
       check: 'supports',
       sourceFigure,
       figureOnPage: claim.figure ? figurePresent : undefined,
-      evidence: [toEvidence(page, quote)],
+      evidence: [toEvidence(page, best ?? quote)],
       note,
     }
   }
 
-  // does_not_contain. The quote is the closest thing on the subject and is
-  // allowed to be absent, because "there is no relevant sentence" is a real
-  // answer. What is NOT allowed is a quote the model made up, so an ungrounded
-  // one is dropped rather than shown.
+  // does_not_contain. Evidence is allowed to be absent, because "there is no
+  // relevant sentence" is a real answer, and it is far rarer now: a claim with
+  // a locatable figure always has something to show.
   return {
     check: 'does_not_contain',
     sourceFigure,
     figureOnPage: claim.figure ? figurePresent : undefined,
-    evidence: grounded ? [toEvidence(page, quote)] : [],
+    evidence: best ? [toEvidence(page, best)] : [],
     note,
   }
 }
