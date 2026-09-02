@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { DetectorClient } from './detector-client'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
-import { AppShell } from '@/components/ui/AppShell'
+import { AppFrame } from '@/components/ui/AppFrame'
 import { createClient } from '@/lib/supabase/server'
 import { defaultOGImage } from '@/lib/og-image'
 
@@ -145,9 +145,7 @@ export default async function DetectorPage() {
 
   if (user) {
     return (
-      <div className="editorial grain no-page-transition min-h-screen" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
-        <AppShell>{mainContent}</AppShell>
-      </div>
+      <AppFrame>{mainContent}</AppFrame>
     )
   }
 

@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { AppShell } from '@/components/ui/AppShell'
-import { hasStoredHistory } from '@/lib/db/has-history'
+import { AppFrame } from '@/components/ui/AppFrame'
 import { getFactcheckAllowance } from '@/lib/db/usage'
 import { CheckClient } from '@/components/factcheck/CheckClient'
 
@@ -50,17 +49,10 @@ export default async function CheckPage() {
     .eq('id', user.id)
     .single()
 
-  const [hasHistory, allowance] = await Promise.all([
-    hasStoredHistory(user.id),
-    getFactcheckAllowance(user.id, profile?.tier ?? 'free'),
-  ])
+  const allowance = await getFactcheckAllowance(user.id, profile?.tier ?? 'free')
 
   return (
-    <div
-      className="editorial grain no-page-transition min-h-screen"
-      style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}
-    >
-      <AppShell hasHistory={hasHistory}>
+    <AppFrame>
         <main className="pt-8 md:pt-10 pb-16 px-6 md:px-10">
           <div className="max-w-3xl mx-auto">
             <p className="eyebrow mb-2">Check</p>
@@ -88,7 +80,6 @@ export default async function CheckPage() {
             </p>
           </div>
         </main>
-      </AppShell>
-    </div>
+    </AppFrame>
   )
 }
