@@ -26,8 +26,14 @@
  */
 export function WorkedExample({ onDark }: { onDark?: boolean } = {}) {
   return (
-    <section
-      className="rounded-2xl p-5 sm:p-7"
+    /**
+     * A figure, not a section. It is an example with a caption, which is what
+     * `figure` means, and `section` made it a landmark nested inside the
+     * landmark that holds it. The figcaption names the figure on its own, so
+     * the aria-label that used to do that job is gone rather than duplicated.
+     */
+    <figure
+      className="rounded-2xl p-5 sm:p-7 m-0"
       /* The card stays white on both grounds. That is the point of it: a
          marked-up page looks like paper, and paper does not go dark. */
       style={{
@@ -38,12 +44,13 @@ export function WorkedExample({ onDark }: { onDark?: boolean } = {}) {
         // dark edge already framing it.
         boxShadow: onDark ? '0 1px 3px rgba(0,0,0,0.28)' : 'none',
       }}
-      aria-label="An example of a mistake this finds"
     >
-
-      <p className="text-[15px] leading-relaxed mb-4" style={{ color: 'var(--ink-soft)' }}>
+      <figcaption
+        className="text-[15px] leading-relaxed mb-4"
+        style={{ color: 'var(--ink-soft)' }}
+      >
         A big SEO site wrote this. It is still up.
-      </p>
+      </figcaption>
 
       {/* The sentence, marked the way the product marks it. The two swapped
           words carry the mark, not the whole sentence, because that is where
@@ -101,7 +108,7 @@ export function WorkedExample({ onDark }: { onDark?: boolean } = {}) {
           Same numbers. The two words are swapped.
         </p>
       </div>
-    </section>
+    </figure>
   )
 }
 
