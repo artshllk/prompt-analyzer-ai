@@ -247,6 +247,37 @@ because a leak in shared code is not a feature request.
 If a change is needed to keep a promise the site already makes, it is not
 covered by the freeze. Make it, and say in the commit why.
 
+## A browser-side limit is a suggestion, never a count
+
+**If the copy states a number, the server has to enforce it.** A limit that
+lives only in the browser gets worded as an invitation instead.
+
+This has now been the cause of four separate copy-versus-reality gaps, so the
+rule is worth more than any of the individual fixes:
+
+- The detector told anonymous visitors "you have used your free detection".
+  That count lives in `localStorage`, the server only throttles per IP, and
+  clearing site data resets it. The sentence was false for anyone in a private
+  window. Now: "Sign in for 5 a day and to keep your history", which is true
+  whatever the browser remembers.
+- The pricing table said Free got 10 checks a DAY while Pro got 100 a MONTH,
+  so Pro was a third of Free.
+- The dashboard counted `prompt_analyzed` against the wrong ceiling and showed
+  "6 of 5".
+- Pricing promised unlimited Pro checking that nothing enforced and the unit
+  cost could not support.
+
+Two ways to satisfy the rule, and both are fine:
+
+1. **Enforce it on the server**, then state the number freely. The signed-in
+   detector quota does this: `FreeLimitNote` says "all 5 free detections in the
+   last 24h" and a 402 backs it.
+2. **Word it as a suggestion**, and state no number about what the visitor has
+   already used. Say what they GET by signing in, not what they have spent.
+
+Option 2 is usually better anyway. An invitation converts better than a wall,
+and it does not go stale when the enforcement changes.
+
 ## Error reporting must never capture request bodies
 
 `src/lib/observability.ts` is a Sentry wrapper that is wired but INERT:

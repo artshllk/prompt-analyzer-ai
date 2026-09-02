@@ -66,9 +66,23 @@ export function DetectorClient({ plan }: { plan: Plan }) {
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Anonymous visitors get ANON_DETECT_LIMIT free detections (tracked in
-  // localStorage), then a sign-in gate - same pattern as the homepage
-  // rewrite demo.
+  /**
+   * Anonymous visitors see the sign-in gate after ANON_DETECT_LIMIT runs,
+   * counted in localStorage.
+   *
+   * THE COPY MUST NOT STATE THAT COUNT, and this is why. Clearing site data
+   * resets it and the server does not enforce it, so "you have used your free
+   * detection" is a promise the code cannot keep: it is false for anyone who
+   * opens a private window. The gate is worded as an invitation instead, which
+   * is true whatever localStorage says.
+   *
+   * The general rule is in CLAUDE.md: a limit enforced only in the browser is
+   * worded as a suggestion, never as a count. If the copy states a number, the
+   * server has to enforce it.
+   *
+   * Not fixed by adding server enforcement, deliberately. A detection is a
+   * cheap Gemini call behind a per-IP throttle, and the detector is frozen.
+   */
   const [anonRuns, setAnonRuns] = useState(0);
   const [hydrated, setHydrated] = useState(false);
   const [showGate, setShowGate] = useState(false);
@@ -376,15 +390,13 @@ function DetectorGateModal({
               className="font-serif text-[1.7rem] sm:text-4xl leading-tight mb-3"
               style={{ color: "var(--color-paper)", fontWeight: 400 }}
             >
-              Like what you see?
+              Keep going?
             </h3>
             <p
               className="text-[15px] sm:text-lg leading-relaxed mb-8"
               style={{ color: "var(--color-paper-mute)" }}
             >
-              You&apos;ve used your free detection. Sign in to continue, free
-              accounts get {DETECT_FREE_LIMIT} every {DETECT_WINDOW_HOURS}{" "}
-              hours.
+              Sign in for {DETECT_FREE_LIMIT} a day and to keep your history.
             </p>
             <Link
               href="/login?signup=1&redirectTo=/detector"
