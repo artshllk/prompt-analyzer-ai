@@ -40,7 +40,7 @@ export function SettingsClient({ email, tier, subscriptionStatus }: SettingsClie
       }
       setBillingError(
         data.error === 'no_subscription'
-          ? 'No billing profile found for this account. If you just upgraded, give it a minute and refresh.'
+          ? 'No paid subscription is linked to this account. If you just upgraded, wait a minute and refresh.'
           : 'Could not open the billing portal. Try again in a moment.'
       )
     } catch {

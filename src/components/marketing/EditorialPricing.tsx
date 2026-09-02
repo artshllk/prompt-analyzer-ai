@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { UpgradeButton } from "@/components/ui/UpgradeButton";
-import { ManageSubscription } from "@/components/ui/ManageSubscription";
 import Link from "next/link";
 
 /**
@@ -305,13 +304,28 @@ export function EditorialPricing({
           {plan === "pro" && (
             <>
               <PlanBadge renewsOn={renewsOn} />
-              <ManageSubscription
+              {/*
+                A LINK TO SETTINGS, NOT A CALL TO THE BILLING API.
+
+                This used to open the Paddle portal directly from the pricing
+                table, which put the portal's failures on a marketing page. An
+                account that is Pro without a paid subscription got told so
+                here, in a card, with no way onward: a dead end in the last
+                place anyone would look for billing.
+
+                Settings is where billing lives and it always renders. One hop
+                each way, and every step reachable.
+              */}
+              <Link
+                href="/settings"
                 className="mt-3 block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-outline"
                 style={{
                   border: "1px solid var(--color-rule-strong)",
                   color: "var(--color-paper)",
                 }}
-              />
+              >
+                Manage in settings
+              </Link>
             </>
           )}
           <LeadFeature n={PRO_LEAD.n} unit={PRO_LEAD.unit} accent />
