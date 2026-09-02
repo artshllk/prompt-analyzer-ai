@@ -1,38 +1,7 @@
-import { NextRequest, NextResponse, after } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { createEmailAdminClient } from '@/lib/email/admin'
-import { emailConfigured } from '@/lib/email/send'
-import { claimAndSend } from '@/lib/email/log'
-import { welcomeEmail } from '@/lib/email/templates'
 import { postSignInDestination } from '@/lib/auth/post-signin'
 
-/**
- * Welcome email for brand-new users, sent after the redirect is
- * flushed so sign-in latency is untouched. The one-hour window keeps
- * existing users from getting welcomed on a routine login; the dedupe
- * key in claimAndSend guarantees once-ever even if the daily cron
- * sweep races this.
- */
-function sendWelcomeIfNew(userId: string) {
-  after(async () => {
-    if (!emailConfigured()) return
-    const db = createEmailAdminClient()
-    const { data: profile } = await db
-      .from('profiles')
-      .select('id, email, full_name, created_at, email_unsubscribed')
-      .eq('id', userId)
-      .single()
-    if (!profile || profile.email_unsubscribed) return
-    if (Date.now() - new Date(profile.created_at).getTime() > 60 * 60 * 1000) return
-    await claimAndSend(db, {
-      userId: profile.id,
-      email: profile.email,
-      emailType: 'welcome',
-      dedupeKey: `welcome:${profile.id}`,
-      content: welcomeEmail(profile.id, profile.full_name),
-    })
-  })
-}
 
 function getOrigin(req: NextRequest): string {
   const forwardedHost = req.headers.get('x-forwarded-host')
@@ -89,7 +58,6 @@ export async function GET(req: NextRequest) {
   // building a fresh redirect.
   function finish(user: { id: string; created_at?: string } | null) {
     if (user) {
-      sendWelcomeIfNew(user.id)
       const dest = postSignInDestination(next)
       if (dest !== next) response.headers.set('location', `${origin}${dest}`)
     }

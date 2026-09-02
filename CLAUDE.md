@@ -30,8 +30,16 @@ deepclario.com. Two-person team: Art Shllaku, Agon.
 ## Stack
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · Supabase
-(DB + auth) · Paddle (billing) · Vercel (host) · Resend (email) · Sentry.
+(DB + auth) · Paddle (billing) · Vercel (host) · Tavily (retrieval).
 Prompt engine calls **OpenAI + Gemini**. Detector explanations use **Gemini**.
+Source checking retrieves through **Tavily**.
+
+**Deepclario sends no email.** The templates, the sender and the daily cron are
+deleted. All five messages (welcome, nudge, tip of the week, win-back) marketed
+the frozen prompt improver. `/api/email/unsubscribe` survives on purpose: links
+in emails already delivered point at it, and no code change reaches an inbox.
+`RESEND_API_KEY`, `EMAIL_FROM` and `EMAIL_REPLY_TO` are unused and can come out
+of Vercel.
 
 ## THE PROMPT IMPROVER IS FROZEN
 

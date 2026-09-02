@@ -3,6 +3,18 @@ import { createEmailAdminClient } from '@/lib/email/admin'
 import { verifyUnsubscribe, type UnsubscribeScope } from '@/lib/email/unsubscribe'
 
 /**
+ * THIS OUTLIVES THE EMAIL SYSTEM THAT CREATED IT.
+ *
+ * Deepclario no longer sends anything. The templates, the sender and the daily
+ * cron are deleted. This route stays because NO CODE CHANGE REACHES AN INBOX:
+ * every email already delivered carries an unsubscribe link pointing here, and
+ * deleting the route would turn those into 404s for people who are trying to
+ * opt out.
+ *
+ * It costs one route and it keeps a promise that was already made.
+ */
+
+/**
  * One-click unsubscribe. Works logged out (email clients open links
  * without a session); the HMAC signature proves the link came from an
  * email we sent to this user.
