@@ -28,7 +28,7 @@ export function NavAuthButton() {
           fontWeight: 500,
         }}
       >
-        Open Deepclario
+        Open app
       </Link>
     )
   }
