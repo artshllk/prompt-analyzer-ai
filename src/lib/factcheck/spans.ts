@@ -159,6 +159,27 @@ export function citationsToFix(claims: Claim[]): number {
 }
 
 /**
+ * Is there anything here to check at all?
+ *
+ * A marketing page yields claims that are all the author describing their own
+ * product, with no figure and no source anywhere. Marking twenty of those is a
+ * wall of noise on somebody's first use, and every one of them is
+ * uncheckable by construction.
+ *
+ * Handled the way the density banner handles genre: say what kind of document
+ * this is instead of pretending to have found something. An honest "there is
+ * nothing here for us to check" is a real answer.
+ *
+ * Deliberately strict. It fires only when NOTHING carries a figure and NOTHING
+ * carries a source, because a single real statistic means the document is
+ * worth marking and the wall is worth having.
+ */
+export function nothingToCheck(claims: Claim[]): boolean {
+  if (claims.length === 0) return false
+  return claims.every(c => !c.figure && c.sourceForm === 'none')
+}
+
+/**
  * How well the document cites itself. One pass, no network, no model call.
  *
  * First-party claims are excluded from the denominator rather than counted as

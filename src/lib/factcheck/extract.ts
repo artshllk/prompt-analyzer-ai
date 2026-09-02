@@ -2,6 +2,7 @@ import { callLLM } from '@/lib/engine/openai-client'
 import { MODELS } from '@/lib/engine/models'
 import { asText, asEnum, asObjectArray } from '@/lib/engine/coerce'
 import { normalizeDocument, locateAll } from './locate'
+import { visibleLength } from './paste'
 import { citationDensity } from './spans'
 import {
   type Claim,
@@ -131,7 +132,7 @@ Something that is either true or false about the world, and that someone could l
 - url: a link, which either resolves or does not
 - quote: words put in someone's mouth
 - attribution: "according to X", "researchers at Y found"
-- assertion: a plain factual statement about the world with no number in it
+- assertion: a plain factual statement about the world with no number in it, and ONLY when it is about something the author does not control. See the section on assertions below, because this one is where noise comes from.
 
 # WHAT DOES NOT COUNT
 
@@ -153,6 +154,18 @@ These read like background. They are stated flatly, they sound about right, and 
 
 DO NOT SKIP THEM BECAUSE THEY LOOK UNREMARKABLE. They are the reason this tool exists. If a sentence contains a specific number and no source, extract it, every time, however ordinary it sounds.
 
+# ASSERTIONS ARE THE NARROW ONE
+
+An assertion survives only if it is about something OUTSIDE the author's control, and only if a reader could look it up somewhere the author does not own.
+
+DEFAULT TO LEAVING IT OUT. If you are unsure whether an assertion is checkable, it is not. Three real claims are worth more than twenty statements nobody can check, and every uncheckable line you return is a mark on the document that wastes the reader's attention.
+
+Never extract:
+- A company describing its own product, service, pricing or features. "Cypress is a quality platform for teams shipping modern web applications" is not a checkable claim, it is a vendor describing itself.
+- What a product does, offers, includes, supports or provides.
+- Descriptions of the author's own methods, process or approach.
+- Anything you would only be able to confirm by asking the author.
+
 # WHO THE CLAIM IS ABOUT
 
 Set subject from whose numbers these are, RELATIVE TO THE AUTHOR OF THIS DOCUMENT.
@@ -162,6 +175,10 @@ Set subject from whose numbers these are, RELATIVE TO THE AUTHOR OF THIS DOCUMEN
 - entity: one named organisation, product or person that is not the author. "Shopify processed $X", "Gartner employs Y analysts".
 
 The relative part matters. In an article on YOUR blog, "Asana reported that its own users saved four hours a week" is entity, not first_party. It is Asana's own number, but it is not yours, and someone outside can go and read what Asana published.
+
+FIRST PARTY IS NOT ONLY "WE" AND "OUR". A company writing about itself in the third person is still writing about itself. If the document keeps making claims about one named organisation or product, and cites nobody for them, that organisation is almost certainly the author and every one of those claims is first_party.
+
+On a page published by Cypress, "Cypress is a quality platform" and "Cypress App is free and open source" are first_party, exactly as much as "our platform is free" would be. Look at whose page this is, not at which pronoun they chose.
 
 # WHAT THE AUTHOR CITED
 
@@ -225,7 +242,13 @@ export async function extractClaims(
 ): Promise<ExtractResult | ExtractError> {
   const text = normalizeDocument(raw)
   if (text.trim().length < MIN_DOC_CHARS) return 'too_short'
-  if (text.length > MAX_DOC_CHARS) return 'too_long'
+  /**
+   * Measured the same way the box measures it: markdown link syntax is our
+   * formatting, not the writer's prose. Counting raw characters here would let
+   * a document pass the counter under the box and then be refused by the
+   * server, which is the worst possible place to disagree with yourself.
+   */
+  if (visibleLength(text) > MAX_DOC_CHARS) return 'too_long'
 
   const res = await callLLM<{ claims: unknown }>({
     model: MODELS.diagnose,

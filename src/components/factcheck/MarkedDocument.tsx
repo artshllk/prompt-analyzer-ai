@@ -7,6 +7,7 @@ import {
   firstPartyClaims,
   countByVerdict,
   citationsToFix,
+  nothingToCheck,
 } from '@/lib/factcheck/spans'
 import { rankFlags } from '@/lib/factcheck/flags'
 import { groupFindings, summaryLines, FINDINGS_SHOWN } from '@/lib/factcheck/severity'
@@ -89,11 +90,20 @@ export function MarkedDocument({
 }) {
   const [openId, setOpenId] = useState<string | null>(null)
 
-  const runs = useMemo(() => toRenderRuns(text, claims), [text, claims])
-  const flags = useMemo(() => rankFlags(claims, text.length), [claims, text])
-  const findings = useMemo(() => groupFindings(claims), [claims])
-  const listed = useMemo(() => unanchoredClaims(claims), [claims])
-  const mine = useMemo(() => firstPartyClaims(claims), [claims])
+  /**
+   * When there is nothing to check, there is nothing to mark. Summary says so
+   * in words; painting twenty uncheckable lines underneath would contradict
+   * it and give the reader a wall to scroll past anyway.
+   */
+  const empty = useMemo(() => nothingToCheck(claims), [claims])
+  // Memoised, not a bare conditional: a new array identity on every render
+  // would defeat every useMemo below that depends on it.
+  const marked = useMemo(() => (empty ? [] : claims), [empty, claims])
+  const runs = useMemo(() => toRenderRuns(text, marked), [text, marked])
+  const flags = useMemo(() => rankFlags(marked, text.length), [marked, text])
+  const findings = useMemo(() => groupFindings(marked), [marked])
+  const listed = useMemo(() => unanchoredClaims(marked), [marked])
+  const mine = useMemo(() => firstPartyClaims(marked), [marked])
   const byId = useMemo(() => new Map(claims.map(c => [c.id, c])), [claims])
 
   const open = openId ? byId.get(openId) ?? null : null
@@ -246,6 +256,19 @@ function DensityBanner({ density }: { density: CitationDensity }) {
 function Summary({ claims }: { claims: Claim[] }) {
   const counts = useMemo(() => countByVerdict(claims), [claims])
   const toFix = useMemo(() => citationsToFix(claims), [claims])
+  const empty = useMemo(() => nothingToCheck(claims), [claims])
+
+  // No figures and no sources anywhere. Saying so is a real answer; marking
+  // twenty uncheckable lines is a wall.
+  if (empty) {
+    return (
+      <p className="mt-5 text-[15px] leading-relaxed" style={{ color: 'var(--ink-soft)' }}>
+        This reads like marketing copy rather than an article with sources. We
+        found no numbers and no citations, so there is nothing here for us to
+        check.
+      </p>
+    )
+  }
 
   if (counts.total === 0) {
     return (

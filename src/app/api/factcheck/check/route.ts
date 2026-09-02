@@ -15,6 +15,7 @@ import { streamCitations } from '@/lib/factcheck/citation'
 import { rankFlags } from '@/lib/factcheck/flags'
 import { meter } from '@/lib/factcheck/providers/meter'
 import { MAX_DOC_CHARS } from '@/lib/factcheck/types'
+import { visibleLength } from '@/lib/factcheck/paste'
 
 /**
  * Extract, then check, streamed as NDJSON.
@@ -77,8 +78,10 @@ export async function POST(req: NextRequest) {
   }
   const text = typeof body.text === 'string' ? body.text : ''
   if (!text.trim()) return json({ error: 'empty' }, 400)
-  if (text.length > MAX_DOC_CHARS) {
-    return json({ error: 'too_long', limit: MAX_DOC_CHARS, got: text.length }, 400)
+  // Same measure as the counter under the box. See extract.ts.
+  const visible = visibleLength(text)
+  if (visible > MAX_DOC_CHARS) {
+    return json({ error: 'too_long', limit: MAX_DOC_CHARS, got: visible }, 400)
   }
 
   if (!auth) {

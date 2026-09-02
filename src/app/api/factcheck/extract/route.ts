@@ -7,6 +7,7 @@ import { rankFlags } from '@/lib/factcheck/flags'
 import { checkCitations } from '@/lib/factcheck/citation'
 import { meter, formatMeter } from '@/lib/factcheck/providers/meter'
 import { MAX_DOC_CHARS } from '@/lib/factcheck/types'
+import { visibleLength } from '@/lib/factcheck/paste'
 
 /**
  * Find the checkable claims in a pasted document.
@@ -78,8 +79,10 @@ export async function POST(req: NextRequest) {
   //    roughly linear in document length, which makes this the
   //    highest-leverage guard in the whole system.
   if (!text.trim()) return json({ error: 'empty' }, 400)
-  if (text.length > MAX_DOC_CHARS) {
-    return json({ error: 'too_long', limit: MAX_DOC_CHARS, got: text.length }, 400)
+  // Same measure as the counter under the box. See extract.ts.
+  const visible = visibleLength(text)
+  if (visible > MAX_DOC_CHARS) {
+    return json({ error: 'too_long', limit: MAX_DOC_CHARS, got: visible }, 400)
   }
 
   // 3. The daily ceiling, on the factcheck bucket so a busy day on the frozen

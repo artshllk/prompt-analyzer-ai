@@ -18,6 +18,7 @@ import {
   countByVerdict,
   citationsToFix,
   citationDensity,
+  nothingToCheck,
 } from './spans'
 import {
   attentionFlag,
@@ -260,6 +261,37 @@ test('citations to fix counts only real defects, and never first-party ones', ()
     }),
   ]
   assert.equal(citationsToFix(claims), 1)
+})
+
+/* --------------------------------------------------- nothing to check */
+
+test('a document with no figures and no sources has nothing to check', () => {
+  // Marketing prose. Every claim is the author describing their own product,
+  // so marking twenty of them is a wall of noise and none of them could ever
+  // be checked. Saying so is a real answer.
+  const marketing = ['a', 'b', 'c'].map(id => claim(id))
+  assert.equal(nothingToCheck(marketing), true)
+})
+
+test('one real figure is enough to be worth marking', () => {
+  // Deliberately strict: a single statistic means the document has something
+  // in it, and the wall is worth having.
+  const mixed = [claim('a'), claim('b'), claim('c', undefined, 'unchecked', { figure: '89%' })]
+  assert.equal(nothingToCheck(mixed), false)
+})
+
+test('one real source is enough too', () => {
+  const mixed = [
+    claim('a'),
+    claim('b', undefined, 'unchecked', { sourceForm: 'linked', sourceUrl: 'https://x.test' }),
+  ]
+  assert.equal(nothingToCheck(mixed), false)
+})
+
+test('an empty document is not "nothing to check"', () => {
+  // No claims at all already has its own message. This one is about a document
+  // full of claims that happen to be uncheckable.
+  assert.equal(nothingToCheck([]), false)
 })
 
 /* ------------------------------------------------------ attention flag */

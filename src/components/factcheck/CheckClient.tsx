@@ -6,6 +6,7 @@ import { MarkedDocument } from '@/components/factcheck/MarkedDocument'
 import { PrintReport } from '@/components/factcheck/PrintReport'
 import { useCheckStream } from '@/components/factcheck/useCheckStream'
 import { MAX_DOC_CHARS } from '@/lib/factcheck/types'
+import { htmlToMarkdown, visibleLength } from '@/lib/factcheck/paste'
 
 /**
  * Paste, then watch it get checked.
@@ -22,8 +23,47 @@ export function CheckClient() {
   const [text, setText] = useState('')
   const { state, run, reset } = useCheckStream()
 
-  const chars = text.length
+  /**
+   * Length excludes markdown link syntax, because that syntax is OUR
+   * formatting and not the writer's prose. A 12,000 character article stays
+   * 12,000 characters however many links it carries, and the counter under the
+   * box shows the same number the limit is applied to.
+   */
+  const chars = visibleLength(text)
   const overLimit = chars > MAX_DOC_CHARS
+
+  /**
+   * A textarea receives only text/plain, so pasting a page out of a browser
+   * dropped every link and the checker then reported "no source given" for an
+   * article full of sources. The clipboard carries text/html too; this reads
+   * that and keeps the hrefs as markdown.
+   *
+   * Falls through to the browser's own paste whenever there is no HTML on the
+   * clipboard or the conversion yields nothing, so plain text keeps working
+   * exactly as before.
+   */
+  function onPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const html = e.clipboardData.getData('text/html')
+    if (!html) return
+    let md: string
+    try {
+      md = htmlToMarkdown(html)
+    } catch {
+      return
+    }
+    if (!md) return
+
+    e.preventDefault()
+    const el = e.currentTarget
+    const start = el.selectionStart ?? text.length
+    const end = el.selectionEnd ?? start
+    const next = text.slice(0, start) + md + text.slice(end)
+    setText(next)
+    // Put the caret after what was pasted, the way a normal paste would.
+    requestAnimationFrame(() => {
+      el.selectionStart = el.selectionEnd = start + md.length
+    })
+  }
   // `extracting` and `checking` both render their own view, so anything left
   // here is idle or an error and the box is always usable.
 
@@ -111,8 +151,10 @@ export function CheckClient() {
             className="mt-5 text-[14px] leading-relaxed rounded-xl p-3"
             style={{ background: 'var(--guess-bg)', color: 'var(--guess)' }}
           >
-            This post had {state.foundCount} numbers in it. We show the first{' '}
-            {state.claims.length}. Try one section at a time to see the rest.
+            {/* Never tell someone to split their own document. Say the cap
+                and why it exists. */}
+            We check the first {state.claims.length} claims in a document. This
+            one had {state.foundCount}.
           </p>
         )}
 
@@ -158,6 +200,7 @@ export function CheckClient() {
         id="doc"
         value={text}
         onChange={e => setText(e.target.value)}
+        onPaste={onPaste}
         rows={10}
         placeholder="Paste your post here."
         className="w-full rounded-2xl p-4 text-[15px] leading-[1.7] resize-y focus:outline-none focus:ring-2"
