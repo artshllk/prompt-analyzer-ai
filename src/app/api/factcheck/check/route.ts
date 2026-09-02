@@ -179,6 +179,7 @@ export async function POST(req: NextRequest) {
           density: result.density,
           truncated: result.truncated,
           foundCount: result.foundCount,
+          duplicates: result.duplicates,
         })
 
         /**
@@ -311,6 +312,7 @@ export async function POST(req: NextRequest) {
         const spent = meter.read().credits - spentBefore
         console.log(
           `[factcheck] claims=${result.claims.length}/${result.foundCount} ` +
+            `dupes=${result.duplicates} ` +
             `band=${result.density.band} credits=${spent} aborted=${req.signal.aborted} ` +
             `auth=${auth ? auth.tier : 'anon'} ts=${new Date().toISOString()}`
         )

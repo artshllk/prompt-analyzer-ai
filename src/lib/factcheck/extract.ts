@@ -1,5 +1,6 @@
 import { callLLMDetailed } from '@/lib/engine/openai-client'
 import { MODELS } from '@/lib/engine/models'
+import { dedupeClaims } from './dedupe'
 import { asText, asEnum, asObjectArray } from '@/lib/engine/coerce'
 import { normalizeDocument, locateAll } from './locate'
 import { visibleLength } from './paste'
@@ -222,8 +223,16 @@ export interface ExtractResult {
   density: CitationDensity
   /** True when more claims were found than we were willing to carry forward. */
   truncated: boolean
-  /** How many the model returned before the cap. */
+  /** How many the model returned, before dedupe and before the cap. */
   foundCount: number
+  /**
+   * Repeats of a claim already counted, folded away before the cap.
+   *
+   * Reported rather than swallowed: `foundCount` minus this is the number of
+   * DISTINCT claims in the document, and the two are worth telling apart
+   * because only the second one means anything about the writing.
+   */
+  duplicates: number
   /** Claims whose quote could not be found in the document. */
   unanchoredCount: number
 }
@@ -329,9 +338,19 @@ export async function extractClaims(
     // rather than shown as an empty mark.
     .filter(c => c.quote && c.claimText)
 
+  /**
+   * Repeats collapse BEFORE the cap, and that order is the point.
+   *
+   * A document that says the same statistic twice would otherwise spend two
+   * of its twenty slots saying it twice, and a real claim further down goes
+   * unchecked to make room for a copy. Deduping first means the cap counts
+   * twenty distinct claims.
+   */
+  const deduped = dedupeClaims(cleaned)
+
   // The cap is enforced HERE, in code, and not by asking the model to stop at
   // twenty. The claim count is model-controlled input to the bill.
-  const kept = cleaned.slice(0, MAX_CLAIMS_PER_DOC)
+  const kept = deduped.kept.slice(0, MAX_CLAIMS_PER_DOC)
 
   const located = locateAll(text, kept)
 
@@ -357,7 +376,9 @@ export async function extractClaims(
     text,
     claims,
     density: citationDensity(claims),
-    truncated: cleaned.length > MAX_CLAIMS_PER_DOC,
+    truncated: deduped.kept.length > MAX_CLAIMS_PER_DOC,
+    /** Repeats of a claim already counted. Reported, never silent. */
+    duplicates: deduped.removed,
     foundCount,
     unanchoredCount: claims.filter(c => !c.span).length,
   }

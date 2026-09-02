@@ -298,8 +298,12 @@ export async function callLLMDetailed<T>(req: LLMRequest): Promise<LLMOutcome<T>
     // here. Counts only, never content.
     const out = data.usage?.completion_tokens
     if (out !== undefined) {
-      console.info(`[openai] ${model} ${out} output tokens in ${ms}ms`)
-      tokenMeter.record(model, data.usage?.prompt_tokens ?? 0, out, ms)
+      // Input as well as output. Output dominates the bill at six times the
+      // rate, but a cost measured from output alone is an estimate, and this
+      // is the number pricing gets built on.
+      const inTok = data.usage?.prompt_tokens ?? 0
+      console.info(`[openai] ${model} in=${inTok} out=${out} tokens in ${ms}ms`)
+      tokenMeter.record(model, inTok, out, ms)
     }
     if (!text) {
       /**
