@@ -216,7 +216,7 @@ export function SettingsClient({ email, tier, subscriptionStatus }: SettingsClie
               style={{ background: 'var(--color-ink-card)', border: '1px solid rgba(239,68,68,0.30)' }}
             >
               <h3 className="font-serif text-xl" style={{ color: 'var(--color-paper)', fontWeight: 400 }}>
-                Delete account for good?
+                Delete your account?
               </h3>
               <p className="text-sm leading-[1.6]" style={{ color: 'var(--color-paper-mute)' }}>
                 Type <strong className="font-mono" style={{ color: '#F2A0A0' }}>DELETE</strong> to confirm. Your account and all data go at once.
