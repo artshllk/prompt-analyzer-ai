@@ -14,6 +14,8 @@ import {
 } from "@/components/factcheck/WorkedExample";
 import { Reveal } from "@/components/ui/Reveal";
 import { defaultOGImage } from "@/lib/og-image";
+import { createClient } from "@/lib/supabase/server";
+import { getFactcheckAllowance } from "@/lib/db/usage";
 // { /* CUT - redundant with demo + steps */ }
 // import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
 
@@ -106,7 +108,36 @@ const structuredData = {
   ],
 };
 
-export default function LandingPage() {
+/**
+ * The checker is also where a signed-in user lands, so the count they signed up
+ * for is shown here rather than on a page of its own. That is what let the
+ * dashboard be deleted instead of rewritten: a page whose only job was showing
+ * this number had no job once the number lived next to the tool.
+ *
+ * Anonymous visitors see nothing. Their limit is 2 a day, best effort, and a
+ * number we cannot enforce is not one we state. See CLAUDE.md.
+ */
+async function checksLeft(): Promise<{ remaining: number; limit: number } | null> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("tier")
+      .eq("id", user.id)
+      .single();
+    const a = await getFactcheckAllowance(user.id, profile?.tier ?? "free");
+    if (a.limit === null) return null;
+    return { remaining: a.remaining, limit: a.limit };
+  } catch {
+    // Never let a counter stop the page rendering. The tool is the point.
+    return null;
+  }
+}
+
+export default async function LandingPage() {
+  const left = await checksLeft();
   return (
     <>
       <script
@@ -178,6 +209,17 @@ export default function LandingPage() {
                 Paste your article. We open every link and check.
               </p>
             </Reveal>
+
+            {left && (
+              <Reveal index={2}>
+                <p
+                  className="mt-6 text-[14px]"
+                  style={{ color: "var(--ink-soft)", fontFamily: "var(--font-mono)" }}
+                >
+                  {left.remaining} of {left.limit} checks left this month
+                </p>
+              </Reveal>
+            )}
 
             <Reveal index={3}>
               <div className="mt-8 md:mt-10">

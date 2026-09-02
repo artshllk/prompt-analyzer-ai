@@ -31,7 +31,7 @@ export async function POST() {
       `/customers/${profile.paddle_customer_id}/portal-sessions`,
       {
         method: 'POST',
-        body: JSON.stringify({ urls: { return: `${appUrl}/dashboard` } }),
+        body: JSON.stringify({ urls: { return: `${appUrl}/settings` } }),
       }
     )
   } catch (err) {

@@ -35,7 +35,11 @@ function LoginInner() {
   // while server redirects (extension connect) use ?next=. Reading only
   // one silently dropped the user's destination after sign-in.
   const redirectTo =
-    searchParams.get('redirectTo') ?? searchParams.get('next') ?? '/dashboard'
+    // Lands on the checker, not a stats page. The reason anyone makes an
+    // account is to keep checking, and the checks-left count lives there, so
+    // a dashboard in between was a click in front of the only thing they came
+    // for.
+    searchParams.get('redirectTo') ?? searchParams.get('next') ?? '/'
   const errorFromUrl = searchParams.get('error')
 
   const [email, setEmail] = useState('')
@@ -139,7 +143,7 @@ function LoginInner() {
     rememberSignIn('email', address)
     // Full navigation so the server picks up the fresh session cookie.
     // Brand-new users land in the playground instead of the dashboard.
-    window.location.assign(postSignInDestination(redirectTo, data.user?.created_at))
+    window.location.assign(postSignInDestination(redirectTo))
     return null
   }
 

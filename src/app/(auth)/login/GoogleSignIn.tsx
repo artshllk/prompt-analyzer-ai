@@ -129,7 +129,7 @@ export default function GoogleSignIn({
       rememberSignIn('google', data.user?.email ?? null)
       // Full navigation so the server picks up the fresh session cookie.
       // Brand-new users land in the playground instead of the dashboard.
-      window.location.assign(postSignInDestination(redirectTo, data.user?.created_at))
+      window.location.assign(postSignInDestination(redirectTo))
     },
     [supabase, redirectTo, onError]
   )

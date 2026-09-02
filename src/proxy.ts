@@ -1,7 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PROTECTED_PATHS = ['/dashboard', '/history', '/settings']
+// /dashboard is gone. '/' is the checker and is public.
+const PROTECTED_PATHS = ['/history', '/settings']
 const AUTH_PATHS = ['/login', '/signup']
 
 export async function proxy(request: NextRequest) {
@@ -57,7 +58,7 @@ export async function proxy(request: NextRequest) {
 
   if (isAuthPath && user) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/'
     return redirectWithCookies(url)
   }
 

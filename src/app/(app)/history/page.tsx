@@ -69,16 +69,6 @@ export default async function HistoryPage({
           )}
         </div>
         <div className="md:col-span-3 flex md:justify-end">
-          <Link
-            href="/extension"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-brand"
-            style={{ fontWeight: 500 }}
-          >
-            Open the extension
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-              <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Link>
         </div>
       </header>
 
@@ -113,18 +103,8 @@ export default async function HistoryPage({
               className="font-serif text-2xl md:text-3xl leading-tight tracking-tight mb-6"
               style={{ color: 'var(--color-paper)', fontWeight: 400 }}
             >
-              Improve a prompt in ChatGPT, Claude, or Gemini and it will show up here.
+              This is where prompt improvements are kept. Checks are not saved: we keep nothing you paste.
             </p>
-            <Link
-              href="/extension"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14px] transition-all hover:gap-3 btn-brand"
-              style={{ fontWeight: 500 }}
-            >
-              Get the extension
-              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                <path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
           </div>
         </section>
       )}

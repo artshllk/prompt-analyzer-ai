@@ -9,7 +9,6 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { UpgradeButton } from "./UpgradeButton";
-import { SidebarExtensionPromo } from "./SidebarExtensionPromo";
 
 interface AuthUser {
   email: string | null;
@@ -143,27 +142,42 @@ function SidebarProfile() {
   );
 }
 
-// Settings is a regular nav item - the previous footer block (Settings +
-// Sign out) read as a generic dashboard template. Sign out now lives on
-// the Settings page itself, where account actions belong.
-// The account area is where your work lives. The prompt improving itself
-// happens in the extension, inside ChatGPT / Claude / Gemini, and on
-// /playground - not here.
-const NAV_ITEMS: { href: string; label: string; isPro?: boolean }[] = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/history", label: "History" },
-  { href: "/extension", label: "Extension" },
-];
+/**
+ * ONE THING, BECAUSE THERE IS ONE THING.
+ *
+ * This read Dashboard, History, Extension, and contained no way to reach the
+ * checker at all. Somebody signed up to get more checks and then could not
+ * find the checker, which is as broken as navigation gets.
+ *
+ * Dashboard is gone. Once the checks-left count sits on the checker itself, a
+ * page whose only job is to show that count is not a page.
+ *
+ * Extension is gone from here. It is frozen, and it was sitting above a live
+ * product that was not listed.
+ *
+ * History is improver-only and appears only for people who have some. Anyone
+ * with stored work keeps both the item and the work; a new user gets a sidebar
+ * with one thing on it. There is deliberately no CHECK history: the FAQ says
+ * "we save nothing" about pasted text, and that promise is worth more than the
+ * feature.
+ */
+const CHECK_ITEM = { href: "/", label: "Check" };
+const HISTORY_ITEM = { href: "/history", label: "History" };
 
 interface AppShellProps {
   children: React.ReactNode;
+  /** True when the user has prompt-improver sessions stored. Hides History otherwise. */
+  hasHistory?: boolean;
   // Kept on the prop type for compatibility with existing callers; unused for now
   // since the sidebar no longer renders a usage meter (limits surface contextually).
   usage?: UsageInfo;
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, hasHistory }: AppShellProps) {
   const pathname = usePathname();
+
+  // History only exists for people who have some. Everyone gets Check.
+  const navItems = hasHistory ? [CHECK_ITEM, HISTORY_ITEM] : [CHECK_ITEM];
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Close mobile drawer on navigation
@@ -197,7 +211,7 @@ export function AppShell({ children }: AppShellProps) {
           borderBottom: "1px solid var(--color-rule)",
         }}
       >
-        <Link href="/dashboard" className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-2.5">
           <Image
             src="/logo.png"
             alt="Deepclario"
@@ -275,7 +289,7 @@ export function AppShell({ children }: AppShellProps) {
             surface from logo to nav, not as a stacked template. */}
         <div className="hidden md:block px-6 pt-7 pb-8">
           <Link
-            href="/dashboard"
+            href="/"
             className="inline-flex items-center gap-2.5 group"
           >
             <Image
@@ -302,7 +316,7 @@ export function AppShell({ children }: AppShellProps) {
             than the default "highlighted row" of a template. */}
         <nav className="flex-1 px-3 pb-6">
           <ul className="space-y-0.5">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const isActive = pathname.startsWith(item.href);
               return (
                 <li key={item.href}>
@@ -332,24 +346,12 @@ export function AppShell({ children }: AppShellProps) {
                       />
                     )}
                     <span>{item.label}</span>
-                    {item.isPro && (
-                      <span
-                        className="text-[10px] tracking-[0.16em] uppercase"
-                        style={{ color: "var(--color-paper-mute)" }}
-                      >
-                        Pro
-                      </span>
-                    )}
                   </Link>
                 </li>
               );
             })}
           </ul>
         </nav>
-
-        {/* Extension promo - persistent reminder for signed-in users.
-            Hides on /extension and after dismissal. */}
-        <SidebarExtensionPromo />
 
         <AuthProvider>
           <SidebarProfile />

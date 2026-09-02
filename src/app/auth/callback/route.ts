@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
   const code = searchParams.get('code')
   const tokenHash = searchParams.get('token_hash')
   const type = searchParams.get('type')
-  const next = searchParams.get('next') ?? '/dashboard'
+  const next = searchParams.get('next') ?? '/'
 
   const errorParam = searchParams.get('error')
   const errorDescription = searchParams.get('error_description')
@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
   function finish(user: { id: string; created_at?: string } | null) {
     if (user) {
       sendWelcomeIfNew(user.id)
-      const dest = postSignInDestination(next, user.created_at)
+      const dest = postSignInDestination(next)
       if (dest !== next) response.headers.set('location', `${origin}${dest}`)
     }
     return response

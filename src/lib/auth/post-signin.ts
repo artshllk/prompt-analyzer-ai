@@ -1,25 +1,20 @@
 /**
- * Where to land after sign-in. An explicit destination (?redirectTo= /
- * ?next=) always wins; otherwise brand-new users go to /extension and
- * returning users get the dashboard.
+ * Where to land after sign-in: the checker, for everybody.
  *
- * New users used to land on the playground - the fastest path to a first
- * rewrite. There is no playground now: the product lives inside ChatGPT,
- * Claude and Gemini. Installing the extension IS the first step, so that is
- * where a new account starts. "New" uses the same one-hour window as the
- * welcome email in src/app/auth/callback/route.ts, so magic links clicked a
- * while after signup still count.
+ * An explicit destination (?redirectTo= / ?next=) still always wins.
+ *
+ * This used to send returning users to /dashboard and brand-new users to
+ * /extension. Both were wrong once the checker became the product. A new
+ * account was pointed at a frozen browser extension as its first experience,
+ * and a returning one at a stats page, when the reason anyone signs up is to
+ * keep checking and the checks-left count lives on the checker itself.
+ *
+ * There is no longer a new-user branch. There is one product, so there is one
+ * destination.
  */
 
-export const DEFAULT_SIGNIN_DEST = '/dashboard'
-const NEW_USER_WINDOW_MS = 60 * 60 * 1000
+export const DEFAULT_SIGNIN_DEST = '/'
 
-export function postSignInDestination(
-  requested: string,
-  createdAt: string | null | undefined,
-): string {
-  if (requested !== DEFAULT_SIGNIN_DEST) return requested
-  if (!createdAt) return requested
-  const isNew = Date.now() - new Date(createdAt).getTime() < NEW_USER_WINDOW_MS
-  return isNew ? '/extension' : requested
+export function postSignInDestination(requested: string): string {
+  return requested
 }

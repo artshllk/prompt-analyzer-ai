@@ -48,7 +48,7 @@ export default async function ExtensionConnectPage() {
           </span>
         </Link>
         <Link
-          href="/dashboard"
+          href="/"
           className="text-sm transition-all btn-text"
           style={{ color: 'var(--color-paper-mute)' }}
         >
