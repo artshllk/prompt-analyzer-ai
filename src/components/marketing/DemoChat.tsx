@@ -14,6 +14,7 @@ import type { Segment } from '@/lib/engine/segments'
 import { CompareAnswers } from '@/components/shared/CompareAnswers'
 import { track, trackRun } from '@/lib/track'
 import { SAMPLE_PROMPTS, ALREADY_GOOD_SAMPLE, pickSamples } from '@/lib/sample-prompts'
+import { IMPROVE_FREE_LIMIT } from '@/lib/limits'
 
 /**
  * The tool. Rendered directly in the homepage hero and on /playground.
@@ -541,8 +542,11 @@ export function DemoChat({ onWide, onDirty }: DemoChatProps) {
                   className="text-[15px] sm:text-base leading-[1.7] mb-2"
                   style={{ color: 'var(--color-paper)' }}
                 >
-                  Sign in to keep going. You get your own allowance, ten
-                  improvements a day, instead of sharing the open one.
+                  {/* Was "ten improvements a day". Improvements moved to a
+                      monthly allowance and this page is reachable from the
+                      footer, so the number was live and wrong. */}
+                  Sign in to keep going. You get your own allowance, {IMPROVE_FREE_LIMIT}{' '}
+                  improvements a month, instead of sharing the open one.
                 </p>
                 <p className="text-[14px] leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
                   The version you can use without an account runs on a shared
@@ -859,7 +863,7 @@ function Gate() {
         You&apos;ve seen what it does.
       </h3>
       <p className="text-[15px] sm:text-lg leading-relaxed mb-8" style={{ color: 'var(--color-paper-mute)' }}>
-        Three free rewrites is the taste. An account gets you ten a day.
+        Three free rewrites is the taste. An account gets you {IMPROVE_FREE_LIMIT} a month.
       </p>
       <Link
         href="/login?signup=1&redirectTo=/playground"

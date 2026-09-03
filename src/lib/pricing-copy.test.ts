@@ -3,6 +3,11 @@ import assert from 'node:assert/strict'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import {
+  FACTCHECK_WINDOW_HOURS,
+  PRO_FACTCHECK_WINDOW_HOURS,
+  DETECT_WINDOW_HOURS,
+  PRO_DETECT_WINDOW_HOURS,
+  IMPROVE_WINDOW_HOURS,
   FACTCHECK_FREE_LIMIT,
   PRO_FACTCHECK_LIMIT,
   DETECT_FREE_LIMIT,
@@ -11,7 +16,7 @@ import {
   IMPROVE_PRO_LIMIT,
   HISTORY_FREE_DAYS,
 } from './limits'
-import { ANON_FACTCHECK_DAY } from './rate-limit'
+import { ANON_FACTCHECK_MONTH } from './rate-limit'
 
 /**
  * A NUMBER IN THE COPY MUST BE A NUMBER THE SERVER ENFORCES.
@@ -165,10 +170,10 @@ test('every declared exemption still has a reason attached', () => {
 
 test('the anonymous sentence reads the bucket the server applies', () => {
   const src = copyOnly(pricing)
-  assert.match(src, /ANON_CHECKS_A_DAY = ANON_FACTCHECK_DAY\.capacity/)
-  assert.match(src, /\{ANON_CHECKS_A_DAY\} checks a day/)
+  assert.match(src, /ANON_CHECKS_A_MONTH = ANON_FACTCHECK_MONTH\.capacity/)
+  assert.match(src, /\{ANON_CHECKS_A_MONTH\} checks a month/)
   // And the bucket is a real number, not a placeholder.
-  assert.ok(ANON_FACTCHECK_DAY.capacity >= 1)
+  assert.ok(ANON_FACTCHECK_MONTH.capacity >= 1)
 })
 
 test('the displayed prices match the cents Paddle charges', () => {
@@ -197,7 +202,7 @@ test('every free number in the copy matches its constant', () => {
   const src = copyOnly(pricing)
   // Belt and braces on the interpolation: the values themselves have to be
   // the ones the server uses, not just read from somewhere.
-  assert.equal(FACTCHECK_FREE_LIMIT, 5)
+  assert.equal(FACTCHECK_FREE_LIMIT, 10)
   assert.equal(PRO_FACTCHECK_LIMIT, 60)
   assert.equal(DETECT_FREE_LIMIT, 10)
   assert.equal(PRO_DETECT_LIMIT, 30)
@@ -298,4 +303,76 @@ test('the FAQ prices match the cents Paddle charges', () => {
   assert.equal(cents(listed), amountOf('pro_monthly'), 'PRICE_LIST vs pro_monthly')
   assert.equal(cents(founding), amountOf('pro_founding'), 'PRICE_FOUNDING vs pro_founding')
   assert.equal(Number(seats), Number(paddle.match(/FOUNDING_SEATS = (\d+)/)?.[1]), 'seat count vs paddle.ts')
+})
+
+
+// ---------------------------------------------------------------------------
+// The ladder
+// ---------------------------------------------------------------------------
+
+test('every rung of the ladder uses the same unit', () => {
+  /**
+   * THE UNIT IS THE BUG, NOT THE NUMBER. Anonymous was 5 a DAY while a free
+   * account was 5 a MONTH, so signing up made someone thirty times worse off
+   * and any reader could work that out from the pricing page. Lowering the
+   * daily number would not have fixed it: 1 a day is still 30 a month.
+   *
+   * This is the same failure that once had Free at 10 a day against Pro at
+   * 100 a month, on the other rung. Comparing the numbers is only meaningful
+   * if the windows match, so the windows are asserted, not the numbers.
+   */
+  const MONTH_HOURS = 24 * 30
+  assert.equal(FACTCHECK_WINDOW_HOURS, MONTH_HOURS, 'free checks must be monthly')
+  assert.equal(PRO_FACTCHECK_WINDOW_HOURS, MONTH_HOURS, 'pro checks must be monthly')
+  assert.equal(DETECT_WINDOW_HOURS, MONTH_HOURS, 'free detections must be monthly')
+  assert.equal(PRO_DETECT_WINDOW_HOURS, MONTH_HOURS, 'pro detections must be monthly')
+  assert.equal(IMPROVE_WINDOW_HOURS, MONTH_HOURS, 'improvements must be monthly')
+
+  // The anonymous rung is a token bucket, so its window is implied by how
+  // long an EMPTY bucket takes to come back to full. Not the time for one
+  // credit: with a capacity of 3 that is every 10 days, which is still three
+  // a month. Asserting the per-credit interval is what I got wrong first.
+  const daysToFull =
+    ANON_FACTCHECK_MONTH.capacity / (ANON_FACTCHECK_MONTH.refillPerSecond * 86400)
+  assert.ok(
+    Math.abs(daysToFull - 30) < 0.5,
+    `anonymous bucket refills fully in ${daysToFull.toFixed(1)} days, not a month`
+  )
+})
+
+test('each rung is strictly more generous than the one below it', () => {
+  // The property a reader checks by eye, and the one that was false.
+  assert.ok(
+    ANON_FACTCHECK_MONTH.capacity < FACTCHECK_FREE_LIMIT,
+    `anonymous (${ANON_FACTCHECK_MONTH.capacity}) must be below a free account (${FACTCHECK_FREE_LIMIT})`
+  )
+  assert.ok(
+    FACTCHECK_FREE_LIMIT < PRO_FACTCHECK_LIMIT,
+    `free (${FACTCHECK_FREE_LIMIT}) must be below Pro (${PRO_FACTCHECK_LIMIT})`
+  )
+})
+
+test('no user-facing copy anywhere describes an allowance in days', () => {
+  /**
+   * SCANS EVERY FILE, for the same reason the unlimited check does. Scoping
+   * this to the pricing table and the FAQ would have missed the homepage
+   * meta description, which said "Free, 2 a day" - the anonymous limit from
+   * two changes earlier, in the sentence Google puts in search results.
+   */
+  const offenders: string[] = []
+  for (const file of [...userFacingFiles('src/app'), ...userFacingFiles('src/components')]) {
+    const copy = copyOnly(readFileSync(file, 'utf8'))
+    for (const m of copy.matchAll(/[^`"']{0,60}(?:check|detection|improvement|rewrite)s? a day[^`"']{0,20}/gi)) {
+      offenders.push(`${file}: ${m[0].replace(/\s+/g, ' ').trim()}`)
+    }
+    // The bare form, e.g. "ten a day" or "2 a day", with no noun in front.
+    for (const m of copy.matchAll(/[^`"']{0,40}\b(?:\d+|ten|five|three|two) a day[^`"']{0,20}/gi)) {
+      offenders.push(`${file}: ${m[0].replace(/\s+/g, ' ').trim()}`)
+    }
+  }
+  assert.deepEqual(
+    offenders,
+    [],
+    'an allowance stated per day, when every rung is monthly:\n  ' + offenders.join('\n  ')
+  )
 })

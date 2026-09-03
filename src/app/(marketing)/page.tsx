@@ -18,6 +18,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getFactcheckAllowance } from "@/lib/db/usage";
 import { viewerPlan } from "@/lib/db/viewer-plan";
 import { foundingSeatsLeft } from "@/lib/paddle";
+import { ANON_FACTCHECK_MONTH } from "@/lib/rate-limit";
 // { /* CUT - redundant with demo + steps */ }
 // import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
 
@@ -29,8 +30,9 @@ export const metadata: Metadata = {
   // Searchable variant. It must not contradict the H1, which is the sentence
   // a person sees on the page and on the share card.
   title: "Check the sources in your article",
-  description:
-    "Paste your article. We open every link and check that the page really says it. Free, 2 a day.",
+  // Read from the constant. It said "2 a day", which was the anonymous limit
+  // two changes ago, and this is the sentence Google shows.
+  description: `Paste your article. We open every link and check that the page really says it. Free, ${ANON_FACTCHECK_MONTH.capacity} a month.`,
   alternates: { canonical: "https://deepclario.com" },
   openGraph: {
     title: "Does your source really say that?",

@@ -143,9 +143,14 @@ test('the host is named when it is opened and when it is slow, not in between', 
 // Limits and the cap alert
 // ---------------------------------------------------------------------------
 
-test('the anonymous daily limit is five, and refills over a day', () => {
+test('the anonymous rung is three a month, not a daily bucket', () => {
+  // Was 5 a DAY while a free account was 5 a MONTH, so signing up made
+  // somebody thirty times worse off. See the ladder tests in
+  // pricing-copy.test.ts for the property that keeps it honest.
   const rl = readFileSync('src/lib/rate-limit.ts', 'utf8')
-  assert.match(rl, /ANON_FACTCHECK_DAY: LimitConfig = \{ capacity: 5, refillPerSecond: 5 \/ 86400 \}/)
+  assert.match(rl, /ANON_FACTCHECK_MONTH: LimitConfig = \{\s*capacity: 3,/)
+  assert.match(rl, /refillPerSecond: 3 \/ \(30 \* 86400\)/)
+  assert.doesNotMatch(rl, /ANON_FACTCHECK_DAY/, 'the old daily name is a lie about the window')
 })
 
 test('the cap alert fires once, on the first refusal only', () => {

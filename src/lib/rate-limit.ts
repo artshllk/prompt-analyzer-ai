@@ -92,20 +92,36 @@ export const PRO_USER_LIMIT: LimitConfig = { capacity: 30, refillPerSecond: 30 /
  * bucket in anon-budget is, and that one is in Postgres and fails closed.
  * This exists to stop one person casually running twenty.
  *
- * FIVE, NOT TWO, AND THE REASON IS THE SHAPE OF THE COST. A document with no
- * links costs about $0.007, because nothing is fetched and nothing is judged;
- * a cited one costs about $0.105. So the visitor this limit used to punish -
- * someone spending both tries learning what the tool does, on documents with
- * no links - was the cheapest visitor we had, and they were locked out for a
- * day and did not come back. Five lets a person get past their own false
- * starts and still reach a real document.
+ * THREE A MONTH, AND THE UNIT IS THE POINT.
  *
- * It is not the abuse control and was never going to be. Anyone determined
- * waits, or changes address, and this bucket forgets them anyway. What this
- * number decides is the experience of an honest first-timer, so it is set for
- * one.
+ * This was 5 a DAY while a free account got 5 a MONTH, so signing up made
+ * somebody thirty times worse off and a reader could work that out from the
+ * pricing page. It is the same unit-mixing failure that once had Free at 10 a
+ * day against Pro at 100 a month, on the other rung of the ladder.
+ *
+ * Lowering the daily number would not have fixed it. One a day is still 30 a
+ * month against a free account's allowance, so the ladder stays inverted and
+ * the arithmetic still works against us. THE UNIT WAS THE BUG. Every rung is
+ * monthly now and they can be compared by reading them:
+ *
+ *   no account      3 a month
+ *   free account   10 a month
+ *   Pro            60 a month
+ *
+ * Three is what the anonymous path is for: somebody arriving from a search
+ * result seeing the tool work on their own document. It is not a free plan.
+ *
+ * STILL IN MEMORY, AND A MONTHLY BUCKET IS WEAKER THAN A DAILY ONE. A
+ * serverless instance that recycles forgets it, and a month is a long time to
+ * expect one to survive, so the real number a determined visitor gets is
+ * somewhere above three. That is acceptable for the same reason it always
+ * was: this is not what bounds the bill. The global daily bucket in
+ * anon-budget is, it lives in Postgres, and it fails closed.
  */
-export const ANON_FACTCHECK_DAY: LimitConfig = { capacity: 5, refillPerSecond: 5 / 86400 }
+export const ANON_FACTCHECK_MONTH: LimitConfig = {
+  capacity: 3,
+  refillPerSecond: 3 / (30 * 86400),
+}
 
 /**
  * Anonymous detections, per IP, per day.

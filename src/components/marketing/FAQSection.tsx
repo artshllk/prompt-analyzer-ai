@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { FACTCHECK_FREE_LIMIT, PRO_FACTCHECK_LIMIT } from '@/lib/limits'
-import { ANON_FACTCHECK_DAY } from '@/lib/rate-limit'
+import { ANON_FACTCHECK_MONTH } from '@/lib/rate-limit'
 import { MAX_CLAIMS_PER_DOC } from '@/lib/factcheck/types'
 import { PRICE_LIST, PRICE_FOUNDING, FOUNDING_SEAT_COUNT } from '@/lib/plans'
 
@@ -33,7 +33,7 @@ const FAQS = [
   },
   {
     q: 'What is free and what costs money?',
-    a: `Without an account you can run ${ANON_FACTCHECK_DAY.capacity} checks a day, and we do not ask for anything. An account gives you ${FACTCHECK_FREE_LIMIT} checks a month plus your history. Pro is ${PRO_FACTCHECK_LIMIT} checks a month for $${PRICE_LIST}, or $${PRICE_FOUNDING} a month for good if you are one of the first ${FOUNDING_SEAT_COUNT} people to subscribe.`,
+    a: `Without an account you can run ${ANON_FACTCHECK_MONTH.capacity} checks a month, and we do not ask for anything. An account gives you ${FACTCHECK_FREE_LIMIT} a month plus your history. Pro is ${PRO_FACTCHECK_LIMIT} checks a month for $${PRICE_LIST}, or $${PRICE_FOUNDING} a month for good if you are one of the first ${FOUNDING_SEAT_COUNT} people to subscribe.`,
   },
   {
     q: 'Does it work if my writing has no links?',

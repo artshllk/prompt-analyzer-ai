@@ -170,14 +170,17 @@ export const ANON_DETECT_LIMIT = 1
  *               A trial, not a plan. The global daily bucket in
  *               anon-budget.ts is what actually bounds the bill, and it fails
  *               closed.
- *   free        5 a month. About $0.64 of cost at worst.
+ *   anonymous   3 a month, per IP, best effort. Not a plan: it is enough to
+ *               see the tool work on your own document.
+ *   free        10 a month. About $1.56 of cost at worst, counting its
+ *               detections and improvements too.
  *   pro         60 a month. About $7.68 at worst.
  *
  * Pro is 24 times Free and both are bounded. Rolling 30 days rather than
  * calendar months, so there is no month-boundary rush and no reset date to
  * explain.
  */
-export const FACTCHECK_FREE_LIMIT = 5
+export const FACTCHECK_FREE_LIMIT = 10
 export const FACTCHECK_WINDOW_HOURS = 24 * 30
 
 /**

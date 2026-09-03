@@ -25,7 +25,7 @@ import {
   take,
   getClientIp,
   ANON_LIMIT,
-  ANON_FACTCHECK_DAY,
+  ANON_FACTCHECK_MONTH,
   USER_LIMIT,
   PRO_USER_LIMIT,
 } from '@/lib/rate-limit'
@@ -81,11 +81,12 @@ export async function POST(req: NextRequest) {
     const limit = take(`factcheck:anon:${ip}`, ANON_LIMIT)
     if (!limit.allowed) return json({ error: 'rate_limited', retryAfterMs: limit.retryAfterMs }, 429)
 
-    // 2 a day per IP. In memory, so best effort: an instance that recycles
-    // forgets it. The global bucket below is what actually bounds the bill.
-    const daily = take(`factcheck:anon:day:${ip}`, ANON_FACTCHECK_DAY)
-    if (!daily.allowed) {
-      return json({ error: 'anon_daily_limit', retryAfterMs: daily.retryAfterMs }, 429)
+    // 3 a MONTH per IP, matching the unit on every other rung. In memory, so
+    // best effort: an instance that recycles forgets it, and a month is long
+    // enough that one will. The global bucket below is what bounds the bill.
+    const monthly = take(`factcheck:anon:month:${ip}`, ANON_FACTCHECK_MONTH)
+    if (!monthly.allowed) {
+      return json({ error: 'anon_monthly_limit', retryAfterMs: monthly.retryAfterMs }, 429)
     }
   } else {
     const burst = take(

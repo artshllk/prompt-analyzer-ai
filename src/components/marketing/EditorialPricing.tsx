@@ -12,14 +12,14 @@ import {
   IMPROVE_PRO_LIMIT,
   HISTORY_FREE_DAYS,
 } from "@/lib/limits";
-import { ANON_FACTCHECK_DAY } from "@/lib/rate-limit";
+import { ANON_FACTCHECK_MONTH } from "@/lib/rate-limit";
 
 /**
  * The anonymous allowance, taken from the bucket the server actually applies
  * rather than typed out beside it. `capacity` is the number of runs the
  * bucket holds, which is the number a visitor gets in a day.
  */
-const ANON_CHECKS_A_DAY = ANON_FACTCHECK_DAY.capacity;
+const ANON_CHECKS_A_MONTH = ANON_FACTCHECK_MONTH.capacity;
 
 /**
  * Pricing - two-tier card grid (Free + Pro) with a polished
@@ -81,7 +81,7 @@ const ANON_CHECKS_A_DAY = ANON_FACTCHECK_DAY.capacity;
  * ever creeps back in.
  *
  * The one number NOT read from a constant is the anonymous allowance, because
- * ANON_FACTCHECK_DAY is a token bucket rather than a plain integer. Its test
+ * ANON_FACTCHECK_MONTH is a token bucket rather than a plain integer. Its test
  * reads the bucket's capacity out of the source instead.
  */
 const FREE_LEAD = { n: String(FACTCHECK_FREE_LIMIT), unit: "source checks a month" };
@@ -404,7 +404,7 @@ export function EditorialPricing({
         className="mt-8 text-sm text-center md:text-left"
         style={{ color: "var(--ink-soft)" }}
       >
-        No account? You can run {ANON_CHECKS_A_DAY} checks a day without one.
+        No account? You can run {ANON_CHECKS_A_MONTH} checks a month without one.
       </p>
 
       <p

@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react'
 import { FACTCHECK_FREE_LIMIT, PRO_FACTCHECK_LIMIT } from '@/lib/limits'
-import { ANON_FACTCHECK_DAY } from '@/lib/rate-limit'
+import { ANON_FACTCHECK_MONTH } from '@/lib/rate-limit'
 import type { Claim, CitationDensity, CitationResult } from '@/lib/factcheck/types'
 
 /**
@@ -63,7 +63,7 @@ const MESSAGES: Record<string, string> = {
    * they state a quota, they sit far from the constant, and nobody reads them
    * again after they are written.
    */
-  anon_daily_limit: `That is ${ANON_FACTCHECK_DAY.capacity} checks today. Make a free account for ${FACTCHECK_FREE_LIMIT} a month.`,
+  anon_monthly_limit: `That is ${ANON_FACTCHECK_MONTH.capacity} checks without an account. Make a free one for ${FACTCHECK_FREE_LIMIT} a month.`,
   free_monthly_limit: `That is your ${FACTCHECK_FREE_LIMIT} checks this month. Pro gives you ${PRO_FACTCHECK_LIMIT}.`,
   pro_monthly_limit: `That is ${PRO_FACTCHECK_LIMIT} checks this month, which is the Pro cap. Email us if you need more.`,
   daily_capacity: 'We have hit today’s free limit. It resets tomorrow.',
