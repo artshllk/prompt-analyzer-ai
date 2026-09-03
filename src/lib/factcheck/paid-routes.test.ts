@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
 /**
@@ -83,29 +83,31 @@ test('every route that spends money records what it used', () => {
   assert.deepEqual(offenders, [], offenders.join('\n'))
 })
 
-test('the two checker routes share one budget', () => {
-  // Two endpoints each enforcing their own copy of the monthly limit would
-  // hand out double. Both must count the same event through the same helper.
-  for (const file of [
-    'src/app/api/factcheck/check/route.ts',
-    'src/app/api/factcheck/extract/route.ts',
-  ]) {
-    const src = readFileSync(file, 'utf8')
-    assert.match(src, /\bgetFactcheckAllowance\s*\(/, `${file} must read the shared allowance`)
-    assert.match(src, /\brecordFactcheckUsage\s*\(/, `${file} must write the shared event`)
-  }
+test('the checker route reads and writes the shared budget', () => {
+  // There used to be two of these. /api/factcheck/extract ran the same paid
+  // pipeline with no allowance and no recording, and nothing in the product
+  // or the shipped extension called it, so it was deleted rather than kept
+  // "in case". The sweep above is what stops a second one appearing.
+  const src = readFileSync('src/app/api/factcheck/check/route.ts', 'utf8')
+  assert.match(src, /\bgetFactcheckAllowance\s*\(/, 'must read the shared allowance')
+  assert.match(src, /\brecordFactcheckUsage\s*\(/, 'must write the shared event')
 })
 
-test('a run that checked nothing is not charged, on either route', () => {
-  for (const file of [
-    'src/app/api/factcheck/check/route.ts',
-    'src/app/api/factcheck/extract/route.ts',
-  ]) {
-    const src = readFileSync(file, 'utf8')
-    assert.match(
-      src,
-      /check === 'supports' \|\| c\.citation\.check === 'does_not_contain'/,
-      `${file} must gate the charge on something actually being judged`
-    )
-  }
+test('a run that checked nothing is not charged', () => {
+  const src = readFileSync('src/app/api/factcheck/check/route.ts', 'utf8')
+  assert.match(
+    src,
+    /check === 'supports' \|\| c\.citation\.check === 'does_not_contain'/,
+    'the charge must be gated on something actually being judged'
+  )
+})
+
+test('the deleted route stays deleted', () => {
+  // Its CORS was `*` and it spent money per call. If it comes back it needs
+  // the allowance, the recording, and a real origin.
+  assert.equal(
+    existsSync('src/app/api/factcheck/extract/route.ts'),
+    false,
+    'the unmetered duplicate of the checker is back'
+  )
 })
