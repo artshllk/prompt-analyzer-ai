@@ -158,6 +158,13 @@ export interface DisplayRun {
  * interactive owner, so the mark stays clickable either side of a link and
  * the link stays a link.
  *
+ * THIS IS THE COMMON CASE, NOT THE EDGE CASE. Measured on one real article:
+ * 18 of 56 marked runs are also a link, because a writer citing a statistic
+ * usually puts the link inside the sentence making the claim. An earlier
+ * measurement said zero and was taken against a fixture whose links were
+ * broken, which is worth remembering: the rare-looking branch was the main
+ * one.
+ *
  * Claims never overlap each other here: resolveOverlaps has already settled
  * that, and the source-to-display mapping is monotonic, so it stays settled.
  */

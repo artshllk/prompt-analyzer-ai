@@ -36,6 +36,9 @@ export function DocumentBody({
    *
    * EVERY run carrying a claimId comes here, link or not, because the mark's
    * colour has to survive across a link or the stretch reads as two things.
+   * That is not a rare shape: on one real article 18 of 56 marked runs are
+   * also links, because the citation usually sits inside the sentence it
+   * supports.
    * An anchor cannot live inside a button, so when a run has both, the owner
    * renders an anchor wearing the mark's colours: the link keeps the
    * behaviour a reader already predicts, and every other part of the claim
