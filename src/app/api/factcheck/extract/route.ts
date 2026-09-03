@@ -2,27 +2,37 @@ import { NextRequest, NextResponse } from 'next/server'
 import { take, getClientIp, ANON_LIMIT, USER_LIMIT, PRO_USER_LIMIT } from '@/lib/rate-limit'
 import { resolveCaller } from '@/lib/auth/caller'
 import { consumeAnonRun } from '@/lib/db/anon-budget'
+import { getFactcheckAllowance, recordFactcheckUsage } from '@/lib/db/usage'
 import { extractClaims } from '@/lib/factcheck/extract'
 import { rankFlags } from '@/lib/factcheck/flags'
 import { checkCitations } from '@/lib/factcheck/citation'
-import { meter, formatMeter } from '@/lib/factcheck/providers/meter'
+import { meter } from '@/lib/factcheck/providers/meter'
 import { MAX_DOC_CHARS } from '@/lib/factcheck/types'
 import { visibleLength } from '@/lib/factcheck/paste'
 
 /**
  * Find the checkable claims in a pasted document.
  *
- * EXTRACTION ONLY. Nothing here touches the web and nothing returns a verdict:
- * every claim comes back `unverifiable` with reason `not_checked`, which is
- * the honest state for a document nobody has checked yet.
+ * NOT EXTRACTION ONLY, WHATEVER THIS COMMENT USED TO SAY. It ran the whole
+ * paid pipeline: extraction, then `checkCitations`, which fetches pages
+ * through Tavily and judges them. The header still described the original
+ * cheap version, and that stale sentence is how the hole below got in -
+ * somebody added the citation axis to a route documented as one model call,
+ * and did not add the quota that a paid route needs.
  *
- * That is a deliberate shipping boundary, not an unfinished feature. "Here are
- * the fourteen claims in this document someone could challenge you on" is
- * useful on its own, it costs one model call, and it can be shipped and shown
- * to people before a single search API contract exists.
+ * THE HOLE. A signed-in caller passed a per-minute burst limiter and nothing
+ * else: no monthly allowance, no usage recorded. At 10 a minute for free and
+ * a measured $0.105 a document, one account could spend about $1,500 a day,
+ * and a Pro one three times that, with nothing counting any of it. The
+ * anonymous path was fine, because `consumeAnonRun` bounds it globally.
+ *
+ * NOTHING IN THE PRODUCT CALLS THIS. /api/factcheck/check supersedes it and
+ * streams. It is gated rather than deleted because the CORS headers say it
+ * was meant for callers outside this codebase, and removing a public endpoint
+ * is a decision for whoever owns the product rather than a cleanup.
  *
  * The guard order below is the design. Each check is cheaper than the one
- * after it, and the two free ones run before anything can be spent.
+ * after it, and the free ones run before anything can be spent.
  */
 
 const CORS_HEADERS = {
@@ -63,6 +73,29 @@ export async function POST(req: NextRequest) {
     )
     if (!burst.allowed) {
       return json({ error: 'rate_limited', retryAfterMs: burst.retryAfterMs }, 429)
+    }
+
+    /**
+     * THE MONTHLY CEILING. A burst limiter is not one: it says how fast, not
+     * how much, and this route had nothing saying how much.
+     *
+     * Same allowance and same event as /api/factcheck/check, deliberately, so
+     * the two routes share one budget. Two endpoints each enforcing their own
+     * copy of "120 a month" would hand out 240.
+     */
+    const allowance = await getFactcheckAllowance(
+      auth.userId,
+      auth.tier,
+      auth.via === 'token'
+    )
+    if (allowance.isAtLimit) {
+      return json(
+        {
+          error: auth.tier === 'pro' ? 'pro_monthly_limit' : 'free_monthly_limit',
+          limit: allowance.limit,
+        },
+        429
+      )
     }
   }
 
@@ -156,6 +189,29 @@ export async function POST(req: NextRequest) {
     citationFailure = 'unavailable'
   }
 
+  /**
+   * COUNTED, AND ONLY WHEN SOMETHING WAS ACTUALLY CHECKED.
+   *
+   * This route recorded nothing at all, so its spend was invisible to the
+   * allowance above and a user's month never moved however many documents
+   * they put through it.
+   *
+   * Same rule as /api/factcheck/check: `supports` and `does_not_contain` are
+   * the only outcomes reachable by reading a page, so a document with no
+   * links produces no verdict and costs the reader nothing from their month.
+   */
+  const judged = result.claims.filter(
+    c => c.citation.check === 'supports' || c.citation.check === 'does_not_contain'
+  ).length
+  if (auth && judged > 0) {
+    try {
+      await recordFactcheckUsage(auth.userId, auth.via === 'token')
+    } catch (err) {
+      // Never fail a finished run on the counter write. Our problem.
+      console.error('[factcheck] usage record failed, continuing:', err)
+    }
+  }
+
   const d = result.density
   // flags= is instrumentation, not a feature. If the median across real
   // documents sits above three or four the flag is firing too often to be a
@@ -169,7 +225,7 @@ export async function POST(req: NextRequest) {
       `firstParty=${d.firstParty} flags=${flags.fired} ` +
       `citations=${citationFailure ?? 'ok'} ` +
       `credits=${meter.read().credits - spentBefore} ` +
-      `auth=${auth ? auth.tier : 'anon'} ts=${new Date().toISOString()}`
+      `judged=${judged} auth=${auth ? auth.tier : 'anon'} ts=${new Date().toISOString()}`
   )
 
   return json(
