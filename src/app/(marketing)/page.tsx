@@ -17,6 +17,7 @@ import { defaultOGImage } from "@/lib/og-image";
 import { createClient } from "@/lib/supabase/server";
 import { getFactcheckAllowance } from "@/lib/db/usage";
 import { viewerPlan } from "@/lib/db/viewer-plan";
+import { foundingSeatsLeft } from "@/lib/paddle";
 // { /* CUT - redundant with demo + steps */ }
 // import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
 
@@ -139,7 +140,14 @@ async function checksLeft(): Promise<{ remaining: number; limit: number } | null
 
 export default async function LandingPage() {
   const left = await checksLeft();
-  const { plan, renewsOn } = await viewerPlan();
+  const { plan, renewsOn } = await viewerPlan()
+  /**
+   * Counted at Paddle, so the price on screen is the price the checkout
+   * will charge. Cached for thirty seconds inside foundingSeatsLeft, and
+   * it fails closed: if Paddle cannot be reached this reads zero and the
+   * page shows the ordinary price rather than one it cannot honour.
+   */
+  const foundingLeft = await foundingSeatsLeft();
   return (
     <>
       <script
@@ -464,7 +472,7 @@ export default async function LandingPage() {
           style={{ borderTop: "1px solid var(--color-rule)" }}
         >
           <div className="max-w-6xl mx-auto">
-            <EditorialPricing plan={plan} renewsOn={renewsOn} />
+            <EditorialPricing plan={plan} renewsOn={renewsOn} foundingLeft={foundingLeft} />
           </div>
         </section>
 

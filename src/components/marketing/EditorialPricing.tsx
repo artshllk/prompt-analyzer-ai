@@ -3,6 +3,22 @@
 import { useState } from "react";
 import { UpgradeButton } from "@/components/ui/UpgradeButton";
 import Link from "next/link";
+import {
+  FACTCHECK_FREE_LIMIT,
+  PRO_FACTCHECK_LIMIT,
+  DETECT_FREE_LIMIT,
+  PRO_DETECT_LIMIT,
+  USAGE_DAILY_LIMIT,
+  HISTORY_FREE_DAYS,
+} from "@/lib/limits";
+import { ANON_FACTCHECK_DAY } from "@/lib/rate-limit";
+
+/**
+ * The anonymous allowance, taken from the bucket the server actually applies
+ * rather than typed out beside it. `capacity` is the number of runs the
+ * bucket holds, which is the number a visitor gets in a day.
+ */
+const ANON_CHECKS_A_DAY = ANON_FACTCHECK_DAY.capacity;
 
 /**
  * Pricing - two-tier card grid (Free + Pro) with a polished
@@ -54,21 +70,36 @@ import Link from "next/link";
  * month" and "10 a day" sat next to each other and read as the same thing at a
  * glance. The number carries the weight, the unit carries the muted colour.
  */
-const FREE_LEAD = { n: "10", unit: "source checks a month" };
-const PRO_LEAD = { n: "100", unit: "source checks a month" };
+/**
+ * EVERY NUMBER ON THIS PAGE IS READ FROM THE CONSTANT THE SERVER ENFORCES.
+ *
+ * This is the fifth time copy and server have disagreed, and the last one was
+ * a day old: the anonymous limit went from 2 to 5 in rate-limit.ts and this
+ * file went on saying 2. Interpolating removes the class of bug rather than
+ * fixing another instance of it, and pricing-copy.test.ts fails if a literal
+ * ever creeps back in.
+ *
+ * The one number NOT read from a constant is the anonymous allowance, because
+ * ANON_FACTCHECK_DAY is a token bucket rather than a plain integer. Its test
+ * reads the bucket's capacity out of the source instead.
+ */
+const FREE_LEAD = { n: String(FACTCHECK_FREE_LIMIT), unit: "source checks a month" };
+const PRO_LEAD = { n: String(PRO_FACTCHECK_LIMIT), unit: "source checks a month" };
 
 const FREE_FEATURES = [
-  "10 prompt improvements a day",
-  "5 AI text detections a day",
-  "7 days of history",
+  `${USAGE_DAILY_LIMIT} prompt improvements a day`,
+  `${DETECT_FREE_LIMIT} AI text detections a month`,
+  `${HISTORY_FREE_DAYS} days of history`,
 ];
 
 const PRO_FEATURES = [
-  // Improvements and detections stay unmetered for Pro. They cost about a cent
-  // each, so unlimited is affordable there in a way it is not for checking at
-  // four cents a document.
+  // Improvements stay unmetered because they cost about a cent each.
+  // DETECTIONS DO NOT, and used to say "Unlimited" while the server enforced
+  // exactly that: getUsage returned no limit for pro, on a call measured at
+  // $0.018. That is the same unbounded promise on a metered cost as the old
+  // unlimited checking, so it is a number now, and the number is enforced.
   "Unlimited prompt improvements",
-  "Unlimited AI text detections",
+  `${PRO_DETECT_LIMIT} AI text detections a month`,
   "History kept forever",
   "A stronger model on every improve",
   "Priority support",
@@ -82,14 +113,24 @@ const PRO_FEATURES = [
  * price the checkout uses - to genuinely bill the launch price, update the
  * price in the Paddle dashboard too. To end the promo, set active: false.
  */
+/**
+ * The founding offer. Prices are strings here and cents in paddle.ts, and
+ * pricing-copy.test.ts asserts they agree, because the dashboard is what
+ * actually charges the card and this is only what a person reads.
+ *
+ * `now` is the founding price and `list` is what everyone after the first
+ * fifty pays. It is a locked price rather than a discount that expires: a
+ * separate Paddle price id, so a subscription created against it keeps
+ * billing against it when the list price moves.
+ */
 const LAUNCH = {
   active: true,
   /** Headline percent off, shown in the badge and saving chip. */
-  percentOff: 50,
-  /** Monthly list price -> launch price. */
-  monthly: { list: "9.99", now: "4.99" },
-  /** Yearly per-month list price -> launch price, plus the billed total. */
-  yearly: { list: "7.99", now: "3.99", billedTotal: "47.88" },
+  percentOff: 37,
+  /** Monthly list price -> founding price. */
+  monthly: { list: "19", now: "12" },
+  /** Yearly per-month list price -> founding price, plus the billed total. */
+  yearly: { list: "15.83", now: "15.83", billedTotal: "190" },
 };
 
 /**
@@ -116,20 +157,40 @@ export function EditorialPricing({
   headingLevel = "h2",
   plan = "anon",
   renewsOn,
+  foundingLeft,
 }: {
   /** "h1" on the standalone /pricing page (its top-level heading); "h2" when embedded as a section. */
   headingLevel?: "h1" | "h2";
   /** Who is looking. Decides which card carries the badge and what each button does. */
   plan?: "anon" | "free" | "pro";
+  /**
+   * Founding seats still available, counted at Paddle by the server.
+   *
+   * THE PRICE SHOWN AND THE PRICE CHARGED MUST BE THE SAME ONE. Without this
+   * the page advertised $12 and checkout would have created a $19
+   * transaction, which is the copy-versus-server bug in its most expensive
+   * form. Undefined means we could not count, and the honest response to that
+   * is to show the ordinary price.
+   */
+  foundingLeft?: number;
   /** ISO date from profiles.subscription_period_end. Shown under the Pro badge. */
   renewsOn?: string | null;
 }) {
   const [annual, setAnnual] = useState(false);
   const Heading = headingLevel;
 
+  /**
+   * The founding offer is live only while there are seats AND we are looking
+   * at a monthly subscription. There is no founding annual price, so the
+   * yearly toggle always shows the list price rather than pretending.
+   */
+  const founding = LAUNCH.active && !annual && (foundingLeft ?? 0) > 0;
   const period = annual ? LAUNCH.yearly : LAUNCH.monthly;
   const listPrice = period.list;
-  const nowPrice = LAUNCH.active ? period.now : period.list;
+  const nowPrice = founding ? period.now : period.list;
+  // The plan key sent to checkout. It has to be the plan whose price is on
+  // screen, or the customer is charged something they did not read.
+  const checkoutPlan = annual ? "pro_annual" : founding ? "pro_founding" : "pro_monthly";
 
   return (
     <div>
@@ -230,7 +291,7 @@ export function EditorialPricing({
           </p>
           {/* Anchor row: struck list price + saving chip, sitting above
               the big current price so the discount reads at a glance. */}
-          {LAUNCH.active && (
+          {founding && (
             <div className="flex items-center gap-2.5 mb-1.5">
               <span
                 className="font-serif text-xl tabular-nums line-through"
@@ -270,18 +331,20 @@ export function EditorialPricing({
             style={{ color: "var(--color-paper-mute)" }}
           >
             {annual
-              ? `Billed $${LAUNCH.active ? LAUNCH.yearly.billedTotal : "95.88"} yearly. Cancel anytime.`
+              ? `Billed $${LAUNCH.yearly.billedTotal} yearly. Cancel anytime.`
               : "Billed monthly. Cancel anytime."}
           </p>
-          {LAUNCH.active && (
+          {founding && (
             <p
               className="mt-1.5 mb-7 text-sm"
               style={{ color: "var(--color-accent-bright)" }}
             >
-              Launch pricing for early users.
+              {foundingLeft === 1
+                ? "One founding place left. This price never rises."
+                : `Founding price, ${foundingLeft} places left. It never rises.`}
             </p>
           )}
-          {!LAUNCH.active && <div className="mb-7" />}
+          {!founding && <div className="mb-7" />}
           {plan === "anon" && (
             <Link
               /* Comes back here after signing up, so the next click is
@@ -295,7 +358,7 @@ export function EditorialPricing({
           )}
           {plan === "free" && (
             <UpgradeButton
-              plan={annual ? "pro_annual" : "pro_monthly"}
+              plan={checkoutPlan}
               className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-paper"
             >
               Get Pro
@@ -340,7 +403,7 @@ export function EditorialPricing({
         className="mt-8 text-sm text-center md:text-left"
         style={{ color: "var(--ink-soft)" }}
       >
-        No account? You can run 2 checks a day without one.
+        No account? You can run {ANON_CHECKS_A_DAY} checks a day without one.
       </p>
 
       <p

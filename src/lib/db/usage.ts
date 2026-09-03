@@ -5,6 +5,8 @@ import {
   USAGE_WINDOW_HOURS,
   DETECT_FREE_LIMIT,
   DETECT_WINDOW_HOURS,
+  PRO_DETECT_LIMIT,
+  PRO_DETECT_WINDOW_HOURS,
   PRO_VERIFY_LIMIT,
   PRO_VERIFY_WINDOW_HOURS,
   FREE_VERIFY_LIFETIME_CREDITS,
@@ -84,9 +86,35 @@ export function recordUsage(userId: string): Promise<void> {
   return record(userId, REWRITE_EVENT)
 }
 
-/** AI detection: 5 per rolling 24h for free, unlimited for pro. */
-export function getDetectorUsage(userId: string): Promise<UsageInfo> {
-  return getUsage(userId, DETECT_EVENT, DETECT_WINDOW_HOURS, DETECT_FREE_LIMIT)
+/**
+ * AI detection: 10 a month for free, 60 a month for pro. BOTH ENFORCED.
+ *
+ * This used the shared `getUsage`, which returns `limit: null` for pro, so
+ * `isAtLimit` could never be true and pro detections were literally
+ * unlimited. At a measured $0.018 a run that is an unbounded promise on a
+ * metered cost, and it is the same bug as the old unlimited checking: the
+ * heaviest user costs the most and pays the same.
+ *
+ * So this one does not share `getUsage`. A pro ceiling is the point, and a
+ * helper whose contract is "pro has no ceiling" cannot express it.
+ *
+ * Fails OPEN on a database error, matching every other signed-in quota:
+ * countEvents reads an unreadable count as zero. Locking a paying user out of
+ * a frozen tool over our own outage is worse than a few extra detections.
+ */
+export async function getDetectorUsage(userId: string): Promise<UsageInfo> {
+  const supabase = await createClient()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tier')
+    .eq('id', userId)
+    .single()
+  const tier = profile?.tier ?? 'free'
+  const isPro = tier === 'pro'
+  const limit = isPro ? PRO_DETECT_LIMIT : DETECT_FREE_LIMIT
+  const windowHours = isPro ? PRO_DETECT_WINDOW_HOURS : DETECT_WINDOW_HOURS
+  const used = await countEvents(userId, DETECT_EVENT, windowStart(windowHours))
+  return { used, limit, isAtLimit: used >= limit, tier }
 }
 
 export function recordDetectorUsage(userId: string): Promise<void> {
@@ -149,7 +177,7 @@ export async function getVerifyAllowance(
  * Source checker allowance: 10 a month for free, 100 a month for Pro, both on
  * a rolling 30-day window.
  *
- * Pro is capped, not unlimited. At about four cents a document against $4.99 a
+ * Pro is capped, not unlimited. See limits.ts for the cost model against $19 a
  * month, unmetered checking goes underwater around 125 documents. See
  * limits.ts for why 100 is the number.
  *

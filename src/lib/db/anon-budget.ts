@@ -31,7 +31,7 @@ import { createServiceClient } from '@/lib/supabase/server'
  * one shared counter, a busy day on one product takes the other offline.
  * See migration 015.
  */
-export type BudgetBucket = 'improver' | 'factcheck'
+export type BudgetBucket = 'improver' | 'factcheck' | 'detector'
 
 /**
  * Per-bucket daily ceilings, each tunable without a code change.
@@ -49,12 +49,33 @@ export type BudgetBucket = 'improver' | 'factcheck'
  */
 const DEFAULT_CAPS: Record<BudgetBucket, number> = {
   improver: 60,
+  /**
+   * $0.128 a document at the very worst, so 40 is about $5.12 of exposure a
+   * day. See limits.ts for the cost model.
+   */
   factcheck: 40,
+  /**
+   * THE DETECTOR HAD NO CEILING AT ALL, and it is the more expensive product
+   * per run.
+   *
+   * Measured at $0.018 a detection. Its only bound was an in-memory per-IP
+   * bucket, which a recycled instance forgets and a second address walks
+   * around: one address could reach 720 a day and ten could reach $131 a day.
+   * That is more exposure than the product being built, on a tool that is not
+   * being developed.
+   *
+   * 30 is about $0.55 a day. Deliberately smaller than the checker's, because
+   * the checker is what this company is now for and the detector is a legacy
+   * page that should never be able to starve it. They are separate buckets
+   * precisely so one cannot take the other offline.
+   */
+  detector: 30,
 }
 
 const CAP_ENV: Record<BudgetBucket, string> = {
   improver: 'ANON_DAILY_GLOBAL_CAP',
   factcheck: 'FACTCHECK_DAILY_CAP',
+  detector: 'DETECTOR_DAILY_CAP',
 }
 
 export function anonDailyCap(bucket: BudgetBucket = 'improver'): number {

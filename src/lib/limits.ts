@@ -95,9 +95,36 @@ export function decideUsage(
 export const REWRITE_FREE_LIMIT = 5
 export const REWRITE_WINDOW_HOURS = 48
 
-/** AI-detection texts for signed-in free users. */
-export const DETECT_FREE_LIMIT = 5
-export const DETECT_WINDOW_HOURS = 24
+/**
+ * AI detection, and why both numbers are monthly.
+ *
+ * MEASURED AT $0.018 A RUN, one Gemini call. That is more than a whole
+ * uncited source check costs, which makes the detector the more expensive of
+ * the two products per use, not the cheap extra it reads as.
+ *
+ * It used to be 5 a DAY for free, which is 150 a month against 5 source
+ * checks a month. The deprecated tool would have been thirty times more
+ * generous than the product being built, which tells every free user the
+ * wrong thing about what this company is for. Monthly on both sides makes
+ * them comparable at a glance, which is the whole point of matching units.
+ */
+export const DETECT_FREE_LIMIT = 10
+export const DETECT_WINDOW_HOURS = 24 * 30
+
+/**
+ * PRO DETECTION IS CAPPED, and until now it was not capped at all.
+ *
+ * `getUsage` returns `limit: null` for pro, so `isAtLimit` could never be
+ * true and the pricing page's "Unlimited AI text detections" was enforced
+ * literally. At $0.018 a run that is the same unbounded promise on a metered
+ * cost that the old unlimited checking was, and it fails the same way: the
+ * heaviest user is the one who costs the most and pays the same.
+ *
+ * 60 a month is two a day every day, far above any real use of a tool that is
+ * not being developed. It is a guard, not a shape.
+ */
+export const PRO_DETECT_LIMIT = 60
+export const PRO_DETECT_WINDOW_HOURS = 24 * 30
 
 /** Free taste for anonymous visitors before the sign-in gate. */
 export const ANON_REWRITE_LIMIT = 1
@@ -123,32 +150,38 @@ export const ANON_DETECT_LIMIT = 1
  *               A trial, not a plan. The global daily bucket in
  *               anon-budget.ts is what actually bounds the bill, and it fails
  *               closed.
- *   free        10 a month. About $0.40 of cost at worst.
- *   pro         100 a month. About $4 against $4.99, so it stays above water.
+ *   free        5 a month. About $0.64 of cost at worst.
+ *   pro         120 a month. About $15.36 at worst against $17.55 net of
+ *               Paddle on a $19 subscription, so no plan loses money even in
+ *               the absurd case where every document is at the cap and every
+ *               claim in it carries a link.
  *
- * Pro is ten times Free and both are bounded. Rolling 30 days rather than
+ * Pro is 24 times Free and both are bounded. Rolling 30 days rather than
  * calendar months, so there is no month-boundary rush and no reset date to
  * explain.
  */
-export const FACTCHECK_FREE_LIMIT = 10
+export const FACTCHECK_FREE_LIMIT = 5
 export const FACTCHECK_WINDOW_HOURS = 24 * 30
-export const ANON_FACTCHECK_LIMIT = 2
 
 /**
  * PRO IS CAPPED TOO, and it has to be.
  *
- * A check costs roughly four cents a document. Pro is $4.99 a month. Unmetered
- * checking therefore goes underwater somewhere around 125 documents, and the
- * pricing page was promising exactly that. "Unlimited" on a per-unit cost this
- * high is a promise to lose money on your best customer.
+ * Cost is linear in claims checked, measured: $0.018 extraction plus $0.0055
+ * a claim, so a document at the 20-claim cap with every claim linked costs
+ * $0.128 and one with no links costs $0.018.
  *
- * 100 a month is far above any real use. Nobody publishes 100 articles a month,
- * so this bounds the loss without ever being the thing a genuine subscriber
- * notices. It is a guard, not a shape, same as the free numbers.
+ * 120 a month is the number where the ABSURD case still works. 120 x $0.128 =
+ * $15.36, plus 60 detections at $0.018 = $1.09, against $17.55 net of Paddle
+ * on $19. So the worst subscriber this plan can produce is still profitable,
+ * which is the only version of a cap worth having: one that never needs
+ * defending after the fact.
+ *
+ * It is also six documents a working day, far above any real use, so it
+ * bounds the loss without being a thing a genuine subscriber ever notices.
  *
  * Rolling 30 days, matching FACTCHECK_WINDOW_HOURS and PRO_VERIFY_WINDOW_HOURS.
  */
-export const PRO_FACTCHECK_LIMIT = 100
+export const PRO_FACTCHECK_LIMIT = 120
 export const PRO_FACTCHECK_WINDOW_HOURS = 24 * 30
 
 export const HISTORY_FREE_DAYS = 7

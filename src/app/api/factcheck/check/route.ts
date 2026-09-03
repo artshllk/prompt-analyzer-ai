@@ -145,8 +145,9 @@ export async function POST(req: NextRequest) {
      * could have run five hundred documents. That is unbounded cost per user
      * and it becomes real the first time somebody signs up.
      *
-     * Recorded BEFORE the work rather than after, so aborting a stream cannot
-     * be used to avoid the count. Same reasoning as settling in `finally`.
+     * The count itself happens in `finally`, which runs on an abort too, so
+     * it is still not something a closed tab can dodge. What it is NOT is
+     * unconditional: see the note there.
      */
     const serviceRole = auth.via === 'token'
     const allowance = await getFactcheckAllowance(auth.userId, auth.tier, serviceRole)
@@ -159,13 +160,7 @@ export async function POST(req: NextRequest) {
         429
       )
     }
-    try {
-      await recordFactcheckUsage(auth.userId, serviceRole)
-    } catch (err) {
-      // Never block a run because the counter write failed. Same direction as
-      // the read: our infrastructure problem, not theirs.
-      console.error('[factcheck] usage record failed, continuing:', err)
-    }
+    // Recorded in `finally` below, not here. See the note there.
   }
 
   // Extraction happens BEFORE the stream opens, because its failure modes are
@@ -335,9 +330,42 @@ export async function POST(req: NextRequest) {
          * negative and hand out free credit, and a limiter a script can walk
          * past is not a cost control.
          */
+        /**
+         * A RUN THAT CHECKED NOTHING IS NOT A CHECK, AND IS NOT CHARGED.
+         *
+         * A document with no links costs $0.018 and produces no verdict about
+         * any source, because there was no source to open. Spending one of
+         * five monthly checks on that is charging someone for the discovery
+         * that we had nothing to do, and it is exactly how a first-time
+         * visitor burns an allowance learning what the tool is and never
+         * comes back.
+         *
+         * The test is the one the health check uses: `supports` and
+         * `does_not_contain` are the only outcomes reachable by reading a
+         * page. Everything else is reachable with retrieval completely dead.
+         *
+         * STILL IN `finally`, so closing the tab does not dodge it. A reader
+         * who aborts after fifteen claims resolved is charged, because
+         * fifteen claims really were checked.
+         */
+        // `result.claims` and the `claims` alias inside the try are the same
+        // array, and apply() mutates the claim objects in place, so this sees
+        // every result the run reached before it ended.
+        const judged = result.claims.filter(
+          c => c.citation.check === 'supports' || c.citation.check === 'does_not_contain'
+        ).length
+        if (auth && judged > 0) {
+          try {
+            await recordFactcheckUsage(auth.userId, auth.via === 'token')
+          } catch (err) {
+            // Never block on the counter write. Our problem, not theirs.
+            console.error('[factcheck] usage record failed, continuing:', err)
+          }
+        }
+
         const spent = meter.read().credits - spentBefore
         console.log(
-          `[factcheck] claims=${result.claims.length}/${result.foundCount} ` +
+          `[factcheck] claims=${result.claims.length}/${result.foundCount} judged=${judged} ` +
             `dupes=${result.duplicates} ` +
             `band=${result.density.band} credits=${spent} aborted=${req.signal.aborted} ` +
             `auth=${auth ? auth.tier : 'anon'} ts=${new Date().toISOString()}`

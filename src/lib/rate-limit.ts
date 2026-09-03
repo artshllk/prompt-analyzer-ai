@@ -107,6 +107,22 @@ export const PRO_USER_LIMIT: LimitConfig = { capacity: 30, refillPerSecond: 30 /
  */
 export const ANON_FACTCHECK_DAY: LimitConfig = { capacity: 5, refillPerSecond: 5 / 86400 }
 
+/**
+ * Anonymous detections, per IP, per day.
+ *
+ * The detector used to share ANON_LIMIT, which is 30 an HOUR and exists as a
+ * burst throttle for cheap endpoints. Nobody chose it for this: at $0.018 a
+ * run it allowed 720 a day from one address, which is more than the whole
+ * daily budget of the product being built.
+ *
+ * Three, matching the shape of the checker's five rather than its number,
+ * because a detection is a smaller thing to try and the tool is frozen. Like
+ * every per-IP bucket here it is in memory and BEST EFFORT; the ceiling that
+ * actually bounds the bill is the `detector` bucket in anon-budget, which is
+ * in Postgres and fails closed.
+ */
+export const ANON_DETECT_DAY: LimitConfig = { capacity: 3, refillPerSecond: 3 / 86400 }
+
 export const EVENT_LIMIT: LimitConfig = { capacity: 120, refillPerSecond: 120 / 3600 } // 120/hour
 
 export function getClientIp(req: Request): string {

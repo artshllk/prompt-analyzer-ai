@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { PADDLE_PLANS, paddleRequest } from '@/lib/paddle'
+import {
+  PADDLE_PLANS,
+  SELLABLE_PLANS,
+  paddleRequest,
+  foundingSeatsLeft,
+  type SellablePlan,
+} from '@/lib/paddle'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -11,7 +17,29 @@ export async function POST(req: NextRequest) {
   }
 
   const { plan = 'pro_monthly' } = await req.json()
-  const selectedPlan = PADDLE_PLANS[plan as keyof typeof PADDLE_PLANS] ?? PADDLE_PLANS.pro_monthly
+
+  /**
+   * ONLY A SELLABLE PLAN, AND NEVER THE LEGACY ONE.
+   *
+   * The plan key arrives in a request body, so an unlisted price is one
+   * `curl` away unless this refuses it here. The old $4.99 price still exists
+   * so an existing subscription can keep billing against it, and it must
+   * never be reachable by someone new.
+   */
+  if (!SELLABLE_PLANS.includes(plan as SellablePlan)) {
+    return NextResponse.json({ error: 'unknown_plan' }, { status: 400 })
+  }
+  const selectedPlan = PADDLE_PLANS[plan as SellablePlan]
+
+  /**
+   * The founding price is capped, and the cap is enforced HERE because this
+   * is the only way a subscription can come into existence. See
+   * foundingSeatsLeft() for why Paddle is the source of truth and why the
+   * count fails closed.
+   */
+  if (plan === 'pro_founding' && (await foundingSeatsLeft()) <= 0) {
+    return NextResponse.json({ error: 'founding_sold_out' }, { status: 409 })
+  }
 
   const { data: profile } = await supabase
     .from('profiles')

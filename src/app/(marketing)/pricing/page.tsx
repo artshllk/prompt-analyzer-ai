@@ -3,29 +3,42 @@ import { EditorialPricing } from '@/components/marketing/EditorialPricing'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { defaultOGImage } from '@/lib/og-image'
 import { viewerPlan } from '@/lib/db/viewer-plan'
+import { foundingSeatsLeft } from '@/lib/paddle'
+import { FACTCHECK_FREE_LIMIT, PRO_FACTCHECK_LIMIT } from '@/lib/limits'
 
+/**
+ * Every sentence here described the frozen prompt improver at a price that no
+ * longer exists. It is the source checker that is being sold now, and this is
+ * what a search result and a shared link show.
+ */
 export const metadata: Metadata = {
   title: 'Pricing',
-  description: 'Free until you outgrow it. Pro is $4.99/month right now, a launch discount from $9.99, for unlimited improvements, a stronger model on every one, and full history.',
+  description:
+    'Check the sources in a document before you send it. Free to try, Pro is $19 a month, and the first fifty subscribers keep $12 for good.',
   alternates: { canonical: 'https://deepclario.com/pricing' },
   openGraph: {
-    title: 'Deepclario Pricing - Pro at $4.99/month (launch offer)',
-    description: 'Launch pricing: Pro is $4.99/month, down from $9.99. Unlimited improvements, a stronger model on every one, and full history. The free plan stays free.',
+    title: 'Deepclario Pricing - source checking from $12 a month',
+    description:
+      'Paste a document and see which claims their source really supports. Free to try. Pro is $19 a month, $12 for the first fifty.',
     url: 'https://deepclario.com/pricing',
     type: 'website',
     // Same bug as the homepage - see defaultOGImage() and (marketing)/page.tsx.
-    images: defaultOGImage('Deepclario Pricing - Pro at $4.99/month (launch offer)'),
+    images: defaultOGImage('Deepclario Pricing - source checking from $12 a month'),
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Deepclario Pricing - Pro at $4.99/month (launch offer)',
-    description: 'Launch pricing: Pro is $4.99/month, down from $9.99. Unlimited everything for people who reach for Deepclario daily.',
+    title: 'Deepclario Pricing - source checking from $12 a month',
+    description:
+      'Paste a document and see which claims their source really supports. Free to try, Pro is $19 a month.',
     images: ['/opengraph-image'],
   },
 }
 
 // Structured data: both plans as offers so the page is eligible for price
-// rich results. Prices must match LAUNCH in EditorialPricing.tsx.
+// rich results. The allowances read from the constants the server enforces,
+// for the same reason the pricing table does. Google shows these numbers to
+// people who never reach the page, so a stale one here is worse than a stale
+// one there.
 const pricingSchema = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -42,14 +55,14 @@ const pricingSchema = {
           name: 'Free',
           price: '0',
           priceCurrency: 'USD',
-          description: '10 prompt improvements a day, no card required.',
+          description: `${FACTCHECK_FREE_LIMIT} source checks a month, no card required.`,
         },
         {
           '@type': 'Offer',
           name: 'Pro',
-          price: '4.99',
+          price: '19',
           priceCurrency: 'USD',
-          description: 'Unlimited improvements, a stronger model on every one, and full history. Launch price, down from $9.99/month.',
+          description: `${PRO_FACTCHECK_LIMIT} source checks a month, unlimited improvements, and history kept forever.`,
         },
       ],
     },
@@ -65,6 +78,13 @@ const pricingSchema = {
 
 export default async function PricingPage() {
   const { plan, renewsOn } = await viewerPlan()
+  /**
+   * Counted at Paddle, so the price on screen is the price the checkout
+   * will charge. Cached for thirty seconds inside foundingSeatsLeft, and
+   * it fails closed: if Paddle cannot be reached this reads zero and the
+   * page shows the ordinary price rather than one it cannot honour.
+   */
+  const foundingLeft = await foundingSeatsLeft()
   return (
     <div className="editorial grain min-h-screen relative" style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingSchema) }} />
@@ -72,7 +92,7 @@ export default async function PricingPage() {
 
       <section className="pt-28 md:pt-36 pb-20 md:pb-28 px-6 md:px-10">
         <div className="max-w-6xl mx-auto">
-          <EditorialPricing headingLevel="h1" plan={plan} renewsOn={renewsOn} />
+          <EditorialPricing headingLevel="h1" plan={plan} renewsOn={renewsOn} foundingLeft={foundingLeft} />
         </div>
       </section>
     </div>
