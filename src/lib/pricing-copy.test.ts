@@ -29,6 +29,8 @@ import { ANON_FACTCHECK_DAY } from './rate-limit'
  */
 const pricing = readFileSync('src/components/marketing/EditorialPricing.tsx', 'utf8')
 const paddle = readFileSync('src/lib/paddle.ts', 'utf8')
+const faq = readFileSync('src/components/marketing/FAQSection.tsx', 'utf8')
+const plans = readFileSync('src/lib/plans.ts', 'utf8')
 
 /** Comments describe the bugs above by quoting them. They are not the copy. */
 function copyOnly(src: string): string {
@@ -247,4 +249,53 @@ test('no upgrade button can silently pick a plan for the reader', () => {
   // reading "$12, 50 places left".
   assert.doesNotMatch(btn, /plan = '/, 'plan must never have a default')
   assert.match(btn, /plan \? start\(plan\) : setOpen\(true\)/)
+})
+
+
+// ---------------------------------------------------------------------------
+// The FAQ. The sixth place this class of bug could live, and the one a person
+// reads right before deciding whether to trust the tool with their writing.
+// ---------------------------------------------------------------------------
+
+test('no FAQ answer states a number that is not read from a constant', () => {
+  const block = faq.slice(faq.indexOf('const FAQS = ['), faq.indexOf('\n]\n'))
+  const offenders: string[] = []
+  for (const m of block.matchAll(/[qa]: `([^`]*)`/g)) {
+    // Strip the interpolations, then look for what digits are left.
+    const literal = m[1].replace(/\$\{[^}]*\}/g, '')
+    for (const n of literal.match(/(?<![\w$])\d+(?![\w}])/g) ?? []) {
+      offenders.push(`"${n}" in: ${m[1].slice(0, 70)}`)
+    }
+  }
+  assert.deepEqual(offenders, [], 'hardcoded number in an FAQ answer:\n  ' + offenders.join('\n  '))
+})
+
+test('a template in the FAQ is actually a template', () => {
+  // A single-quoted string containing ${...} renders the braces literally.
+  // Cheap to write, invisible in review, and it shipped once.
+  const block = faq.slice(faq.indexOf('const FAQS = ['), faq.indexOf('\n]\n'))
+  for (const m of block.matchAll(/[qa]: '([^']*)'/g)) {
+    assert.doesNotMatch(m[1], /\$\{/, `single-quoted string would print braces: ${m[1].slice(0, 60)}`)
+  }
+})
+
+test('the FAQ keeps the voice rules', () => {
+  const block = faq.slice(faq.indexOf('const FAQS = ['), faq.indexOf('\n]\n'))
+  assert.doesNotMatch(block, /[\u2014\u2013]/, 'no em-dashes or en-dashes in user-facing copy')
+  for (const word of ['powerful', 'seamless', 'unleash', 'supercharge', 'cutting-edge', 'effortless']) {
+    assert.doesNotMatch(block, new RegExp(word, 'i'), `"${word}" is marketing language`)
+  }
+})
+
+test('the FAQ prices match the cents Paddle charges', () => {
+  const cents = (s: string) => Math.round(parseFloat(s) * 100)
+  const listed = plans.match(/PRICE_LIST = '([\d.]+)'/)?.[1]
+  const founding = plans.match(/PRICE_FOUNDING = '([\d.]+)'/)?.[1]
+  const seats = plans.match(/FOUNDING_SEAT_COUNT = (\d+)/)?.[1]
+  assert.ok(listed && founding && seats, 'could not read the display prices')
+  const amountOf = (key: string) =>
+    Number(paddle.match(new RegExp(`${key}: \\{[\\s\\S]*?amount: (\\d+)`))?.[1])
+  assert.equal(cents(listed), amountOf('pro_monthly'), 'PRICE_LIST vs pro_monthly')
+  assert.equal(cents(founding), amountOf('pro_founding'), 'PRICE_FOUNDING vs pro_founding')
+  assert.equal(Number(seats), Number(paddle.match(/FOUNDING_SEATS = (\d+)/)?.[1]), 'seat count vs paddle.ts')
 })

@@ -55,10 +55,15 @@ export default function FAQPage() {
               className="display text-3xl md:text-5xl mb-8"
               style={{ color: 'var(--color-paper)' }}
             >
-              Still curious? Try it.
+              Check a document.
             </h2>
+            {/* Was /playground, the frozen prompt improver. Ten answers about
+                checking sources ended by offering a different product. The
+                improver is still reachable from the footer and from the
+                prompt-engineering posts, which is where somebody looking for
+                it actually is. */}
             <Link
-              href="/playground"
+              href="/"
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-[15px] transition-all hover:gap-3 btn-paper"
               style={{
                 background: 'var(--color-paper)',
@@ -66,7 +71,7 @@ export default function FAQPage() {
                 fontWeight: 500,
               }}
             >
-              Try with your prompt
+              Check your sources
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path
                   d="M2 7H12M12 7L7 2M12 7L7 12"

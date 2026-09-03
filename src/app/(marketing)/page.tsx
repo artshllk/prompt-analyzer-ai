@@ -529,9 +529,16 @@ export default async function LandingPage() {
               links={[
                 { href: "/", label: "Check your sources" },
                 { href: "/detector", label: "AI text detector" },
-                // Extension and Prompt library came off the main nav because
-                // they point at the frozen prompt improver. They stay here, and
-                // their routes are untouched, so every existing link resolves.
+                // Extension, Prompt library and the improver came off the main
+                // nav because they point at the frozen product. They stay here,
+                // and their routes are untouched, so every existing link
+                // resolves.
+                //
+                // The improver was reachable from ONE place, an FAQ answer that
+                // has since been deleted, which left a working page with no way
+                // in. It belongs here rather than in the nav: hard to find is
+                // the right amount of findable for something we do not sell.
+                { href: "/playground", label: "Prompt improver" },
                 { href: "/extension", label: "Extension" },
                 { href: "/prompts", label: "Prompt library" },
                 { href: "/pricing", label: "Pricing" },

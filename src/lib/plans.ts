@@ -36,6 +36,17 @@ export const PRO_INCLUDES = [
   'History kept forever',
 ]
 
+/**
+ * Display prices and the founding cap, client-safe.
+ *
+ * lib/paddle.ts holds the authoritative cents and reads server-only env vars,
+ * so it cannot be imported into a client component. pricing-copy.test.ts
+ * asserts these agree with it.
+ */
+export const PRICE_LIST = '19'
+export const PRICE_FOUNDING = '12'
+export const FOUNDING_SEAT_COUNT = 50
+
 export const FREE_INCLUDES = `${FACTCHECK_FREE_LIMIT} source checks a month`
 
 /**
