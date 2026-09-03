@@ -8,7 +8,8 @@ import {
   PRO_FACTCHECK_LIMIT,
   DETECT_FREE_LIMIT,
   PRO_DETECT_LIMIT,
-  USAGE_DAILY_LIMIT,
+  IMPROVE_FREE_LIMIT,
+  IMPROVE_PRO_LIMIT,
   HISTORY_FREE_DAYS,
 } from "@/lib/limits";
 import { ANON_FACTCHECK_DAY } from "@/lib/rate-limit";
@@ -87,18 +88,18 @@ const FREE_LEAD = { n: String(FACTCHECK_FREE_LIMIT), unit: "source checks a mont
 const PRO_LEAD = { n: String(PRO_FACTCHECK_LIMIT), unit: "source checks a month" };
 
 const FREE_FEATURES = [
-  `${USAGE_DAILY_LIMIT} prompt improvements a day`,
+  `${IMPROVE_FREE_LIMIT} prompt improvements a month`,
   `${DETECT_FREE_LIMIT} AI text detections a month`,
   `${HISTORY_FREE_DAYS} days of history`,
 ];
 
 const PRO_FEATURES = [
-  // Improvements stay unmetered because they cost about a cent each.
-  // DETECTIONS DO NOT, and used to say "Unlimited" while the server enforced
-  // exactly that: getUsage returned no limit for pro, on a call measured at
-  // $0.018. That is the same unbounded promise on a metered cost as the old
-  // unlimited checking, so it is a number now, and the number is enforced.
-  "Unlimited prompt improvements",
+  // NOTHING HERE IS UNLIMITED ANY MORE. Improvements said "Unlimited" on the
+  // belief that they cost about a cent; measured over three real runs a Pro
+  // one is $0.0198, and no code enforced the promise - getUsage returned no
+  // limit for pro on both the analyze and sharpen routes. Detections had the
+  // same shape. Both are numbers now and both are enforced.
+  `${IMPROVE_PRO_LIMIT} prompt improvements a month`,
   `${PRO_DETECT_LIMIT} AI text detections a month`,
   "History kept forever",
   "A stronger model on every improve",

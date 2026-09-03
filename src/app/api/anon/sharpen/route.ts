@@ -5,7 +5,13 @@ import { resolveCaller } from '@/lib/auth/caller'
 import { consumeAnonRun } from '@/lib/db/anon-budget'
 import { createServiceClient } from '@/lib/supabase/server'
 import { recordSession } from '@/lib/db/sessions'
-import { decideUsage, windowStart, USAGE_WINDOW_HOURS, USAGE_DAILY_LIMIT } from '@/lib/limits'
+import {
+  decideUsage,
+  windowStart,
+  IMPROVE_WINDOW_HOURS,
+  IMPROVE_FREE_LIMIT,
+  IMPROVE_PRO_LIMIT,
+} from '@/lib/limits'
 import type { Tone } from '@/types/database'
 
 /**
@@ -108,20 +114,32 @@ export async function POST(req: NextRequest) {
   // IO around it: count the events in the window, ask, obey.
   //
   // Three distinct outcomes, and the header must tell them apart:
-  //   Pro       -> -1  (unlimited; the extension confirms this once)
-  //   free      ->  N  (improvements left today)
+  //   Pro       ->  N  (improvements left this month; was -1 for unlimited)
+  //   free      ->  N  (improvements left this month)
   //   anonymous -> header omitted entirely (we genuinely do not know)
   // `remaining` stays null ONLY for the anonymous case, which is the signal
   // further down to leave the header off. It used to stay null for Pro too,
   // so Pro and anon both sent -1: not-connected users were told "Pro:
   // unlimited improvements", and Pro was indistinguishable from anon.
+  //
+  // A SHIPPED EXTENSION READS -1 AS "unlimited". It now never receives one
+  // from this route, so it renders a real number for Pro as it already does
+  // for free. Nothing in the extension needs changing for that.
   let remaining: number | null = null
 
-  if (auth && auth.tier === 'pro') {
-    remaining = -1
-  } else if (auth && auth.tier === 'free') {
+  /**
+   * PRO IS METERED HERE NOW. It used to take the `remaining = -1` branch and
+   * skip the gate entirely, which is why "Unlimited prompt improvements" was
+   * literally true and cost $0.0198 a run with nothing to stop it.
+   *
+   * Both signed-in tiers run the same count against the same event and the
+   * same window; only the allowance differs. One policy, two numbers.
+   */
+  if (auth) {
+    const isPro = auth.tier === 'pro'
+    const limit = isPro ? IMPROVE_PRO_LIMIT : IMPROVE_FREE_LIMIT
     const supabase = await createServiceClient()
-    const since = windowStart(USAGE_WINDOW_HOURS)
+    const since = windowStart(IMPROVE_WINDOW_HOURS)
 
     // One query does both jobs: `count: 'exact'` gives how many were used in
     // the window, and the oldest row tells us when a credit comes back. We
@@ -143,7 +161,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const decision = decideUsage(count ?? 0, rows?.[0]?.created_at ?? null)
+    const decision = decideUsage(count ?? 0, rows?.[0]?.created_at ?? null, new Date(), limit)
 
     if (!decision.allow) {
       return corsJson(
@@ -151,7 +169,8 @@ export async function POST(req: NextRequest) {
           error: 'rate_limited_quota',
           // A wall with a clock on it is a wait; without one it is a dead end.
           resetAt: decision.retryAt,
-          dailyLimit: USAGE_DAILY_LIMIT,
+          // Wire name is historical; the value is a monthly allowance.
+          dailyLimit: limit,
         },
         402
       )

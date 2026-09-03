@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateToken, extractBearerToken } from '@/lib/db/api-tokens'
 import { createServiceClient } from '@/lib/supabase/server'
-import { decideUsage, windowStart, USAGE_WINDOW_HOURS, USAGE_DAILY_LIMIT } from '@/lib/limits'
+import {
+  decideUsage,
+  windowStart,
+  IMPROVE_WINDOW_HOURS,
+  IMPROVE_FREE_LIMIT,
+  IMPROVE_PRO_LIMIT,
+} from '@/lib/limits'
 
 /**
  * Account status for the extension's toolbar popup.
@@ -41,7 +47,7 @@ export async function GET(req: NextRequest) {
   // mean the same thing to the popup: you are not signed in. Saying so is
   // what lets it stop claiming a stale "Pro" after a revoke.
   if (!auth) {
-    return corsJson({ tier: 'anon', dailyLimit: USAGE_DAILY_LIMIT }, 200)
+    return corsJson({ tier: 'anon', dailyLimit: IMPROVE_FREE_LIMIT }, 200)
   }
 
   const supabase = await createServiceClient()
@@ -53,16 +59,20 @@ export async function GET(req: NextRequest) {
     .maybeSingle()
   const email = profile?.email ?? null
 
-  if (auth.tier === 'pro') {
-    return corsJson({ tier: 'pro', email }, 200)
-  }
+  /**
+   * Pro reports a real count now. It used to return no allowance at all,
+   * which the popup renders as unlimited - true of the server then, and a
+   * lie the moment Pro was capped. The popup must never be able to promise
+   * something the gate will refuse.
+   */
+  const limit = auth.tier === 'pro' ? IMPROVE_PRO_LIMIT : IMPROVE_FREE_LIMIT
 
   const { data: rows, count, error } = await supabase
     .from('usage_events')
     .select('created_at', { count: 'exact' })
     .eq('user_id', auth.userId)
     .eq('event_type', 'prompt_analyzed')
-    .gte('created_at', windowStart(USAGE_WINDOW_HOURS))
+    .gte('created_at', windowStart(IMPROVE_WINDOW_HOURS))
     .order('created_at', { ascending: true })
     .limit(1)
 
@@ -72,23 +82,23 @@ export async function GET(req: NextRequest) {
   if (error) {
     console.error(`[anon-status] usage_events read failed: ${error.message}`)
     return corsJson(
-      { tier: 'free', email, left: USAGE_DAILY_LIMIT, dailyLimit: USAGE_DAILY_LIMIT, resetAt: null },
+      { tier: auth.tier, email, left: limit, dailyLimit: limit, resetAt: null },
       200
     )
   }
 
   const used = count ?? 0
-  const decision = decideUsage(used, rows?.[0]?.created_at ?? null)
+  const decision = decideUsage(used, rows?.[0]?.created_at ?? null, new Date(), limit)
 
   return corsJson(
     {
-      tier: 'free',
+      tier: auth.tier,
       email,
       // decideUsage reports what is left AFTER the improvement it is being
       // asked about. The popup is not asking about one, so it wants the
       // count as it stands right now.
-      left: Math.max(0, USAGE_DAILY_LIMIT - used),
-      dailyLimit: USAGE_DAILY_LIMIT,
+      left: Math.max(0, limit - used),
+      dailyLimit: limit,
       // Only meaningful at zero: when the next credit comes back.
       resetAt: decision.allow ? null : decision.retryAt,
     },

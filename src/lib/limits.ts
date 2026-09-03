@@ -15,41 +15,54 @@
  */
 
 /* ---------------------------------------------------------------------
- * Free-tier daily limit (the current policy)
+ * Prompt improvements, and why both tiers are now monthly
  *
- * Free users get USAGE_DAILY_LIMIT improvements per rolling 24 hours.
- * That is the whole rule.
+ * MEASURED, NOT ASSUMED. A Pro improvement costs $0.0198, mean of three real
+ * runs through gemini-3.5-flash, ranging $0.0141 to $0.0229. A free one costs
+ * $0.0096 on gpt-5.4-mini. CLAUDE.md said improvements "cost about a cent",
+ * which is why Pro got them unlimited; that number was twice too low and
+ * nothing enforced the promise anyway.
  *
- * This replaced a 2h-window / 3h-cooldown model. The window was clever and
- * unexplainable, which is a bad trade. Three things were wrong with it:
- * the clock started invisibly on your first improve, so someone who
- * improved once at 9am and came back at 11:30 had silently lost a window
- * they never used; the 25 cap was so high that almost nobody reached the
- * generous half, so in practice users only ever met the cooldown; and it
- * punished the day-one exploration burst, which is the exact behaviour we
- * want from a new user.
+ * Unlimited at two cents is the same unbounded promise that unlimited
+ * checking was: improvements alone exhausted a $12 founding subscription at
+ * 551 a month, with no ceiling to stop it.
  *
- * A rolling daily count fixes all three. It fits in one line - "10 free
- * improvements a day" - which means a user can plan around it, and it
- * gives a hard, predictable cost ceiling per account.
+ * FREE MOVED FROM 10 A DAY TO 10 A MONTH. 10 a day is 300 a month, which is
+ * $2.88 of cost on a plan that pays nothing, and it made the frozen tool
+ * sixty times more generous than the product being built. Every allowance in
+ * the product is monthly now, so the plans can be compared at a glance rather
+ * than by converting units in your head - the mistake that once had Free at
+ * 10 a day against Pro at 100 a month.
  *
- * Why 10 and not 3-5: one task is not one improve. A real user doing a
- * real piece of work runs improve, tweaks, answers the questions, runs it
- * again. That is ~3 improves for one finished thing. At 5/day they get one
- * and a half tasks; at 3/day they hit a wall inside their first task,
- * before the product has proved itself. 10 is roughly 3 real tasks - long
- * enough to form the habit that makes someone pay.
+ * The old daily reasoning below is kept because its argument is still good
+ * and someone will want it if this is ever revisited:
  *
- * Rolling, not calendar: credits come back gradually as individual
- * improvements age past 24h, so there is no midnight cliff and no timezone
- * question. The trade is that "resets at" is the moment the OLDEST
- * improvement in the window expires, which returns exactly one credit.
+ *   "One task is not one improve. A real user doing a real piece of work runs
+ *   improve, tweaks, answers the questions, runs it again. That is ~3
+ *   improves for one finished thing."
+ *
+ * At 10 a month that is roughly three finished tasks. That is a deliberate
+ * trade: the improver is frozen, nobody has run one since 2026-07-28, and it
+ * should not be the thing that decides what a subscription costs to serve.
+ *
+ * Rolling 30 days, matching every other allowance here, so there is no
+ * month-boundary rush and no reset date to explain.
  * ------------------------------------------------------------------- */
 
-export const USAGE_DAILY_LIMIT = 10
-export const USAGE_WINDOW_HOURS = 24
+export const IMPROVE_FREE_LIMIT = 10
+export const IMPROVE_PRO_LIMIT = 30
+export const IMPROVE_WINDOW_HOURS = 24 * 30
 
-/** Warn the user only when this few improvements remain. Silence above it. */
+/**
+ * Kept as aliases because the extension's API contract sends `dailyLimit` and
+ * a shipped build reads it. The VALUE is now monthly; only the wire name is
+ * historical, and renaming a field an installed extension parses would break
+ * it for no gain.
+ * @deprecated use IMPROVE_FREE_LIMIT / IMPROVE_WINDOW_HOURS
+ */
+export const USAGE_DAILY_LIMIT = IMPROVE_FREE_LIMIT
+export const USAGE_WINDOW_HOURS = IMPROVE_WINDOW_HOURS
+
 export const USAGE_WARN_AT = 2
 
 export type UsageDecision =
@@ -60,18 +73,24 @@ export type UsageDecision =
  * The whole gating policy, as one pure function. Pure so it can be tested
  * without a database, and so the rule lives in exactly one place.
  *
- * @param usedInWindow improvements made in the last USAGE_WINDOW_HOURS
+ * @param usedInWindow improvements made in the last IMPROVE_WINDOW_HOURS
  * @param oldestAt     when the oldest of those happened (null = none).
  *                     Only read when blocking, to say when a credit is back.
  * @param now          injectable for tests
+ * @param limit        the tier's allowance. Passed in rather than read from a
+ *                     constant, because Pro used to have NO ceiling here and
+ *                     a function that hardcodes the free one cannot express
+ *                     a paid one. Defaults to free so an unconverted caller
+ *                     is strict rather than unlimited.
  */
 export function decideUsage(
   usedInWindow: number,
   oldestAt: string | null = null,
-  now: Date = new Date()
+  now: Date = new Date(),
+  limit: number = IMPROVE_FREE_LIMIT
 ): UsageDecision {
-  if (usedInWindow < USAGE_DAILY_LIMIT) {
-    return { allow: true, remaining: USAGE_DAILY_LIMIT - usedInWindow - 1 }
+  if (usedInWindow < limit) {
+    return { allow: true, remaining: limit - usedInWindow - 1 }
   }
 
   // Out of credits. The next one returns when the oldest improvement in the
@@ -120,10 +139,11 @@ export const DETECT_WINDOW_HOURS = 24 * 30
  * cost that the old unlimited checking was, and it fails the same way: the
  * heaviest user is the one who costs the most and pays the same.
  *
- * 60 a month is two a day every day, far above any real use of a tool that is
- * not being developed. It is a guard, not a shape.
+ * 30 a month is one a day every day, far above any real use of a tool that is
+ * not being developed and that no signed-in account has ever run: zero
+ * `text_detected` rows exist. It is a guard, not a shape.
  */
-export const PRO_DETECT_LIMIT = 60
+export const PRO_DETECT_LIMIT = 30
 export const PRO_DETECT_WINDOW_HOURS = 24 * 30
 
 /** Free taste for anonymous visitors before the sign-in gate. */
@@ -151,10 +171,7 @@ export const ANON_DETECT_LIMIT = 1
  *               anon-budget.ts is what actually bounds the bill, and it fails
  *               closed.
  *   free        5 a month. About $0.64 of cost at worst.
- *   pro         120 a month. About $15.36 at worst against $17.55 net of
- *               Paddle on a $19 subscription, so no plan loses money even in
- *               the absurd case where every document is at the cap and every
- *               claim in it carries a link.
+ *   pro         60 a month. About $7.68 at worst.
  *
  * Pro is 24 times Free and both are bounded. Rolling 30 days rather than
  * calendar months, so there is no month-boundary rush and no reset date to
@@ -170,18 +187,26 @@ export const FACTCHECK_WINDOW_HOURS = 24 * 30
  * a claim, so a document at the 20-claim cap with every claim linked costs
  * $0.128 and one with no links costs $0.018.
  *
- * 120 a month is the number where the ABSURD case still works. 120 x $0.128 =
- * $15.36, plus 60 detections at $0.018 = $1.09, against $17.55 net of Paddle
- * on $19. So the worst subscriber this plan can produce is still profitable,
- * which is the only version of a cap worth having: one that never needs
- * defending after the fact.
+ * 60 IS THE NUMBER WHERE EVERY PRICE WORKS, NOT JUST THE LIST ONE. The whole
+ * worst case, measured:
  *
- * It is also six documents a working day, far above any real use, so it
+ *   60 checks      x $0.128 = $7.68
+ *   30 detections  x $0.018 = $0.55
+ *   30 improvements x $0.0198 = $0.59
+ *   ------------------------------------
+ *                             $8.81
+ *
+ * against $10.90 net of Paddle on the $12 FOUNDING price, and $17.55 on the
+ * $19 list price. Positive at every price and every usage level, which is the
+ * point. The previous 120/60/unlimited was positive at $19 and underwater at
+ * $12 the moment somebody used the improver.
+ *
+ * 60 is still three documents a working day, far above any real use, so it
  * bounds the loss without being a thing a genuine subscriber ever notices.
  *
  * Rolling 30 days, matching FACTCHECK_WINDOW_HOURS and PRO_VERIFY_WINDOW_HOURS.
  */
-export const PRO_FACTCHECK_LIMIT = 120
+export const PRO_FACTCHECK_LIMIT = 60
 export const PRO_FACTCHECK_WINDOW_HOURS = 24 * 30
 
 export const HISTORY_FREE_DAYS = 7

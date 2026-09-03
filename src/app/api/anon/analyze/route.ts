@@ -5,7 +5,13 @@ import { resolveCaller } from '@/lib/auth/caller'
 import { consumeAnonRun, anonBudgetExhausted, budgetActionFor } from '@/lib/db/anon-budget'
 import { recordSession } from '@/lib/db/sessions'
 import { createServiceClient } from '@/lib/supabase/server'
-import { decideUsage, windowStart, USAGE_WINDOW_HOURS, USAGE_DAILY_LIMIT } from '@/lib/limits'
+import {
+  decideUsage,
+  windowStart,
+  IMPROVE_WINDOW_HOURS,
+  IMPROVE_FREE_LIMIT,
+  IMPROVE_PRO_LIMIT,
+} from '@/lib/limits'
 import type { Tone } from '@/types/database'
 import type { QAPair } from '@/types'
 
@@ -145,16 +151,22 @@ export async function POST(req: NextRequest) {
    * Free-tier quota, on the same policy the extension uses.
    *
    * This enforced REWRITE_FREE_LIMIT, 5 per 48 hours, which limits.ts marks
-   * @deprecated. The live policy is USAGE_DAILY_LIMIT, 10 per rolling 24
+   * @deprecated. The live policy is IMPROVE_FREE_LIMIT / IMPROVE_PRO_LIMIT, per rolling 30
    * hours, and that is what the pricing page and the FAQ both promise. The
    * two routes disagreeing did not show up while this one was unreachable
    * for signed-in web users. Now that a cookie session is recognised, a web
    * visitor would have hit a limit half the size of the one they were sold.
    *
-   * Pro bypasses entirely. A later turn in the same session does not
-   * recount: the user already spent a credit on that analysis.
+   * PRO NO LONGER BYPASSES. It did, which is the same hole the sharpen route
+   * had: "unlimited" was enforced literally on a call measured at $0.0198.
+   * Both tiers count the same event in the same window; only the allowance
+   * differs.
+   *
+   * A later turn in the same session still does not recount: the user
+   * already spent a credit on that analysis.
    */
-  if (auth && auth.tier === 'free' && priorAnswers.length === 0) {
+  if (auth && priorAnswers.length === 0) {
+    const limit = auth.tier === 'pro' ? IMPROVE_PRO_LIMIT : IMPROVE_FREE_LIMIT
     const supabase = await createServiceClient()
 
     const { data: rows, count, error: usageErr } = await supabase
@@ -162,7 +174,7 @@ export async function POST(req: NextRequest) {
       .select('created_at', { count: 'exact' })
       .eq('user_id', auth.userId)
       .eq('event_type', 'prompt_analyzed')
-      .gte('created_at', windowStart(USAGE_WINDOW_HOURS))
+      .gte('created_at', windowStart(IMPROVE_WINDOW_HOURS))
       .order('created_at', { ascending: true })
       .limit(1)
 
@@ -175,14 +187,14 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const decision = decideUsage(count ?? 0, rows?.[0]?.created_at ?? null)
+    const decision = decideUsage(count ?? 0, rows?.[0]?.created_at ?? null, new Date(), limit)
     if (!decision.allow) {
       return withCors(NextResponse.json(
         {
           error: 'rate_limited_quota',
           // A wall with a clock on it is a wait; without one it is a dead end.
           resetAt: decision.retryAt,
-          dailyLimit: USAGE_DAILY_LIMIT,
+          dailyLimit: limit,
         },
         { status: 402 }
       ))

@@ -6,7 +6,8 @@ import {
   PRO_FACTCHECK_LIMIT,
   DETECT_FREE_LIMIT,
   PRO_DETECT_LIMIT,
-  USAGE_DAILY_LIMIT,
+  IMPROVE_FREE_LIMIT,
+  IMPROVE_PRO_LIMIT,
   HISTORY_FREE_DAYS,
 } from './limits'
 import { ANON_FACTCHECK_DAY } from './rate-limit'
@@ -80,16 +81,48 @@ test('the frozen tool is never more generous than the product', () => {
   )
 })
 
-test('nothing metered is sold as unlimited', () => {
+/**
+ * EVERY FEATURE LINE IS METERED UNTIL SOMEONE SAYS OTHERWISE.
+ *
+ * The previous version of this test looked for the words "detection",
+ * "check" and "source" inside an "Unlimited" line. That is an allowlist of
+ * things that count, which means anything new does not count by default -
+ * the same shortcut that has now produced this class of bug six times. It
+ * passed happily while the page said "Unlimited prompt improvements" against
+ * a server that enforced nothing, on a call measured at $0.0198.
+ *
+ * So it is inverted. A feature line may only say "Unlimited" if it is
+ * declared here with a reason, the way exemptions work in
+ * paid-routes.test.ts. A feature added next year fails until somebody thinks
+ * about what it costs.
+ */
+const UNMETERED_BY_DESIGN: Record<string, string> = {
+  // Nothing. Every line on both plans is a number the server enforces.
+  // If you add one here, write down what it costs per use and why unbounded
+  // is affordable at the LOWEST price the plan is ever sold at - which is the
+  // $12 founding price, not the $19 list price.
+}
+
+test('no feature line promises anything unlimited unless it is declared', () => {
   const src = copyOnly(pricing)
-  const features = src.slice(src.indexOf('const PRO_FEATURES'), src.indexOf('const LAUNCH'))
-  const unlimited = [...features.matchAll(/"Unlimited ([^"]+)"/g)].map(m => m[1])
-  for (const what of unlimited) {
-    assert.doesNotMatch(
-      what,
-      /detection|check|source/i,
-      `"Unlimited ${what}" is a promise on a metered cost`
-    )
+  const block = src.slice(src.indexOf('const FREE_FEATURES'), src.indexOf('const LAUNCH'))
+  const offenders: string[] = []
+  for (const m of block.matchAll(/[`"']([^`"']*[Uu]nlimited[^`"']*)[`"']/g)) {
+    const line = m[1].trim()
+    if (!(line in UNMETERED_BY_DESIGN)) offenders.push(line)
+  }
+  assert.deepEqual(
+    offenders,
+    [],
+    `undeclared unlimited promise: ${offenders.join(' | ')}. ` +
+      'Either enforce a number, or add it to UNMETERED_BY_DESIGN with what it costs.'
+  )
+})
+
+test('every declared exemption still has a reason attached', () => {
+  // An empty string would satisfy the record type and defeat the point.
+  for (const [line, why] of Object.entries(UNMETERED_BY_DESIGN)) {
+    assert.ok(why.trim().length > 20, `"${line}" is exempt with no real reason`)
   }
 })
 
@@ -128,12 +161,14 @@ test('every free number in the copy matches its constant', () => {
   // Belt and braces on the interpolation: the values themselves have to be
   // the ones the server uses, not just read from somewhere.
   assert.equal(FACTCHECK_FREE_LIMIT, 5)
-  assert.equal(PRO_FACTCHECK_LIMIT, 120)
+  assert.equal(PRO_FACTCHECK_LIMIT, 60)
   assert.equal(DETECT_FREE_LIMIT, 10)
-  assert.equal(PRO_DETECT_LIMIT, 60)
-  assert.equal(USAGE_DAILY_LIMIT, 10)
+  assert.equal(PRO_DETECT_LIMIT, 30)
+  assert.equal(IMPROVE_FREE_LIMIT, 10)
+  assert.equal(IMPROVE_PRO_LIMIT, 30)
   assert.equal(HISTORY_FREE_DAYS, 7)
-  assert.ok(src.includes('${USAGE_DAILY_LIMIT} prompt improvements a day'))
+  assert.ok(src.includes('${IMPROVE_FREE_LIMIT} prompt improvements a month'))
+  assert.ok(src.includes('${IMPROVE_PRO_LIMIT} prompt improvements a month'))
   assert.ok(src.includes('${DETECT_FREE_LIMIT} AI text detections a month'))
   assert.ok(src.includes('${HISTORY_FREE_DAYS} days of history'))
   assert.ok(src.includes('${PRO_DETECT_LIMIT} AI text detections a month'))
