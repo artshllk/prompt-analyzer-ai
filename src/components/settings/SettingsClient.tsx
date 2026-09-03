@@ -6,8 +6,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { markSignedOut } from '@/lib/auth/local-hints'
 import { MemorySection } from './MemorySection'
+import { UpgradeButton } from '@/components/ui/UpgradeButton'
+import { FACTCHECK_FREE_LIMIT } from '@/lib/limits'
 
 interface SettingsClientProps {
+  /** Founding seats left, counted at Paddle by the page. */
+  foundingLeft?: number
   email: string
   /** Accepted and unused: the old Account card listed it, and a name is not
    *  something anyone comes to a settings page to read. */
@@ -16,7 +20,7 @@ interface SettingsClientProps {
   subscriptionStatus: string | null
 }
 
-export function SettingsClient({ email, tier, subscriptionStatus }: SettingsClientProps) {
+export function SettingsClient({ email, tier, subscriptionStatus, foundingLeft = 0 }: SettingsClientProps) {
   const router = useRouter()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [confirmText, setConfirmText] = useState('')
@@ -116,7 +120,7 @@ export function SettingsClient({ email, tier, subscriptionStatus }: SettingsClie
           body={
             isPro
               ? 'Manage your plan, card, and invoices.'
-              : 'You are on the free plan. 10 source checks a month.'
+              : `You are on the free plan. ${FACTCHECK_FREE_LIMIT} source checks a month.`
           }
           /* A subscription that is not active means a payment failed. Without
              this the first they hear of it is Pro switching off. */
@@ -136,13 +140,18 @@ export function SettingsClient({ email, tier, subscriptionStatus }: SettingsClie
                 {billingLoading ? 'Opening...' : 'Manage billing'}
               </button>
             ) : (
-              <a
-                href="/pricing"
-                className="inline-block px-4 py-2.5 rounded-full text-[15px] transition-all btn-outline"
-                style={{ border: '1px solid var(--rule)', color: 'var(--ink)', fontWeight: 500 }}
+              /* Was <a href="/pricing"> labelled "See Pro". That dropped a
+                 signed-in person out of the app shell onto a page written to
+                 persuade someone who has not signed up, and asked them to
+                 find the button again. The choice happens here now, and the
+                 label says what the button does. */
+              <UpgradeButton
+                foundingLeft={foundingLeft}
+                className="inline-block px-4 py-2.5 rounded-full text-[15px] transition-all btn-brand"
+                
               >
-                See Pro
-              </a>
+                Upgrade to Pro
+              </UpgradeButton>
             )
           }
           note={billingError}

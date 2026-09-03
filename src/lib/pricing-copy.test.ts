@@ -158,7 +158,23 @@ test('the founding cap is enforced on the server, not in the page', () => {
 })
 
 test('a refused checkout says so instead of doing nothing', () => {
+  // The logic moved into useCheckout, shared by the pricing button and the
+  // in-app dialog, so a failure mode fixed once is fixed for both.
+  const hook = readFileSync('src/components/ui/useCheckout.ts', 'utf8')
+  assert.match(hook, /founding_sold_out/)
+  assert.match(hook, /setError/)
+  // Every early return must explain itself. This is the `if (!paddle) return`
+  // that made the button do nothing at all.
+  for (const state of ['loading', 'disabled', 'failed']) {
+    assert.match(hook, new RegExp(`status === '${state}'`), `${state} has no branch`)
+  }
+  assert.doesNotMatch(hook, /if \(!paddle\) return\s*$/m, 'a bare return is a dead button')
+})
+
+test('no upgrade button can silently pick a plan for the reader', () => {
   const btn = readFileSync('src/components/ui/UpgradeButton.tsx', 'utf8')
-  assert.match(btn, /founding_sold_out/)
-  assert.match(btn, /setError/)
+  // The old default of 'pro_monthly' would have charged $19 to someone
+  // reading "$12, 50 places left".
+  assert.doesNotMatch(btn, /plan = '/, 'plan must never have a default')
+  assert.match(btn, /plan \? start\(plan\) : setOpen\(true\)/)
 })

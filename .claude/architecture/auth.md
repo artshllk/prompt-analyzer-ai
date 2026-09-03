@@ -48,10 +48,20 @@ explicit revocation). Connection codes fail only when the web session does.
 
 - **Supabase → Authentication → Email Templates → Magic Link:** replace the
   `{{ .ConfirmationURL }}` link with
-  `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink&next=/dashboard`.
+  `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink&next=/check`.
+
+  **THIS LINE USED TO SAY `next=/dashboard`, AND THAT ROUTE WAS DELETED.**
+  Every sign-in email sent while it did carries a destination that 404s, and
+  no deploy can reach a link already sitting in somebody's inbox. That is why
+  `postSignInDestination()` now validates `next` against the routes that exist
+  and maps retired ones, rather than trusting the parameter. If you change
+  this line again, add the new destination to the allow list in
+  `src/lib/auth/post-signin.ts`, which has a test that fails when a listed
+  route has no page.
   This makes links work in any browser/device (kills cause 2). The callback
-  route already handles `token_hash` + `type`. **Also add the 6-digit code
-  `{{ .Token }}` to the template body** (e.g. "Your sign-in code: {{ .Token }}") —
+  route already handles `token_hash` + `type`. **Also add the code
+  `{{ .Token }}` to the template body** (ours is 8 digits; the login page
+  accepts 6 to 8 and auto-submits at 8) (e.g. "Your sign-in code: {{ .Token }}") —
   the login page's sent screen now has a code field that signs the user in
   on the spot via `verifyOtp`, no inbox link-click needed. Until the
   template includes `{{ .Token }}`, the code field has nothing to match and

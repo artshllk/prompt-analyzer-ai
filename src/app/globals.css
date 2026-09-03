@@ -699,7 +699,11 @@ a[aria-disabled="true"],
   transition: background-color 200ms ease, border-color 200ms ease;
 }
 .btn-outline:hover:not(:disabled) {
-  background-color: rgba(245, 244, 241, 0.05);
+  /* A 5% PAPER wash, left over from the dark canvas: on the paper ground it
+     is invisible, so every secondary button on the site had no hover at all.
+     Inverted to an ink wash, and the hairline firms up at the same time. */
+  background-color: color-mix(in srgb, var(--ink) 5%, transparent);
+  border-color: color-mix(in srgb, var(--ink) 25%, var(--paper));
 }
 
 /* Plain text button / inline link in editorial palette - paper-mute → paper. */
@@ -759,4 +763,173 @@ a[aria-disabled="true"],
   color: var(--color-paper);
   border-color: var(--color-paper);
   background-color: rgba(245, 244, 241, 0.04);
+}
+
+
+/* ===================================================================
+   SIGN IN
+   ===================================================================
+
+   A split panel: form left at a fixed measure, product right. The right
+   column collapses below lg rather than stacking, because a decorative
+   excerpt above a form on a phone is something to scroll past.
+
+   The contrast numbers here are measured, not chosen. A control boundary
+   needs 3:1 against its background under WCAG, and the previous field border
+   sat at 1.42:1 with a white fill at 1.14:1 on paper: the inputs were
+   effectively invisible boxes.
+   =================================================================== */
+.login-split {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.login-form-col {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  align-items: flex-start;
+  padding: 32px 24px;
+  background: var(--card);
+}
+
+@media (min-width: 1024px) {
+  .login-form-col {
+    flex: 0 0 min(52%, 620px);
+    padding: 44px 72px;
+    /* The 3:1 value, so the seam between the columns is a real edge. */
+    border-right: 1px solid color-mix(in srgb, var(--ink) 48%, var(--paper));
+  }
+}
+
+.login-proof-col {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .login-proof-col {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    padding: 44px 72px;
+    background: var(--paper);
+  }
+}
+
+/* The field. One border value, used by both inputs. */
+.login-field {
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid color-mix(in srgb, var(--ink) 48%, var(--paper));
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.login-field:focus-within {
+  border-color: var(--brand);
+  /* Was a 1.05:1 halo, which is no focus indicator at all. */
+  box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+
+.login-input {
+  width: 100%;
+  padding: 13px 14px;
+  font-size: 16px; /* 16px or iOS zooms the page on focus */
+  background: transparent;
+  color: var(--ink);
+  border: 0;
+  outline: none;
+}
+
+.login-input::placeholder {
+  color: color-mix(in srgb, var(--ink) 42%, var(--paper));
+}
+
+.login-input-code {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  letter-spacing: 0.24em;
+}
+
+/* Errors are not fine print. Was 12px at 3.64:1 in an off-palette red. */
+.login-error {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--brand-text);
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--color-accent-soft);
+}
+
+/* White on the brand fill. Was --brand on --brand, a 1.0:1 invisible spinner. */
+.login-spinner {
+  height: 15px;
+  width: 15px;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  animation: spin 700ms linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The word beside it carries the state, so nothing needs to move. */
+  .login-spinner {
+    animation: none;
+  }
+}
+
+.login-back,
+.login-resend {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  transition: color 160ms ease;
+}
+
+.login-back:hover,
+.login-resend:not(:disabled):hover {
+  color: var(--brand-text);
+}
+
+.login-resend:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Was `hover:opacity-100` on a link already at full opacity, so the legal
+   links had no hover state, and they were full --ink inside an --ink-soft
+   sentence, reading as emphasis rather than as links. */
+.login-legal-link {
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 160ms ease;
+}
+
+.login-legal-link:hover {
+  color: var(--brand-text);
+}
+
+/* The marks in the right column. Same three meanings as the checker. */
+.login-mark {
+  padding: 2px 5px;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.login-mark-confirm { color: var(--confirm); background: var(--confirm-bg, rgba(46, 111, 78, 0.09)); }
+.login-mark-guess   { color: var(--guess);   background: var(--guess-bg); }
+.login-mark-brand   { color: var(--brand-text); background: var(--color-accent-soft); }
+
+.login-key {
+  flex-shrink: 0;
+  width: 118px;
+  font-family: var(--font-mono);
+  font-size: 12px;
 }

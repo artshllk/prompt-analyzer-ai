@@ -92,7 +92,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SidebarProfile() {
+function SidebarProfile({ foundingLeft = 0 }: { foundingLeft?: number }) {
   const authUser = useAuthUser();
   const pathname = usePathname();
   const settingsActive = pathname.startsWith("/settings");
@@ -115,7 +115,10 @@ function SidebarProfile() {
     >
       {/* 1. Upgrade button gets its own full-width row if present */}
       {isFree && (
-        <UpgradeButton className="w-full flex items-center justify-center text-[10px] font-bold tracking-wider uppercase py-2 rounded-full btn-brand transition-all">
+        <UpgradeButton
+          foundingLeft={foundingLeft}
+          className="w-full flex items-center justify-center text-[10px] font-bold tracking-wider uppercase py-2 rounded-full btn-brand transition-all"
+        >
           Upgrade to Pro
         </UpgradeButton>
       )}
@@ -209,12 +212,14 @@ interface AppShellProps {
   children: React.ReactNode;
   /** True when the user has prompt-improver sessions stored. Hides History otherwise. */
   hasHistory?: boolean;
+  /** Founding seats left. Passed to the upgrade dialog so it shows a real price. */
+  foundingLeft?: number;
   // Kept on the prop type for compatibility with existing callers; unused for now
   // since the sidebar no longer renders a usage meter (limits surface contextually).
   usage?: UsageInfo;
 }
 
-export function AppShell({ children, hasHistory }: AppShellProps) {
+export function AppShell({ children, hasHistory, foundingLeft = 0 }: AppShellProps) {
   const pathname = usePathname();
 
   // History only exists for people who have some. Everyone gets Check.
@@ -412,7 +417,7 @@ export function AppShell({ children, hasHistory }: AppShellProps) {
         </nav>
 
         <AuthProvider>
-          <SidebarProfile />
+          <SidebarProfile foundingLeft={foundingLeft} />
         </AuthProvider>
       </aside>
 

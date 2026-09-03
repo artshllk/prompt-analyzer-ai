@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { SettingsClient } from '@/components/settings/SettingsClient'
+import { foundingSeatsLeft } from '@/lib/paddle'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -12,6 +13,11 @@ export default async function SettingsPage() {
     .select('email, full_name, tier, subscription_status, subscription_period_end')
     .eq('id', user.id)
     .single()
+
+  // Only asked for when it can be acted on. A Pro user never sees the
+  // upgrade action, so counting seats for them is a wasted Paddle call.
+  const isPro = (profile?.tier ?? 'free') === 'pro'
+  const foundingLeft = isPro ? 0 : await foundingSeatsLeft()
 
   return (
     /**
@@ -35,6 +41,7 @@ export default async function SettingsPage() {
           fullName={profile?.full_name ?? null}
           tier={profile?.tier ?? 'free'}
           subscriptionStatus={profile?.subscription_status ?? null}
+          foundingLeft={foundingLeft}
         />
       </div>
     </div>

@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ANON_DETECT_LIMIT,
   DETECT_FREE_LIMIT,
-  DETECT_WINDOW_HOURS,
+  PRO_DETECT_LIMIT,
 } from "@/lib/limits";
 
 /** localStorage key mirroring the homepage rewrite demo's run counter. */
@@ -296,16 +296,20 @@ function FreeLimitNote() {
         border: "1px solid var(--color-rule-strong)",
       }}
     >
+      {/* Was "in the last {DETECT_WINDOW_HOURS}h", which read as "in the
+          last 720h" once the window moved to a month. Nobody thinks in
+          hundreds of hours. */}
       <p className="text-sm" style={{ color: "var(--color-paper)" }}>
-        You&apos;ve used all {DETECT_FREE_LIMIT} free detections in the last{" "}
-        {DETECT_WINDOW_HOURS}h.
+        You&apos;ve used all {DETECT_FREE_LIMIT} free detections this month.
       </p>
       <Link
         href="/pricing"
         className="text-sm underline underline-offset-4 transition-opacity hover:opacity-80"
         style={{ color: "var(--color-accent-bright)" }}
       >
-        Upgrade to Pro for unlimited →
+        {/* Pro detections are capped at PRO_DETECT_LIMIT and enforced.
+            "Unlimited" was true of the server once and is not now. */}
+        Upgrade to Pro for {PRO_DETECT_LIMIT} a month →
       </Link>
     </div>
   );
@@ -396,7 +400,7 @@ function DetectorGateModal({
               className="text-[15px] sm:text-lg leading-relaxed mb-8"
               style={{ color: "var(--color-paper-mute)" }}
             >
-              Sign in for {DETECT_FREE_LIMIT} a day and to keep your history.
+              Sign in for {DETECT_FREE_LIMIT} a month and to keep your history.
             </p>
             <Link
               href="/login?signup=1&redirectTo=/detector"

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { FACTCHECK_FREE_LIMIT } from '@/lib/limits'
+import { ANON_FACTCHECK_DAY } from '@/lib/rate-limit'
 
 const FAQS = [
   {
@@ -21,7 +23,7 @@ const FAQS = [
   },
   {
     q: 'Is it free?',
-    a: 'Yes. Two checks a day. Ten if you make an account.',
+    a: `Yes. ${ANON_FACTCHECK_DAY.capacity} checks a day. ${FACTCHECK_FREE_LIMIT} a month if you make an account.`,
   },
   {
     q: 'Do you keep my text?',

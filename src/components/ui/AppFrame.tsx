@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { hasStoredHistory } from '@/lib/db/has-history'
+import { foundingSeatsLeft } from '@/lib/paddle'
 import { AppShell } from './AppShell'
 
 /**
@@ -28,13 +29,20 @@ export async function AppFrame({ children }: { children: React.ReactNode }) {
   // /check sends people to the landing page, the (app) group sends them to
   // /login.
   const hasHistory = user ? await hasStoredHistory(user.id) : false
+  /**
+   * The shell decides this too, for the same reason it decides History: a
+   * page should not have to know what is in the sidebar. Counted at Paddle,
+   * cached for thirty seconds, and it fails closed to 0, which hides the
+   * founding option rather than advertising a price we cannot honour.
+   */
+  const foundingLeft = user ? await foundingSeatsLeft() : 0
 
   return (
     <div
       className="editorial grain no-page-transition min-h-screen"
       style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}
     >
-      <AppShell hasHistory={hasHistory}>{children}</AppShell>
+      <AppShell hasHistory={hasHistory} foundingLeft={foundingLeft}>{children}</AppShell>
     </div>
   )
 }

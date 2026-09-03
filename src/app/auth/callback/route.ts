@@ -17,7 +17,12 @@ export async function GET(req: NextRequest) {
   const code = searchParams.get('code')
   const tokenHash = searchParams.get('token_hash')
   const type = searchParams.get('type')
-  const next = searchParams.get('next') ?? '/check'
+  /**
+   * Validated HERE, before it is used to build anything. It arrives from a
+   * URL anyone can edit, and our own email template got it wrong for months.
+   * See post-signin.ts.
+   */
+  const next = postSignInDestination(searchParams.get('next'))
 
   const errorParam = searchParams.get('error')
   const errorDescription = searchParams.get('error_description')
@@ -53,14 +58,10 @@ export async function GET(req: NextRequest) {
     }
   )
 
-  // The response object already carries the session cookies, so a changed
-  // destination is applied by rewriting its Location header rather than
-  // building a fresh redirect.
-  function finish(user: { id: string; created_at?: string } | null) {
-    if (user) {
-      const dest = postSignInDestination(next)
-      if (dest !== next) response.headers.set('location', `${origin}${dest}`)
-    }
+  // `next` is already validated, so the response built above is correct as
+  // it stands. This exists so the session cookies attached to `response`
+  // survive; building a fresh redirect here would drop them.
+  function finish(_user: { id: string; created_at?: string } | null) {
     return response
   }
 
