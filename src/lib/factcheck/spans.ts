@@ -6,26 +6,6 @@ import {
   UNCITED_BELOW,
 } from './types'
 
-/**
- * Turning located claims into something a component can render.
- *
- * The problem: claim spans can overlap. Two claims in one sentence, a
- * statistic sitting inside a longer attribution, a fuzzy anchor that reached
- * further than it should. HTML cannot render overlapping highlights without
- * nesting, and nested coloured pills are unreadable at body size.
- *
- * So this flattens spans into a list of non-overlapping runs. The component
- * maps over runs and never has to reason about geometry, which is the whole
- * point: geometry belongs in a pure function with tests, not in JSX.
- *
- * Pure. No React, no DOM, no imports beyond a type.
- */
-
-export interface RenderRun {
-  text: string
-  /** The claim this run belongs to, or null for untouched prose. */
-  claimId: string | null
-}
 
 /**
  * Resolve overlaps by keeping the FIRST claim to occupy a character.
@@ -59,32 +39,6 @@ export function resolveOverlaps(claims: Claim[]): Claim[] {
   return kept
 }
 
-/**
- * Flatten a document and its claims into non-overlapping runs.
- *
- * Guarantee: joining every run's text reproduces the document exactly. That is
- * asserted in the tests, and it is what stops a rendering bug from silently
- * dropping or duplicating a sentence of somebody's writing.
- */
-export function toRenderRuns(text: string, claims: Claim[]): RenderRun[] {
-  const placed = resolveOverlaps(claims)
-  const runs: RenderRun[] = []
-  let cursor = 0
-
-  for (const c of placed) {
-    const { start, end } = c.span!
-    // Defensive: a span outside the document would silently truncate the
-    // output. Skip it rather than render a shorter document than the one
-    // the user pasted.
-    if (start < cursor || end > text.length || end <= start) continue
-    if (start > cursor) runs.push({ text: text.slice(cursor, start), claimId: null })
-    runs.push({ text: text.slice(start, end), claimId: c.id })
-    cursor = end
-  }
-
-  if (cursor < text.length) runs.push({ text: text.slice(cursor), claimId: null })
-  return runs.filter(r => r.text.length > 0)
-}
 
 /**
  * The claims that could not be placed inline.

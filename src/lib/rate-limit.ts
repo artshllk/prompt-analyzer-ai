@@ -91,8 +91,21 @@ export const PRO_USER_LIMIT: LimitConfig = { capacity: 30, refillPerSecond: 30 /
  * acceptable because it is not the thing bounding the bill: the global daily
  * bucket in anon-budget is, and that one is in Postgres and fails closed.
  * This exists to stop one person casually running twenty.
+ *
+ * FIVE, NOT TWO, AND THE REASON IS THE SHAPE OF THE COST. A document with no
+ * links costs about $0.007, because nothing is fetched and nothing is judged;
+ * a cited one costs about $0.105. So the visitor this limit used to punish -
+ * someone spending both tries learning what the tool does, on documents with
+ * no links - was the cheapest visitor we had, and they were locked out for a
+ * day and did not come back. Five lets a person get past their own false
+ * starts and still reach a real document.
+ *
+ * It is not the abuse control and was never going to be. Anyone determined
+ * waits, or changes address, and this bucket forgets them anyway. What this
+ * number decides is the experience of an honest first-timer, so it is set for
+ * one.
  */
-export const ANON_FACTCHECK_DAY: LimitConfig = { capacity: 2, refillPerSecond: 2 / 86400 }
+export const ANON_FACTCHECK_DAY: LimitConfig = { capacity: 5, refillPerSecond: 5 / 86400 }
 
 export const EVENT_LIMIT: LimitConfig = { capacity: 120, refillPerSecond: 120 / 3600 } // 120/hour
 

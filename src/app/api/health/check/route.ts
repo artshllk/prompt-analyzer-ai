@@ -3,6 +3,7 @@ import { extractClaims } from '@/lib/factcheck/extract'
 import { checkCitations } from '@/lib/factcheck/citation'
 import { HEALTH_DOC, judgedCount, type HealthVerdict } from '@/lib/factcheck/health'
 import { meter } from '@/lib/factcheck/providers/meter'
+import { alertOps } from '@/lib/alert'
 
 /**
  * Runs one tiny document all the way through, on a schedule.
@@ -31,22 +32,10 @@ function say(v: HealthVerdict): NextResponse {
 }
 
 async function shout(v: Extract<HealthVerdict, { ok: false }>): Promise<void> {
-  const url = process.env.HEALTH_ALERT_WEBHOOK
-  if (!url) return
-  try {
-    await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      // Slack and Discord both read `text`. Anything else gets the fields.
-      body: JSON.stringify({
-        text: `Deepclario source checker is DOWN: ${v.reason}. ${v.detail}`,
-        ...v,
-      }),
-    })
-  } catch (err) {
-    // A failed alert must never turn into a passing health check.
-    console.error('[health] alert webhook failed:', err)
-  }
+  await alertOps(
+    `Deepclario source checker is DOWN: ${v.reason}.`,
+    `${v.detail} (${v.ms}ms)`
+  )
 }
 
 export async function GET(req: NextRequest) {

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import {
-  toRenderRuns,
+  resolveOverlaps,
   unanchoredClaims,
   firstPartyClaims,
   countByVerdict,
@@ -10,6 +10,7 @@ import {
   nothingToCheck,
 } from '@/lib/factcheck/spans'
 import { rankFlags } from '@/lib/factcheck/flags'
+import { DocumentBody } from '@/components/factcheck/DocumentBody'
 import { groupFindings, summaryLines, FINDINGS_SHOWN } from '@/lib/factcheck/severity'
 import type { Finding, GroupedFindings } from '@/lib/factcheck/severity'
 import type { Claim, ClaimVerdict, CitationDensity } from '@/lib/factcheck/types'
@@ -99,7 +100,18 @@ export function MarkedDocument({
   // Memoised, not a bare conditional: a new array identity on every render
   // would defeat every useMemo below that depends on it.
   const marked = useMemo(() => (empty ? [] : claims), [empty, claims])
-  const runs = useMemo(() => toRenderRuns(text, marked), [text, marked])
+  /**
+   * Spans in SOURCE coordinates. DocumentBody translates them, because the
+   * source string is what the extractor anchored against and mutating it
+   * would move every mark.
+   */
+  const markSpans = useMemo(
+    () =>
+      resolveOverlaps(marked)
+        .filter(c => c.span)
+        .map(c => ({ id: c.id, start: c.span!.start, end: c.span!.end })),
+    [marked]
+  )
   const flags = useMemo(() => rankFlags(marked, text.length), [marked, text])
   const findings = useMemo(() => groupFindings(marked), [marked])
   const listed = useMemo(() => unanchoredClaims(marked), [marked])
@@ -113,20 +125,44 @@ export function MarkedDocument({
       <DensityBanner density={density} />
       <Summary claims={claims} />
 
-      <div
-        className="mt-5 rounded-2xl p-4 sm:p-6"
-        style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}
-      >
-        <p
-          className="text-[15px] sm:text-base leading-[1.9] whitespace-pre-wrap wrap-break-word"
-          style={{ color: 'var(--ink)' }}
-        >
-          {runs.map((run, i) => {
-            const claim = run.claimId ? byId.get(run.claimId) : undefined
+      <div className="mt-5">
+        <DocumentBody
+          text={text}
+          marks={markSpans}
+          renderMark={(run, i) => {
+            const claim = byId.get(run.claimId!)
             if (!claim) return <span key={i}>{run.text}</span>
             const v = displayVerdict(claim)
             const s = STYLE[v]
             const isOpen = openId === claim.id
+            const skin = {
+              background: s.bg,
+              color: s.fg,
+              textDecoration: underlineFor(claim),
+              textUnderlineOffset: '3px',
+              boxShadow: isOpen ? `inset 0 0 0 2px ${s.fg}` : `inset 0 0 0 1px ${s.fg}33`,
+            }
+            /* Inline, so it sits in the paragraph rather than breaking it.
+               -my-1 py-1 grows the hit area without pushing the line height
+               around mid-paragraph. */
+            const shape = 'claim-mark inline text-left -my-1 py-1 px-1 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1'
+
+            // A link inside the claim. The anchor wins the click and wears the
+            // mark's colours, so the stretch still reads as one thing.
+            if (run.href) {
+              return (
+                <a
+                  key={i}
+                  href={run.href}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className={shape}
+                  style={skin}
+                >
+                  {run.text}
+                </a>
+              )
+            }
             return (
               <button
                 key={i}
@@ -134,23 +170,14 @@ export function MarkedDocument({
                 onClick={() => setOpenId(isOpen ? null : claim.id)}
                 aria-expanded={isOpen}
                 aria-label={`${s.label}: ${claim.claimText}`}
-                /* Inline, so it sits in the paragraph rather than breaking it.
-                   -my-1 py-1 grows the hit area without pushing the line
-                   height around mid-paragraph. */
-                className="claim-mark inline text-left -my-1 py-1 px-1 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1"
-                style={{
-                  background: s.bg,
-                  color: s.fg,
-                  textDecoration: underlineFor(claim),
-                  textUnderlineOffset: '3px',
-                  boxShadow: isOpen ? `inset 0 0 0 2px ${s.fg}` : `inset 0 0 0 1px ${s.fg}33`,
-                }}
+                className={shape}
+                style={skin}
               >
                 {run.text}
               </button>
             )
-          })}
-        </p>
+          }}
+        />
       </div>
 
       {progress && <NowChecking claims={claims} progress={progress} />}

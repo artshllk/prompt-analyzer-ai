@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { MarkedDocument } from '@/components/factcheck/MarkedDocument'
+import { DocumentBody } from '@/components/factcheck/DocumentBody'
 import { PrintReport } from '@/components/factcheck/PrintReport'
 import { useCheckStream } from '@/components/factcheck/useCheckStream'
 import { MAX_DOC_CHARS } from '@/lib/factcheck/types'
@@ -124,24 +125,17 @@ export function CheckClient() {
    * happening, and a skeleton would make it read as a page failing to load.
    *
    * Nothing here is ever replaced. The same paragraph, in the same box, with
-   * the same type, is what phase two marks up, so the transition is marks
-   * appearing ON a page rather than a page appearing.
+   * the same type, and the same link rendering, is what phase two marks up,
+   * so the transition is marks appearing ON a page rather than a page
+   * appearing. Both phases go through DocumentBody for exactly that reason.
    */
   if (state.kind === 'extracting') {
     return (
       <div>
         <ReadingLabel />
-        <div
-          className="rounded-2xl p-4 sm:p-6"
-          style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}
-        >
-          <p
-            className="text-[15px] sm:text-base leading-[1.9] whitespace-pre-wrap wrap-break-word"
-            style={{ color: 'var(--ink)' }}
-          >
-            {text}
-          </p>
-        </div>
+        {/* No marks yet, and the same renderer phase two uses, so the marks
+            arrive ON this paragraph rather than replacing it. */}
+        <DocumentBody text={text} />
       </div>
     )
   }

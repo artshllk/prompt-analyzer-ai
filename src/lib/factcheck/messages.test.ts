@@ -138,3 +138,35 @@ test('the host is named when it is opened and when it is slow, not in between', 
   assert.match(markedDoc, /'Reading the page'/)
   assert.match(markedDoc, /`\$\{host\} is slow to respond`/)
 })
+
+// ---------------------------------------------------------------------------
+// Limits and the cap alert
+// ---------------------------------------------------------------------------
+
+test('the anonymous daily limit is five, and refills over a day', () => {
+  const rl = readFileSync('src/lib/rate-limit.ts', 'utf8')
+  assert.match(rl, /ANON_FACTCHECK_DAY: LimitConfig = \{ capacity: 5, refillPerSecond: 5 \/ 86400 \}/)
+})
+
+test('the cap alert fires once, on the first refusal only', () => {
+  const route = readFileSync('src/app/api/factcheck/check/route.ts', 'utf8')
+  // cap + 1 is the post-increment count the single refusing request sees.
+  // Anything looser alerts once per turned-away visitor for the rest of the day.
+  assert.match(route, /budget\.used === budget\.cap \+ 1/)
+  assert.match(route, /alertOps\(/)
+})
+
+test('a database outage cannot masquerade as demand', () => {
+  const budget = readFileSync('src/lib/db/anon-budget.ts', 'utf8')
+  // Both failure branches return used: cap, which is not cap + 1, so the
+  // "we are turning people away" alert cannot fire for an outage.
+  const failures = budget.match(/allowed: false, used: \w+, cap/g) ?? []
+  assert.ok(failures.length >= 2, 'expected both fail-closed branches')
+  for (const f of failures) assert.match(f, /used: cap,/)
+})
+
+test('alerting is optional and never throws', () => {
+  const alert = readFileSync('src/lib/alert.ts', 'utf8')
+  assert.match(alert, /if \(!url\) return false/, 'must be silent with no webhook set')
+  assert.match(alert, /catch/, 'a failed alert must not become a failed request')
+})

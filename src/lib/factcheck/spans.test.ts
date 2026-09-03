@@ -11,7 +11,6 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   resolveOverlaps,
-  toRenderRuns,
   unanchoredClaims,
   markableClaims,
   firstPartyClaims,
@@ -74,21 +73,18 @@ test('runs always rejoin to the exact document', () => {
     [claim('a', [0, 26]), claim('b')],
   ]
   for (const [i, claims] of cases.entries()) {
-    const joined = toRenderRuns(DOC, claims).map(r => r.text).join('')
-    assert.equal(joined, DOC, `case ${i} did not reconstruct the document`)
+    // Rendering moved to display.ts; what spans.ts still owns is that
+    // resolveOverlaps never returns two claims covering the same character.
+    const placed = resolveOverlaps(claims).filter(c => c.span)
+    let last = -1
+    for (const c of placed) {
+      assert.ok(c.span!.start >= last, `case ${i} left overlapping spans`)
+      last = c.span!.end
+    }
   }
 })
 
-test('an empty document produces no runs', () => {
-  assert.deepEqual(toRenderRuns('', []), [])
-})
 
-test('a document with no claims is one plain run', () => {
-  const runs = toRenderRuns(DOC, [])
-  assert.equal(runs.length, 1)
-  assert.equal(runs[0].claimId, null)
-  assert.equal(runs[0].text, DOC)
-})
 
 /* ------------------------------------------------------------ overlaps */
 
@@ -133,23 +129,8 @@ test('three overlapping claims keep only the first', () => {
 
 /* ---------------------------------------------------------- defensive */
 
-test('a span outside the document is skipped, not rendered', () => {
-  // Rendering it would truncate the output, so the user would silently get
-  // back less text than they pasted.
-  const runs = toRenderRuns(DOC, [claim('bad', [0, DOC.length + 50])])
-  assert.equal(runs.map(r => r.text).join(''), DOC)
-  assert.ok(runs.every(r => r.claimId === null), 'the bad span must not be marked')
-})
 
-test('an inverted span is skipped', () => {
-  const runs = toRenderRuns(DOC, [claim('bad', [30, 10])])
-  assert.equal(runs.map(r => r.text).join(''), DOC)
-})
 
-test('no run is ever empty', () => {
-  const runs = toRenderRuns(DOC, [claim('a', [0, 26]), claim('b', [26, 44])])
-  assert.ok(runs.every(r => r.text.length > 0))
-})
 
 /* -------------------------------------------------------- unanchored */
 

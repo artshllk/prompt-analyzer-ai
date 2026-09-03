@@ -31,6 +31,7 @@ import {
 } from '@/lib/rate-limit'
 import { resolveCaller } from '@/lib/auth/caller'
 import { consumeAnonRun } from '@/lib/db/anon-budget'
+import { alertOps } from '@/lib/alert'
 import { getFactcheckAllowance, recordFactcheckUsage } from '@/lib/db/usage'
 import { extractClaims } from '@/lib/factcheck/extract'
 import { streamCitations } from '@/lib/factcheck/citation'
@@ -110,7 +111,31 @@ export async function POST(req: NextRequest) {
 
   if (!auth) {
     const budget = await consumeAnonRun('factcheck')
-    if (!budget.allowed) return json({ error: 'daily_capacity', resetAt: budget.resetAt }, 429)
+    if (!budget.allowed) {
+      /**
+       * A DAY WHERE VISITOR 41 IS TURNED AWAY IS A DAY WORTH KNOWING ABOUT.
+       *
+       * A silent refusal and no demand look identical from the outside, and
+       * they are opposite problems: one says spend more, the other says the
+       * product is not landing. Reading them the same way is how a good day
+       * gets mistaken for a bad one.
+       *
+       * Fires on the FIRST refusal only. `used` is the post-increment count
+       * from an atomic RPC, so exactly one request in the day sees cap + 1,
+       * however many instances are running. The failure branches of
+       * consumeAnonRun return `used: cap`, which means a database outage
+       * refusing everyone does not masquerade as demand.
+       */
+      if (budget.used === budget.cap + 1) {
+        console.error(`[factcheck] daily cap ${budget.cap} reached`)
+        await alertOps(
+          `Deepclario hit its daily free cap of ${budget.cap} checks.`,
+          `Anonymous visitors are being turned away until ${budget.resetAt}. ` +
+            `Raise FACTCHECK_DAILY_CAP if this is real demand rather than a script.`
+        )
+      }
+      return json({ error: 'daily_capacity', resetAt: budget.resetAt }, 429)
+    }
   } else {
     /**
      * THE PER-USER CEILING, and until now there was none.
