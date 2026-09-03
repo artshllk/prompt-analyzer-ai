@@ -169,10 +169,51 @@
   transition: opacity 200ms ease-out;
 }
 
+/* The one moving thing on the page, and only while we cannot itemise.
+   
+   Extraction is about fifteen seconds during which we genuinely do not know
+   what the claims are, so there is nothing true to count and any number would
+   be invented. A line that sweeps says "still working" and claims nothing
+   else. It disappears the moment there are real claims to show, because from
+   then on the honest signal is the claims themselves resolving. */
+.reading-line {
+  position: relative;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--rule);
+}
+
+.reading-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 30%;
+  left: -30%;
+  border-radius: 2px;
+  background: var(--ink-soft);
+  animation: reading-sweep 1700ms ease-in-out infinite;
+}
+
+@keyframes reading-sweep {
+  to {
+    left: 100%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .claim-mark,
   .claim-status {
     transition-duration: 0ms;
+  }
+  /* Not a slower sweep. No sweep, and a static rule in its place, so the
+     layout is identical and nothing moves at all. */
+  .reading-line::after {
+    animation: none;
+    left: 0;
+    width: 100%;
+    opacity: 0.4;
   }
 }
 

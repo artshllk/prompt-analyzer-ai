@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { MarkedDocument } from '@/components/factcheck/MarkedDocument'
 import { PrintReport } from '@/components/factcheck/PrintReport'
@@ -19,6 +19,49 @@ import { htmlToMarkdown, visibleLength } from '@/lib/factcheck/paste'
  * After that each claim resolves on its own as its check returns, with a line
  * saying what is happening to it. A named action makes a wait feel like work.
  */
+/**
+ * The label for the phase where we cannot itemise anything.
+ *
+ * IT CHANGES ONCE, AND THE CHANGE IS THE POINT. A label that never moves for
+ * fifteen seconds reads as a page that has stopped. One change tells a person
+ * the thing is alive without pretending to know more than we do, and both
+ * sentences are literally true of what is happening at the time: the whole
+ * document goes to the model, and the model returns the statements worth
+ * checking.
+ *
+ * Eight seconds, because the mean run is fifteen and the label should turn
+ * near the middle rather than near either end. On a fast run it still turns
+ * before the claims land; on a slow one it is not the last thing that moved.
+ *
+ * There is no third label. Two is enough to prove liveness and a third would
+ * be a narration of a process that has not changed.
+ */
+const SECOND_LABEL_AT = 8_000
+
+function ReadingLabel() {
+  const [late, setLate] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setLate(true), SECOND_LABEL_AT)
+    return () => clearTimeout(t)
+  }, [])
+
+  return (
+    <div className="mb-4">
+      <p
+        className="claim-status text-[14px]"
+        aria-live="polite"
+        style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}
+      >
+        {late ? 'Finding statements to check' : 'Reading your document'}
+      </p>
+      {/* The only moving thing on the page, and it claims nothing. It is gone
+          the moment there are real claims, because from then on the honest
+          signal is those claims resolving. */}
+      <div className="reading-line mt-3 max-w-[220px]" aria-hidden="true" />
+    </div>
+  )
+}
+
 export function CheckClient() {
   const [text, setText] = useState('')
   const { state, run, reset } = useCheckStream()
@@ -68,26 +111,26 @@ export function CheckClient() {
   // here is idle or an error and the box is always usable.
 
   /**
-   * THE WAIT SHOWS THEIR OWN DOCUMENT, NOT A SPINNER OR A SKELETON.
+   * PHASE ONE. THEIR OWN DOCUMENT, IMMEDIATELY, AND ONE HONEST LABEL.
    *
-   * Extraction is one model call over the whole document and takes about seven
-   * seconds. A spinner makes that seven seconds feel like nothing happening. A
-   * skeleton makes it feel like a page loading. Their own text, in the reading
-   * view, unmarked, makes it feel like a page waiting to be marked up, which is
-   * exactly what it is.
+   * Extraction is one model call over the whole document, measured at 15
+   * seconds mean and 18.5 worst. For all of it we know nothing: not how many
+   * claims there are, not where they are, not one thing worth itemising. So
+   * there is nothing here that counts, because any number would be invented.
    *
-   * The transition is then marks appearing ON a page rather than a page
-   * appearing, and nothing on screen is ever replaced.
+   * What there IS, free, is the text they just pasted. Their own words on
+   * screen unmarked read as a page waiting to be marked up, which is exactly
+   * what it is. A spinner would make the same fifteen seconds read as nothing
+   * happening, and a skeleton would make it read as a page failing to load.
+   *
+   * Nothing here is ever replaced. The same paragraph, in the same box, with
+   * the same type, is what phase two marks up, so the transition is marks
+   * appearing ON a page rather than a page appearing.
    */
   if (state.kind === 'extracting') {
     return (
       <div>
-        <p
-          className="claim-status mb-4 text-[14px]"
-          style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}
-        >
-          Reading your document.
-        </p>
+        <ReadingLabel />
         <div
           className="rounded-2xl p-4 sm:p-6"
           style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}

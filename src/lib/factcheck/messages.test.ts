@@ -75,3 +75,66 @@ test('a document with no links gets no number', () => {
   const sentence = checkClient.slice(idx - 200, idx + 40)
   assert.doesNotMatch(sentence, /linkCount/)
 })
+
+// ---------------------------------------------------------------------------
+// The waiting experience
+//
+// Source tests, because the rules here are about what must NOT be on screen
+// and no rendering test asserts an absence well.
+// ---------------------------------------------------------------------------
+
+const globalsCss = readFileSync('src/app/globals.css', 'utf8')
+const markedDoc = readFileSync('src/components/factcheck/MarkedDocument.tsx', 'utf8')
+
+/** Comments explain why we do NOT do a thing, so they cannot be evidence we do. */
+function code(src: string): string {
+  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+}
+
+test('nothing spins, shimmers or pulses', () => {
+  const ui = code(checkClient) + code(markedDoc) + code(globalsCss)
+  for (const banned of ['animate-spin', 'shimmer', 'animate-pulse', 'skeleton']) {
+    assert.doesNotMatch(ui, new RegExp(banned, 'i'), `${banned} is not honest waiting`)
+  }
+})
+
+test('the only number on screen while waiting is one we counted', () => {
+  const block = checkClient.slice(checkClient.indexOf("state.checkable === 0"), checkClient.indexOf("state.checkable === 0") + 240)
+  assert.match(block, /Checked \$\{state\.checked\} of \$\{state\.checkable\}/)
+  // `checked` counts resolved events and `checkable` counts opened ones. A
+  // percentage would be neither.
+  assert.doesNotMatch(checkClient, /%`|percent/i)
+})
+
+test('the document is on screen during extraction', () => {
+  const phase1 = checkClient.slice(
+    checkClient.indexOf("state.kind === 'extracting'"),
+    checkClient.indexOf("state.kind === 'checking'")
+  )
+  assert.match(phase1, /\{text\}/, 'their own text, immediately, not a placeholder')
+  assert.match(phase1, /<ReadingLabel \/>/)
+})
+
+test('the label changes once, and only once', () => {
+  assert.match(checkClient, /Reading your document/)
+  assert.match(checkClient, /Finding statements to check/)
+  assert.match(checkClient, /SECOND_LABEL_AT = 8_000/)
+})
+
+test('reduced motion stops the sweep dead rather than slowing it', () => {
+  const reduced = globalsCss.slice(globalsCss.indexOf('@media (prefers-reduced-motion: reduce)'))
+  assert.match(reduced, /\.reading-line::after\s*\{[^}]*animation:\s*none/)
+  assert.match(reduced, /transition-duration:\s*0ms/)
+})
+
+test('a source is called slow only after six seconds', () => {
+  const citation = readFileSync('src/lib/factcheck/citation.ts', 'utf8')
+  assert.match(citation, /SLOW_AFTER_MS = 6_000/)
+  assert.match(markedDoc, /is slow to respond/)
+})
+
+test('the host is named when it is opened and when it is slow, not in between', () => {
+  assert.match(markedDoc, /`Opening \$\{host\}`/)
+  assert.match(markedDoc, /'Reading the page'/)
+  assert.match(markedDoc, /`\$\{host\} is slow to respond`/)
+})

@@ -178,6 +178,13 @@ export function MarkedDocument({
  * Host only, never the URL. "Opening ahrefs.com" is a sentence a person reads;
  * "Opening https://ahrefs.com/blog/seo-statistics/?utm_source=..." is noise
  * they have to skip.
+ *
+ * The host is named ONCE, on the line that opens it. The next line is
+ * "Reading the page", not "Reading ahrefs.com", because by then the reader
+ * knows which page and repeating the host turns a sequence of steps into a
+ * chant. Only the six-second line names it again, and that one has to: at
+ * that point the host is the useful part, because it is the thing that is
+ * slow.
  */
 function NowChecking({
   claims,
@@ -203,7 +210,7 @@ function NowChecking({
           {stage === 'slow'
             ? `${host} is slow to respond`
             : stage === 'reading'
-              ? `Reading ${host}`
+              ? 'Reading the page'
               : `Opening ${host}`}
         </li>
       ))}
