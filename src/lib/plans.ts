@@ -11,7 +11,12 @@
  * else makes them stay in step.
  */
 
-import { FACTCHECK_FREE_LIMIT, PRO_FACTCHECK_LIMIT, PRO_DETECT_LIMIT } from './limits'
+import {
+  FACTCHECK_FREE_LIMIT,
+  PRO_FACTCHECK_LIMIT,
+  PRO_DETECT_LIMIT,
+  IMPROVE_PRO_LIMIT,
+} from './limits'
 
 export interface PlanChoice {
   /** The key posted to /api/billing/checkout. Must exist in SELLABLE_PLANS. */
@@ -27,7 +32,7 @@ export interface PlanChoice {
 export const PRO_INCLUDES = [
   `${PRO_FACTCHECK_LIMIT} source checks a month`,
   `${PRO_DETECT_LIMIT} AI text detections a month`,
-  'Unlimited prompt improvements',
+  `${IMPROVE_PRO_LIMIT} prompt improvements a month`,
   'History kept forever',
 ]
 

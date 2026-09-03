@@ -9,7 +9,7 @@ interface WaitlistModalProps {
 }
 
 const PRO_FEATURES = [
-  'Unlimited prompt improvements',
+  'A monthly allowance of prompt improvements',
   'A stronger model on every improve',
   'Full session history',
 ]

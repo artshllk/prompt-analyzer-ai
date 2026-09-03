@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { join } from 'node:path'
 import {
   FACTCHECK_FREE_LIMIT,
   PRO_FACTCHECK_LIMIT,
@@ -97,25 +98,59 @@ test('the frozen tool is never more generous than the product', () => {
  * about what it costs.
  */
 const UNMETERED_BY_DESIGN: Record<string, string> = {
-  // Nothing. Every line on both plans is a number the server enforces.
-  // If you add one here, write down what it costs per use and why unbounded
-  // is affordable at the LOWEST price the plan is ever sold at - which is the
-  // $12 founding price, not the $19 list price.
+  // No PLAN line is here, and that is the point: every allowance on both
+  // plans is a number the server enforces. Adding one means writing down what
+  // it costs per use and why unbounded is affordable at the LOWEST price the
+  // plan is ever sold at - the $12 founding price, not the $19 list price.
+  //
+  // This entry is not a promise of unlimited anything. It is the privacy page
+  // describing the global daily cap, and the sentence says the opposite of
+  // what the test hunts for.
+  // Keys are SUBSTRINGS, matched against the whitespace-collapsed line. Exact
+  // strings were too brittle: JSX prose wraps across lines, so the same
+  // sentence hashed differently after a reflow and the exemption silently
+  // stopped applying.
+  'cannot run up an unlimited bill':
+    'Privacy page prose about the global anonymous budget. It says the free tool CANNOT run up an unlimited bill, which is the opposite of an offer.',
 }
 
-test('no feature line promises anything unlimited unless it is declared', () => {
-  const src = copyOnly(pricing)
-  const block = src.slice(src.indexOf('const FREE_FEATURES'), src.indexOf('const LAUNCH'))
+function userFacingFiles(dir: string, out: string[] = []): string[] {
+  for (const entry of readdirSync(dir)) {
+    if (entry === 'node_modules' || entry.startsWith('.')) continue
+    const full = join(dir, entry)
+    if (statSync(full).isDirectory()) userFacingFiles(full, out)
+    else if (/\.(tsx|ts)$/.test(entry) && !entry.includes('.test.')) out.push(full)
+  }
+  return out
+}
+
+test('nothing anywhere promises unlimited unless it is declared', () => {
+  /**
+   * SCANS EVERY FILE, NOT THE PRICING TABLE.
+   *
+   * The first inverted version of this test scanned only the FREE_FEATURES /
+   * PRO_FEATURES block in EditorialPricing. It passed while six other places
+   * still said unlimited: the pricing page's JSON-LD, the extension connect
+   * page, the usage bar, the waitlist modal, plans.ts feeding the in-app
+   * upgrade dialog, and the TERMS OF SERVICE. Scoping the check to one file
+   * is the same allowlist mistake one level up.
+   */
   const offenders: string[] = []
-  for (const m of block.matchAll(/[`"']([^`"']*[Uu]nlimited[^`"']*)[`"']/g)) {
-    const line = m[1].trim()
-    if (!(line in UNMETERED_BY_DESIGN)) offenders.push(line)
+  for (const file of [...userFacingFiles('src/app'), ...userFacingFiles('src/components'), ...userFacingFiles('src/lib')]) {
+    const src = copyOnly(readFileSync(file, 'utf8'))
+    for (const m of src.matchAll(/[`"'>][^`"'<>]*\b[Uu]nlimited\b[^`"'<>]*[`"'<]/g)) {
+      const line = m[0].slice(1, -1).replace(/\s+/g, ' ').trim()
+      if (!line) continue
+      if (Object.keys(UNMETERED_BY_DESIGN).some(k => line.includes(k))) continue
+      offenders.push(`${file}: ${line}`)
+    }
   }
   assert.deepEqual(
     offenders,
     [],
-    `undeclared unlimited promise: ${offenders.join(' | ')}. ` +
-      'Either enforce a number, or add it to UNMETERED_BY_DESIGN with what it costs.'
+    'undeclared unlimited promise:\n  ' +
+      offenders.join('\n  ') +
+      '\nEither state the enforced number, or add the exact string to UNMETERED_BY_DESIGN with what it costs per use.'
   )
 })
 

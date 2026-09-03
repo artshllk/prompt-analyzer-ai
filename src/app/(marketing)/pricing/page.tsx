@@ -4,7 +4,12 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { defaultOGImage } from '@/lib/og-image'
 import { viewerPlan } from '@/lib/db/viewer-plan'
 import { foundingSeatsLeft } from '@/lib/paddle'
-import { FACTCHECK_FREE_LIMIT, PRO_FACTCHECK_LIMIT } from '@/lib/limits'
+import {
+  FACTCHECK_FREE_LIMIT,
+  PRO_FACTCHECK_LIMIT,
+  PRO_DETECT_LIMIT,
+  IMPROVE_PRO_LIMIT,
+} from '@/lib/limits'
 
 /**
  * Every sentence here described the frozen prompt improver at a price that no
@@ -62,7 +67,7 @@ const pricingSchema = {
           name: 'Pro',
           price: '19',
           priceCurrency: 'USD',
-          description: `${PRO_FACTCHECK_LIMIT} source checks a month, unlimited improvements, and history kept forever.`,
+          description: `${PRO_FACTCHECK_LIMIT} source checks a month, ${IMPROVE_PRO_LIMIT} prompt improvements, ${PRO_DETECT_LIMIT} AI text detections, and history kept forever.`,
         },
       ],
     },

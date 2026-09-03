@@ -17,7 +17,7 @@ export function UsageBar({ usage, onUpgrade }: UsageBarProps) {
       <div className="flex items-center gap-2">
         <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-accent)' }} />
         <span className="text-[12px]" style={{ color: 'var(--color-paper-mute)' }}>
-          Pro &middot; Unlimited
+          Pro
         </span>
       </div>
     )

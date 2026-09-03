@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { IMPROVE_FREE_LIMIT } from '@/lib/limits'
+import { IMPROVE_FREE_LIMIT, IMPROVE_PRO_LIMIT } from '@/lib/limits'
 import { ConnectApproveView } from './connect-approve-view'
 
 export const metadata: Metadata = {
@@ -65,7 +65,7 @@ export default async function ExtensionConnectPage() {
         <p className="mt-6 text-lg leading-relaxed" style={{ color: 'var(--color-paper-mute)' }}>
           Signed in as <span style={{ color: 'var(--color-paper)' }}>{profile?.email ?? user.email}</span> ·{' '}
           {profile?.tier === 'pro' ? (
-            <span style={{ color: 'var(--color-paper)' }}>Pro · unlimited</span>
+            <span style={{ color: 'var(--color-paper)' }}>Pro · {IMPROVE_PRO_LIMIT} improvements a month</span>
           ) : (
             <>Free · {IMPROVE_FREE_LIMIT} improvements a month</>
           )}
