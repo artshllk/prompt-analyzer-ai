@@ -1,4 +1,5 @@
 import type { Claim } from '@/lib/factcheck/types'
+import { stripLinkSyntax } from '@/lib/factcheck/paste'
 
 /**
  * The report someone else reads.
@@ -58,7 +59,21 @@ function notCheckedReason(claim: Claim): string {
  * it is already in front of them in the file they were sent.
  */
 function documentTitle(text: string): string {
-  const first = text.trim().split('\n').find(l => l.trim().length > 0) ?? ''
+  /**
+   * LINK SYNTAX IS OUR FORMATTING, NOT THEIR TITLE.
+   *
+   * Pasting out of a browser converts hrefs to markdown, so a first line that
+   * carries a link arrived here as
+   * "Mount Everest rises [8,849 metres](https://en.wikipedia.org/...) above
+   * sea..." and the 90-character cut then spent most of its budget on a URL.
+   * The reader of this report did not run the check and has never heard of us;
+   * the first thing they see cannot be raw markup.
+   *
+   * Same helper the character counter measures with, so "what counts as the
+   * writer's prose" has one definition.
+   */
+  const first =
+    stripLinkSyntax(text).trim().split('\n').find(l => l.trim().length > 0) ?? ''
   const clean = first.trim().replace(/\s+/g, ' ')
   return clean.length > 90 ? clean.slice(0, 90).trimEnd() + '…' : clean
 }
