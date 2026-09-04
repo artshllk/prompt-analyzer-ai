@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FAQSection } from '@/components/marketing/FAQSection'
+import { FAQS } from '@/lib/faq'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { defaultOGImage } from '@/lib/og-image'
 
@@ -21,12 +22,39 @@ export const metadata: Metadata = {
   },
 }
 
+/**
+ * FAQPage structured data, built from the SAME array the page renders.
+ *
+ * There was none, and the answers were not in the HTML either, so a crawler
+ * got ten headings and nothing to read. An FAQ is one of the few page types
+ * that can rank on its answer text, which made this the most valuable thing
+ * on the page and the least visible.
+ *
+ * Generated from FAQS rather than written out again. A hand-maintained copy
+ * would drift from the rendered answers, and structured data that disagrees
+ * with the page is worse than none: Google treats it as a reason to distrust
+ * the rest.
+ */
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map(faq => ({
+    '@type': 'Question',
+    name: faq.q,
+    acceptedAnswer: { '@type': 'Answer', text: faq.a },
+  })),
+}
+
 export default function FAQPage() {
   return (
     <div
       className="editorial grain min-h-screen relative"
       style={{ background: 'var(--color-ink)', color: 'var(--color-paper)' }}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <MarketingNav current="faq" />
 
       <main className="pt-28 md:pt-36 pb-24 md:pb-32 px-6 md:px-10">

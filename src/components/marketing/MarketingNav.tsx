@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { NavAuthButton } from './NavAuthButton'
 import { MarketingMobileMenu } from './MarketingMobileMenu'
+import { NavToolsMenu } from './NavToolsMenu'
 
 /**
  * Shared marketing nav used across every public-facing surface
@@ -31,31 +32,36 @@ export type NavKey =
   | 'blog'
 
 /**
- * The prompt improver is FROZEN and off the nav. It still lives and works at
- * /playground, which is deliberate: 48 links across 42 files point there,
- * including one inside an email already sitting in people's inboxes
- * (lib/email/templates.ts). Moving or redirecting the route breaks those and
- * gains nothing. Taking it off the nav is the whole demotion.
+ * The prompt improver is FROZEN, and so is the detector.
  *
- * The 'playground' NavKey stays in the union below so `current="playground"`
- * still type-checks on the page itself.
+ * Neither is deleted. /playground works, 48 links across 42 files point at it
+ * including one inside an email already in people's inboxes, and moving the
+ * route breaks those for nothing.
+ *
+ * They now share one slot under `Tools`. Before this the detector had a
+ * top-level slot and the improver had none, which promoted one dead tool and
+ * hid the other for no reason anybody chose. Measured: zero `text_detected`
+ * rows exist, so nobody signed in has ever run a detection.
+ *
+ * Check stays first and alone. It is the product, and a first-time visitor
+ * should see one thing rather than three.
  */
+const TOOL_KEYS: NavKey[] = ['detector', 'playground']
+
 const LINKS: { key: NavKey; href: string; label: string }[] = [
-  // Check is first because it is the product now.
-  //
-  // Extension and Prompts came out of here and moved to the footer. Both point
-  // at the frozen prompt improver, and a frozen product sitting beside the live
-  // one in the same nav tells a visitor they are equals. The routes are
-  // untouched: every existing link still resolves, which is the same rule that
-  // kept /playground where it is.
   // The tool IS the homepage now. /check 301s here, so pointing the nav at
   // the old URL would send every visitor through a redirect for nothing.
   { key: 'check', href: '/', label: 'Check' },
-  { key: 'detector', href: '/detector', label: 'Detector' },
+  { key: 'detector', href: '/detector', label: 'AI text detector' },
+  { key: 'playground', href: '/playground', label: 'Prompt improver' },
   { key: 'pricing', href: '/pricing', label: 'Pricing' },
   { key: 'faq', href: '/faq', label: 'FAQ' },
   { key: 'blog', href: '/blog', label: 'Blog' },
 ]
+
+/** The flat row, in order, with the tools lifted out into their own menu. */
+const TOP_LEVEL = LINKS.filter(l => !TOOL_KEYS.includes(l.key))
+const TOOLS = TOOL_KEYS.map(k => LINKS.find(l => l.key === k)!).filter(Boolean)
 
 interface MarketingNavProps {
   current?: NavKey
@@ -86,7 +92,7 @@ export function MarketingNav({ current }: MarketingNavProps = {}) {
             contrast decision wearing a costume, so state is carried by colour
             and weight instead and every item stays measurably legible. */}
         <nav className="hidden md:flex items-center gap-7 text-sm">
-          {LINKS.map(link => {
+          {TOP_LEVEL.map((link, i) => {
             const isCurrent = current === link.key
             return (
               <Link
@@ -101,7 +107,11 @@ export function MarketingNav({ current }: MarketingNavProps = {}) {
                 {link.label}
               </Link>
             )
-          })}
+          }).flatMap((el, i) =>
+            // Tools sits directly after Check, so the product is first and
+            // everything secondary is behind one word.
+            i === 0 ? [el, <NavToolsMenu key="tools" items={TOOLS} current={current} />] : [el]
+          )}
         </nav>
         {/* Desktop auth CTA lives inline; the mobile menu carries its own
             copy of the CTA inside the sheet. */}

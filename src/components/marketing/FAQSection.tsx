@@ -1,54 +1,27 @@
 'use client'
 
 import { useState } from 'react'
-import { FACTCHECK_FREE_LIMIT, PRO_FACTCHECK_LIMIT } from '@/lib/limits'
-import { ANON_FACTCHECK_MONTH } from '@/lib/rate-limit'
-import { MAX_CLAIMS_PER_DOC } from '@/lib/factcheck/types'
-import { PRICE_LIST, PRICE_FOUNDING, FOUNDING_SEAT_COUNT } from '@/lib/plans'
+import { FAQS } from '@/lib/faq'
 
-const FAQS = [
-  {
-    q: 'What does Deepclario do?',
-    a: `It checks the sources in a piece of writing. You paste your document. We find the sentences that cite something, open each link, and tell you whether that page really says what your sentence says.`,
-  },
-  {
-    q: 'Do you keep my writing?',
-    a: `No. We never save it. To do the work we send it to OpenAI, which finds the claims and reads the pages we fetch. When a claim names a source but does not link to it, that one sentence also goes to Tavily so we can search for the page. In our own database we store a single row saying a check happened. It holds your account id and nothing else.`,
-  },
-  {
-    q: 'How do you check a link?',
-    a: `We open the page and look for your exact number in it. Then we show you the sentence we found around that number, so you can judge it yourself. The quote is cut straight from the page, so it always contains the number and we cannot reword it into something the page did not say.`,
-  },
-  {
-    q: 'What if you are wrong about my source?',
-    a: `We can be wrong, and you should be able to see when we are. We never say a page fails to support your claim without showing you a sentence from that page. If the quote does not match what we said about it, trust the quote. Send us the link at support@deepclario.com and we will look at it.`,
-  },
-  {
-    q: 'Why did you say you could not read one of my pages?',
-    a: `A few reasons. The page is behind a paywall. The link is dead. The page only shows current data, so the number a reader sees today is not the one you wrote. Or the page came back too short to be a real page, which usually means it blocked us. This is our limit, not a judgement on your writing, and your reader may still get in.`,
-  },
-  {
-    q: `Why did you only check ${MAX_CLAIMS_PER_DOC} statements?`,
-    a: `${MAX_CLAIMS_PER_DOC} is the most we check in one document. It keeps the cost and the wait predictable. We tell you how many links the whole document has, so you can see how much was left over. If you need more of it checked, send it in sections.`,
-  },
-  {
-    q: 'What is free and what costs money?',
-    a: `Without an account you can run ${ANON_FACTCHECK_MONTH.capacity} checks a month, and we do not ask for anything. An account gives you ${FACTCHECK_FREE_LIMIT} a month plus your history. Pro is ${PRO_FACTCHECK_LIMIT} checks a month for $${PRICE_LIST}, or $${PRICE_FOUNDING} a month for good if you are one of the first ${FOUNDING_SEAT_COUNT} people to subscribe.`,
-  },
-  {
-    q: 'Does it work if my writing has no links?',
-    a: `Partly. We still find the sentences that read like facts, and we list the ones with no source at all. On the articles we tested, that was often the biggest group. There is nothing for us to open, so nothing gets checked against a page, and a run that checks nothing does not count against your allowance.`,
-  },
-  {
-    q: 'Can I give you a web address instead of pasting text?',
-    a: `No. You have to paste the text. We decided against it for now for one reason: a web page is full of links in its menus, footers and adverts, and we would report those as if they were sources you had chosen.`,
-  },
-  {
-    q: 'Who built this?',
-    a: `Two people, Art Shllaku and Agon. It is new and it is not finished. If it gets something wrong, telling us is the fastest way to get it fixed.`,
-  },
-]
 
+/**
+ * The accordion controls VISIBILITY, not EXISTENCE.
+ *
+ * This used to be `{isOpen && <answer>}`, so a closed answer was never in the
+ * DOM and never in the server HTML. Measured against production: the page
+ * shipped all ten questions and ZERO answers, and `curl | grep` for any
+ * answer text returned nothing.
+ *
+ * That is the most valuable text on the page and it was invisible to everyone
+ * who is not running JavaScript, which includes every search crawler reading
+ * the initial HTML. An FAQ is one of the few page types that can rank on the
+ * answer text itself, and this one was offering ten headings and nothing to
+ * read.
+ *
+ * So every answer is always rendered. `hidden` keeps it out of the accessible
+ * tree and off the screen when closed, and it is a real attribute rather than
+ * a class, so it works before the CSS loads too.
+ */
 export function FAQSection() {
   const [open, setOpen] = useState<number | null>(null)
 
@@ -57,12 +30,16 @@ export function FAQSection() {
       <li className="rule-strong" />
       {FAQS.map((faq, i) => {
         const isOpen = open === i
+        const panelId = `faq-answer-${i}`
+        const buttonId = `faq-question-${i}`
         return (
           <li key={i}>
             <button
+              id={buttonId}
               onClick={() => setOpen(isOpen ? null : i)}
               className="w-full flex items-center justify-between gap-6 py-6 text-left row-hover -mx-3 px-3 rounded-md"
               aria-expanded={isOpen}
+              aria-controls={panelId}
             >
               <span
                 className="text-[15px] md:text-base leading-snug"
@@ -74,20 +51,25 @@ export function FAQSection() {
                 width="14" height="14" viewBox="0 0 14 14" fill="none"
                 className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                 style={{ color: 'var(--color-paper-mute)' }}
+                aria-hidden="true"
               >
                 <path d="M3 5L7 9L11 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
-            {isOpen && (
-              <div className="pb-7 pr-10 -mt-2">
-                <p
-                  className="text-[15px] leading-[1.7]"
-                  style={{ color: 'var(--color-paper-mute)' }}
-                >
-                  {faq.a}
-                </p>
-              </div>
-            )}
+            <div
+              id={panelId}
+              role="region"
+              aria-labelledby={buttonId}
+              hidden={!isOpen}
+              className="pb-7 pr-10 -mt-2"
+            >
+              <p
+                className="text-[15px] leading-[1.7]"
+                style={{ color: 'var(--color-paper-mute)' }}
+              >
+                {faq.a}
+              </p>
+            </div>
             <div className="rule" />
           </li>
         )

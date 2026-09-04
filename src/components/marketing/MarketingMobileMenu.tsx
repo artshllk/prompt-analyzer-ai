@@ -55,11 +55,15 @@ function MenuIcon({ open }: { open: boolean }) {
   )
 }
 
-// Explicit navigation groups. Product features are separated from
-// company / content pages so the drawer scans as two intents rather than
-// one long list. Order within each group is fixed here (independent of
-// the flat `links` prop) so the hierarchy stays deliberate.
-const PRODUCT_KEYS: NavKey[] = ['detector', 'prompts', 'extension']
+// Explicit navigation groups, matching the desktop nav rather than inventing
+// a second information architecture. Order within each group is fixed here
+// (independent of the flat `links` prop) so the hierarchy stays deliberate.
+//
+// "Tools" is the same word and the same two items as the desktop dropdown.
+// Prompts and Extension came out because they are footer-only now, and a key
+// that is not in `links` silently resolves to nothing, which is how this list
+// quietly rotted before.
+const TOOL_KEYS: NavKey[] = ['detector', 'playground']
 const COMPANY_KEYS: NavKey[] = ['pricing', 'blog', 'faq']
 
 /**
@@ -153,7 +157,7 @@ export function MarketingMobileMenu({ links, current }: MarketingMobileMenuProps
   // Resolve group keys against the links the parent passes so hrefs/labels
   // stay in one place, while the grouping + order live here.
   const byKey = new Map(links.map((l) => [l.key, l]))
-  const product = PRODUCT_KEYS.map((k) => byKey.get(k)).filter(Boolean) as NavLink[]
+  const tools = TOOL_KEYS.map((k) => byKey.get(k)).filter(Boolean) as NavLink[]
   const company = COMPANY_KEYS.map((k) => byKey.get(k)).filter(Boolean) as NavLink[]
 
   const renderGroup = (label: string, items: NavLink[]) => (
@@ -287,12 +291,12 @@ export function MarketingMobileMenu({ links, current }: MarketingMobileMenuProps
                     </button>
                   </div>
 
-                  {/* Grouped navigation. Content is top-aligned so Product is
+                  {/* Grouped navigation. Content is top-aligned so Tools is
                       visible immediately on open; groups flow top-down with
                       even rhythm and divider rules. Any spare height falls
                       below the Account block. */}
                   <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 pb-7 pt-5">
-                    {renderGroup('Product', product)}
+                    {renderGroup('Tools', tools)}
 
                     <div style={{ borderTop: '1px solid var(--color-rule)' }} className="pt-6">
                       {renderGroup('Company', company)}

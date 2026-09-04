@@ -376,3 +376,37 @@ test('no user-facing copy anywhere describes an allowance in days', () => {
     'an allowance stated per day, when every rung is monthly:\n  ' + offenders.join('\n  ')
   )
 })
+
+
+// ---------------------------------------------------------------------------
+// The FAQ has to be readable without JavaScript
+// ---------------------------------------------------------------------------
+
+test('every answer is rendered, and only hidden', () => {
+  /**
+   * MEASURED AGAINST PRODUCTION, NOT ASSUMED. The accordion was
+   * `{isOpen && <answer>}`, so a closed answer was never in the DOM and never
+   * in the server HTML. `curl | grep` for any answer text returned zero.
+   *
+   * An FAQ is one of the few page types that can rank on its answer text, so
+   * that was the most valuable copy on the site and the least visible.
+   */
+  assert.doesNotMatch(
+    faq,
+    /\{isOpen && \(/,
+    'a conditional render keeps closed answers out of the HTML entirely'
+  )
+  assert.match(faq, /hidden=\{!isOpen\}/, 'closed answers must be hidden, not absent')
+  // The panel still has to be wired to its button for a screen reader.
+  assert.match(faq, /aria-controls=\{panelId\}/)
+  assert.match(faq, /aria-labelledby=\{buttonId\}/)
+})
+
+test('the FAQ ships FAQPage structured data built from the same array', () => {
+  const page = readFileSync('src/app/faq/page.tsx', 'utf8')
+  assert.match(page, /'@type': 'FAQPage'/)
+  assert.match(page, /mainEntity: FAQS\.map/, 'schema must be generated, not hand-copied')
+  // A hand-maintained copy drifts, and structured data that disagrees with the
+  // page is worse than none.
+  assert.doesNotMatch(page, /acceptedAnswer[\s\S]{0,60}text: '/, 'no literal answers in the schema')
+})
