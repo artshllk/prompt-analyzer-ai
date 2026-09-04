@@ -5,12 +5,12 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
-  title: 'Prompt Score Explained: What Your Prompt Rating Means',
-  description: 'A prompt score rates how clear and complete your prompt is, from 0 to 100. Here is what the number measures, why it matters, and how to read each part.',
+  title: 'What a Prompt Score Really Measures (And Why We Removed Ours)',
+  description: 'A prompt score is a model reading your prompt and picking a number. We shipped one, looked at how it was produced, and took it out. Here is what a score can and cannot tell you.',
   alternates: { canonical: 'https://deepclario.com/blog/prompt-score-explained' },
   openGraph: {
-    title: 'Prompt Score Explained: What Your Prompt Rating Means',
-    description: 'A prompt score rates how clear and complete your prompt is, from 0 to 100. Here is what the number measures and how to read each part.',
+    title: 'What a Prompt Score Really Measures (And Why We Removed Ours)',
+    description: 'A prompt score is a model reading your prompt and picking a number. We shipped one, then took it out. Here is what a score can and cannot tell you.',
     url: 'https://deepclario.com/blog/prompt-score-explained',
     type: 'article',
   },
@@ -21,8 +21,8 @@ const post = getBlogPost('prompt-score-explained')
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'Prompt Score Explained: What Your Prompt Rating Means',
-  description: 'What a prompt score measures, the parts that make it up, and how to read the number to write clearer prompts.',
+  headline: 'What a Prompt Score Really Measures (And Why We Removed Ours)',
+  description: 'What a prompt score is made of, why ours was not worth printing, and what is worth counting instead.',
   author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
@@ -38,7 +38,7 @@ const faqSchema = {
       name: 'what is a prompt score?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'A prompt score is a rating, usually from 0 to 100, of how clear and complete your prompt is. It does not judge your idea. It measures whether you gave the AI what it needs to answer well: a clear goal, context, a format, and limits. A higher score means less guessing for the model.',
+        text: 'A prompt score is a number, usually out of 100, meant to tell you how clear and complete your prompt is. In almost every tool that shows one, the number comes from a language model reading your prompt and picking a value. It is not counted from the text the way a word count is.',
       },
     },
     {
@@ -46,7 +46,7 @@ const faqSchema = {
       name: 'what does a prompt score measure?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'It measures the parts of a strong prompt: whether the task is clear, whether you gave context the model cannot see, whether you named a format for the answer, and whether you set any limits. Each part is checked, and together they make the score.',
+        text: 'At best it is a rough guess at how much the model will have to fill in for you: the audience, the length, the tone, the things to avoid. Those gaps are real and you can list them. The number on top of them is an opinion, and two tools will often give you two different ones for the same prompt.',
       },
     },
     {
@@ -54,15 +54,15 @@ const faqSchema = {
       name: 'is a higher prompt score always better?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Almost always, because a higher score means your prompt leaves the model less to guess. The exception is very simple requests, where a short prompt already says everything. The score is a guide to clarity, not a rule to chase for its own sake.',
+        text: 'Not on its own. A score that rises after a rewrite you did not write tells you very little, because the same system usually produced both the rewrite and the score. Read what was added instead. If it added an audience or a deadline you never mentioned, that is a guess, and it can be wrong.',
       },
     },
     {
       '@type': 'Question',
-      name: 'why did my prompt get a low score?',
+      name: 'why did we remove our prompt score?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Usually because it is missing something the model needs. The most common gaps are a vague goal, no context about the audience or purpose, no stated format, and no limits. A low score points you to which part to add.',
+        text: 'We showed a before and after number, something like clarity 22 then 87. The first was a model rating your prompt. The second was the same system rating its own rewrite, so it was grading its own work and it never marked itself down. Nothing outside the system could confirm or contradict either number, so we replaced it with a list of what was added and what was guessed.',
       },
     },
   ],
@@ -74,7 +74,7 @@ const breadcrumbSchema = {
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://deepclario.com' },
     { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://deepclario.com/blog' },
-    { '@type': 'ListItem', position: 3, name: 'Prompt Score Explained', item: 'https://deepclario.com/blog/prompt-score-explained' },
+    { '@type': 'ListItem', position: 3, name: 'What a Prompt Score Really Measures', item: 'https://deepclario.com/blog/prompt-score-explained' },
   ],
 }
 
@@ -94,115 +94,128 @@ export default function PromptScoreExplainedPage() {
 
           <div className="mb-4 flex items-center gap-2">
             <span className="text-xs text-[color:var(--color-paper)] font-semibold uppercase tracking-wider">Prompting</span>
-            <span className="text-xs text-[color:var(--color-paper-mute)]">· 7 min read</span>
+            <span className="text-xs text-[color:var(--color-paper-mute)]">· 5 min read</span>
           </div>
 
           <h1 className="text-4xl font-bold mb-5 leading-tight">
-            Prompt Score Explained
+            What a prompt score really measures (and why we removed ours)
           </h1>
 
           <p className="text-lg text-[color:var(--color-paper-mute)] mb-10 leading-relaxed">
-            A prompt score gives your prompt a number, usually from 0 to 100. It sounds simple, but
-            people often misread what it means. It is not grading your idea or your writing talent.
-            It is measuring one thing: whether you gave the AI what it needs to answer you well.
-            Here is exactly what the number is telling you.
+            A prompt score is a number, usually out of 100, that is supposed to tell you how good your
+            prompt is. We used to show one. We took it out. This is what a number like that is made
+            of, why ours was not worth printing, and what we put in its place.
           </p>
 
           <article className="max-w-none space-y-10">
             <section>
-              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">What the number actually means</h2>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Where the number comes from</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
-                A prompt score rates how clear and complete your prompt is. Think of it as a
-                readiness check, not a report card. A low score does not mean your request is silly.
-                It means you left gaps the model will have to fill by guessing.
+                Almost every prompt score works the same way. A language model reads your prompt and
+                returns a number. There is no ruler anywhere in that process. The model is being asked
+                for an opinion, and the opinion is handed to you in the shape of a measurement.
               </p>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-                This matters because an AI builds its answer from the words you give it. A prompt with
-                gaps forces the model to guess the parts you left out, and a guess is often not what
-                you wanted. A high score means there is little left to guess, so the answer is far
-                more likely to match what you had in mind. The score is really a measure of how much
-                guessing you have removed.
+                That is different from a word count or a reading level. Those are counted from the text
+                itself, so two tools will agree. Ask two models to score the same prompt and you can
+                get 60 from one and 85 from the other, and neither of them is wrong, because there is
+                nothing for them to be wrong about.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The parts behind the score</h2>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Why we removed ours</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
-                The number is not one vague judgment. It is built from a few clear parts, each one a
-                question about whether the model has what it needs. When you understand the parts, the
-                score stops being a mystery and becomes a checklist.
+                Ours showed two numbers, before and after. Clarity 22, then 87 once the prompt had been
+                rewritten. It looked like proof that the tool had done something.
               </p>
-              <div className="space-y-3">
-                {[
-                  { t: 'Clear goal', d: 'Is it obvious what you want done? "Write something about our app" is fuzzy. "Write a 200-word intro for our app for busy small-business owners" is clear.' },
-                  { t: 'Context', d: 'Did you give the background the model cannot see? Who is the reader, what is the purpose, what is the situation.' },
-                  { t: 'Format', d: 'Did you say how the answer should look? A list, a table, three bullets, under 100 words, a certain tone.' },
-                  { t: 'Limits', d: 'Did you say what to avoid? "No jargon", "do not oversell", "assume no technical background".' },
-                  { t: 'Specifics', d: 'Did you include the concrete details that anchor the answer? Real names, numbers, or examples instead of vague terms.' },
-                ].map(item => (
-                  <div key={item.t} className="p-4 rounded-xl border border-[color:var(--color-rule)]">
-                    <p className="font-semibold text-[color:var(--color-paper)] text-sm mb-1">{item.t}</p>
-                    <p className="text-xs text-[color:var(--color-paper-mute)]">{item.d}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mt-4">
-                A prompt that covers all of these scores high. A prompt missing several of them scores
-                low. Most prompts sit in the middle, strong on one or two parts and thin on the rest.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">A low score and a high score, side by side</h2>
-              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-5">
-                The clearest way to feel what a score measures is to see the same request written two
-                ways.
-              </p>
-              <div className="grid gap-4">
-                <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
-                  <p className="text-xs text-[#C25E5E] font-semibold uppercase mb-2">Low score</p>
-                  <p className="text-sm text-[color:var(--color-paper-mute)] italic">&ldquo;Write a welcome email.&rdquo;</p>
-                  <p className="text-xs text-[color:var(--color-paper-mute)] mt-2">No goal detail, no context, no format, no limits. The model has to guess almost everything.</p>
-                </div>
-                <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
-                  <p className="text-xs text-[color:var(--color-paper)] font-semibold uppercase mb-2">High score</p>
-                  <p className="text-sm text-[color:var(--color-paper)]">&ldquo;Write a welcome email for people who just signed up for our budgeting app. They are nervous about money and new to budgeting. Keep it under 120 words, warm and plain. No finance jargon, and do not oversell.&rdquo;</p>
-                  <p className="text-xs text-[color:var(--color-paper-mute)] mt-2">Goal, context, format, and limits are all there. Little is left to guess.</p>
-                </div>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">How to read your own score</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
-                When you see a score, do not just look at the number. Look at which parts are weak,
-                because that is where the useful information is. The number tells you there is room to
-                improve; the breakdown tells you exactly where.
+                The first number was a model reading your prompt and picking a score. The second number
+                was the same system reading its own rewrite and picking a score for that. So the jump
+                on the screen was the rewriter grading its own work. It was never going to mark itself
+                down, and it never did.
               </p>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-                A prompt scoring in the 80s or 90s is usually ready to send. Something in the middle is
-                worth one quick fix to the weakest part. A low score means the model would be guessing
-                a lot, and a minute of editing will change the answer completely. You do not need a
-                perfect score, you need enough that the model is not guessing about the things that
-                matter to you.
+                Once it is written down that plainly, the number has no job left. It went up every
+                time. It went up by roughly the same amount every time. Nothing outside the system
+                ever agreed or disagreed with it. We shipped it, looked at how it was produced, and
+                found it was measuring nothing, so we deleted it rather than keep a number that only
+                looked like evidence.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">One thing a score cannot do</h2>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The question to ask any score</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                What would make this number wrong?
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                A bathroom scale can be wrong, and you find out by standing on a different one. A word
+                count can be wrong, and you find out by counting. A prompt score has no second scale to
+                stand on. Nothing can contradict it, which also means nothing can confirm it.
+              </p>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-                A prompt score measures clarity, not correctness. It can tell you your prompt is
-                well-built. It cannot tell you the AI&apos;s answer will be true, because the model can
-                still make things up. So use the score to write a clear request, and still check the
-                important facts in the answer. A strong prompt gets you a better draft, not a
-                guaranteed one.
+                So when a tool shows you a score, ask what it compared your prompt to. If the answer is
+                nothing, the number is decoration. It might still be pointing in a sensible direction,
+                but you should not treat it as evidence, and you should not tune your writing to make
+                it go up.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">What is worth counting instead</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                There is a real thing underneath the score, and it can be counted. A prompt is weak when
+                the model has to fill in parts you never gave it. Who is reading this. How long it
+                should be. What tone. What to stay away from. Those gaps are not a matter of opinion.
+                You can list them one by one.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                So that is what we show now. The rewrite comes back with the added parts marked, and the
+                parts we had to guess marked differently. Not a number, a list you can read: we added an
+                audience, a length limit and a tone, and the audience was a guess.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                You can argue with a guess. You can delete it, or swap it for the real answer, and the
+                prompt gets better because you knew something the tool did not. There is nothing you
+                can do with an 87.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">What a score can honestly tell you</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                A rough score is still worth something as a nudge. If a tool says your prompt looks
+                thin, it is usually right, because most short prompts are thin. Treat it like the red
+                underline in a word processor. It is a reason to look again, not a verdict.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                Two things to watch for. If the number moves when you change something that does not
+                matter, it is reading your style rather than your completeness. And if it climbs after
+                a rewrite you did not write yourself, read the rewrite before you trust the climb.
+                Sometimes the gaps get filled with details that are not true about your situation, and
+                a confident prompt built on a wrong assumption is worse than a thin one.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">A clear prompt is not a correct answer</h2>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
+                Whatever a score or a list of gaps tells you, it is only describing the request. It says
+                nothing about the reply.
+              </p>
+              <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
+                A well-built prompt gets you a better draft. It does not stop the model inventing a
+                number or a source, and that is the part that actually gets people into trouble. You
+                still have to check what came back. That is a different job, and it is the one we{' '}
+                <Link href="/check" className="underline hover:opacity-70 transition-opacity">work on now</Link>.
               </p>
             </section>
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">See your own prompt&apos;s score</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Paste any prompt into Deepclario. It finds what is missing, asks one question if your prompt could mean two things, and rewrites it. Free, no account needed.</p>
+            <h2 className="text-xl font-bold mb-3">See what your prompt is missing</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Paste any prompt into Deepclario. It finds the gaps, asks one question if your prompt could mean two things, and rewrites it with the added parts and the guesses marked. No score. Free, no account needed.</p>
             <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Improve my prompt →
             </Link>

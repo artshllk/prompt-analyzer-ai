@@ -5,12 +5,12 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
 export const metadata: Metadata = {
-  title: 'How to Improve a Prompt Score (Without Overthinking It)',
-  description: 'A low prompt score usually comes down to one or two missing pieces, not a bad idea. Here is how to raise your score fast, with real before-and-after examples.',
+  title: 'How to Improve a Weak Prompt (Instead of Chasing a Prompt Score)',
+  description: 'A weak prompt is usually missing one or two specific things. A prompt score will not tell you which one. Here is how to find it, with before-and-after examples.',
   alternates: { canonical: 'https://deepclario.com/blog/how-to-improve-a-prompt-score' },
   openGraph: {
-    title: 'How to Improve a Prompt Score (Without Overthinking It)',
-    description: 'A low prompt score usually comes down to one or two missing pieces. Here is how to raise your score fast, with real examples.',
+    title: 'How to Improve a Weak Prompt (Instead of Chasing a Prompt Score)',
+    description: 'A weak prompt is usually missing one or two specific things. Here is how to find which one, with real before-and-after examples.',
     url: 'https://deepclario.com/blog/how-to-improve-a-prompt-score',
     type: 'article',
   },
@@ -21,8 +21,8 @@ const post = getBlogPost('how-to-improve-a-prompt-score')
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'How to Improve a Prompt Score (Without Overthinking It)',
-  description: 'Practical steps to raise a low prompt score, focused on the one or two gaps that usually cause it.',
+  headline: 'How to Improve a Weak Prompt (Instead of Chasing a Prompt Score)',
+  description: 'How to find the one or two gaps that make a prompt weak, instead of chasing a number.',
   author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
   publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
   datePublished: post.datePublished,
@@ -38,7 +38,7 @@ const faqSchema = {
       name: 'how do i improve my prompt score?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Look at which part is weakest, not the whole prompt. Most low scores come from one gap: a vague goal, missing context, no format, or no limits. Fix that one thing and re-check. Usually just one or two fixes take a prompt from weak to strong.',
+        text: 'Do not start from the number. Read the prompt back and ask four questions: is the goal clear, did you give the background the model cannot see, did you say what the answer should look like, and did you say what to avoid. Fix the one that is missing. That is the change that moves the answer, whatever any score says.',
       },
     },
     {
@@ -46,7 +46,7 @@ const faqSchema = {
       name: 'why is my prompt score still low after i added more detail?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'More words do not always mean more clarity. Extra detail that does not touch the goal, context, format, or limits will not move the score. Check that what you added actually answers one of those four questions, not just makes the prompt longer.',
+        text: 'More words do not always mean more clarity. Detail that does not touch the goal, the background, the format or the limits will not change the answer. Check that what you added answers one of those four questions instead of just making the prompt longer.',
       },
     },
     {
@@ -54,7 +54,7 @@ const faqSchema = {
       name: 'what is the fastest way to raise a prompt score?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Add the audience and the format. Saying who the answer is for and how it should look (length, structure, tone) fixes more low scores than any other single change, because those two things are the ones people forget most often.',
+        text: 'Say who the answer is for and what it should look like. Those two fix more weak prompts than any other single change, because in your own head the audience and the format are obvious, so they are the parts people leave out most.',
       },
     },
   ],
@@ -66,7 +66,7 @@ const breadcrumbSchema = {
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://deepclario.com' },
     { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://deepclario.com/blog' },
-    { '@type': 'ListItem', position: 3, name: 'How to Improve a Prompt Score', item: 'https://deepclario.com/blog/how-to-improve-a-prompt-score' },
+    { '@type': 'ListItem', position: 3, name: 'How to Improve a Weak Prompt', item: 'https://deepclario.com/blog/how-to-improve-a-prompt-score' },
   ],
 }
 

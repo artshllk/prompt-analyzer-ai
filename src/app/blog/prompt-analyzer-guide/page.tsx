@@ -38,7 +38,7 @@ const faqSchema = {
       name: 'what does a prompt analyzer do?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'A prompt analyzer reads your prompt and checks it against the things that make AI answers better: a clear goal, context, format, and limits. It gives you a score and points out which parts are missing, so you know exactly what to fix.',
+        text: 'A prompt analyzer reads your prompt and checks it against the things that make AI answers better: a clear goal, context, format, and limits. It points out which parts are missing, so you know exactly what to fix.',
       },
     },
     {
@@ -46,7 +46,7 @@ const faqSchema = {
       name: 'how do i use a prompt analyzer?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Paste in the prompt you were about to send, look at the score and the notes on each part, fix the weakest one, and re-check if you want. Most people get value from just reading which part is flagged, without needing to run it more than once or twice.',
+        text: 'Paste in the prompt you were about to send, read the notes on each part, fix the weakest one, and re-check if you want. Most people get value from just reading which part is flagged, without needing to run it more than once or twice.',
       },
     },
     {
@@ -94,7 +94,7 @@ export default function PromptAnalyzerGuidePage() {
           </h1>
 
           <p className="text-lg text-[color:var(--color-paper-mute)] mb-10 leading-relaxed">
-            Most people try a prompt analyzer once, glance at the score, and never think about it
+            Most people try a prompt analyzer once, glance at the result, and never think about it
             again. That is a shame, because used properly it is one of the fastest ways to get better
             at writing prompts, not just fix the one in front of you. Here is how to actually get
             something out of it.
@@ -125,16 +125,15 @@ export default function PromptAnalyzerGuidePage() {
               </p>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
                 Paste in the prompt you were about to send anyway, not a test one. Read which single
-                part got flagged as weakest. Fix just that part and move on. You do not need to chase a
-                perfect score, and you do not need to run it five times on the same prompt. One honest
-                look is usually enough to catch the thing you missed.
+                part got flagged as weakest. Fix just that part and move on. You do not need to run it five times on the same
+                prompt. One honest look is usually enough to catch the thing you missed.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Reading the rewrite it suggests</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
-                Alongside the score, you usually get a rewritten version of your prompt. Do not just
+                Alongside the notes, you usually get a rewritten version of your prompt. Do not just
                 copy it blindly. Read it and notice what changed compared to what you wrote. That
                 difference is the lesson. If it added a line about the audience, that tells you
                 audience is something you tend to skip. If it tightened the format, that is your
@@ -161,7 +160,7 @@ export default function PromptAnalyzerGuidePage() {
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Try the analyzer on a real prompt</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Paste in something you are about to send. See the score, the weak spot, and the rewrite. Free, no account needed.</p>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Paste in something you are about to send. See the weak spot and the rewrite. Free, no account needed.</p>
             <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Improve my prompt →
             </Link>
