@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FAQS } from '@/lib/faq'
 
 
@@ -25,15 +25,44 @@ import { FAQS } from '@/lib/faq'
 export function FAQSection() {
   const [open, setOpen] = useState<number | null>(null)
 
+  /**
+   * A deep link into one answer.
+   *
+   * The hero says "We do not save your writing" and points here for the
+   * detail, and a link that lands on a page of ten collapsed headings has not
+   * shown anybody the answer. So the hash opens the matching panel and
+   * scrolls to it.
+   *
+   * Runs on mount and on hashchange, because clicking /faq#do-you-keep-my-
+   * writing while already on /faq changes the hash without remounting.
+   */
+  useEffect(() => {
+    function openFromHash() {
+      const slug = window.location.hash.slice(1)
+      if (!slug) return
+      const i = FAQS.findIndex(f => f.id === slug)
+      if (i === -1) return
+      setOpen(i)
+      // After the panel is no longer `hidden`, or the browser has nothing
+      // with a size to scroll to.
+      requestAnimationFrame(() => {
+        document.getElementById(slug)?.scrollIntoView({ block: 'center' })
+      })
+    }
+    openFromHash()
+    window.addEventListener('hashchange', openFromHash)
+    return () => window.removeEventListener('hashchange', openFromHash)
+  }, [])
+
   return (
     <ul className="space-y-px">
       <li className="rule-strong" />
       {FAQS.map((faq, i) => {
         const isOpen = open === i
-        const panelId = `faq-answer-${i}`
-        const buttonId = `faq-question-${i}`
+        const panelId = `faq-answer-${faq.id}`
+        const buttonId = `faq-question-${faq.id}`
         return (
-          <li key={i}>
+          <li key={faq.id} id={faq.id} className="scroll-mt-28">
             <button
               id={buttonId}
               onClick={() => setOpen(isOpen ? null : i)}

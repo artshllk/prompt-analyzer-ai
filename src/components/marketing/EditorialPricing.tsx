@@ -197,9 +197,9 @@ export function EditorialPricing({
     <div>
       {/* Section header - centered: heading, then the billing toggle
           directly below it. */}
-      <div className="flex flex-col items-center text-center mb-12 md:mb-16">
+      <div className="flex flex-col items-center text-center mb-10 md:mb-12">
         <Heading
-          className="display text-4xl md:text-5xl"
+          className="display text-3xl md:text-[38px] md:leading-[46px]"
           style={{ color: "var(--color-paper)" }}
         >
           Free to start. Pay when you need more.
@@ -243,20 +243,28 @@ export function EditorialPricing({
         </div>
       </div>
 
-      {/* Two-tier card grid */}
-      <div className="grid md:grid-cols-2 gap-5 md:gap-6">
+      {/*
+        TWO CARDS, CAPPED AT 900px.
+
+        They were filling the 1180px container, which put roughly 560px of
+        card behind about 300px of content and made a five-line feature list
+        look like a landing page of its own. Every pricing table worth copying
+        keeps a two-tier grid near 900: the eye has to compare two columns, and
+        comparison gets harder the further apart they sit.
+      */}
+      <div className="grid md:grid-cols-2 gap-5 md:gap-6 max-w-[900px] mx-auto">
         {/* Free */}
-        <PricingCard tier="Free">
+        <PricingCard tier="Free" chip="Tier 0">
           <div className="flex items-baseline gap-1.5 mb-1">
             <span
-              className="font-serif text-6xl tabular-nums"
-              style={{ color: "var(--color-paper)", fontWeight: 400 }}
+              className="font-serif text-[44px] leading-none tabular-nums"
+              style={{ color: "var(--color-paper)", fontWeight: 500 }}
             >
               $0
             </span>
           </div>
           <p
-            className="text-sm mb-7"
+            className="text-sm mb-5"
             style={{ color: "var(--color-paper-mute)" }}
           >
             Enough to see if it helps.
@@ -315,8 +323,8 @@ export function EditorialPricing({
           )}
           <div className="flex items-baseline gap-1.5 mb-1">
             <span
-              className="font-serif text-6xl tabular-nums"
-              style={{ color: "var(--color-paper)", fontWeight: 400 }}
+              className="font-serif text-[44px] leading-none tabular-nums"
+              style={{ color: "var(--color-paper)", fontWeight: 500 }}
             >
               ${nowPrice}
             </span>
@@ -336,16 +344,25 @@ export function EditorialPricing({
               : "Billed monthly. Cancel anytime."}
           </p>
           {founding && (
-            <p
-              className="mt-1.5 mb-7 text-sm"
-              style={{ color: "var(--color-accent-bright)" }}
-            >
-              {foundingLeft === 1
-                ? "One founding place left. This price never rises."
-                : `Founding price, ${foundingLeft} places left. It never rises.`}
-            </p>
+            <div className="mt-2.5 mb-5">
+              {/* A chip, because it is a condition on the price above it and
+                  not another sentence of prose. The count is Paddle's, read at
+                  request time, so it cannot advertise places that are sold. */}
+              <span
+                className="inline-flex items-center gap-2 text-[11px] px-2.5 py-1 rounded-full"
+                style={{
+                  background: "var(--color-accent-soft)",
+                  color: "var(--color-accent-bright)",
+                  fontFamily: "var(--font-mono)",
+                }}
+              >
+                {foundingLeft === 1
+                  ? "Founding price, 1 place left. It never rises."
+                  : `Founding price, ${foundingLeft} places left. It never rises.`}
+              </span>
+            </div>
           )}
-          {!founding && <div className="mb-7" />}
+          {!founding && <div className="mb-5" />}
           {plan === "anon" && (
             <Link
               /* Comes back here after signing up, so the next click is
@@ -401,14 +418,14 @@ export function EditorialPricing({
       {/* The trial belongs here, not in the Free column. Inside it, "2 a day"
           read as a Free limit and made the plan look worse than it is. */}
       <p
-        className="mt-8 text-sm text-center md:text-left"
+        className="mt-8 max-w-[900px] mx-auto text-sm"
         style={{ color: "var(--ink-soft)" }}
       >
         No account? You can run {ANON_CHECKS_A_MONTH} checks a month without one.
       </p>
 
       <p
-        className="mt-2 text-xs text-center md:text-left"
+        className="mt-2 max-w-[900px] mx-auto text-xs"
         style={{ color: "var(--color-paper-mute)" }}
       >
         Payments by Paddle. VAT and sales tax handled automatically.
@@ -423,18 +440,48 @@ export function EditorialPricing({
 
 function PricingCard({
   tier,
+  chip,
   popular,
   children,
 }: {
   tier: string;
+  /** A small mono label in the header. Free carries its position in the
+   *  ladder; Pro carries the badge on the border instead. */
+  chip?: string;
   popular?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div
-      className={`card-editorial p-8 md:p-9 relative ${popular ? "card-accent-edge" : ""}`}
+      className={`card-editorial p-6 md:p-7 relative ${popular ? "card-accent-edge" : ""}`}
     >
-      <div className="flex items-center justify-between mb-7">
+      {/*
+        SITS ON THE BORDER, not inside the card.
+
+        Inline in the header row it read as one more label among the tier name
+        and the price, which is the one thing a "most popular" mark must not
+        do: its whole job is to be noticed before the card is read. Straddling
+        the top edge takes it out of the reading order and puts it on the
+        frame, which is where a tab belongs.
+      */}
+      {popular && (
+        <span
+          /* z-10 because card-accent-edge draws its ring in an ::after, which
+             comes after this in paint order and was drawing the top edge
+             straight through the word. */
+          className="absolute -top-2.5 left-6 md:left-7 z-10 inline-flex items-center text-[10px] tracking-[0.14em] uppercase font-semibold px-2.5 py-1 rounded-full"
+          style={{
+            background: "var(--color-accent)",
+            /* White, not paper. CLAUDE.md measures white on #C9452F at 4.80:1;
+               the warmer paper tone is below that, and this is 10px text. */
+            color: "var(--card)",
+            fontFamily: "var(--font-mono)",
+          }}
+        >
+          Most popular
+        </span>
+      )}
+      <div className="flex items-center justify-between mb-5">
         <span
           className="text-sm font-medium"
           style={{
@@ -445,16 +492,17 @@ function PricingCard({
         >
           {tier}
         </span>
-        {popular && (
+        {chip && (
           <span
-            className="text-[10px] tracking-[0.14em] uppercase font-semibold px-2.5 py-1 rounded-full"
+            className="text-[10px] tracking-[0.14em] uppercase px-2.5 py-1 rounded-full"
             style={{
-              background: "var(--color-accent-soft)",
-              color: "var(--color-accent-bright)",
-              border: "1px solid rgba(91, 143, 237, 0.25)",
+              background: "var(--color-ink)",
+              color: "var(--color-paper-mute)",
+              border: "1px solid var(--color-rule)",
+              fontFamily: "var(--font-mono)",
             }}
           >
-            Most popular
+            {chip}
           </span>
         )}
       </div>
@@ -497,13 +545,17 @@ function BillingToggle({
  */
 function LeadFeature({ n, unit, accent }: { n: string; unit: string; accent?: boolean }) {
   return (
-    <div className="mt-8 pb-7" style={{ borderBottom: "1px solid var(--rule)" }}>
-      <div className="flex items-baseline gap-2">
+    <div className="mt-6 pb-5" style={{ borderBottom: "1px solid var(--rule)" }}>
+      <div className="flex items-baseline gap-2.5">
+        {/* Mono, and big. A number somebody can check by hand is set in mono
+            everywhere on this site, and this is the number the two plans are
+            actually compared on. */}
         <span
-          className="text-3xl tabular-nums"
+          className="text-[32px] tabular-nums leading-none"
           style={{
             color: accent ? "var(--color-accent-bright)" : "var(--ink)",
-            fontWeight: 600,
+            fontFamily: "var(--font-mono)",
+            fontWeight: 500,
           }}
         >
           {n}
@@ -556,7 +608,7 @@ function PlanBadge({ renewsOn }: { renewsOn?: string | null }) {
 function AlsoIncluded() {
   return (
     <p
-      className="mt-6 text-[11px] uppercase tracking-[0.14em]"
+      className="mt-5 text-[11px] uppercase tracking-[0.14em]"
       style={{ color: "var(--ink-soft)" }}
     >
       Also included
@@ -566,7 +618,7 @@ function AlsoIncluded() {
 
 function FeatureList({ items, accent }: { items: string[]; accent?: boolean }) {
   return (
-    <ul className="mt-5 space-y-3.5">
+    <ul className="mt-4 space-y-3">
       {items.map((item) => (
         <li
           key={item}

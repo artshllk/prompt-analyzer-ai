@@ -468,7 +468,24 @@ function CitationLine({ claim }: { claim: Claim }) {
       : check === 'does_not_contain'
         ? claim.sourceForm === 'named'
           ? `We searched ${claim.sourceName} and could not find this.`
-          : 'This is true. The link does not show it.'
+          : /**
+             * NOT "This is true. The link does not show it."
+             *
+             * Nothing in the shipping path ever checks whether a claim is
+             * true. There is no judge module; the route runs extraction and
+             * the citation axis only, so `ClaimVerdict` never leaves
+             * `unchecked`. "This is true" was a verdict we had no evidence
+             * for, asserted with total confidence, on the one axis this
+             * product refuses to have an opinion about.
+             *
+             * It was also the exact sentence the homepage contradicts: the
+             * hero says "We do not judge your numbers". Of the two, the hero
+             * is the one that matches the code.
+             *
+             * The reassurance it was reaching for is real and worth keeping,
+             * so the second sentence says it without claiming to know.
+             */
+            'The link does not show this. That is not the same as being wrong.'
         : 'We could not open your link. Your reader may not either.'
 
   return (
