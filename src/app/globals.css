@@ -338,6 +338,20 @@
     page-break-inside: avoid;
   }
 
+  /* THE SAME TRAP, ONE LAYER DOWN. `.reveal` is opacity 0 until the observer
+     fires, and the report renders inside a Reveal. The hero's fires on mount
+     so it was not the cause of the blank PDF, but any block that has not
+     scrolled into view is still sitting at zero alpha, and an ancestor's
+     opacity is not something a descendant can override. Nothing on paper
+     scrolls, so nothing on paper should be waiting to be revealed. */
+  .reveal,
+  .reveal-in {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
   @page {
     margin: 16mm 14mm;
   }
@@ -459,7 +473,21 @@ body {
   }
 }
 
-@media (max-width: 767.98px) {
+/* SCREEN ONLY, and that word is load-bearing.
+
+   Without it this matched when PRINTING. Chrome lays a print job out at the
+   paper width, which on Letter with the 14mm side margins below is about
+   710 CSS px, so a query bounded at 767.98px newly matched, the entrance
+   animation started from its first keyframe, and that keyframe is
+   `opacity: 0`. Opacity on an ancestor cannot be overridden by a descendant,
+   so the whole marketing tree painted into a group at zero alpha and every
+   "Save as PDF" produced blank pages. The print report was correct, visible
+   and positioned the entire time.
+
+   Second bug from this one animation. The note below is the first. An
+   entrance animation has no meaning on paper, so the fix is to say so in the
+   query rather than to undo it again further down the file. */
+@media screen and (max-width: 767.98px) {
   .editorial:not(.no-page-transition) {
     /* Fill mode must NOT be `both`/`forwards`: retaining the keyframe's
        `transform` after the animation ends makes `.editorial` the
