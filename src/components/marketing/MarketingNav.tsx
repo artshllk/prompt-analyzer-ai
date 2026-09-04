@@ -72,7 +72,7 @@ const TOP_LEVEL = LINKS.filter(l => !TOOL_KEYS.includes(l.key))
  */
 const BLURBS: Record<string, string> = {
   detector: 'See if text was written by AI',
-  improver: 'Rewrite a rough prompt',
+  improver: 'Rewrite a bad prompt',
 }
 
 const TOOLS: ToolItem[] = TOOL_KEYS.map(k => {

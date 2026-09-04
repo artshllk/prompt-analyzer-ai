@@ -681,7 +681,7 @@ function Intro({
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder="Paste a rough prompt…"
+            placeholder="Paste a bad prompt…"
             rows={1}
             maxLength={4000}
             className="flex-1 bg-transparent resize-none py-2.5 px-2 text-base focus:outline-none focus-visible:outline-none"

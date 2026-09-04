@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'Deepclario - AI Prompt Improver',
     short_name: 'Deepclario',
     description:
-      'Paste a rough prompt and get a sharper version in seconds. Works with ChatGPT, Claude, and Gemini.',
+      'Paste a bad prompt and get a sharper version in seconds. Works with ChatGPT, Claude, and Gemini.',
     start_url: '/',
     display: 'standalone',
     background_color: '#0E0E10',

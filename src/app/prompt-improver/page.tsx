@@ -43,12 +43,12 @@ import { defaultOGImage } from '@/lib/og-image'
 export const metadata: Metadata = {
   title: 'Free Prompt Improver - Rewrite Any AI Prompt',
   description:
-    'Paste a rough prompt and get a clearer one back. Every change is labelled, so you can see what was added and take back anything you did not ask for. Free, no account needed.',
+    'Paste a bad prompt and get a clearer one back. Every change is labelled, so you can see what was added and take back anything you did not ask for. Free, no account needed.',
   alternates: { canonical: 'https://deepclario.com/prompt-improver' },
   openGraph: {
     title: 'Free Prompt Improver - Deepclario',
     description:
-      'Paste a rough prompt and get a clearer one back, with every change labelled. Free, no account needed.',
+      'Paste a bad prompt and get a clearer one back, with every change labelled. Free, no account needed.',
     url: 'https://deepclario.com/prompt-improver',
     type: 'website',
     // Pages with their own openGraph object need an explicit image - see
@@ -79,7 +79,7 @@ export default async function PromptImproverPage() {
         className="display text-4xl md:text-[3.5rem] leading-[1.05] tracking-tight mb-4"
         style={{ color: 'var(--ink)' }}
       >
-        Paste a rough prompt.
+        Paste a bad prompt.
       </h1>
       <p className="text-lg leading-relaxed max-w-2xl mb-10" style={{ color: 'var(--ink-soft)' }}>
         Deepclario reads it, asks one question if two readings would give you
@@ -111,7 +111,7 @@ export default async function PromptImproverPage() {
             className="display text-4xl md:text-[3.5rem] leading-[1.05] tracking-tight mb-4"
             style={{ color: 'var(--color-paper)' }}
           >
-            Paste a rough prompt.
+            Paste a bad prompt.
           </h1>
           <p
             className="text-lg leading-relaxed max-w-2xl mb-10 md:mb-14"
