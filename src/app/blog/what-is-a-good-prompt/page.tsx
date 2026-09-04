@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://deepclario.com/blog/what-is-a-good-prompt' },
   openGraph: {
     title: 'What Makes a Good AI Prompt? 5 Things Every Strong Prompt Has',
-    description: 'Learn the 5 elements every good AI prompt needs - with examples and a free tool to score yours.',
+    description: 'The 5 elements every good AI prompt needs, with a weak and a strong version of each.',
     url: 'https://deepclario.com/blog/what-is-a-good-prompt',
   },
 }
@@ -75,51 +75,46 @@ const DIMENSIONS = [
     n: 1,
     title: 'Goal clarity',
     slug: 'goal-clarity',
-    weight: '20 points',
     question: 'Does the AI know exactly what you want?',
     weak: 'Help me with my email',
     strong: 'Rewrite this email to be more direct and cut the length by half. Keep the main ask in the first sentence.',
-    tip: 'The test: could 10 different people read your prompt and imagine 10 different outputs? If yes, your goal is not clear enough.',
+    tip: 'Read it back and ask what else it could mean. If you can think of a second answer that also fits, so can the model.',
   },
   {
     n: 2,
     title: 'Context',
     slug: 'context',
-    weight: '20 points',
     question: 'Does the AI have the background it needs?',
     weak: 'Write a bio for my website',
     strong: 'Write a professional bio for my personal website. I\'m a freelance UX designer, 6 years of experience, focused on fintech clients. I want to come across as approachable and credible, not corporate.',
-    tip: 'Context is the who, what, and why. Without it, the AI writes for a hypothetical person who probably isn\'t you.',
+    tip: 'Context is who you are and what the thing is for. Leave it out and the model writes for an average person, who is not you.',
   },
   {
     n: 3,
     title: 'Format',
     slug: 'format',
-    weight: '20 points',
     question: 'Have you specified what the output should look like?',
     weak: 'Give me ideas for blog posts',
     strong: 'Give me 5 blog post ideas for a developer tools company. Format as a numbered list with: title, target reader, and one sentence on what makes it interesting.',
-    tip: 'Format means: how many items, what structure, what length. If you don\'t specify, you\'ll get whatever the model defaults to - which is usually too long.',
+    tip: 'Say how many, how long, and in what shape. If you do not, you get the model\'s default, which is almost always too long.',
   },
   {
     n: 4,
     title: 'Constraints',
     slug: 'constraints',
-    weight: '20 points',
     question: 'Have you told the AI what to avoid or stay within?',
     weak: 'Write a tagline for my product',
     strong: 'Write 5 tagline options for a password manager aimed at families. Max 8 words each. Avoid fear-based messaging. Don\'t use the words "secure", "safe", or "protect".',
-    tip: 'Constraints are what separates a useful prompt from an open-ended one. Banning specific words, setting length limits, or ruling out tones gives the AI less room to go wrong.',
+    tip: 'A constraint is anything that narrows the answer. Ban a word, cap the length, rule out a tone. Each one is a mistake the model can no longer make.',
   },
   {
     n: 5,
     title: 'Examples',
     slug: 'examples',
-    weight: '20 points',
     question: 'Have you shown the AI what good looks like?',
     weak: 'Write a product update email in a friendly tone',
     strong: 'Write a product update email in a friendly tone. Here\'s an example of the style I want: "We just shipped something small that will save you 20 minutes a week. Here\'s what changed and why." Match the casual directness - no corporate language, no jargon.',
-    tip: 'An example is the highest-value thing you can add to a prompt. It removes all ambiguity about tone, voice, and length in a single sentence.',
+    tip: 'One example does more than a paragraph of description. Showing the model a sentence you like settles tone and length at once.',
   },
 ]
 
@@ -142,29 +137,12 @@ export default function WhatIsAGoodPromptPage() {
             What Makes a Good AI Prompt? 5 Things Every Strong Prompt Has
           </h1>
           <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-3">
-            A good prompt isn&apos;t about using magic words or following a rigid template. It&apos;s about giving
-            the AI enough information to do exactly what you need - no more guessing, no more generic output.
+            A good prompt is not a magic phrase. It tells the model enough that it does not have to guess.
           </p>
           <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-            Every prompt Deepclario analyzes is scored across 5 dimensions, each worth 20 points. Here&apos;s
-            what each one means, why it matters, and how to add it to your prompts.
+            Five things separate a prompt that works from one that does not. Each one below has a weak
+            version and a better version, so you can see the difference rather than read about it.
           </p>
-        </div>
-
-        {/* Score breakdown */}
-        <div className="rounded-2xl border border-[color:var(--color-rule)] p-5 mb-12">
-          <p className="text-xs font-semibold text-[color:var(--color-paper-mute)] uppercase tracking-wider mb-3">How prompts are scored (0–100)</p>
-          <div className="space-y-2">
-            {DIMENSIONS.map(d => (
-              <div key={d.n} className="flex items-center gap-3">
-                <span className="text-xs text-[color:var(--color-paper-mute)] w-32 shrink-0">{d.title}</span>
-                <div className="flex-1 h-1.5 rounded-full bg-[#1e2d4a]">
-                  <div className="h-full rounded-full bg-[color:var(--color-paper)]" style={{ width: '20%' }} />
-                </div>
-                <span className="text-xs text-[color:var(--color-paper-mute)] w-16 text-right shrink-0">{d.weight}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div className="space-y-14">
@@ -199,10 +177,10 @@ export default function WhatIsAGoodPromptPage() {
 
         {/* The 100-point prompt */}
         <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-6">
-          <h2 className="text-lg font-bold text-[color:var(--color-paper)] mb-3">What a 100-point prompt looks like</h2>
+          <h2 className="text-lg font-bold text-[color:var(--color-paper)] mb-3">A prompt with all five</h2>
           <p className="text-sm text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
-            A perfect score means all 5 dimensions are fully covered. In practice, most prompts score between
-            60–80 after one round of improvement. Here&apos;s an example that hits all 5:
+            Here is one that has all five. It is long, and that is the point: every extra line removes a
+            decision the model would otherwise make for you.
           </p>
           <div className="rounded-xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-4">
             <p className="text-sm text-[color:var(--color-paper)] leading-relaxed">
@@ -215,15 +193,15 @@ export default function WhatIsAGoodPromptPage() {
             </p>
           </div>
           <p className="text-xs text-[color:var(--color-paper-mute)] mt-3">
-            Role ✓ · Context ✓ · Format ✓ · Constraints ✓ · Implied example style ✓
+            You could hand this to a freelancer and they would know what to write.
           </p>
         </div>
 
         <div className="mt-12 pt-8 border-t border-[color:var(--color-rule)] space-y-4">
-          <h2 className="text-lg font-bold text-[color:var(--color-paper)]">Score your own prompt</h2>
+          <h2 className="text-lg font-bold text-[color:var(--color-paper)]">Try it on your own prompt</h2>
           <p className="text-sm text-[color:var(--color-paper-mute)]">
-            Paste any prompt into Deepclario and see which of these 5 dimensions are missing.
-            You&apos;ll get a score, a breakdown, and a rewritten version.
+            Paste a prompt into Deepclario. It rewrites it and marks every line it added, so you can see
+            which of these five were missing and take back anything you did not ask for.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
