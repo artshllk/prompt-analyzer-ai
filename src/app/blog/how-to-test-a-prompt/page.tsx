@@ -210,7 +210,7 @@ export default function HowToTestAPromptPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Score your prompt before you test it</h2>
+            <h2 className="text-xl font-bold mb-3">Fix the prompt before you test it</h2>
             <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Deepclario finds the weak parts of a prompt up front, so there is less to fix in testing. Free, no account needed.</p>
             <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Analyze my prompt →

@@ -90,44 +90,42 @@ export default function HowToImproveAPromptScorePage() {
           </div>
 
           <h1 className="text-4xl font-bold mb-5 leading-tight">
-            How to Improve a Prompt Score
+            How to Improve a Weak Prompt
           </h1>
 
           <p className="text-lg text-[color:var(--color-paper-mute)] mb-10 leading-relaxed">
-            You paste a prompt in, and it comes back scoring 40 out of 100. Your first instinct might
-            be to rewrite the whole thing. Don&apos;t. A low score almost never means your prompt is
-            bad from top to bottom. It usually means one or two things are missing, and once you spot
-            them, the fix takes thirty seconds.
+            You paste a prompt in and get back something generic. Your first instinct is to rewrite
+            the whole thing. Do not. A weak prompt is rarely bad from top to bottom. Usually one or
+            two things are missing, and once you spot them the fix takes thirty seconds.
           </p>
 
           <article className="max-w-none space-y-10">
             <section>
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Stop rewriting. Start diagnosing.</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
-                When people see a low score, the natural reaction is to scrap the prompt and start
-                over. That wastes time. A score is not saying your prompt is wrong. It is saying the
-                model would have to guess at a few things you never mentioned.
+                When the answer comes back wrong, the natural reaction is to scrap the prompt and
+                start over. That wastes time. The prompt is rarely wrong. It just left the model
+                guessing at a few things you never mentioned.
               </p>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
                 So before you touch a word, read the prompt back and ask four questions. Is the goal
                 actually clear, or just clear to you? Did you say who this is for? Did you say what the
                 answer should look like? Did you say anything to avoid? Whichever question you can&apos;t
-                answer is almost always where your points went.
+                answer is almost always the thing that is missing.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The two fixes that do the most work</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
-                Out of everything that goes into a score, two things move the needle more than the
-                rest combined: telling the model who the answer is for, and telling it what shape you
-                want back.
+                Two things do more than everything else combined. Tell the model who the answer is
+                for. Tell it what shape you want back.
               </p>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
                 People skip both constantly, because in their own head the audience and the format are
                 obvious. They are not obvious to a model reading a bare sentence. Add &ldquo;for a
                 first-time customer who has never used software like this&rdquo; and you have handed
-                over context worth a dozen points. Add &ldquo;three short paragraphs, no bullet
+                over the context it was missing. Add &ldquo;three short paragraphs, no bullet
                 points&rdquo; and you have removed a whole category of guesswork.
               </p>
               <div className="grid gap-4">
@@ -148,36 +146,33 @@ export default function HowToImproveAPromptScorePage() {
             <section>
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">More words are not the goal</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
-                A mistake people make once they know the score cares about detail: they add detail that
-                has nothing to do with what the model actually needs. A longer prompt with the same
-                gaps scores about the same as the short one did.
+                Once people know detail helps, they add detail that has nothing to do with what the
+                model needs. A longer prompt with the same gaps produces the same answer the short
+                one did.
               </p>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-                If you added three sentences and the score barely moved, check whether those sentences
-                touched the goal, the audience, the format, or the limits. If they didn&apos;t, that is
-                why nothing changed. Padding a prompt with backstory the model doesn&apos;t need is not
-                the same as closing a real gap.
+                If you added three sentences and the answer barely changed, check whether those
+                sentences touched the goal, the audience, the format, or the limits. If they did not,
+                that is why. Backstory the model does not need is not the same as closing a gap.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">When a low score is actually fine</h2>
+              <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">When a rough prompt is fine</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-                Not every prompt needs to hit 90. If you just want a quick idea, a rough draft, or a
-                one-line answer, a shorter prompt with a lower score can still get you exactly what you
-                wanted in less time than it takes to write a perfect version. Chase a high score when
-                the answer actually matters and you plan to use it as-is. For a throwaway question, let
-                it go.
+                Not every prompt needs work. If you want a quick idea or a one-line answer, a short
+                prompt gets you there faster than writing a careful one. Spend the effort when the
+                answer matters and you plan to use it as it comes back. For a throwaway question,
+                do not bother.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">Make it a habit, not a one-time fix</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-                The real win isn&apos;t raising the score on one prompt. It&apos;s noticing your own
-                pattern. Most people are weak on the same one or two parts every time, usually context
-                or limits. Once you know your habit, you start writing it into the prompt automatically,
-                and you stop needing the score to catch it for you.
+                The real win is noticing your own pattern. Most people leave out the same one or two
+                things every time, usually context or limits. Once you know which is yours, you start
+                writing it in without thinking about it.
               </p>
             </section>
           </article>

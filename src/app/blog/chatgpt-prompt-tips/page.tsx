@@ -185,10 +185,9 @@ export default function ChatGPTPromptTipsPage() {
         <div className="mt-16 pt-8 border-t border-[color:var(--color-rule)] space-y-4">
           <h2 className="text-lg font-bold text-[color:var(--color-paper)]">Test these tips on your own prompts</h2>
           <p className="text-sm text-[color:var(--color-paper-mute)]">
-            Paste any prompt into Deepclario and get a score across all 5 dimensions - goal clarity, context,
-            format, constraints, and examples. See exactly which of these tips applies to your prompt, and get
-            a rewritten version that scores higher.
-          </p>
+            Paste any prompt into Deepclario. It rewrites it and marks every line it added, so you can
+              see which of these tips your prompt was missing and take back anything you did not ask for.
+            </p>
           <div className="flex flex-wrap gap-3">
             <Link
               href="/prompt-improver"

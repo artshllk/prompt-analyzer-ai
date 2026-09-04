@@ -117,7 +117,7 @@ export default function WhatIsPromptEngineeringPage() {
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">The 5 dimensions of a good prompt</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-5">
                 Research into prompt effectiveness points to five elements that separate high-quality prompts from
-                poor ones. This is the same framework Deepclario uses to score every prompt:
+                poor ones. This is the same framework Deepclario checks a prompt against:
               </p>
               <div className="space-y-4">
                 {[
@@ -141,12 +141,12 @@ export default function WhatIsPromptEngineeringPage() {
                 <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
                   <p className="text-xs text-[#C25E5E] font-semibold uppercase mb-2">Weak prompt</p>
                   <p className="text-sm text-[color:var(--color-paper-mute)] italic">&ldquo;Summarize this article&rdquo;</p>
-                  <p className="text-xs text-[color:var(--color-paper-mute)] mt-3">Score: ~12/100 - No audience, no format, no length, no purpose</p>
+                  <p className="text-xs text-[color:var(--color-paper-mute)] mt-3">No audience, no format, no length, no purpose</p>
                 </div>
                 <div className="p-5 bg-[color:var(--color-ink-card)] rounded-xl border border-[color:var(--color-rule-strong)]">
                   <p className="text-xs text-[color:var(--color-paper)] font-semibold uppercase mb-2">Engineered prompt</p>
                   <p className="text-sm text-[color:var(--color-paper)]">&ldquo;Summarize the key findings of this research article in 3 bullet points for a non-technical executive audience. Each bullet should be one sentence. Focus on practical implications, not methodology.&rdquo;</p>
-                  <p className="text-xs text-[color:var(--color-paper-mute)] mt-3">Score: ~89/100 - Audience ✓ Format ✓ Length ✓ Constraints ✓</p>
+                  <p className="text-xs text-[color:var(--color-paper-mute)] mt-3">Audience ✓ Format ✓ Length ✓ Constraints ✓</p>
                 </div>
               </div>
             </section>
@@ -186,9 +186,9 @@ export default function WhatIsPromptEngineeringPage() {
             <section>
               <h2 className="text-2xl font-bold text-[color:var(--color-paper)] mb-4">How to get started</h2>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed mb-4">
-                The fastest way to improve your prompts is to get scored feedback on what you&apos;re already writing.
-                Paste any prompt into Deepclario and see exactly which dimensions are weak - with a rewritten version
-                that fixes them.
+                The fastest way to improve your prompts is to look at one you already wrote. Paste it into
+                Deepclario and see the rewritten version, with every line it added marked, so you can tell
+                which of these five were missing.
               </p>
               <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
                 No theory required. Try it on a real prompt you&apos;re working on right now.
@@ -198,7 +198,7 @@ export default function WhatIsPromptEngineeringPage() {
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Practice with your own prompts</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Paste any prompt. See your score. Get the improved version. Free, no account needed.</p>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Paste any prompt. See the improved version, with every change marked. Free, no account needed.</p>
             <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Analyze my prompt →
             </Link>

@@ -199,9 +199,9 @@ Be direct - I want your actual recommendation, not a list of options.`}</pre>
             </p>
             <p className="leading-relaxed">
               Deepclario works with prompts for all three. Whether you are writing for Claude, ChatGPT, or
-              Gemini, it will score your prompt, identify what is missing, and produce a rewritten version
-              that any of them can run.
-            </p>
+              Gemini, it rewrites your prompt and marks what it added, so you can see what
+                was missing and run the result on any of them.
+              </p>
           </section>
 
         </div>
@@ -211,7 +211,7 @@ Be direct - I want your actual recommendation, not a list of options.`}</pre>
             Improve a Claude prompt right now
           </h2>
           <p className="text-base leading-relaxed mb-6" style={{ color: 'var(--color-paper-mute)' }}>
-            Paste your prompt into Deepclario. It works with Claude, ChatGPT, and Gemini - scores it, asks what is missing, and rewrites it. Free.
+            Paste your prompt into Deepclario. It works with Claude, ChatGPT, and Gemini. It asks what is missing, then rewrites it. Free.
           </p>
           <Link href="/prompt-improver" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] btn-brand transition-all" style={{ fontWeight: 500 }}>
             Try Deepclario free
