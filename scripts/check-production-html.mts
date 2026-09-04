@@ -80,8 +80,32 @@ const CHECKS: Check[] = [
     // Renamed from /playground. Its title and description are what a search
     // result shows, so an empty or default one is a page nobody clicks.
     path: '/prompt-improver',
-    text: ['Paste a rough prompt'],
-    raw: ['rel="canonical"href="https://deepclario.com/prompt-improver"', 'FreePromptImprover'],
+    text: [
+      /**
+       * THE "no account" CLAIM, PINNED.
+       *
+       * This one and the meta description below are now the most load-bearing
+       * sentences on the site: they are what a stranger reads in a search
+       * result for "prompt improver" before deciding to click.
+       *
+       * Verified end to end from a clean cookie jar before pinning: the page
+       * sets no gate, POST /api/anon/analyze answers with no session, and a
+       * full clarify-then-rewrite round trip returned a 607-character
+       * improved prompt with no signup prompt, modal or wall anywhere in the
+       * response.
+       *
+       * The headline above them is NOT pinned. It moved from "rough" to "bad"
+       * mid-session, and a check that breaks on ordinary copy edits trains
+       * people to ignore it. Pin the claim, not the wording.
+       */
+      'No account, no install',
+    ],
+    raw: [
+      'rel="canonical"href="https://deepclario.com/prompt-improver"',
+      'FreePromptImprover',
+      // The meta description, whitespace-stripped like every raw match here.
+      'Free,noaccountneeded',
+    ],
   },
   {
     path: '/pricing',

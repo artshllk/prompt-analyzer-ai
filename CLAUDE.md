@@ -283,6 +283,34 @@ because a leak in shared code is not a feature request.
 If a change is needed to keep a promise the site already makes, it is not
 covered by the freeze. Make it, and say in the commit why.
 
+## A markdown fetch of a page is not what the page contains
+
+**An external tool that fetches a URL and converts it to markdown DROPS
+`[hidden]` content.** So does anything that reads "visible text". Both the FAQ
+accordion and the Tools dropdown render their content in the HTML and hide it
+with the `hidden` attribute, which is deliberate: it is what makes ten FAQ
+answers and two navigation links reachable without JavaScript.
+
+A markdown fetch of those pages therefore reports the answers missing and the
+nav links missing. **They are present.** This has produced two false reports of
+a broken navigation already.
+
+`npm run check:html` reads the raw bytes and is the authority. It strips tags
+itself, understands the `hidden` attribute is not absence, and asserts on both
+visible text and raw HTML. When an outside fetch and that script disagree, the
+script is right.
+
+There is a second trap in the same family, and it bit once. React splits text
+around an interpolation with comment markers:
+
+```
+You can run <!-- -->3<!-- --> checks a month without one.
+```
+
+So `grep -c "3 checks a month"` returns 0 on a page that plainly says it. Any
+raw grep for a sentence containing a number will give a false negative. Strip
+the comment markers and the tags first, which is what `check:html` does.
+
 ## A browser-side limit is a suggestion, never a count
 
 **If the copy states a number, the server has to enforce it.** A limit that
