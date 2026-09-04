@@ -3,21 +3,15 @@ import Link from "next/link";
 import Image from "next/image";
 // { /* CUT - redundant with demo + steps */ }
 // import { StaticTransform } from '@/components/marketing/StaticTransform'
-import { EditorialPricing } from "@/components/marketing/EditorialPricing";
 import { EarlyDays } from "@/components/marketing/EarlyDays";
 import { CannotCheck } from "@/components/factcheck/CannotCheck";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { CheckClient } from "@/components/factcheck/CheckClient";
-import {
-  WorkedExample,
-  NoLinkNote,
-} from "@/components/factcheck/WorkedExample";
+import { WorkedExample } from "@/components/factcheck/WorkedExample";
 import { Reveal } from "@/components/ui/Reveal";
 import { defaultOGImage } from "@/lib/og-image";
 import { createClient } from "@/lib/supabase/server";
 import { getFactcheckAllowance } from "@/lib/db/usage";
-import { viewerPlan } from "@/lib/db/viewer-plan";
-import { foundingSeatsLeft } from "@/lib/paddle";
 import { ANON_FACTCHECK_MONTH } from "@/lib/rate-limit";
 // { /* CUT - redundant with demo + steps */ }
 // import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
@@ -142,14 +136,12 @@ async function checksLeft(): Promise<{ remaining: number; limit: number } | null
 
 export default async function LandingPage() {
   const left = await checksLeft();
-  const { plan, renewsOn } = await viewerPlan()
   /**
-   * Counted at Paddle, so the price on screen is the price the checkout
-   * will charge. Cached for thirty seconds inside foundingSeatsLeft, and
-   * it fails closed: if Paddle cannot be reached this reads zero and the
-   * page shows the ordinary price rather than one it cannot honour.
+   * No viewerPlan() and no foundingSeatsLeft() any more. Both existed only to
+   * feed the pricing table, and both are round trips: one to Postgres and one
+   * to Paddle, on every render of the busiest page on the site. Deleting the
+   * table deleted the reason for them.
    */
-  const foundingLeft = await foundingSeatsLeft();
   return (
     <>
       <script
@@ -162,144 +154,105 @@ export default async function LandingPage() {
       >
         <MarketingNav current="home" />
 
-        {/* Hero - two-column on desktop: copy left, animated centerpiece
-            right. Centerpiece is hidden under lg so mobile gets the
-            text-only treatment. LivePromptDemo lives in its own
-            section directly below so the page reads "promise -> proof". */}
+        {/*
+          THE HERO IS THE CONSOLE, and the console is the tool.
+
+          Restructured from docs/design/hero-console.html, which is the
+          approved design and is checked in unmodified so what shipped can be
+          held against what was signed off. Layout, spacing, the framing, the
+          toolbar, the counter, the keyboard hint and the serif headline with
+          its italic accent word are that file. What is NOT that file is
+          anything it said about this product that was not true: the pulsing
+          "v1.4" pill, an "Import URL" tab we do not offer, a headless
+          chromium we do not run, and a DOM engine that does not exist. All
+          four are gone rather than reworded.
+
+          The head block is server-rendered here rather than inside the client
+          console, so the H1 and the promise under it are in the HTML a
+          crawler gets whether or not the bundle ever loads.
+        */}
         <section
           id="try"
-          className="pt-24 md:pt-32 pb-20 md:pb-28 px-5 sm:px-6 md:px-10 relative"
+          className="pt-24 md:pt-32 pb-20 md:pb-28 px-4 sm:px-6"
+          /* Declared, not inherited. Every section on this page names its own
+             tier from the ladder in globals.css, so the rhythm is readable in
+             one grep instead of being an accident of what the root happens to
+             be. */
+          style={{ background: "var(--surface)" }}
         >
-          <div className="max-w-5xl mx-auto">
-            {/* Entrance choreography: eyebrow -> headline -> subhead -> tool,
-                staggered so the hero assembles in under a second. The page
-                paints and stays interactive throughout - this is a reveal,
-                never a gate. Only the headline gets the resolve. */}
-            {/*
-              THE TOOL IS THE HERO, and it is the FACT CHECKER now.
-
-              The prompt improver used to be here. It is frozen and lives at
-              /prompt-improver, where 48 links across 42 files still point at it,
-              including one inside an email already sitting in inboxes.
-
-              Same lesson as the extension install wall and as the scripted
-              demo this replaced: someone arriving from a Reddit thread should
-              be able to paste something without clicking anything first. A
-              description with a button is one click too many, and the click is
-              where they leave.
-
-              The worked example sits ABOVE the box on purpose. Someone who has
-              never heard of this needs to see what it catches before they will
-              paste their own writing into it.
-            */}
-            {/*
-              15 WORDS BEFORE THE BOX. One headline, one line, then the tool.
-              Everything else that used to sit here was reassurance stacking or
-              a description of our internals, and both are ways of talking
-              instead of letting someone try it.
-
-              The worked example moved BELOW the box. It used to sit above,
-              because the old copy did not explain itself and the example had
-              to do that job. The copy explains itself now, so the example's
-              job changed from explaining to proving, and proof goes after the
-              ask.
-            */}
+          <div className="w-full max-w-4xl mx-auto">
             <Reveal>
-              <h1
-                className="display text-[2.6rem] sm:text-5xl md:text-[4.5rem] leading-[1.05] tracking-tight"
-                style={{ color: "var(--ink)" }}
-              >
-                Does your source{" "}
-                <span style={{ color: "var(--brand)" }}>really say that?</span>
-              </h1>
-            </Reveal>
-            <Reveal index={1}>
-              <p
-                className="mt-4 md:mt-5 text-lg md:text-xl leading-relaxed max-w-2xl"
-                style={{ color: "var(--ink-soft)" }}
-              >
-                Paste your article. We open every link and check.
-              </p>
-            </Reveal>
-
-            {left && (
-              <Reveal index={2}>
-                <p
-                  className="mt-6 text-[14px]"
-                  style={{ color: "var(--ink-soft)", fontFamily: "var(--font-mono)" }}
+              <div className="text-center max-w-2xl mx-auto mb-8">
+                {/* display-hero from DESIGN.md: Newsreader 500, 56px, 64px
+                    line, -0.02em. The accent word is a real italic cut now,
+                    not a synthesised slant, which is the whole reason that
+                    face was loaded. */}
+                <h1
+                  className="font-serif text-balance text-[36px] leading-[44px] tracking-[-0.015em] md:text-[56px] md:leading-[64px] md:tracking-[-0.02em]"
+                  style={{ color: "var(--ink)" }}
                 >
-                  {left.remaining} of {left.limit} checks left this month
+                  Does your source{" "}
+                  <em
+                    className="not-italic"
+                    style={{ color: "var(--brand)", fontStyle: "italic" }}
+                  >
+                    really
+                  </em>{" "}
+                  say that?
+                </h1>
+                <p
+                  className="mt-4 text-base sm:text-lg leading-relaxed"
+                  style={{ color: "var(--ink-soft)" }}
+                >
+                  Paste your article. We open every link and check that the page
+                  really says it.
                 </p>
-              </Reveal>
-            )}
-
-            <Reveal index={3}>
-              <div className="mt-8 md:mt-10">
-                <CheckClient />
               </div>
             </Reveal>
 
-            {/* Said before the machine does it, not after. Somebody pasting an
-                internal draft deserves to know we will open what is in it. */}
-            <Reveal index={3}>
-              <p
-                className="mt-3 text-[13px] leading-relaxed"
-                style={{ color: "var(--ink-soft)" }}
-              >
-                We open every link in your text. Do not paste private links.
-              </p>
-            </Reveal>
+            {/* The count a signed-in reader signed up for, passed into the
+                console so it sits in the toolbar's status slot beside the
+                character counter. That slot used to say "DOM Engine Ready",
+                which was furniture; this is the one status about this session
+                that is both true and enforced.
 
-            <Reveal index={5}>
-              <p
-                className="mt-6 text-[15px] leading-relaxed"
-                style={{ color: "var(--ink)" }}
-              >
-                We never say a number is wrong. We show you what the page says.
-              </p>
+                Anonymous visitors get null and the slot renders nothing,
+                because their ceiling is best effort and a number we cannot
+                enforce is not one we state. */}
+            <Reveal index={1}>
+              <CheckClient checksLeft={left} />
             </Reveal>
-
           </div>
         </section>
 
         {/*
-          THE ONE DARK SECTION ON THE PAGE, AND IT STAYS THE ONLY ONE.
+          THE REAL EXAMPLE, ITS OWN SECTION, ON ITS OWN TIER.
 
-          A page that flips light and dark repeatedly stops reading as
-          editorial and starts reading as a template, so this is spent once, on
-          the part that has to land: the proof that the tool finds something
-          real.
+          It used to sit inside a contained dark mount, which was the one dark
+          block on the page. That is gone. The mount was doing the job of
+          separating this section from the hero above it, and a ground of its
+          own does the same job with the same ladder every other section uses,
+          so the page now alternates the whole way down instead of alternating
+          everywhere except here.
 
-          Dark ground with the white document card on it is also the right
-          picture for what this is. It makes the marked-up page look like a
-          page on a desk, which is what a proof reader sees.
+          surface-subtle, so it steps against the hero above and the taxonomy
+          below, both of which are surface. The white comparison container
+          reads harder on this than it did on white-adjacent cream.
 
-          IT IS A CONTAINED BLOCK, NOT A FULL-BLEED BAND, and that is the
-          difference between the two readings. Full bleed, the dark ran edge to
-          edge while the card stayed capped at max-w-5xl, so on a wide screen
-          there was about 490px of black down each side and 112px above and
-          below. The card was roughly a third of the dark area and read as
-          something lost in a void.
+          --inverse-surface is still a token and is now used nowhere. It stays
+          in the ladder because DESIGN.md defines it and a tier that exists
+          only when something needs it is not a cost.
 
-          Contained, the black becomes a mount around the document. A mount is
-          narrow by definition: the moment it is wider than the thing it holds,
-          it stops framing and starts swallowing.
+          max-w-5xl rather than the 1180px the rest of the page uses. Two
+          columns of quoted prose get harder to compare the further apart they
+          sit, and this is the one section whose entire job is the comparison.
         */}
-        <section className="px-5 sm:px-6 md:px-10 pb-20 md:pb-28">
-          <div
-            className="max-w-5xl mx-auto rounded-3xl px-5 sm:px-8 md:px-10 py-12 md:py-14"
-            style={{ background: "var(--ink)" }}
-          >
-            <p
-              className="text-[12px] uppercase tracking-[0.14em] mb-5"
-              style={{ color: "var(--mute-on-ink)" }}
-            >
-              A real example
-            </p>
-            <WorkedExample onDark />
-            <div className="mt-5">
-              <NoLinkNote onDark />
-            </div>
+        <section
+          className="px-4 sm:px-6 py-12 sm:py-16 md:py-20"
+          style={{ background: "var(--surface-subtle)" }}
+        >
+          <div className="w-full max-w-5xl mx-auto">
+            <WorkedExample />
           </div>
         </section>
 
@@ -312,7 +265,7 @@ export default async function LandingPage() {
         {/* CUT - thesis line moved to hero, essay paragraphs removed */}
         {/*
         <section id="why" className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
-          <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
+          <div className="max-w-[1180px] mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
             <div className="md:col-span-3">
               <p className="eyebrow">The thesis</p>
             </div>
@@ -341,7 +294,7 @@ export default async function LandingPage() {
           className="px-6 md:px-10 py-24 md:py-32"
           style={{ borderTop: "1px solid var(--color-rule)" }}
         >
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-[1180px] mx-auto">
             <div className="grid md:grid-cols-12 gap-8 md:gap-16 mb-14 md:mb-20">
               <div className="md:col-span-3">
                 <p className="eyebrow">How it works</p>
@@ -374,7 +327,7 @@ export default async function LandingPage() {
         {/* CUT - "A fair question" folded into FAQSection as one richer answer */}
         {/*
         <section className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)', background: 'var(--color-ink-soft)' }}>
-          <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
+          <div className="max-w-[1180px] mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
             <div className="md:col-span-5">
               <p className="eyebrow mb-6">A fair question</p>
               <h2 className="display text-3xl md:text-5xl" style={{ color: 'var(--color-paper)' }}>
@@ -411,80 +364,91 @@ export default async function LandingPage() {
             not just in the FAQ. Every claim here must match /privacy. */}
         <CannotCheck />
 
-        {/* Same ground as the section above it, so it takes a rule. The rule
-            convention on this page: a border only where the ground does not
-            change, never on top of a surface change. */}
-        <section
-          className="px-6 md:px-10 py-20 md:py-28"
-          style={{ borderTop: "1px solid var(--rule)" }}
-        >
-          <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
-            <div className="md:col-span-3">
-              <p className="eyebrow">You own your data</p>
-            </div>
-            <div className="md:col-span-9">
-              <h2
-                className="font-serif text-3xl md:text-5xl leading-tight tracking-tight mb-10"
-                style={{ color: "var(--color-paper)", fontWeight: 400 }}
-              >
-                Your writing stays yours.
-              </h2>
-              <div className="grid sm:grid-cols-3 gap-8">
-                {TRUST_POINTS.map((t) => (
-                  <div key={t.title}>
-                    <h3
-                      className="text-base mb-2"
-                      style={{ color: "var(--color-paper)", fontWeight: 500 }}
-                    >
-                      {t.title}
-                    </h3>
-                    <p
-                      className="text-sm leading-[1.7]"
-                      style={{ color: "var(--color-paper-mute)" }}
-                    >
-                      {t.body}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <Link
-                href="/privacy"
-                className="inline-block mt-8 text-sm transition-opacity hover:opacity-100 opacity-80 underline underline-offset-4"
-                style={{ color: "var(--color-paper)" }}
-              >
-                Read the full privacy policy
-              </Link>
-            </div>
-          </div>
-        </section>
+        {/*
+          WHAT HAPPENS TO YOUR TEXT, AND WHO IS ASKING FOR IT, in one section.
 
-        {/* Honest proof - one real before/after rewrite plus a founder
-            note. Sits just above Pricing so proof lands at the moment
-            buying-doubt peaks. Swap for real testimonials once users
-            give attributable quotes. */}
-        {/* Honest proof, in place of the invented kind. It says plainly that
-            Deepclario is new and that there are no made-up reviews here,
-            which is worth more at launch than three fabricated quotes. */}
+          These were two stacked sections with a rule between them: "You own
+          your data" as three columns of plain text, and "Early days" as a
+          paragraph under an eyebrow. They answer the same question from two
+          sides, and neither was strong enough on its own to be the thing that
+          persuades somebody to paste an unpublished draft into a box.
+        */}
         <EarlyDays />
 
         {/* Pricing */}
-        <section
-          id="pricing"
-          className="px-6 md:px-10 py-20 md:py-28"
-          style={{ borderTop: "1px solid var(--color-rule)" }}
-        >
-          <div className="max-w-6xl mx-auto">
-            <EditorialPricing plan={plan} renewsOn={renewsOn} foundingLeft={foundingLeft} />
-          </div>
-        </section>
+        {/*
+          PRICING LIVES AT /pricing AND NOWHERE ELSE.
 
-        {/* Footer */}
-          {/* The detector gets ONE line, not a section. It has its own page and
-            it is not what this site is for. The prompt improver gets nothing
-            here at all: footer link only. */}
-        <section className="px-6 md:px-10 pb-20 md:pb-28">
-          <div className="max-w-6xl mx-auto">
-            <p className="text-[15px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+          The whole table was here as well, which meant two plans, two prices,
+          two founding counts and two feature lists rendered from one component
+          in two places a visitor could reach in one click of each other. A
+          second copy of a price is a second thing that can be read while the
+          first is being edited, and this site has already shipped five
+          copy-versus-reality gaps without help from duplication.
+
+          Nothing linked to /#pricing, so removing the anchor breaks no link:
+          the nav, the mobile menu and the footer all point at /pricing.
+
+          What survives is one line, because a page that ends on a privacy
+          section dead-ends. It states the free allowance from the constant the
+          server enforces and sends anyone who wants the rest to the page that
+          owns it.
+        */}
+        {/*
+          THE CLOSE. One section, not two.
+
+          Removing the pricing table left two one-line sections sitting on the
+          same ground with nothing between them, which reads as the page
+          trailing off rather than ending. They are the same thought anyway:
+          here is what else there is.
+
+          The Pro pointer gets a card because it is the only thing on this page
+          asking for money and it has to look deliberate. The detector keeps
+          its one quiet line: it has its own page, it is not what this site is
+          for, and a second card would give it equal billing.
+        */}
+        <section
+          className="px-6 md:px-10 py-16 md:py-24"
+          style={{ background: "var(--surface)" }}
+        >
+          <div className="max-w-[1180px] mx-auto">
+            <div
+              className="rounded-lg p-6 md:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+              style={{
+                background: "var(--surface-card)",
+                border: "1px solid var(--border-warm)",
+              }}
+            >
+              <div>
+                <p className="text-[17px] leading-relaxed" style={{ color: "var(--ink)" }}>
+                  Free to start. {ANON_FACTCHECK_MONTH.capacity} checks a month
+                  without an account, more with one.
+                </p>
+                {/* The same identity line the Pro card uses, so the two
+                    pages describe the tier the same way. Where pricing lives
+                    is our problem, not the reader's, and the sentence that
+                    said so has no business on the page. */}
+                <p
+                  className="mt-1 text-[14px] leading-relaxed"
+                  style={{ color: "var(--ink-soft)" }}
+                >
+                  Pro is for people who publish every day.
+                </p>
+              </div>
+              <Link
+                href="/pricing"
+                className="shrink-0 inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                style={{
+                  border: "1px solid var(--border-warm)",
+                  background: "var(--surface-subtle)",
+                  color: "var(--ink)",
+                }}
+              >
+                See what Pro adds
+              </Link>
+            </div>
+
+            <p className="mt-6 text-[15px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
               We also have a{" "}
               <Link
                 href="/detector"
@@ -500,9 +464,12 @@ export default async function LandingPage() {
 
       <footer
           className="px-6 md:px-10 py-16"
-          style={{ borderTop: "1px solid var(--color-rule)" }}
+          style={{
+            background: "var(--surface-subtle)",
+            borderTop: "1px solid var(--border-warm)",
+          }}
         >
-          <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
+          <div className="max-w-[1180px] mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
             <div className="md:col-span-5">
               <div className="flex items-center gap-2 mb-4">
                 <Image
@@ -582,7 +549,7 @@ export default async function LandingPage() {
             />
           </div>
           <div
-            className="max-w-6xl mx-auto mt-16 pt-6 text-xs"
+            className="max-w-[1180px] mx-auto mt-16 pt-6 text-xs"
             style={{
               borderTop: "1px solid var(--color-rule)",
               color: "var(--color-paper-mute)",
@@ -597,26 +564,6 @@ export default async function LandingPage() {
 }
 
 /* ===== Sub-components ===== */
-
-/* Claims here must stay in sync with /privacy. Prompts are processed by
-   Google Gemini to generate the rewrite, so we say "never used to train",
-   not "never leave our servers". */
-const TRUST_POINTS = [
-  {
-    title: "Never used to train AI",
-    body: "Your text is only used to run the check you asked for. We never use it to train models or sell it.",
-  },
-  {
-    title: "Delete everything anytime",
-    body: "Remove your account and all your data from Settings. Everything is gone within 24 hours.",
-  },
-  {
-    title: "Payments by Paddle",
-    body: "Card details never touch our servers. VAT and sales tax are handled automatically.",
-  },
-];
-
-
 
 function FooterCol({
   title,
