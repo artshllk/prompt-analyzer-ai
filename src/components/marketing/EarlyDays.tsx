@@ -55,9 +55,13 @@ export function EarlyDays() {
           </h2>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-4 md:gap-5 items-start">
+        {/* One column while the founder card is commented out below. It was a
+            7/5 split, and leaving the left half at 7 would have parked the
+            three cards in a narrow strip with five columns of nothing beside
+            them. Put both numbers back when the card returns. */}
+        <div className="grid gap-4 md:gap-5 items-start">
           {/* Three cards, one per promise. */}
-          <div className="lg:col-span-7 grid sm:grid-cols-3 lg:grid-cols-1 gap-4 md:gap-5">
+          <div className="grid sm:grid-cols-3 gap-4 md:gap-5">
             {TRUST_POINTS.map(t => {
               const Icon = t.icon
               return (
@@ -93,7 +97,7 @@ export function EarlyDays() {
                 </div>
               )
             })}
-            <div className="sm:col-span-3 lg:col-span-1">
+            <div className="sm:col-span-3">
               <Link
                 href="/privacy"
                 className="inline-block text-sm underline underline-offset-4"
@@ -104,7 +108,22 @@ export function EarlyDays() {
             </div>
           </div>
 
-          {/* The founder's note. A card, because it is a person talking. */}
+          {/*
+            THE FOUNDER'S NOTE, OFF PROD FOR NOW at Art's request. Commented
+            rather than deleted, because it is coming back and it is easier to
+            restore than to rewrite.
+
+            To put it back: uncomment the block below, and restore the 7/5
+            split on the grid above (lg:grid-cols-12, then lg:col-span-7 on
+            the cards and lg:col-span-5 here). The privacy link's
+            lg:col-span-1 goes back too.
+
+            Note the block comment markers inside it were changed from slash-
+            star to paren-star, because a nested block comment would close this
+            JSX comment early and dump the rest onto the page as text.
+          */}
+          {/*
+          {(* The founder's note. A card, because it is a person talking. *)}
           <div
             className="lg:col-span-5 rounded-lg p-6 md:p-7"
             style={{
@@ -143,11 +162,11 @@ export function EarlyDays() {
               className="mt-6 pt-5 flex items-center gap-3"
               style={{ borderTop: '1px solid var(--border-warm)' }}
             >
-              {/*
+              {(*
                 A monogram, not a photograph. There is no founder photo in this
                 repo, and a stock face on a page arguing that we do not invent
                 things would be the worst possible place to put one.
-              */}
+              *)}
               <span
                 className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-full text-[15px]"
                 style={{ background: 'var(--ink)', color: 'var(--paper)', fontWeight: 600 }}
@@ -168,6 +187,8 @@ export function EarlyDays() {
               </div>
             </div>
           </div>
+          */}
+
         </div>
       </div>
     </section>

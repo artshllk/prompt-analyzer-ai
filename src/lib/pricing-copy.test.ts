@@ -785,15 +785,31 @@ test('the comparison is two columns, because the comparison is the product', () 
   )
 })
 
-test('the founder note is attributed to a person, not to a company', () => {
-  // A quote with no name on it is a testimonial we wrote ourselves, which is
-  // the thing this card exists to say we do not do.
-  assert.match(trust, /Art Shllaku/)
-  assert.match(trust, /Founder, Deepclario/)
+test('the founder note is off prod, and has not been lost', () => {
+  /**
+   * Commented out at Art's request, not deleted. Two things to hold:
+   *
+   * It must not RENDER. copyOnly strips comments, so asserting on that is
+   * what distinguishes "commented out" from "shipping"; the raw file would
+   * have gone on matching happily and the guard would have been telling us
+   * the card was live while the page showed nothing.
+   *
+   * And it must still EXIST, because a block nobody can see is a block
+   * somebody tidies away. If it is genuinely finished, delete this test in
+   * the same commit that deletes the card.
+   */
+  assert.doesNotMatch(copyOnly(trust), /Art Shllaku/, 'the founder card is rendering again')
+  assert.match(trust, /Art Shllaku/, 'the commented-out founder card is gone')
   assert.match(trust, /Deepclario is new, so you will not find made-up reviews here\./)
-  // No stock photograph. There is no founder photo in the repo and inventing
-  // one on this particular card would be self-refuting.
+  // No stock photograph, whenever it comes back. There is no founder photo in
+  // the repo and inventing one on this particular card would be
+  // self-refuting.
   assert.doesNotMatch(trust, /<Image|<img/, 'a face appeared on the founder card')
+  // The three privacy promises stay on the page. They are the half of this
+  // section that backs a claim /privacy also makes.
+  for (const t of ['Never used to train AI', 'Delete everything anytime', 'Payments by Paddle']) {
+    assert.match(copyOnly(trust), new RegExp(t), `${t} stopped rendering`)
+  }
 })
 
 test('the pricing chips read the counts they claim', () => {

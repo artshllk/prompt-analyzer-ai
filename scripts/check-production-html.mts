@@ -170,10 +170,6 @@ const CHECKS: Check[] = [
       'Never used to train AI',
       'Delete everything anytime',
       'Payments by Paddle',
-      'Early days',
-      'Deepclario is new, so you will not find made-up reviews here.',
-      'Art Shllaku',
-      'Founder, Deepclario',
 
       // The one line that survives where the pricing table used to be.
       'See what Pro adds',
@@ -219,6 +215,14 @@ const CHECKS: Check[] = [
       // already keeps the publisher who made the mistake unnamed.
       'sparktoro',
       'SparkToro',
+
+      // The founder's note, commented out in EarlyDays.tsx and off prod for
+      // now. Pinned absent so a stray uncomment shows up here rather than on
+      // the live page.
+      'Early days',
+      'Deepclario is new, so you will not find made-up reviews here.',
+      'Art Shllaku',
+      'Founder, Deepclario',
 
       // The rest of the diff-inspector mockup's inventions. The two quote
       // lead-ins are the worst of them: fabricated fragments inside quotation
