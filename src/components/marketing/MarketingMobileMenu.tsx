@@ -63,7 +63,7 @@ function MenuIcon({ open }: { open: boolean }) {
 // Prompts and Extension came out because they are footer-only now, and a key
 // that is not in `links` silently resolves to nothing, which is how this list
 // quietly rotted before.
-const TOOL_KEYS: NavKey[] = ['detector', 'playground']
+const TOOL_KEYS: NavKey[] = ['detector', 'improver']
 const COMPANY_KEYS: NavKey[] = ['pricing', 'blog', 'faq']
 
 /**

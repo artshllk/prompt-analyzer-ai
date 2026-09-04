@@ -162,7 +162,7 @@ export default function PromptAnalyzerGuidePage() {
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Try the analyzer on a real prompt</h2>
             <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Paste in something you are about to send. See the score, the weak spot, and the rewrite. Free, no account needed.</p>
-            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Improve my prompt →
             </Link>
           </div>

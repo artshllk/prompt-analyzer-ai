@@ -177,7 +177,7 @@ export default function WhichAIModelShouldYouUsePage() {
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Get better answers from whichever one you pick</h2>
             <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Before switching tools, make sure your prompt is doing its job. Deepclario scores it and rewrites the weak parts. Free, no account needed.</p>
-            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Improve my prompt →
             </Link>
           </div>

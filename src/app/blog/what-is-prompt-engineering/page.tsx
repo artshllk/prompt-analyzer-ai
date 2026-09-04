@@ -199,7 +199,7 @@ export default function WhatIsPromptEngineeringPage() {
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Practice with your own prompts</h2>
             <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Paste any prompt. See your score. Get the improved version. Free, no account needed.</p>
-            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Analyze my prompt →
             </Link>
           </div>
@@ -210,7 +210,7 @@ export default function WhatIsPromptEngineeringPage() {
               <Link href="/blog/how-to-write-better-prompts" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 How to write better prompts for ChatGPT, Claude, and Gemini →
               </Link>
-              <Link href="/playground" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+              <Link href="/prompt-improver" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 Try the prompt improver →
               </Link>
               <Link href="/prompts/chatgpt-blog-post" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">

@@ -17,7 +17,7 @@ import { SAMPLE_PROMPTS, ALREADY_GOOD_SAMPLE, pickSamples } from '@/lib/sample-p
 import { IMPROVE_FREE_LIMIT } from '@/lib/limits'
 
 /**
- * The tool. Rendered directly in the homepage hero and on /playground.
+ * The tool. Rendered directly in the homepage hero and on /prompt-improver.
  *
  * It used to live inside a modal behind a CTA, with a scripted animation of
  * itself occupying the hero. Both are gone: this is the hero now, and it owns

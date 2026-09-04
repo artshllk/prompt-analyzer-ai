@@ -151,7 +151,7 @@ export default function PromptEngineeringExamplesPage() {
             improvements made and the reasoning behind them.
           </p>
           <p className="text-[color:var(--color-paper-mute)] leading-relaxed">
-            You can run any of these through <Link href="/playground" className="text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Deepclario</Link> and
+            You can run any of these through <Link href="/prompt-improver" className="text-[color:var(--color-paper)] hover:opacity-70 transition-colors">Deepclario</Link> and
             compare its rewrite against the one here.
           </p>
         </div>
@@ -198,7 +198,7 @@ export default function PromptEngineeringExamplesPage() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/playground"
+              href="/prompt-improver"
               className="inline-block px-5 py-2.5 rounded-xl btn-brand text-sm font-semibold transition-all"
             >
               Open the playground →

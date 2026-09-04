@@ -179,7 +179,7 @@ export default async function LandingPage() {
               THE TOOL IS THE HERO, and it is the FACT CHECKER now.
 
               The prompt improver used to be here. It is frozen and lives at
-              /playground, where 48 links across 42 files still point at it,
+              /prompt-improver, where 48 links across 42 files still point at it,
               including one inside an email already sitting in inboxes.
 
               Same lesson as the extension install wall and as the scripted
@@ -367,7 +367,7 @@ export default async function LandingPage() {
 
         {/* REMOVED: the extension promo, the use cases, and the prompt
             engineering FAQ. All three sold the prompt improver, which is
-            frozen and lives at /playground. None of the routes are touched,
+            frozen and lives at /prompt-improver. None of the routes are touched,
             so every link into them still resolves. */}
 
 
@@ -540,7 +540,7 @@ export default async function LandingPage() {
                 // has since been deleted, which left a working page with no way
                 // in. It belongs here rather than in the nav: hard to find is
                 // the right amount of findable for something we do not sell.
-                { href: "/playground", label: "Prompt improver" },
+                { href: "/prompt-improver", label: "Prompt improver" },
                 { href: "/extension", label: "Extension" },
                 { href: "/prompts", label: "Prompt library" },
                 { href: "/pricing", label: "Pricing" },

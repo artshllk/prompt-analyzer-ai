@@ -224,7 +224,7 @@ Now classify this review:
           <p className="text-base leading-relaxed mb-6" style={{ color: 'var(--color-paper-mute)' }}>
             Deepclario scores your prompt across five dimensions and tells you exactly what is missing. Free to use.
           </p>
-          <Link href="/playground" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] btn-brand transition-all" style={{ fontWeight: 500 }}>
+          <Link href="/prompt-improver" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] btn-brand transition-all" style={{ fontWeight: 500 }}>
             Analyze my prompt free
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </Link>

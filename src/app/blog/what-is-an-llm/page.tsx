@@ -178,7 +178,7 @@ export default function WhatIsAnLLMPage() {
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Get the most out of any language model</h2>
             <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Whichever LLM you use, a clearer prompt gets a better answer. Deepclario helps you write one. Free, no account needed.</p>
-            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Improve my prompt →
             </Link>
           </div>

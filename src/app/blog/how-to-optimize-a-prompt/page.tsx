@@ -217,7 +217,7 @@ export default function HowToOptimizeAPromptPage() {
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Skip the guesswork</h2>
             <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Deepclario scores each part of your prompt and rewrites the weak ones, so optimizing takes seconds. Free, no account needed.</p>
-            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Optimize my prompt →
             </Link>
           </div>

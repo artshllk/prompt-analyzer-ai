@@ -206,6 +206,20 @@ const CHECK_ITEM = { href: "/check", label: "Check" };
  * than no sidebar.
  */
 const DETECTOR_ITEM = { href: "/detector", label: "Detector" };
+/**
+ * THE IMPROVER IS IN THE SIDEBAR BECAUSE PRO IS CHARGED FOR IT.
+ *
+ * The marketing navbar deliberately keeps one product forward, and that is
+ * still right: a first-time visitor should see one thing. This is the other
+ * side of the sign-up, and the rule is different. Pro includes 30 prompt
+ * improvements a month and the subscription is priced with them in it, so a
+ * paying account that cannot find the tool has been sold something invisible.
+ *
+ * That is the same class of problem as copy promising a number the server
+ * does not enforce, pointed the other way: here the server enforces an
+ * allowance for a feature the interface never mentions.
+ */
+const IMPROVER_ITEM = { href: "/prompt-improver", label: "Prompt improver" };
 const HISTORY_ITEM = { href: "/history", label: "History" };
 
 interface AppShellProps {
@@ -223,9 +237,11 @@ export function AppShell({ children, hasHistory, foundingLeft = 0 }: AppShellPro
   const pathname = usePathname();
 
   // History only exists for people who have some. Everyone gets Check.
+  // Check first because it is the product. History last because it only
+  // exists for people who have some.
   const navItems = hasHistory
-    ? [CHECK_ITEM, DETECTOR_ITEM, HISTORY_ITEM]
-    : [CHECK_ITEM, DETECTOR_ITEM];
+    ? [CHECK_ITEM, DETECTOR_ITEM, IMPROVER_ITEM, HISTORY_ITEM]
+    : [CHECK_ITEM, DETECTOR_ITEM, IMPROVER_ITEM];
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Close mobile drawer on navigation

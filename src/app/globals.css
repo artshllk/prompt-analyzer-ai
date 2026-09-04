@@ -933,3 +933,91 @@ a[aria-disabled="true"],
   font-family: var(--font-mono);
   font-size: 12px;
 }
+
+/* ===================================================================
+   THE TOOLS DROPDOWN
+   ===================================================================
+
+   Existing tokens only. No new colours, and nothing that moves except the
+   chevron and one colour fade, both at 150ms: no bounce, no scale, no
+   growing shadow. A navigation menu is furniture and should not perform.
+   =================================================================== */
+.nav-tools-trigger {
+  transition: color 150ms ease;
+}
+
+.nav-tools-trigger:hover {
+  color: var(--ink);
+}
+
+.nav-tools-chevron {
+  transition: transform 150ms ease;
+}
+
+.nav-tools-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+/* The bridge. Padding, not margin, so the space between the trigger and the
+   panel belongs to the wrapper: a pointer travelling diagonally to the second
+   row never leaves the element that keeps the menu open. A gap here is the
+   classic version of this bug. */
+.nav-tools-panel-wrap {
+  position: absolute;
+  left: -12px;
+  top: 100%;
+  padding-top: 10px;
+  z-index: 50;
+}
+
+.nav-tools-panel {
+  min-width: 268px;
+  border-radius: 14px;
+  padding: 6px;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  /* One fixed shadow. It does not grow on hover: a menu that inflates when
+     you point at it reads as a toy. */
+  box-shadow: 0 10px 30px rgba(21, 19, 15, 0.10);
+}
+
+/* The whole row is the target, not the text. A hover that lights only the
+   words makes a 268px panel feel like two small links. */
+.nav-tools-item {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: background-color 150ms ease;
+}
+
+.nav-tools-item:hover,
+.nav-tools-item:focus-visible {
+  background-color: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+
+.nav-tools-item:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+
+.nav-tools-label {
+  display: block;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.nav-tools-blurb {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-tools-trigger,
+  .nav-tools-chevron,
+  .nav-tools-item {
+    transition-duration: 0ms;
+  }
+}

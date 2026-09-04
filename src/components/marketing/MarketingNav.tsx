@@ -2,11 +2,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { NavAuthButton } from './NavAuthButton'
 import { MarketingMobileMenu } from './MarketingMobileMenu'
-import { NavToolsMenu } from './NavToolsMenu'
+import { NavToolsMenu, type ToolItem } from './NavToolsMenu'
 
 /**
  * Shared marketing nav used across every public-facing surface
- * (homepage, /playground, /faq, /detector, /extension, /prompts, /blog,
+ * (homepage, /prompt-improver, /faq, /detector, /extension, /prompts, /blog,
  * blog posts).
  *
  * Keeps the link set in one place so a content page never drifts from
@@ -23,7 +23,7 @@ import { NavToolsMenu } from './NavToolsMenu'
 export type NavKey =
   | 'home'
   | 'check'
-  | 'playground'
+  | 'improver'
   | 'detector'
   | 'prompts'
   | 'extension'
@@ -34,7 +34,7 @@ export type NavKey =
 /**
  * The prompt improver is FROZEN, and so is the detector.
  *
- * Neither is deleted. /playground works, 48 links across 42 files point at it
+ * Neither is deleted. /prompt-improver works, 48 links across 42 files point at it
  * including one inside an email already in people's inboxes, and moving the
  * route breaks those for nothing.
  *
@@ -46,14 +46,14 @@ export type NavKey =
  * Check stays first and alone. It is the product, and a first-time visitor
  * should see one thing rather than three.
  */
-const TOOL_KEYS: NavKey[] = ['detector', 'playground']
+const TOOL_KEYS: NavKey[] = ['detector', 'improver']
 
 const LINKS: { key: NavKey; href: string; label: string }[] = [
   // The tool IS the homepage now. /check 301s here, so pointing the nav at
   // the old URL would send every visitor through a redirect for nothing.
   { key: 'check', href: '/', label: 'Check' },
   { key: 'detector', href: '/detector', label: 'AI text detector' },
-  { key: 'playground', href: '/playground', label: 'Prompt improver' },
+  { key: 'improver', href: '/prompt-improver', label: 'Prompt improver' },
   { key: 'pricing', href: '/pricing', label: 'Pricing' },
   { key: 'faq', href: '/faq', label: 'FAQ' },
   { key: 'blog', href: '/blog', label: 'Blog' },
@@ -61,7 +61,24 @@ const LINKS: { key: NavKey; href: string; label: string }[] = [
 
 /** The flat row, in order, with the tools lifted out into their own menu. */
 const TOP_LEVEL = LINKS.filter(l => !TOOL_KEYS.includes(l.key))
-const TOOLS = TOOL_KEYS.map(k => LINKS.find(l => l.key === k)!).filter(Boolean)
+
+/**
+ * One line each, because a bare label makes a reader guess.
+ *
+ * "AI text detector" and "Prompt improver" are both nouns nobody has met
+ * before, and a dropdown that lists two of them is asking somebody to click
+ * to find out what they are. Lower case, no full stop: a caption, not a
+ * sentence.
+ */
+const BLURBS: Record<string, string> = {
+  detector: 'See if text was written by AI',
+  improver: 'Rewrite a rough prompt',
+}
+
+const TOOLS: ToolItem[] = TOOL_KEYS.map(k => {
+  const link = LINKS.find(l => l.key === k)!
+  return { ...link, blurb: BLURBS[k] ?? '' }
+})
 
 interface MarketingNavProps {
   current?: NavKey

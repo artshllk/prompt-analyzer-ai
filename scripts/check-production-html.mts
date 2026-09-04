@@ -71,8 +71,17 @@ const CHECKS: Check[] = [
     path: '/',
     // Every navigation destination, because a link that only appears after
     // JavaScript is a link a crawler never follows.
-    raw: ['href="/detector"', 'href="/playground"', 'href="/pricing"', 'href="/faq"', 'href="/blog"'],
-    text: ['Tools', 'AI text detector', 'Prompt improver'],
+    raw: ['href="/detector"', 'href="/prompt-improver"', 'href="/pricing"', 'href="/faq"', 'href="/blog"'],
+    // The blurbs too: they are the only thing telling a reader what these
+    // two nouns are, and they live inside the same collapsed panel.
+    text: ['Tools', 'AI text detector', 'Prompt improver', 'See if text was written by AI', 'Rewrite a rough prompt'],
+  },
+  {
+    // Renamed from /playground. Its title and description are what a search
+    // result shows, so an empty or default one is a page nobody clicks.
+    path: '/prompt-improver',
+    text: ['Paste a rough prompt'],
+    raw: ['rel="canonical"href="https://deepclario.com/prompt-improver"', 'FreePromptImprover'],
   },
   {
     path: '/pricing',

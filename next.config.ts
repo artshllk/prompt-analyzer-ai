@@ -46,6 +46,30 @@ const nextConfig: NextConfig = {
     return [
       { source: '/blog/what-is-deep-rewrite', destination: '/pricing', permanent: true },
       { source: '/blog/deep-rewrite-vs-standard-rewrite', destination: '/pricing', permanent: true },
+
+      /**
+       * The prompt improver moved from /playground to /prompt-improver.
+       *
+       * "Playground" is a word nobody searches. The page ranks, if it ranks,
+       * on "prompt improver", so that is the URL.
+       *
+       * PERMANENT, NOT TEMPORARY. A 302 tells Google to keep the old URL
+       * indexed and pass nothing on, which is the opposite of a rename. 301
+       * moves the history to the new URL and is the only correct answer when
+       * the old one is never coming back.
+       *
+       * The /tools/* pair is here because both were real redirects once and
+       * external links may still carry them. They have 404'd since, so this
+       * is repair rather than migration.
+       *
+       * These run BEFORE filesystem routing, per the note above, which is
+       * exactly what makes them work: there is no longer a page at
+       * /playground, and if one is ever added by accident this entry will
+       * hide it rather than serve two URLs for one tool.
+       */
+      { source: '/playground', destination: '/prompt-improver', permanent: true },
+      { source: '/tools/prompt-improver', destination: '/prompt-improver', permanent: true },
+      { source: '/tools/prompt-analyzer', destination: '/prompt-improver', permanent: true },
     ]
   },
 }

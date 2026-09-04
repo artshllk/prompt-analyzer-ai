@@ -217,7 +217,7 @@ export default function HowAIPredictsWordsPage() {
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Guide the guesses with a better prompt</h2>
             <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">The clearer your prompt, the better the model&apos;s next-word guesses. Paste yours into Deepclario and get a stronger version. Free, no account needed.</p>
-            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Improve my prompt →
             </Link>
           </div>

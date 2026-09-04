@@ -61,7 +61,7 @@ test('null and undefined are the default, not a crash', () => {
 test('every allowed destination is a real route', () => {
   // Guards the list against the exact rot that caused this: a route is
   // deleted and the allow list keeps pointing at it.
-  for (const dest of ['/check', '/detector', '/history', '/settings', '/playground']) {
+  for (const dest of ['/check', '/detector', '/history', '/settings', '/prompt-improver']) {
     const seg = dest.slice(1)
     const candidates = [
       `src/app/${seg}/page.tsx`,

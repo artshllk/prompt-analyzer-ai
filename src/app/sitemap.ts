@@ -35,7 +35,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // /tools/* stays absent: those pages never existed and now 404 honestly.
   //
-  // /playground stays listed but drops to 0.4. The prompt improver is frozen,
+  // /prompt-improver stays listed but drops to 0.4. The prompt improver is frozen,
   // so it is no longer something to push, but it is still a real working page
   // that 41 blog posts link to. Delisting a page dozens of internal links
   // point at tells Google those links go somewhere we do not believe in, which
@@ -45,7 +45,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/extension`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${base}/detector`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${base}/prompts`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${base}/playground`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${base}/prompt-improver`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
     ...categoryPages,
     ...promptPages,
     { url: `${base}/how-it-works`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },

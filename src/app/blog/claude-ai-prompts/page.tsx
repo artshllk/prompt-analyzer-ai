@@ -213,7 +213,7 @@ Be direct - I want your actual recommendation, not a list of options.`}</pre>
           <p className="text-base leading-relaxed mb-6" style={{ color: 'var(--color-paper-mute)' }}>
             Paste your prompt into Deepclario. It works with Claude, ChatGPT, and Gemini - scores it, asks what is missing, and rewrites it. Free.
           </p>
-          <Link href="/playground" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] btn-brand transition-all" style={{ fontWeight: 500 }}>
+          <Link href="/prompt-improver" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] btn-brand transition-all" style={{ fontWeight: 500 }}>
             Try Deepclario free
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 7H12M12 7L7 2M12 7L7 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </Link>

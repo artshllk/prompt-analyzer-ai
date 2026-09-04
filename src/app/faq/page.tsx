@@ -85,7 +85,7 @@ export default function FAQPage() {
             >
               Check a document.
             </h2>
-            {/* Was /playground, the frozen prompt improver. Ten answers about
+            {/* Was the prompt improver, which is frozen. Ten answers about
                 checking sources ended by offering a different product. The
                 improver is still reachable from the footer and from the
                 prompt-engineering posts, which is where somebody looking for

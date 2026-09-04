@@ -90,7 +90,7 @@ export default function BlogIndexPage() {
             Deepclario scores your prompt, asks what is missing, and rewrites it for you. Free, no account needed.
           </p>
           <Link
-            href="/playground"
+            href="/prompt-improver"
             className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-[15px] transition-all btn-brand"
             style={{ fontWeight: 500 }}
           >

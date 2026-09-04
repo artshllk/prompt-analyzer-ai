@@ -174,7 +174,7 @@ export default function WhatAreAIModelParametersPage() {
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
             <h2 className="text-xl font-bold mb-3">Test any model on your own prompt</h2>
             <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A clear, well-built prompt is the fairest way to compare what a model can actually do. Deepclario helps you write one. Free, no account needed.</p>
-            <Link href="/playground" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
               Improve my prompt →
             </Link>
           </div>

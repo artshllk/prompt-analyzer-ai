@@ -42,7 +42,7 @@ const ALLOWED = new Set([
   '/detector',
   '/history',
   '/settings',
-  '/playground',
+  '/prompt-improver',
   '/extension/connect',
 ])
 
