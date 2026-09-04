@@ -931,3 +931,45 @@ test('the provenance line is the audit, not a capture method', () => {
   // The two audits are different document sets and must never be mixed.
   assert.notEqual(FLAG_AUDIT.claims, CITATION_AUDIT.statistics)
 })
+
+
+// ---------------------------------------------------------------------------
+// PRINT
+// ---------------------------------------------------------------------------
+
+test('the marketing entrance animation cannot reach the printer', () => {
+  /**
+   * THIS IS WHY "Save as PDF" PRODUCED BLANK PAGES.
+   *
+   * `.editorial` carries a mobile-only entrance animation whose first
+   * keyframe is `opacity: 0`. The query was `@media (max-width: 767.98px)`
+   * with no media type, so it also matched PRINT: Chrome lays a print job out
+   * at the paper width, which on Letter with the margins below is about 710
+   * CSS px. The animation started from that first keyframe, and an ancestor's
+   * opacity is not something a descendant can override, so the report painted
+   * into a group at zero alpha. It was visible, positioned and black the
+   * whole time.
+   *
+   * Reproduced and fixed by driving a real print through Chrome. The guard is
+   * the `screen` keyword, and it is one word away from coming back.
+   */
+  const css = readFileSync('src/app/globals.css', 'utf8')
+  assert.match(
+    css,
+    /@media screen and \(max-width: 767\.98px\) \{\s*\n\s*\.editorial:not\(\.no-page-transition\)/,
+    'the editorial page-enter animation is not scoped to screen'
+  )
+  // Anything that hides content until it scrolls into view has the same
+  // problem, and nothing on paper scrolls.
+  const printBlock = css.slice(css.indexOf('@media print {'))
+  assert.match(printBlock, /\.reveal,\s*\n\s*\.reveal-in \{[\s\S]*?opacity: 1 !important/)
+})
+
+test('the report titles the document, not our markdown', () => {
+  // Pasting out of a browser turns hrefs into markdown, so a first line with a
+  // link reached the report as "[8,849 metres](https://en.wikipedia.org/...)"
+  // and the 90-character cut spent its budget on a URL.
+  const report = readFileSync('src/components/factcheck/PrintReport.tsx', 'utf8')
+  assert.match(report, /stripLinkSyntax\(text\)/)
+  assert.match(report, /import \{ stripLinkSyntax \} from '@\/lib\/factcheck\/paste'/)
+})
