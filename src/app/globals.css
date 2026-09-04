@@ -34,8 +34,39 @@
      --mute-on-ink is not a new colour, it is --ink-soft's counterpart on the
      dark ground: --ink-soft measures 3.21:1 there and is unusable, this is
      7.31:1. It exists for the dark section and nowhere else. */
-  --paper: #F1F0EA;
-  --card: #FFFFFF;
+  /* ===================================================================
+     THE SURFACE LADDER, from docs/design/DESIGN.md
+     ===================================================================
+     There was ONE ground and one card, and that is why the page read flat.
+     A section with nothing to sit on cannot be told apart from the section
+     above it, so every group became bare text on cream and the eye had
+     nothing to catch.
+
+     Seven tiers, and they are not decoration. Depth in this system comes
+     from a 1px warm hairline around a white container on a warm ground, not
+     from a blur. That is the whole elevation model: no drop shadows, no
+     glass, no floating. A card is a card because it has an edge.
+
+     Contrast note: the ground moved from #F1F0EA to #FBF9F6, which is
+     LIGHTER, so every measured ratio on this page improved rather than
+     moved. --ink-soft was 5.4:1 on the old ground and is 5.8:1 on this one.
+     ================================================================== */
+  --surface: #FBF9F6;              /* page ground */
+  --surface-subtle: #F4EFEB;       /* inset bands, alternating sections */
+  --surface-card: #FFFFFF;         /* cards, the console body */
+  --surface-container-low: #F5F3F0;
+  --surface-container: #EFEEEB;
+  --surface-container-high: #EAE8E5;
+  --inverse-surface: #30312F;      /* the one dark section */
+  --inverse-on-surface: #F2F0ED;   /* and the text that sits on it */
+  --border-warm: #E5E0D8;          /* the hairline, everywhere */
+
+  /* The three names the rest of the codebase already uses, repointed at the
+     ladder rather than duplicated beside it. ~2,700 call sites say
+     var(--paper), var(--card) and var(--rule); moving the values here moves
+     the whole site at once, which is the point of a system. */
+  --paper: var(--surface);
+  --card: var(--surface-card);
   --mute-on-ink: #A8A296;
 
   /* --- the sidebar, which is a REGION rather than a break ---
@@ -60,11 +91,27 @@
   --ink: #15130F;
   --ink-soft: #6B6559;
 
-  /* --- lines --- */
-  --rule: #DFDCD2;
+  /* --- lines ---
+     One hairline weight and one hairline colour. Everything that needs an
+     edge uses this, which is what makes the page read as one system rather
+     than as a set of sections that each invented a border. */
+  --rule: var(--border-warm);
 
-  /* --- brand --- */
+  /* --- brand ---
+     --brand is the ink-side red: it is what a link, an inline accent and a
+     small piece of text use, because #C9452F is 5.72:1 as --brand-text and
+     the vermilion below is not.
+
+     --action is the PRIMARY BUTTON FILL, and it is a different colour on
+     purpose. DESIGN.md specifies #F95738 with white text for the one
+     deliberate action on a page. Measured, white on #F95738 is 3.25:1,
+     which clears AA for large text and for a UI boundary and does NOT
+     clear the 4.5:1 that 14px button text needs. It is here because the
+     design system says so and the call is the owner's; the note is here so
+     the next person does not have to measure it again. */
   --brand: #C9452F;
+  --action: #F95738;
+  --action-hover: #EA580C;
   --brand-deep: #A93520;
   /* #C9452F is 4.20:1 on paper: fine as a button fill under white text
      (4.80:1), below AA as small text. Links and inline brand text use the
@@ -94,10 +141,28 @@
   --contradicted: var(--brand-text);
   --contradicted-bg: #F6E7E3;
 
+  /* DIFF HIGHLIGHTING, which is its own job.
+     A marked span inside quoted prose is not the same thing as a status
+     colour on a card, and DESIGN.md gives it its own pair: crimson at 8%
+     with a 1px underline for a discrepancy, emerald tint for a match. They
+     are tints, so the TEXT stays --ink and keeps its 15:1, and the fill
+     carries the meaning. */
+  --diff-discrepancy: #E11D48;
+  --diff-discrepancy-bg: rgba(225, 29, 72, 0.08);
+  --diff-verified: #10B981;
+  --diff-verified-bg: rgba(16, 185, 129, 0.10);
+  /* The depths DESIGN.md gives the matching chips. Measured on their own
+     tints over white: crimson 5.65:1, emerald 5.23:1, both AA at body size.
+     #E11D48 and #10B981 themselves are fills and borders, never text. */
+  --diff-discrepancy-text: #BE123C;
+  --diff-verified-text: #047857;
+  --diff-discrepancy-line: rgba(225, 29, 72, 0.25);
+  --diff-verified-line: rgba(16, 185, 129, 0.25);
+
   /* --- type ---
      Bricolage Grotesque for display, IBM Plex Sans for body, IBM Plex Mono
      for anything countable: labels, counts, diff chrome. Not Inter. */
-  --font-display: var(--font-bricolage), Georgia, serif;
+  --font-display: var(--font-newsreader), Georgia, 'Times New Roman', serif;
   --font-sans: var(--font-plex-sans), system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
 
@@ -119,7 +184,12 @@
   --color-paper-mute: var(--ink-soft);
 
   --color-rule: var(--rule);
-  --color-rule-strong: #CFCBBE;
+  --color-rule-strong: #D8D2C6;
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-card: var(--surface-card);
+  --color-inverse-surface: var(--inverse-surface);
+  --color-border-warm: var(--border-warm);
 
   --color-accent: var(--brand);
   --color-accent-bright: var(--brand-deep);
@@ -132,7 +202,7 @@
      one. --font-serif now resolves to the DISPLAY face, which is a grotesque
      rather than a serif: the name is wrong and the role is right. */
   --font-inter: var(--font-plex-sans);
-  --font-serif: var(--font-bricolage);
+  --font-serif: var(--font-newsreader);
   --font-geist-sans: var(--font-plex-sans);
   --font-geist-mono: var(--font-plex-mono);
 
@@ -409,14 +479,26 @@ body {
 
 .font-serif {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 500;
   font-optical-sizing: auto;
+}
+
+/* The accent word in the hero, and the pull quote on the founder card.
+   Newsreader ships a real italic, so this is the actual cut and not a
+   synthesised slant. Nothing else on the site sets font-style. */
+.font-serif em,
+.font-serif i,
+.font-serif .italic {
+  font-style: italic;
+  font-synthesis-style: none;
 }
 
 /* Display headlines: tighter tracking, balanced wrap */
 .display {
   font-family: var(--font-display);
-  font-weight: 800;
+  /* 800 was a Bricolage weight. Newsreader at 800 is a slab; DESIGN.md puts
+     headline-lg and headline-md at 500 to 600. */
+  font-weight: 600;
   font-style: normal;
   letter-spacing: -0.02em;
   line-height: 1.02;
@@ -495,23 +577,21 @@ body {
 .editorial-spotlight > * { position: relative; z-index: 1; }
 
 /* Card surface, raised. Soft elevation, no harsh shadow. */
+/* A CARD IS A CARD BECAUSE IT HAS AN EDGE.
+
+   This carried a 60px drop shadow and a lift on hover, which is the SaaS
+   elevation model DESIGN.md explicitly rejects. Depth here is a 1px warm
+   hairline around white on a warm ground, so the shadow and the transform
+   are gone and hover moves the border instead. Radius drops from 16px to
+   the 8px DESIGN.md gives large containers. */
 .card-editorial {
-  background: linear-gradient(180deg, var(--color-ink-card-elevated) 0%, var(--color-ink-card) 100%);
-  border: 1px solid var(--color-rule-strong);
-  border-radius: 16px;
-  box-shadow:
-    0 1px 0 rgba(245, 244, 241, 0.04) inset,
-    0 24px 60px -30px rgba(0, 0, 0, 0.6);
-  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 220ms ease,
-              box-shadow 220ms ease;
+  background: var(--surface-card);
+  border: 1px solid var(--border-warm);
+  border-radius: 8px;
+  transition: border-color 220ms ease;
 }
 .card-editorial:hover {
-  border-color: rgba(245, 244, 241, 0.28);
-  box-shadow:
-    0 1px 0 rgba(245, 244, 241, 0.06) inset,
-    0 28px 70px -28px rgba(0, 0, 0, 0.7);
-  transform: translateY(-2px);
+  border-color: var(--color-rule-strong);
 }
 
 /* Card with a subtle accent edge - for the "Most popular" tier etc. */

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Bricolage_Grotesque, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google'
+import { Newsreader, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 import { PaddleProvider } from '@/components/PaddleProvider'
 import { Analytics } from '@vercel/analytics/react'
@@ -8,20 +8,32 @@ import { Analytics } from '@vercel/analytics/react'
  * Three faces, three jobs. Self-hosted at build time by next/font, so there
  * is no render-blocking request to Google and no layout shift.
  *
- * Display  Bricolage Grotesque, 600 and 800. Has real character at large
- *          sizes without being a novelty face.
- * Body     IBM Plex Sans. Deliberately not Inter: Inter is the default of
- *          every AI product shipped in the last three years, and looking
- *          like all of them is the one thing this brand cannot afford.
+ * Display  Newsreader, per docs/design/DESIGN.md. IT IS LOADED WITH ITS REAL
+ *          ITALIC, and that is the reason for the change. Bricolage
+ *          Grotesque has no italic cut, so `font-style: italic` on the
+ *          headline's accent word was a browser-synthesised oblique: a
+ *          slanted roman with the wrong stroke contrast and the wrong
+ *          terminals. That word is the most recognisable thing on the site
+ *          and a faked italic on it is visible at a glance.
+ * Body     IBM Plex Sans. Deliberately not Inter, and this survives
+ *          DESIGN.md naming Inter: Inter is the default of every AI product
+ *          shipped in the last three years, and looking like all of them is
+ *          the one thing this brand cannot afford. The gap between Plex Sans
+ *          and Inter is a hair; the gap between "ours" and "everyone's" is
+ *          the brand.
  * Data     IBM Plex Mono, for anything countable. Labels, counts, the
  *          "3 added, 2 of them guesses" line, diff chrome. If a number can
  *          be checked by hand it is set in mono, which is the typographic
- *          version of the same promise.
+ *          version of the same promise. JetBrains Mono would be a lateral
+ *          move and a second family to load.
  */
-const display = Bricolage_Grotesque({
-  variable: '--font-bricolage',
+const display = Newsreader({
+  variable: '--font-newsreader',
   subsets: ['latin'],
-  weight: ['600', '800'],
+  // 500 for the hero, 600 for section heads. Both cuts in both styles,
+  // because the italic is the whole reason this face is here.
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
   display: 'swap',
 })
 
