@@ -208,7 +208,7 @@ export default function PromptScoreExplainedPage() {
                 A well-built prompt gets you a better draft. It does not stop the model inventing a
                 number or a source, and that is the part that actually gets people into trouble. You
                 still have to check what came back. That is a different job, and it is the one we{' '}
-                <Link href="/check" className="underline hover:opacity-70 transition-opacity">work on now</Link>.
+                <Link href="/" className="underline hover:opacity-70 transition-opacity">work on now</Link>.
               </p>
             </section>
           </article>
