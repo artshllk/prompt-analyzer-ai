@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('why-ai-makes-mistakes')
+
 export const metadata: Metadata = {
   title: 'Why Does AI Make Mistakes? Hallucinations Explained Simply',
   description: 'AI makes confident mistakes because it predicts words that sound right, not words it has checked. Here is why AI hallucinations happen and how to protect yourself.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'AI makes confident mistakes because it predicts words that sound right, not words it has checked. Here is why it happens and how to protect yourself.',
     url: 'https://deepclario.com/blog/why-ai-makes-mistakes',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('why-ai-makes-mistakes')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Why Does AI Make Mistakes? Hallucinations Explained Simply',
   description: 'A plain-English explanation of why AI models make confident mistakes, what an AI hallucination is, and how to reduce the risk.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/why-ai-makes-mistakes/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('ai-detector-false-positives')
+
 export const metadata: Metadata = {
   title: 'AI Detection False Positives: Why Human Writing Gets Flagged',
   description: 'A false positive is when an AI detector flags human writing as AI. Here is why it happens, who it hits most, and how to avoid acting on a wrong result.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'A false positive is when an AI detector flags human writing as AI. Here is why it happens, who it hits most, and how to avoid acting on it.',
     url: 'https://deepclario.com/blog/ai-detector-false-positives',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('ai-detector-false-positives')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'AI Detection False Positives: Why Human Writing Gets Flagged',
   description: 'What a false positive is, why AI detectors flag genuine human writing, which writers get hit most, and how to handle a flagged result fairly.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/ai-detector-false-positives/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

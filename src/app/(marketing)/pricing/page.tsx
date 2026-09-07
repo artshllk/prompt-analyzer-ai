@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { EditorialPricing } from '@/components/marketing/EditorialPricing'
+import { PaddleProvider } from '@/components/PaddleProvider'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { defaultOGImage } from '@/lib/og-image'
 import { foundingSeatsLeft } from '@/lib/paddle'
@@ -116,7 +117,12 @@ export default async function PricingPage() {
 
       <section className="pt-28 md:pt-36 pb-20 md:pb-28 px-6 md:px-10">
         <div className="max-w-6xl mx-auto">
-          <EditorialPricing headingLevel="h1" foundingLeft={foundingLeft} />
+          {/* The other place a checkout can start. Paddle.js used to load
+              from the root layout on every page on the site; it is scoped to
+              the two surfaces that can actually take money. */}
+          <PaddleProvider>
+            <EditorialPricing headingLevel="h1" foundingLeft={foundingLeft} />
+          </PaddleProvider>
         </div>
       </section>
     </div>

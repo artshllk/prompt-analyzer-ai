@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('how-ai-predicts-words')
+
 export const metadata: Metadata = {
   title: 'How AI Predicts Words: The Simple Idea Behind Chatbots',
   description: 'AI writes by guessing the next word, one at a time. Here is how that works in plain English, why it explains so much AI behavior, and where it goes wrong.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'AI writes by guessing the next word, one at a time. Here is how that works in plain English, and where it goes wrong.',
     url: 'https://deepclario.com/blog/how-ai-predicts-words',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-ai-predicts-words')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How AI Predicts Words: The Simple Idea Behind Chatbots',
   description: 'A plain-English explanation of how AI models predict the next word, why it works, and what it explains about how chatbots behave.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-ai-predicts-words/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('how-chatbots-work')
+
 export const metadata: Metadata = {
   title: 'How Do AI Chatbots Work? A Simple Explanation',
   description: 'AI chatbots like ChatGPT read your message, break it into small pieces, and predict a reply one word at a time. Here is the whole process in plain English.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'AI chatbots read your message and predict a reply one word at a time. Here is the whole process in plain English.',
     url: 'https://deepclario.com/blog/how-chatbots-work',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-chatbots-work')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How Do AI Chatbots Work? A Simple Explanation',
   description: 'A plain-English walkthrough of how AI chatbots read a message, predict a reply, and remember a conversation.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-chatbots-work/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

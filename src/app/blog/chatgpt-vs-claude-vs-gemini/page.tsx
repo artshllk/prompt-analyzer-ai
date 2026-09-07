@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('chatgpt-vs-claude-vs-gemini')
+
 export const metadata: Metadata = {
   title: 'ChatGPT vs Claude vs Gemini: An Honest Comparison',
   description: 'Not which one is best, but which one fits what you need. A plain comparison of ChatGPT, Claude, and Gemini based on how they actually behave, not marketing claims.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'A plain comparison of ChatGPT, Claude, and Gemini based on how they actually behave, not marketing claims.',
     url: 'https://deepclario.com/blog/chatgpt-vs-claude-vs-gemini',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('chatgpt-vs-claude-vs-gemini')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'ChatGPT vs Claude vs Gemini: An Honest Comparison',
   description: 'A practical comparison of ChatGPT, Claude, and Gemini, focused on how each one tends to behave and who each one tends to suit.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/chatgpt-vs-claude-vs-gemini/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

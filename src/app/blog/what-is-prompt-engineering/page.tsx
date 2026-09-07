@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('what-is-prompt-engineering')
+
 export const metadata: Metadata = {
   title: 'What is Prompt Engineering? A Complete Guide for Beginners',
   description: 'Prompt engineering is the practice of writing structured instructions for AI models to get better, more reliable results. Learn the fundamentals, key techniques, and how to get started.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Learn prompt engineering fundamentals - what it is, why it matters, and how to write prompts that consistently get great AI results.',
     url: 'https://deepclario.com/blog/what-is-prompt-engineering',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('what-is-prompt-engineering')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What is Prompt Engineering? A Complete Guide for Beginners',
   description: 'A comprehensive guide to prompt engineering - what it is, why it matters, and how to write better prompts for ChatGPT, Claude, and Gemini.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/what-is-prompt-engineering/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

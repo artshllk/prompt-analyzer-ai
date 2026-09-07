@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('how-to-get-better-results-from-chatgpt')
+
 export const metadata: Metadata = {
   title: 'How to Get Better Results from ChatGPT - 8 Techniques',
   description: 'Getting better results from ChatGPT is mostly about how you prompt it. These 8 techniques fix the most common reasons people get mediocre output - with real examples.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: '8 techniques that fix the most common reasons people get mediocre ChatGPT output.',
     url: 'https://deepclario.com/blog/how-to-get-better-results-from-chatgpt',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-to-get-better-results-from-chatgpt')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How to Get Better Results from ChatGPT',
   description: '8 techniques that fix the most common reasons people get mediocre ChatGPT output.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-to-get-better-results-from-chatgpt/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

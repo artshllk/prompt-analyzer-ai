@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Newsreader, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
-import { PaddleProvider } from '@/components/PaddleProvider'
 import { Analytics } from '@vercel/analytics/react'
 
 /**
@@ -144,7 +143,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             the overlay is worth having. It was not: a 2.2s logo animation
             was the first thing every first-time visitor met, and the first
             visit is the only one where the cooldown never applies. */}
-        <PaddleProvider>{children}</PaddleProvider>
+        {/* PaddleProvider is NOT here any more. It is a client component
+            that pulls Paddle.js from an external CDN in an effect, so wrapping
+            the root layout loaded a checkout script on all 56 blog posts, the
+            FAQ, the prompt library and the legal pages, where nothing can be
+            bought. It now sits at the two places that can actually check out:
+            AppShell, which carries the sidebar upgrade button on every app
+            route, and /pricing. Both are the only ancestors of every
+            useCheckout() caller. */}
+        {children}
         <Analytics />
       </body>
     </html>

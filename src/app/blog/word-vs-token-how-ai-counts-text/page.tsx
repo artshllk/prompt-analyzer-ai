@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('word-vs-token-how-ai-counts-text')
+
 export const metadata: Metadata = {
   title: 'Word Count vs Token Count: Why AI Counts Text Differently',
   description: 'AI models count text in tokens, not words. This guide shows the difference, gives a simple words-to-tokens rule, and explains why the two rarely match.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'AI models count text in tokens, not words. Here is the difference and a simple rule to convert between them.',
     url: 'https://deepclario.com/blog/word-vs-token-how-ai-counts-text',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('word-vs-token-how-ai-counts-text')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Word Count vs Token Count: Why AI Counts Text Differently',
   description: 'The difference between word count and token count, why AI models use tokens, and a simple rule to convert between the two.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/word-vs-token-how-ai-counts-text/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

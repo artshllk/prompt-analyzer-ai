@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('what-is-a-context-window')
+
 export const metadata: Metadata = {
   title: 'What Is a Context Window? Why AI Forgets Things',
   description: 'AI can only "see" so much text at once. Here is what a context window is, why long chats trail off, and how to work with the limit instead of against it.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'What a context window is, why AI seems to forget things in a long chat, and how to work around it.',
     url: 'https://deepclario.com/blog/what-is-a-context-window',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('what-is-a-context-window')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What Is a Context Window? Why AI Forgets Things',
   description: 'An explanation of the AI context window, why long conversations cause a model to lose earlier details, and how to work around the limit.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/what-is-a-context-window/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

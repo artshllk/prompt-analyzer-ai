@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('how-to-optimize-a-prompt')
+
 export const metadata: Metadata = {
   title: 'How to Optimize a Prompt, Step by Step',
   description: 'Optimizing a prompt is not guesswork. Here is a clear step-by-step method to turn a rough prompt into one that gets reliable results, one change at a time.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Optimizing a prompt is not guesswork. Here is a clear step-by-step method to turn a rough prompt into one that gets reliable results.',
     url: 'https://deepclario.com/blog/how-to-optimize-a-prompt',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-to-optimize-a-prompt')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How to Optimize a Prompt, Step by Step',
   description: 'A step-by-step method for optimizing an AI prompt: start from a clear goal, fix one weak part at a time, test, and stop when it is reliable.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-to-optimize-a-prompt/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

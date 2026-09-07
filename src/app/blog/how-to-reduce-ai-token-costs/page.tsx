@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('how-to-reduce-ai-token-costs')
+
 export const metadata: Metadata = {
   title: 'How to Reduce AI Token Costs Without Losing Quality',
   description: 'Cut what you spend on AI without cutting corners. Simple ways to lower token use in your prompts and conversations, explained in plain English.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Simple, practical ways to lower your token use without making your prompts or answers worse.',
     url: 'https://deepclario.com/blog/how-to-reduce-ai-token-costs',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-to-reduce-ai-token-costs')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How to Reduce AI Token Costs Without Losing Quality',
   description: 'Practical ways to cut token use and AI costs without sacrificing the quality of your prompts or answers.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-to-reduce-ai-token-costs/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

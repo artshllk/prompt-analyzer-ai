@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('how-to-improve-a-prompt-score')
+
 export const metadata: Metadata = {
   title: 'How to Improve a Weak Prompt (Instead of Chasing a Prompt Score)',
   description: 'A weak prompt is usually missing one or two specific things. A prompt score will not tell you which one. Here is how to find it, with before-and-after examples.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'A weak prompt is usually missing one or two specific things. Here is how to find which one, with real before-and-after examples.',
     url: 'https://deepclario.com/blog/how-to-improve-a-prompt-score',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-to-improve-a-prompt-score')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How to Improve a Weak Prompt (Instead of Chasing a Prompt Score)',
   description: 'How to find the one or two gaps that make a prompt weak, instead of chasing a number.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-to-improve-a-prompt-score/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

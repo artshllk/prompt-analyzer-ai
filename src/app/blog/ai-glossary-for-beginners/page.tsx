@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('ai-glossary-for-beginners')
+
 export const metadata: Metadata = {
   title: 'AI Glossary for Beginners: 30 Terms Explained Simply',
   description: 'A plain-English AI glossary. Clear, jargon-free definitions of the AI terms you keep seeing, from tokens and prompts to hallucinations and large language models.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'A plain-English AI glossary. Clear, jargon-free definitions of the AI terms you keep seeing.',
     url: 'https://deepclario.com/blog/ai-glossary-for-beginners',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('ai-glossary-for-beginners')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'AI Glossary for Beginners: 30 Terms Explained Simply',
   description: 'A beginner-friendly glossary of common AI terms, each defined in plain English without jargon.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/ai-glossary-for-beginners/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('ai-detection-for-teachers')
+
 export const metadata: Metadata = {
   title: 'AI Detection for Teachers: A Fair Way to Use It',
   description: 'AI detectors can help teachers, but they cause harm when used as proof. Here is a fair, practical way to use detection in a classroom without wrongly accusing students.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'AI detectors can help teachers, but they cause harm when used as proof. Here is a fair, practical way to use detection in a classroom.',
     url: 'https://deepclario.com/blog/ai-detection-for-teachers',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('ai-detection-for-teachers')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'AI Detection for Teachers: A Fair Way to Use It',
   description: 'A practical, fair approach for teachers using AI detection: what it can do, the false-positive risk to students, and how to handle a flagged paper.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/ai-detection-for-teachers/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

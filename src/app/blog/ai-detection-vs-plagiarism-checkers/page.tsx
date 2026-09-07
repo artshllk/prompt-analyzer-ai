@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('ai-detection-vs-plagiarism-checkers')
+
 export const metadata: Metadata = {
   title: 'AI Detection vs Plagiarism Checkers: What Is the Difference?',
   description: 'AI detectors and plagiarism checkers look for completely different things. Here is what each one actually catches, and why passing one says nothing about the other.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'AI detectors and plagiarism checkers look for completely different things. Here is what each one actually catches.',
     url: 'https://deepclario.com/blog/ai-detection-vs-plagiarism-checkers',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('ai-detection-vs-plagiarism-checkers')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'AI Detection vs Plagiarism Checkers: What Is the Difference?',
   description: 'The difference between AI detection tools and plagiarism checkers, what each one measures, and why passing one says nothing about the other.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/ai-detection-vs-plagiarism-checkers/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

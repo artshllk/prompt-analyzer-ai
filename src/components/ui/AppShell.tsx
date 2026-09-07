@@ -9,6 +9,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { UpgradeButton } from "./UpgradeButton";
+import { PaddleProvider } from "@/components/PaddleProvider";
 
 interface AuthUser {
   email: string | null;
@@ -262,6 +263,7 @@ export function AppShell({ children, hasHistory, foundingLeft = 0 }: AppShellPro
   }, [mobileOpen]);
 
   return (
+    <PaddleProvider>
     <div
       className="flex min-h-screen relative"
       style={{ background: "var(--color-ink)" }}
@@ -444,5 +446,6 @@ export function AppShell({ children, hasHistory, foundingLeft = 0 }: AppShellPro
         {children}
       </main>
     </div>
+    </PaddleProvider>
   );
 }

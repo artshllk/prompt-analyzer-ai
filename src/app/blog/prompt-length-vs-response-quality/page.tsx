@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('prompt-length-vs-response-quality')
+
 export const metadata: Metadata = {
   title: 'Prompt Length vs Response Quality: Does Longer Help?',
   description: 'A longer prompt is not always a better prompt. Here is how prompt length really affects AI response quality, and when adding more actually hurts.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'A longer prompt is not always a better prompt. Here is how length really affects AI response quality, and when more hurts.',
     url: 'https://deepclario.com/blog/prompt-length-vs-response-quality',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('prompt-length-vs-response-quality')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Prompt Length vs Response Quality: Does Longer Help?',
   description: 'How prompt length affects AI response quality, why more words is not the same as more clarity, and when a long prompt starts to hurt.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/prompt-length-vs-response-quality/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

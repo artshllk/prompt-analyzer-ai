@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('what-is-a-good-prompt')
+
 export const metadata: Metadata = {
   title: 'What Makes a Good AI Prompt? 5 Things Every Strong Prompt Has',
   description: 'A good AI prompt has 5 things: a clear goal, enough context, a specified format, defined constraints, and ideally an example. Learn what each one means and how to add them.',
@@ -12,18 +14,20 @@ export const metadata: Metadata = {
     title: 'What Makes a Good AI Prompt? 5 Things Every Strong Prompt Has',
     description: 'The 5 elements every good AI prompt needs, with a weak and a strong version of each.',
     url: 'https://deepclario.com/blog/what-is-a-good-prompt',
+    type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('what-is-a-good-prompt')
 
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What Makes a Good AI Prompt? 5 Things Every Strong Prompt Has',
   description: 'A good AI prompt has 5 elements: goal clarity, context, format, constraints, and examples.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/what-is-a-good-prompt/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
   mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://deepclario.com/blog/what-is-a-good-prompt' },

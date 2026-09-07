@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('prompt-score-explained')
+
 export const metadata: Metadata = {
   title: 'What a Prompt Score Really Measures (And Why We Removed Ours)',
   description: 'A prompt score is a model reading your prompt and picking a number. We shipped one, looked at how it was produced, and took it out. Here is what a score can and cannot tell you.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'A prompt score is a model reading your prompt and picking a number. We shipped one, then took it out. Here is what a score can and cannot tell you.',
     url: 'https://deepclario.com/blog/prompt-score-explained',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('prompt-score-explained')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What a Prompt Score Really Measures (And Why We Removed Ours)',
   description: 'What a prompt score is made of, why ours was not worth printing, and what is worth counting instead.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/prompt-score-explained/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

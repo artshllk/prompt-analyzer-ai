@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('why-prompt-improvement-matters')
+
 export const metadata: Metadata = {
   title: 'Why Prompt Improvement Matters More Than People Think',
   description: 'A few minutes spent improving a prompt saves far more time than it costs, across every reply you get. Here is why prompt improvement pays off, with real numbers.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'A few minutes spent improving a prompt saves far more time than it costs. Here is why prompt improvement actually pays off.',
     url: 'https://deepclario.com/blog/why-prompt-improvement-matters',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('why-prompt-improvement-matters')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Why Prompt Improvement Matters More Than People Think',
   description: 'Why the small effort of improving a prompt before sending it pays off across every reply, drafts saved, and how it compounds with repeated use.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/why-prompt-improvement-matters/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

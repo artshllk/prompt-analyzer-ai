@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('are-ai-detectors-accurate')
+
 export const metadata: Metadata = {
   title: 'Are AI Detectors Accurate? What They Can and Cannot Tell You',
   description: 'AI detectors are useful but not proof. Here is how accurate they really are, when to trust the score, and when a result should not decide anything on its own.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'AI detectors are useful but not proof. Here is how accurate they really are, and when a result should not decide anything on its own.',
     url: 'https://deepclario.com/blog/are-ai-detectors-accurate',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('are-ai-detectors-accurate')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Are AI Detectors Accurate? What They Can and Cannot Tell You',
   description: 'How accurate AI detectors are, the cases where they are reliable, and the cases where the score should not be trusted on its own.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/are-ai-detectors-accurate/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

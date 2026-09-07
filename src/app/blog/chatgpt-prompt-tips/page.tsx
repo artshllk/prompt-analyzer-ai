@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('chatgpt-prompt-tips')
+
 export const metadata: Metadata = {
   title: '10 ChatGPT Prompt Tips That Actually Work',
   description: 'Most ChatGPT users get mediocre results because their prompts are too vague. These 10 practical tips will immediately improve what you get back - with real before and after examples.',
@@ -12,18 +14,20 @@ export const metadata: Metadata = {
     title: '10 ChatGPT Prompt Tips That Actually Work',
     description: 'Practical prompt techniques for ChatGPT with real before and after examples.',
     url: 'https://deepclario.com/blog/chatgpt-prompt-tips',
+    type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('chatgpt-prompt-tips')
 
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: '10 ChatGPT Prompt Tips That Actually Work',
   description: 'Practical tips for writing better ChatGPT prompts with real examples.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/chatgpt-prompt-tips/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
   mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://deepclario.com/blog/chatgpt-prompt-tips' },

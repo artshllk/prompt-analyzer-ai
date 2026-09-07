@@ -22,9 +22,13 @@ Pivoting. One product being built, two frozen or secondary.
 - **Token counter** — counts tokens (`gpt-tokenizer`). Logic exists, no page.
 
 Backed by a large SEO blog (`/blog`, 56 posts) and a free prompt library
-(`/prompts`). Note the blog is entirely prompt-engineering content, so it
-feeds the frozen product and not the new one: do not count it as distribution
-for the fact checker. Audience is smart but non-technical. Pre-revenue. Live at
+(`/prompts`). The blog splits 27 prompt-engineering posts, 13 AI-detection
+posts and 16 general AI explainers, so only about half of it feeds the frozen
+product. The detection cluster and the explainers are usable distribution for
+the fact checker, and several explainers sit right next to it
+(`why-ai-makes-mistakes` is about hallucinations). What the blog has none of is
+a post about sources, citations or checking; that is the actual content gap.
+Audience is smart but non-technical. Pre-revenue. Live at
 deepclario.com. Two-person team: Art Shllaku, Agon.
 
 ## Stack
@@ -116,9 +120,12 @@ These are verified from code and get re-derived or mistaken every session.
   what EXTRACTION ALONE costs on a dense document.
 
 - **Pro is capped on checking and that is deliberate.** At 13¢ for a dense
-  cited document against $4.99 a month, unmetered checking goes underwater
-  around 38 documents, not 125. The 100-a-month Pro cap is already past that
-  if every check is a dense one, and survives on the mix. Prompt improvements
+  cited document against $19 a month, unmetered checking goes underwater
+  around 146 documents. The 100-a-month Pro cap sits under that even if every
+  single check is a dense one, so the cap is what makes the tier safe rather
+  than the mix. At the $12 founding price the break-even is about 92
+  documents, which the cap is close to, so a founding subscriber who checks
+  dense documents all month is roughly break-even by design. Prompt improvements
   stay unlimited for Pro because they cost about a cent. "Unlimited" is a
   pricing decision about unit cost, not a tier badge.
 
@@ -128,11 +135,18 @@ These are verified from code and get re-derived or mistaken every session.
   and the cost PER CLAIM falls from 0.65¢ to 0.52¢ because extraction is paid
   once either way. Judging runs five wide, so it is close to linear in claim
   count; the wall time is not the thing that stops you raising the cap.
-- **Pro is $4.99/mo right now, a launch discount from $9.99 (Paddle).** The
-  launch flag is `LAUNCH` in `components/marketing/EditorialPricing.tsx`; Paddle
-  charges 499¢ (`lib/paddle.ts`). Free tier: 10 improvements per rolling 24h
-  (`USAGE_DAILY_LIMIT`), 5 detections per 24h, 7-day history (`lib/limits.ts`).
-  Anything saying 25-a-month or a flat $9.99 is stale.
+- **Pro lists at $19/mo, with a $12 founding price for the first fifty
+  subscribers (Paddle).** The launch flag is `LAUNCH` in
+  `components/marketing/EditorialPricing.tsx` (`monthly: { list: "19", now:
+  "12" }`); Paddle charges 1900¢ monthly, 1200¢ founding and 19000¢ annual
+  (`lib/paddle.ts`). The founding price is a SEPARATE PADDLE PRICE, not a
+  discount code, because the promise is that it never rises. `pro_legacy_499`
+  still exists at 499¢ but nothing offers it and the checkout route refuses it
+  explicitly; it is insurance for a subscription that does not exist yet.
+  Free tier: 10 improvements per rolling 24h (`USAGE_DAILY_LIMIT`), 5
+  detections per 24h, 7-day history (`lib/limits.ts`).
+  Anything saying 25-a-month, a flat $9.99, or $4.99 as the current price is
+  stale.
 - **Auth: Google Identity Services + `signInWithIdToken`**, not Supabase OAuth
   redirect — so the consent screen shows Deepclario, never supabase.co. See
   `.claude/decisions/0003-auth-gis-no-supabase-co.md`.

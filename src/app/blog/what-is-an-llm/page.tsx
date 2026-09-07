@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('what-is-an-llm')
+
 export const metadata: Metadata = {
   title: 'What Is an LLM? Large Language Models Explained Simply',
   description: 'LLM stands for large language model, the technology behind ChatGPT, Claude, and Gemini. Here is what that actually means, without the jargon.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'What LLM actually means, how these models are built, and why the term is everywhere right now.',
     url: 'https://deepclario.com/blog/what-is-an-llm',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('what-is-an-llm')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What Is an LLM? Large Language Models Explained Simply',
   description: 'A plain-English explanation of what a large language model is, how it is built, and why the term matters.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/what-is-an-llm/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('machine-learning-explained')
+
 export const metadata: Metadata = {
   title: 'Machine Learning Explained: A Simple Guide for Beginners',
   description: 'Machine learning is software that learns from examples instead of following rules. Here is what it is, how it works, and where you meet it, in plain English.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Machine learning is software that learns from examples instead of following rules. Here is what it is and how it works, in plain English.',
     url: 'https://deepclario.com/blog/machine-learning-explained',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('machine-learning-explained')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Machine Learning Explained: A Simple Guide for Beginners',
   description: 'A plain-English explanation of machine learning: learning from examples instead of rules, the main types, and where it shows up in daily life.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/machine-learning-explained/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

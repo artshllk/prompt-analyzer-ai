@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('how-to-use-chatgpt-for-writing')
+
 export const metadata: Metadata = {
   title: 'How to Use ChatGPT for Writing - A Practical Guide',
   description: 'How to use ChatGPT for writing without sounding like a robot. Covers blog posts, emails, stories, marketing copy, and more - with real before/after prompt examples.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'Practical guide to using ChatGPT for writing - blog posts, emails, stories, and marketing copy. Real examples included.',
     url: 'https://deepclario.com/blog/how-to-use-chatgpt-for-writing',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-to-use-chatgpt-for-writing')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How to Use ChatGPT for Writing - A Practical Guide',
   description: 'How to use ChatGPT for writing without sounding like a robot.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-to-use-chatgpt-for-writing/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

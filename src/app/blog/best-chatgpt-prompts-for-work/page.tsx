@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('best-chatgpt-prompts-for-work')
+
 export const metadata: Metadata = {
   title: 'Best ChatGPT Prompts for Work (2026) - Copy and Use Today',
   description: 'The best ChatGPT prompts for real work tasks: emails, reports, analysis, meeting notes, job descriptions, performance reviews, and more. All free to copy.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Free, ready-to-use ChatGPT prompts for the most common work tasks. Copy, fill in the blanks, get results.',
     url: 'https://deepclario.com/blog/best-chatgpt-prompts-for-work',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('best-chatgpt-prompts-for-work')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Best ChatGPT Prompts for Work (2026)',
   description: 'Ready-to-use ChatGPT prompts for emails, reports, analysis, and more work tasks.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/best-chatgpt-prompts-for-work/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('how-context-improves-ai-responses')
+
 export const metadata: Metadata = {
   title: 'How Context Improves AI Responses (With Examples)',
   description: 'The AI cannot see your situation. Context is how you tell it. Here is what context to add to a prompt, and how it turns generic answers into useful ones.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'The AI cannot see your situation. Context is how you tell it. Here is what to add, and how it turns generic answers into useful ones.',
     url: 'https://deepclario.com/blog/how-context-improves-ai-responses',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-context-improves-ai-responses')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How Context Improves AI Responses (With Examples)',
   description: 'Why AI answers are generic without context, what context to give a prompt, and examples of how it changes the output.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-context-improves-ai-responses/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

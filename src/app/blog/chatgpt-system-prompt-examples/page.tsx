@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('chatgpt-system-prompt-examples')
+
 export const metadata: Metadata = {
   title: 'ChatGPT System Prompt Examples - What They Are and How to Use Them',
   description: 'What ChatGPT system prompts are, how they work, and real examples you can use to customize ChatGPT\'s behavior for writing, coding, analysis, and more.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'Real ChatGPT system prompt examples for writing, coding, analysis, and customer support - plus how to set them up.',
     url: 'https://deepclario.com/blog/chatgpt-system-prompt-examples',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('chatgpt-system-prompt-examples')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'ChatGPT System Prompt Examples',
   description: 'What system prompts are, how they work, and real examples for common use cases.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/chatgpt-system-prompt-examples/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

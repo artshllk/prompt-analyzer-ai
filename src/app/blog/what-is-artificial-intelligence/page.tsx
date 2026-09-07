@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('what-is-artificial-intelligence')
+
 export const metadata: Metadata = {
   title: 'What Is Artificial Intelligence? A Simple Guide for Beginners',
   description: 'Artificial intelligence is software that learns patterns and makes guesses instead of following fixed rules. Here is what AI really is, in plain English, with everyday examples.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Artificial intelligence is software that learns patterns instead of following fixed rules. Here is what AI really is, in plain English.',
     url: 'https://deepclario.com/blog/what-is-artificial-intelligence',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('what-is-artificial-intelligence')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What Is Artificial Intelligence? A Simple Guide for Beginners',
   description: 'A plain-English explanation of what artificial intelligence is, how it differs from normal software, and the main types of AI in everyday use.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/what-is-artificial-intelligence/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
