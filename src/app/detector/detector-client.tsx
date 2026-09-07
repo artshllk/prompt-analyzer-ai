@@ -58,7 +58,30 @@ const CONFIDENCE_LABEL: Record<ConfidenceLabel, string> = {
   high: "Higher confidence",
 };
 
-export function DetectorClient({ plan }: { plan: Plan }) {
+/**
+ * WHO IS LOOKING IS FETCHED HERE, NOT PASSED IN.
+ *
+ * /detector is a public, prerendered marketing page: it reads no cookies, so
+ * it cannot know the plan at render time, and reading one would cost the page
+ * its static rendering for a value only the UI copy depends on. /detect, the
+ * app view, renders the same component and gets the same answer this way, so
+ * there is one path rather than two.
+ *
+ * "anon" until it answers. The quota this decides is only ever a suggestion in
+ * the browser anyway: /api/detector/analyze enforces the real limits, and the
+ * anon run counter below lives in localStorage, which anyone can clear. See
+ * the browser-limit rule in CLAUDE.md.
+ */
+export function DetectorClient() {
+  const [plan, setPlan] = useState<Plan>("anon");
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/billing/plan")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!cancelled && d?.plan) setPlan(d.plan); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
   const isAnon = plan === "anon";
 
   const [text, setText] = useState("");

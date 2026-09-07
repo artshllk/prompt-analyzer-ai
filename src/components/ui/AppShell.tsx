@@ -205,8 +205,12 @@ const CHECK_ITEM = { href: "/check", label: "Check" };
  * user has a detector allowance tied to their account, so they need to be able
  * to reach it, and a sidebar that omits the page you are standing on is worse
  * than no sidebar.
+ *
+ * IT POINTS AT /detect, NOT /detector. /detector is the public marketing page
+ * and renders the marketing nav, so sending the sidebar there would take the
+ * sidebar away. Same split, and the same reason, as / and /check.
  */
-const DETECTOR_ITEM = { href: "/detector", label: "Detector" };
+const DETECTOR_ITEM = { href: "/detect", label: "Detector" };
 /**
  * THE IMPROVER IS IN THE SIDEBAR BECAUSE PRO IS CHARGED FOR IT.
  *

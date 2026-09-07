@@ -2,8 +2,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { DetectorClient } from './detector-client'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
-import { AppFrame } from '@/components/ui/AppFrame'
-import { createClient } from '@/lib/supabase/server'
 import { defaultOGImage } from '@/lib/og-image'
 
 export const metadata: Metadata = {
@@ -75,61 +73,45 @@ const detectorSchema = {
   ],
 }
 
-export default async function DetectorPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // Which quota rules apply to this visitor. 'anon' gets one free
-  // detection then a sign-in gate; 'free' is server-limited (5 / 24h);
-  // 'pro' is unlimited.
-  let plan: 'anon' | 'free' | 'pro' = 'anon'
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('tier')
-      .eq('id', user.id)
-      .single()
-    plan = profile?.tier === 'pro' ? 'pro' : 'free'
-  }
-
-  const header = user ? (
-    // Signed-in: compact, app-like header (lives inside the sidebar shell).
-    <div>
-      <p className="eyebrow mb-2">AI Text Detector</p>
-      <h1
-        className="font-serif text-2xl md:text-3xl tracking-tight"
-        style={{ color: 'var(--color-paper)', fontWeight: 400 }}
-      >
-        Was this written by a machine?
-      </h1>
-    </div>
-  ) : (
-    // Anonymous: marketing hero. One headline, one line, then the tool.
-    // The eyebrow is gone: it was a keyword, not a sentence anyone needed.
-    <div>
-      <h1
-        className="display text-4xl md:text-[3.75rem] leading-[1.05] tracking-tight"
-        style={{ color: 'var(--ink)' }}
-      >
-        Was this written{' '}
-        <span className="accent">by a machine?</span>
-      </h1>
-      <p
-        className="mt-4 md:mt-5 text-lg md:text-xl leading-relaxed max-w-2xl"
-        style={{ color: 'var(--ink-soft)' }}
-      >
-        Paste the text. We show you the signs we found.
-      </p>
-    </div>
-  )
-
+/**
+ * THE PUBLIC DETECTOR. Prerendered, indexable, marketing nav, no auth read.
+ *
+ * It used to serve both audiences: it read the session and rendered the app
+ * shell for signed-in visitors. That cost the page its static rendering, and
+ * it meant one route had to decide the shell for itself, which is the exact
+ * shape AppFrame's comment warns about (History vanished from the sidebar on
+ * this page for that reason).
+ *
+ * It is now split the way / and /check already are: the public marketing page
+ * lives here and keeps the URL, its search rankings and its SEO section, and
+ * /detect is the signed-in view inside the app shell. The sidebar points at
+ * /detect. Nothing redirects, so every existing link and ranking to /detector
+ * is untouched.
+ */
+export default function DetectorPage() {
   const mainContent = (
-    <main className={user ? 'pt-8 md:pt-10 pb-16 px-6 md:px-10' : 'pt-28 md:pt-36 pb-16 px-6 md:px-10'}>
+    <main className="pt-28 md:pt-36 pb-16 px-6 md:px-10">
       <div className="max-w-3xl mx-auto">
-        {header}
+        {/* Marketing hero. One headline, one line, then the tool. The eyebrow
+            is gone: it was a keyword, not a sentence anyone needed. */}
+        <div>
+          <h1
+            className="display text-4xl md:text-[3.75rem] leading-[1.05] tracking-tight"
+            style={{ color: 'var(--ink)' }}
+          >
+            Was this written{' '}
+            <span className="accent">by a machine?</span>
+          </h1>
+          <p
+            className="mt-4 md:mt-5 text-lg md:text-xl leading-relaxed max-w-2xl"
+            style={{ color: 'var(--ink-soft)' }}
+          >
+            Paste the text. We show you the signs we found.
+          </p>
+        </div>
 
-        <div className={user ? 'mt-6 md:mt-8' : 'mt-10 md:mt-12'}>
-          <DetectorClient plan={plan} />
+        <div className="mt-10 md:mt-12">
+          <DetectorClient />
         </div>
 
         {/* Slim honesty note - narrow footer, not a section. */}
@@ -142,12 +124,6 @@ export default async function DetectorPage() {
       </div>
     </main>
   )
-
-  if (user) {
-    return (
-      <AppFrame>{mainContent}</AppFrame>
-    )
-  }
 
   return (
     <div

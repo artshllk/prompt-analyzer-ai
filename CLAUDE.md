@@ -424,4 +424,25 @@ Treat production as READ-ONLY at all times.
   and never via supabase db push.
 - If you believe a write to production is genuinely necessary, stop and ask.
 
+## Public pages link to `/`, never to `/check`
+
+**The public checker is `/`. `/check` is the signed-in app view.** It is
+`noindex, nofollow` and it 307s signed-out visitors to `/`, so a link to it
+from anything public does two bad things at once: it passes no ranking signal,
+because the target refuses to be indexed or followed, and it bounces the
+reader, because nearly everyone reading a blog post is signed out.
+
+**This has cost three things already**: the score post's only outbound link,
+and all fifteen `CheckCTA` links, which was the entire checker CTA on the blog.
+
+`src/lib/public-links.test.ts` enforces it. Note it scans **components as well
+as pages**, because the CheckCTA links lived in a component and a grep over
+`src/app/blog` therefore reported zero. Two files may link to `/check`,
+`AppShell` and `NavAuthButton`, and only because both render it behind auth;
+the NavAuthButton exception verifies its own gate rather than being trusted.
+
+The same split exists for the detector: **`/detector` is the public page and
+`/detect` is the app view.** Public pages and the marketing nav point at
+`/detector`; the sidebar points at `/detect`.
+
 Every destination in the app sidebar must render the app shell. A sidebar item pointing at a marketing-layout route silently drops the user out of the app.
