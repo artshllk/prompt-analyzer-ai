@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('prompt-structure-that-gets-better-results')
+
 export const metadata: Metadata = {
   title: 'Prompt Structure That Gets Better Results',
   description: 'The order you put things in a prompt changes the answer. Here is a simple prompt structure, in five parts, that gets clearer results from any AI model.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'The order you put things in a prompt changes the answer. Here is a simple five-part prompt structure that works with any AI model.',
     url: 'https://deepclario.com/blog/prompt-structure-that-gets-better-results',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('prompt-structure-that-gets-better-results')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Prompt Structure That Gets Better Results',
   description: 'A simple five-part prompt structure, in the right order, that produces clearer and more reliable answers from AI models.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/prompt-structure-that-gets-better-results/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

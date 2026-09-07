@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('why-ai-makes-mistakes')
+
 export const metadata: Metadata = {
   title: 'Why Does AI Make Mistakes? Hallucinations Explained Simply',
   description: 'AI makes confident mistakes because it predicts words that sound right, not words it has checked. Here is why AI hallucinations happen and how to protect yourself.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'AI makes confident mistakes because it predicts words that sound right, not words it has checked. Here is why it happens and how to protect yourself.',
     url: 'https://deepclario.com/blog/why-ai-makes-mistakes',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('why-ai-makes-mistakes')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Why Does AI Make Mistakes? Hallucinations Explained Simply',
   description: 'A plain-English explanation of why AI models make confident mistakes, what an AI hallucination is, and how to reduce the risk.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/why-ai-makes-mistakes/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -203,14 +206,6 @@ export default function WhyAIMakesMistakesPage() {
 
           <CheckCTA variant="hallucination" />
 
-          <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Fewer mistakes start with a better prompt</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A clear, specific prompt gives the model less room to drift. Paste yours into Deepclario for a stronger version. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
-            </Link>
-          </div>
-
           <div className="mt-10 pt-6 border-t border-[color:var(--color-rule)]">
             <p className="text-xs text-[color:var(--color-paper-mute)] mb-3">Related reading</p>
             <div className="flex flex-col gap-2">
@@ -225,6 +220,9 @@ export default function WhyAIMakesMistakesPage() {
               </Link>
               <Link href="/blog/what-is-artificial-intelligence" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 What is artificial intelligence? →
+              </Link>
+              <Link href="/how-it-works" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                How we check a link →
               </Link>
             </div>
           </div>

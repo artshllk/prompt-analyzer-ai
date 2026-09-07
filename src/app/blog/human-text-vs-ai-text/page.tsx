@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('human-text-vs-ai-text')
+
 export const metadata: Metadata = {
   title: 'Human Text vs AI Text: What Actually Differs',
   description: 'What really separates human writing from AI writing? Here are the real differences in rhythm, surprise, and voice, and why the line is blurrier than it looks.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'What really separates human writing from AI writing? Here are the real differences in rhythm, surprise, and voice.',
     url: 'https://deepclario.com/blog/human-text-vs-ai-text',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('human-text-vs-ai-text')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Human Text vs AI Text: What Actually Differs',
   description: 'The genuine differences between human and AI writing, why detectors rely on them, and why the differences are shrinking.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/human-text-vs-ai-text/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

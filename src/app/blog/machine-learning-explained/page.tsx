@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('machine-learning-explained')
+
 export const metadata: Metadata = {
   title: 'Machine Learning Explained: A Simple Guide for Beginners',
   description: 'Machine learning is software that learns from examples instead of following rules. Here is what it is, how it works, and where you meet it, in plain English.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Machine learning is software that learns from examples instead of following rules. Here is what it is and how it works, in plain English.',
     url: 'https://deepclario.com/blog/machine-learning-explained',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('machine-learning-explained')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Machine Learning Explained: A Simple Guide for Beginners',
   description: 'A plain-English explanation of machine learning: learning from examples instead of rules, the main types, and where it shows up in daily life.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/machine-learning-explained/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -211,10 +214,10 @@ export default function MachineLearningExplainedPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Use AI more effectively</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Deepclario helps you write clearer prompts and check whether text looks AI-written. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Try the prompt improver →
+            <h2 className="text-xl font-bold mb-3">Check what the machine wrote</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A model predicts patterns. It does not open the page it cited. Deepclario does, and shows you the sentence that is really there. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my links →
             </Link>
           </div>
 

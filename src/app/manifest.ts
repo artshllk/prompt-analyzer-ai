@@ -4,10 +4,10 @@ import type { MetadataRoute } from 'next'
 // <head>). Colors match --color-ink in globals.css.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Deepclario - AI Prompt Improver',
+    name: 'Deepclario - Source Checker',
     short_name: 'Deepclario',
     description:
-      'Paste a bad prompt and get a sharper version in seconds. Works with ChatGPT, Claude, and Gemini.',
+      'Paste your article. Deepclario opens every link and checks that the page really says what you cited it for.',
     start_url: '/',
     display: 'standalone',
     background_color: '#0E0E10',

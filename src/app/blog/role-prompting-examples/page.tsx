@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('role-prompting-examples')
+
 export const metadata: Metadata = {
   title: 'Role Prompting: Examples That Improve AI Answers',
   description: 'Role prompting tells the AI who to be before it answers. Here is how it changes the output, with ready-to-use examples for writing, coding, and advice.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Role prompting tells the AI who to be before it answers. Here is how it changes the output, with ready-to-use examples.',
     url: 'https://deepclario.com/blog/role-prompting-examples',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('role-prompting-examples')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Role Prompting: Examples That Improve AI Answers',
   description: 'What role prompting is, why assigning the AI a role changes its tone and depth, and copy-ready examples for common tasks.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/role-prompting-examples/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

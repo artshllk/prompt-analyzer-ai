@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('what-is-artificial-intelligence')
+
 export const metadata: Metadata = {
   title: 'What Is Artificial Intelligence? A Simple Guide for Beginners',
   description: 'Artificial intelligence is software that learns patterns and makes guesses instead of following fixed rules. Here is what AI really is, in plain English, with everyday examples.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Artificial intelligence is software that learns patterns instead of following fixed rules. Here is what AI really is, in plain English.',
     url: 'https://deepclario.com/blog/what-is-artificial-intelligence',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('what-is-artificial-intelligence')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What Is Artificial Intelligence? A Simple Guide for Beginners',
   description: 'A plain-English explanation of what artificial intelligence is, how it differs from normal software, and the main types of AI in everyday use.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/what-is-artificial-intelligence/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -206,10 +209,10 @@ export default function WhatIsAIPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Put AI to work on your own writing</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Deepclario helps you write clearer prompts and check whether text looks AI-written. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Try the prompt improver →
+            <h2 className="text-xl font-bold mb-3">Check what AI wrote before you send it</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">AI guesses. It does not open the page it linked to. Deepclario opens every link in your draft and shows you what the page really says. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

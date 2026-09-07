@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('ai-detection-score-explained')
+
 export const metadata: Metadata = {
   title: 'AI Detection Score Explained: What the Percentage Means',
   description: 'What does a "78% AI" score actually mean? Here is how to read an AI detection score, what the number does and does not tell you, and how to act on it.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'What does a "78% AI" score actually mean? Here is how to read an AI detection score and what the number does and does not tell you.',
     url: 'https://deepclario.com/blog/ai-detection-score-explained',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('ai-detection-score-explained')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'AI Detection Score Explained: What the Percentage Means',
   description: 'How to read an AI detection score, what the percentage represents, and why it is a confidence estimate rather than a share of the text.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/ai-detection-score-explained/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

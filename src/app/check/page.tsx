@@ -21,7 +21,8 @@ import { CheckClient } from '@/components/factcheck/CheckClient'
  * IT DOES NOT LIVE IN (app). That group's layout redirects signed-out visitors
  * to /login, and a signed-out person arriving here should land on the marketing
  * page, which has the same tool and needs no account. So the shell is composed
- * here, the same way /detector does it.
+ * here. /detect does the same for the detector; /detector itself is now the
+ * public page only and composes no shell at all.
  *
  * Removing the old 301 also restores every bookmark and shared link to /check,
  * which is what that redirect was protecting.

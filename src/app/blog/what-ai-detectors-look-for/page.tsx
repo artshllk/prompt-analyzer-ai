@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('what-ai-detectors-look-for')
+
 export const metadata: Metadata = {
   title: 'What AI Detectors Look For in Writing (The Real Signals)',
   description: 'AI detectors do not read for meaning. They measure a handful of surface patterns: word predictability, sentence variety, phrasing, and formatting. Here is exactly what each one is.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'AI detectors do not read for meaning. They measure a handful of surface patterns in the writing. Here is exactly what each one is.',
     url: 'https://deepclario.com/blog/what-ai-detectors-look-for',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('what-ai-detectors-look-for')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What AI Detectors Look For in Writing (The Real Signals)',
   description: 'The specific patterns AI detectors measure, including word predictability, sentence variety, phrasing, and formatting, explained without jargon.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/what-ai-detectors-look-for/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

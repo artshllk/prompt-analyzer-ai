@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('embeddings-explained')
+
 export const metadata: Metadata = {
   title: 'Embeddings Explained: How AI Turns Words Into Numbers',
   description: 'Embeddings are how AI turns words into numbers so it can measure which ones are related. Here is what embeddings are, in plain English, with everyday examples.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Embeddings are how AI turns words into numbers so it can measure which ones are related. Here is what they are, in plain English.',
     url: 'https://deepclario.com/blog/embeddings-explained',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('embeddings-explained')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Embeddings Explained: How AI Turns Words Into Numbers',
   description: 'A plain-English explanation of embeddings: how AI turns words into numbers so it can measure meaning and find related things.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/embeddings-explained/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -189,10 +192,10 @@ export default function EmbeddingsExplainedPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">See how AI reads your text</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Deepclario helps you write clearer prompts and check whether text looks AI-written. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Try the prompt improver →
+            <h2 className="text-xl font-bold mb-3">Check what your sources actually say</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A model can match your words to a page without that page backing your point. Deepclario opens every link in your draft and shows you the sentence that is really there. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

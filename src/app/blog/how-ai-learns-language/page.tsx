@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('how-ai-learns-language')
+
 export const metadata: Metadata = {
   title: 'How Does AI Learn Language? A Simple Explanation',
   description: 'AI learns language by reading a huge amount of text and practicing guessing the next word, over and over. Here is how that turns into fluent writing, in plain English.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'AI learns language by reading huge amounts of text and practicing guessing the next word. Here is how that turns into fluent writing.',
     url: 'https://deepclario.com/blog/how-ai-learns-language',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-ai-learns-language')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How Does AI Learn Language? A Simple Explanation',
   description: 'A plain-English explanation of how AI language models learn to read and write by practicing next-word prediction on huge amounts of text.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-ai-learns-language/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -188,10 +191,10 @@ export default function HowAILearnsLanguagePage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Work with the language patterns, not against them</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A clear prompt gives the model the patterns it needs. Paste yours into Deepclario for a stronger version. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">Fluent writing is not checked writing</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A model learns to sound right, not to be right. Deepclario opens every link in your draft and checks that the page really says it. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

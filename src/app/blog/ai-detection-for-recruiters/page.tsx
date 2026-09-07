@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('ai-detection-for-recruiters')
+
 export const metadata: Metadata = {
   title: 'AI Detection for Recruiters and Hiring',
   description: 'AI-written cover letters and applications are everywhere. Here is how recruiters can use AI detection fairly, what it misses, and why it should never auto-reject.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'AI-written cover letters are everywhere. Here is how recruiters can use AI detection fairly, and why it should never auto-reject.',
     url: 'https://deepclario.com/blog/ai-detection-for-recruiters',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('ai-detection-for-recruiters')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'AI Detection for Recruiters and Hiring',
   description: 'How recruiters can use AI detection on applications fairly, the false-positive risk to candidates, and why a score should never trigger an automatic rejection.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/ai-detection-for-recruiters/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

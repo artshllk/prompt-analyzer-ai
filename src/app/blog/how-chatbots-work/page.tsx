@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('how-chatbots-work')
+
 export const metadata: Metadata = {
   title: 'How Do AI Chatbots Work? A Simple Explanation',
   description: 'AI chatbots like ChatGPT read your message, break it into small pieces, and predict a reply one word at a time. Here is the whole process in plain English.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'AI chatbots read your message and predict a reply one word at a time. Here is the whole process in plain English.',
     url: 'https://deepclario.com/blog/how-chatbots-work',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-chatbots-work')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How Do AI Chatbots Work? A Simple Explanation',
   description: 'A plain-English walkthrough of how AI chatbots read a message, predict a reply, and remember a conversation.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-chatbots-work/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -201,10 +204,10 @@ export default function HowChatbotsWorkPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Get better chatbot answers</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A clearer message means a better reply. Paste your prompt into Deepclario and get a stronger version. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">The reply sounds sure. Check it anyway.</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A chatbot can hand you a real link next to a number that page never mentions. Deepclario opens each one and shows you the sentence that is there. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

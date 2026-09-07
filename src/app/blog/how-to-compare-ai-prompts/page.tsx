@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('how-to-compare-ai-prompts')
+
 export const metadata: Metadata = {
   title: 'How to Compare Two AI Prompts (And Pick the Better One)',
   description: 'Which prompt is better? Guessing does not work. Here is a fair way to compare two AI prompts side by side and pick the one that really performs.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Which prompt is better? Here is a fair way to compare two AI prompts side by side and pick the one that really performs.',
     url: 'https://deepclario.com/blog/how-to-compare-ai-prompts',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-to-compare-ai-prompts')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How to Compare Two AI Prompts (And Pick the Better One)',
   description: 'A fair method for comparing two AI prompts: same input, same standard, several runs, so you pick the better prompt on evidence not on a hunch.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-to-compare-ai-prompts/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

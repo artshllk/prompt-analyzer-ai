@@ -92,8 +92,24 @@ export interface ChecksLeft {
   limit: number
 }
 
-export function CheckClient({ checksLeft }: { checksLeft?: ChecksLeft | null } = {}) {
+export function CheckClient() {
   const [text, setText] = useState('')
+
+  /**
+   * Fetched here rather than passed down from the server. Reading it during
+   * the server render cost the homepage its static rendering, for a counter
+   * only signed-in visitors ever see. Null until it arrives, and null for
+   * anyone anonymous, which is the same thing the server used to return.
+   */
+  const [checksLeft, setChecksLeft] = useState<ChecksLeft | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/factcheck/allowance')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (!cancelled) setChecksLeft(d) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
   const { state, run, reset } = useCheckStream()
 
   /**

@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('prompt-analyzer-guide')
+
 export const metadata: Metadata = {
   title: 'Prompt Analyzer Guide: How to Use It Well',
   description: 'A walkthrough of the Deepclario prompt analyzer: what it checks, how to read the results, and how to use it so your prompts actually get better over time.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'A walkthrough of the Deepclario prompt analyzer: what it checks, how to read the results, and how to get the most out of it.',
     url: 'https://deepclario.com/blog/prompt-analyzer-guide',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('prompt-analyzer-guide')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Prompt Analyzer Guide: How to Use It Well',
   description: 'How to use a prompt analyzer effectively, what it checks for, and how to read the results to write better prompts.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/prompt-analyzer-guide/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

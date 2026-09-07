@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('why-most-prompts-fail')
+
 export const metadata: Metadata = {
   title: 'Why Most AI Prompts Fail (And How to Fix Yours)',
   description: 'Bad AI results usually come from the prompt, not the model. Here are the four reasons prompts fail, with a weak and strong version of each so you can fix yours.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Bad AI results usually come from the prompt, not the model. Here are the four reasons prompts fail, and how to fix each one.',
     url: 'https://deepclario.com/blog/why-most-prompts-fail',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('why-most-prompts-fail')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Why Most AI Prompts Fail (And How to Fix Yours)',
   description: 'The four common reasons AI prompts fail, with a weak and strong example of each, so you can find and fix the problem in your own prompts.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/why-most-prompts-fail/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

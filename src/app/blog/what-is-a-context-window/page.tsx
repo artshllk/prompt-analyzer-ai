@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('what-is-a-context-window')
+
 export const metadata: Metadata = {
   title: 'What Is a Context Window? Why AI Forgets Things',
   description: 'AI can only "see" so much text at once. Here is what a context window is, why long chats trail off, and how to work with the limit instead of against it.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'What a context window is, why AI seems to forget things in a long chat, and how to work around it.',
     url: 'https://deepclario.com/blog/what-is-a-context-window',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('what-is-a-context-window')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What Is a Context Window? Why AI Forgets Things',
   description: 'An explanation of the AI context window, why long conversations cause a model to lose earlier details, and how to work around the limit.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/what-is-a-context-window/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -185,10 +188,10 @@ export default function WhatIsAContextWindowPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Write prompts that respect the window</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Deepclario helps you write clear, focused prompts that don&apos;t waste the space you have. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">Check the sources in what comes back</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A model can lose the thread of a long document and still cite it confidently. Deepclario opens every link in your draft and checks that the page really says it. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

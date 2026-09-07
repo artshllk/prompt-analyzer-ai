@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('what-are-ai-model-parameters')
+
 export const metadata: Metadata = {
   title: 'What Are AI Model Parameters? Explained Simply',
   description: 'You keep seeing "billion parameters" in AI news. Here is what a parameter actually is, why the count matters less than people think, and what to focus on instead.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'What a parameter actually is, why the count matters less than people think, and what to focus on instead.',
     url: 'https://deepclario.com/blog/what-are-ai-model-parameters',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('what-are-ai-model-parameters')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What Are AI Model Parameters? Explained Simply',
   description: 'A plain-English explanation of what AI model parameters are and why a bigger parameter count does not automatically mean a better model.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/what-are-ai-model-parameters/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -172,10 +175,10 @@ export default function WhatAreAIModelParametersPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Test any model on your own prompt</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A clear, well-built prompt is the fairest way to compare what a model can actually do. Deepclario helps you write one. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">Parameter counts will not catch a wrong number</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Bigger models still cite pages that do not say what they claim. Deepclario opens every link in your draft and shows you what is actually on it. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('can-ai-detectors-be-fooled')
+
 export const metadata: Metadata = {
   title: 'Can AI Detectors Be Fooled? An Honest Answer',
   description: 'Yes, AI detectors can be fooled, and it is easier than people think. Here is how it happens, why it matters, and what it means for anyone relying on a score.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'Yes, AI detectors can be fooled, and it is easier than people think. Here is how it happens and what it means for anyone relying on a score.',
     url: 'https://deepclario.com/blog/can-ai-detectors-be-fooled',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('can-ai-detectors-be-fooled')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Can AI Detectors Be Fooled? An Honest Answer',
   description: 'Whether AI detectors can be fooled, the common ways it happens, and why this limits how much weight a detection score should carry.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/can-ai-detectors-be-fooled/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

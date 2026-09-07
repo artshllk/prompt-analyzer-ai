@@ -4,12 +4,12 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { LISTED_POSTS } from '@/lib/blog-posts'
 
 export const metadata: Metadata = {
-  title: 'Blog - Prompt Engineering Guides and Tips',
-  description: 'Free guides on prompt engineering, how to write better AI prompts, and getting more out of ChatGPT, Claude, and Gemini. Written by the Deepclario team.',
+  title: 'Blog - Using AI and Checking What It Writes',
+  description: 'Free, plain-English guides on how AI writes, how to check the sources in what it hands you, how AI detection works, and how to get better results from ChatGPT, Claude, and Gemini.',
   alternates: { canonical: 'https://deepclario.com/blog' },
   openGraph: {
-    title: 'Blog - Prompt Engineering Guides',
-    description: 'Free guides on prompt engineering and writing better AI prompts.',
+    title: 'Blog - Using AI and Checking What It Writes',
+    description: 'Guides on how AI writes, how to check what it hands you, and how to get better results.',
     url: 'https://deepclario.com/blog',
     type: 'website',
   },
@@ -37,11 +37,11 @@ export default function BlogIndexPage() {
           className="display text-4xl md:text-5xl leading-[1.1] tracking-tight mb-4"
           style={{ color: 'var(--color-paper)' }}
         >
-          Prompt engineering guides
+          Writing with AI, and checking it
         </h1>
         <p className="text-lg leading-relaxed mb-14" style={{ color: 'var(--color-paper-mute)' }}>
-          Free, practical guides on writing better prompts for ChatGPT, Claude, and Gemini.
-          No fluff, no theory for its own sake.
+          Free, practical guides on how AI writes, how to check the sources in what it hands
+          you, and how to get more out of ChatGPT, Claude, and Gemini.
         </p>
 
         <ul className="space-y-px">

@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('how-to-test-a-prompt')
+
 export const metadata: Metadata = {
   title: 'How to Test a Prompt: A Simple Method',
   description: 'A good prompt is one you have tested, not one you hoped would work. Here is a simple way to test a prompt, spot where it breaks, and fix it before you rely on it.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'A good prompt is one you have tested, not one you hoped would work. Here is a simple way to test a prompt and fix where it breaks.',
     url: 'https://deepclario.com/blog/how-to-test-a-prompt',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-to-test-a-prompt')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How to Test a Prompt: A Simple Method',
   description: 'A practical method for testing an AI prompt: run it more than once, feed it hard inputs, and check the answer against a clear standard.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-to-test-a-prompt/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('what-is-a-token-in-ai')
+
 export const metadata: Metadata = {
   title: 'What Is a Token in AI? A Plain-English Explanation with Examples',
   description: 'A token is the small chunk of text an AI model actually reads. Not a word, not a letter. Here is what tokens are, with real examples you can check yourself.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'A token is the small chunk of text an AI model actually reads. Here is what tokens are, with real examples.',
     url: 'https://deepclario.com/blog/what-is-a-token-in-ai',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('what-is-a-token-in-ai')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What Is a Token in AI? A Plain-English Explanation with Examples',
   description: 'A token is the small chunk of text an AI model reads instead of whole words. This guide explains tokens with real examples.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/what-is-a-token-in-ai/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

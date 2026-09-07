@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('chatgpt-vs-claude-vs-gemini')
+
 export const metadata: Metadata = {
   title: 'ChatGPT vs Claude vs Gemini: An Honest Comparison',
   description: 'Not which one is best, but which one fits what you need. A plain comparison of ChatGPT, Claude, and Gemini based on how they actually behave, not marketing claims.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'A plain comparison of ChatGPT, Claude, and Gemini based on how they actually behave, not marketing claims.',
     url: 'https://deepclario.com/blog/chatgpt-vs-claude-vs-gemini',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('chatgpt-vs-claude-vs-gemini')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'ChatGPT vs Claude vs Gemini: An Honest Comparison',
   description: 'A practical comparison of ChatGPT, Claude, and Gemini, focused on how each one tends to behave and who each one tends to suit.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/chatgpt-vs-claude-vs-gemini/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -196,10 +199,10 @@ export default function ChatGPTVsClaudeVsGeminiPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Write one prompt that works everywhere</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A well-built prompt gets better results no matter which model you send it to. Deepclario helps you write it once, and write it well. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">Every one of them gets sources wrong</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Whichever model you pick, it can put a real link next to a number that page never says. Deepclario opens each link and shows you the sentence that is actually there. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my links →
             </Link>
           </div>
 

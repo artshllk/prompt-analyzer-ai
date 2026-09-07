@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('how-to-write-better-prompts')
+
 export const metadata: Metadata = {
   title: 'How to Write Better AI Prompts - 7 Proven Techniques',
   description: 'Learn 7 practical techniques to write better prompts for ChatGPT, Claude, and Gemini. Includes real before/after examples and a free prompt analyzer to test your prompts.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: '7 practical techniques to write prompts that get better results from any AI tool. Real examples included.',
     url: 'https://deepclario.com/blog/how-to-write-better-prompts',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-to-write-better-prompts')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How to Write Better AI Prompts - 7 Proven Techniques',
   description: '7 practical, proven techniques to write better prompts for ChatGPT, Claude, and Gemini.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-to-write-better-prompts/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

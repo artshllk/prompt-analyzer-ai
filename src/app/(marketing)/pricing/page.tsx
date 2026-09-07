@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { EditorialPricing } from '@/components/marketing/EditorialPricing'
+import { PaddleProvider } from '@/components/PaddleProvider'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { defaultOGImage } from '@/lib/og-image'
-import { viewerPlan } from '@/lib/db/viewer-plan'
 import { foundingSeatsLeft } from '@/lib/paddle'
 import {
   FACTCHECK_FREE_LIMIT,
@@ -81,13 +81,33 @@ const pricingSchema = {
   ],
 }
 
+/**
+ * REGENERATED ON A TIMER, NOT PER REQUEST.
+ *
+ * This page used to await viewerPlan() and foundingSeatsLeft() on every
+ * render: one Postgres round trip and one call out to Paddle, for every
+ * visitor and every crawl. viewerPlan() reads cookies, so it also forced the
+ * whole route dynamic, which is what made the Paddle call per-request in the
+ * first place.
+ *
+ * viewerPlan() moved into EditorialPricing, which fetches it after paint.
+ * The Paddle count stays on the server, because it decides the PRICE on
+ * screen and a price that changes after paint is worse than a stale one.
+ * With the cookie read gone the page can be statically regenerated, so
+ * Paddle is called once every five minutes instead of once per visitor.
+ *
+ * Five minutes is a deliberate ceiling on how stale the founding-seat count
+ * can get. Overselling by a few seats is not a problem: the checkout price
+ * comes from Paddle, not from this page.
+ */
+export const revalidate = 300
+
 export default async function PricingPage() {
-  const { plan, renewsOn } = await viewerPlan()
   /**
    * Counted at Paddle, so the price on screen is the price the checkout
-   * will charge. Cached for thirty seconds inside foundingSeatsLeft, and
-   * it fails closed: if Paddle cannot be reached this reads zero and the
-   * page shows the ordinary price rather than one it cannot honour.
+   * will charge. It fails closed: if Paddle cannot be reached this reads
+   * zero and the page shows the ordinary price rather than one it cannot
+   * honour.
    */
   const foundingLeft = await foundingSeatsLeft()
   return (
@@ -97,7 +117,12 @@ export default async function PricingPage() {
 
       <section className="pt-28 md:pt-36 pb-20 md:pb-28 px-6 md:px-10">
         <div className="max-w-6xl mx-auto">
-          <EditorialPricing headingLevel="h1" plan={plan} renewsOn={renewsOn} foundingLeft={foundingLeft} />
+          {/* The other place a checkout can start. Paddle.js used to load
+              from the root layout on every page on the site; it is scoped to
+              the two surfaces that can actually take money. */}
+          <PaddleProvider>
+            <EditorialPricing headingLevel="h1" foundingLeft={foundingLeft} />
+          </PaddleProvider>
         </div>
       </section>
     </div>

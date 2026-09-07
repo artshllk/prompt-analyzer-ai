@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('zero-shot-vs-few-shot-prompting')
+
 export const metadata: Metadata = {
   title: 'Zero-Shot vs Few-Shot Prompting - What the Difference Means in Practice',
   description: 'Zero-shot vs few-shot prompting explained clearly. What each technique is, when to use which, and real examples showing how few-shot examples change AI output quality.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Zero-shot vs few-shot prompting - what each one is and when to use which, with real examples.',
     url: 'https://deepclario.com/blog/zero-shot-vs-few-shot-prompting',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('zero-shot-vs-few-shot-prompting')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Zero-Shot vs Few-Shot Prompting',
   description: 'Clear explanation of zero-shot and few-shot prompting with real examples.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/zero-shot-vs-few-shot-prompting/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

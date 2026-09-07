@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('ai-detection-in-universities')
+
 export const metadata: Metadata = {
   title: 'AI Detection in Universities and Schools',
   description: 'How schools and universities use AI detection, where it goes wrong at scale, and what a fair academic-integrity policy looks like when detectors are involved.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'How schools and universities use AI detection, where it goes wrong at scale, and what a fair academic-integrity policy looks like.',
     url: 'https://deepclario.com/blog/ai-detection-in-universities',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('ai-detection-in-universities')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'AI Detection in Universities and Schools',
   description: 'How institutions use AI detection, the scale problems and fairness risks, and the elements of a sound academic-integrity policy.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/ai-detection-in-universities/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

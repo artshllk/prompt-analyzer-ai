@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('how-ai-detectors-work')
+
 export const metadata: Metadata = {
   title: 'How AI Detectors Work: A Clear Guide to Accuracy and Limits',
   description: 'AI detectors guess whether text was written by a machine by measuring how predictable it is. Learn how they work, how accurate they are, and where they fail.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'AI detectors guess whether text was written by a machine by measuring how predictable it is. Here is how that works, and why they still make mistakes.',
     url: 'https://deepclario.com/blog/how-ai-detectors-work',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('how-ai-detectors-work')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How AI Detectors Work: A Clear Guide to Accuracy and Limits',
   description: 'A plain explanation of how AI text detectors work, what signals they use, and the reasons they produce wrong answers.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/how-ai-detectors-work/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -227,6 +230,9 @@ export default function HowAIDetectorsWorkPage() {
               </Link>
               <Link href="/blog/are-ai-detectors-accurate" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 Are AI detectors accurate? →
+              </Link>
+              <Link href="/how-it-works" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                How we check a link →
               </Link>
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UpgradeButton } from "@/components/ui/UpgradeButton";
 import Link from "next/link";
 import {
@@ -156,14 +156,10 @@ const LAUNCH = {
  */
 export function EditorialPricing({
   headingLevel = "h2",
-  plan = "anon",
-  renewsOn,
   foundingLeft,
 }: {
   /** "h1" on the standalone /pricing page (its top-level heading); "h2" when embedded as a section. */
   headingLevel?: "h1" | "h2";
-  /** Who is looking. Decides which card carries the badge and what each button does. */
-  plan?: "anon" | "free" | "pro";
   /**
    * Founding seats still available, counted at Paddle by the server.
    *
@@ -174,10 +170,37 @@ export function EditorialPricing({
    * is to show the ordinary price.
    */
   foundingLeft?: number;
-  /** ISO date from profiles.subscription_period_end. Shown under the Pro badge. */
-  renewsOn?: string | null;
 }) {
   const [annual, setAnnual] = useState(false);
+
+  /**
+   * WHO IS LOOKING, FETCHED HERE RATHER THAN PASSED IN. viewerPlan() reads
+   * cookies, so calling it during the server render opted /pricing out of
+   * static rendering, which also meant the Paddle count next to it ran on
+   * every request. See /api/billing/plan.
+   *
+   * `anon` until it answers. That is the fallback viewerPlan() already uses
+   * on any error, and it is the safe direction: a sign-up button shown to
+   * someone signed in is a wrong link, while guessing `pro` would hide the
+   * way to buy from a paying customer.
+   *
+   * The PRICE is not fetched here. It comes from foundingLeft on the server,
+   * so the number never moves under the reader after paint.
+   */
+  const [plan, setPlan] = useState<"anon" | "free" | "pro">("anon");
+  const [renewsOn, setRenewsOn] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/billing/plan")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled || !d) return;
+        setPlan(d.plan);
+        setRenewsOn(d.renewsOn);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
   const Heading = headingLevel;
 
   /**

@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('which-ai-model-should-you-use')
+
 export const metadata: Metadata = {
   title: 'Which AI Model Should You Use? A Simple Guide',
   description: 'A quick, honest guide to choosing between ChatGPT, Claude, and Gemini based on what you actually need it for, not rankings or hype.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'A quick, honest guide to choosing between ChatGPT, Claude, and Gemini based on what you actually need it for.',
     url: 'https://deepclario.com/blog/which-ai-model-should-you-use',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('which-ai-model-should-you-use')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Which AI Model Should You Use? A Simple Guide',
   description: 'A practical decision guide for choosing between ChatGPT, Claude, and Gemini based on your actual use case.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/which-ai-model-should-you-use/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -175,10 +178,10 @@ export default function WhichAIModelShouldYouUsePage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Get better answers from whichever one you pick</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Before switching tools, make sure your prompt is doing its job. Deepclario scores it and rewrites the weak parts. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">Switching models will not fix a bad source</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Every one of them can put a real link next to a number the page never says. Deepclario opens each link and shows you the sentence that is there. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my links →
             </Link>
           </div>
 

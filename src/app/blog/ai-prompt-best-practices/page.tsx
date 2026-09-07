@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('ai-prompt-best-practices')
+
 export const metadata: Metadata = {
   title: 'AI Prompt Best Practices - What Actually Works in 2026',
   description: 'The most effective AI prompt best practices based on real use across ChatGPT, Claude, and Gemini. Covers structure, context, format, iteration, and common mistakes.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'What actually works when prompting ChatGPT, Claude, and Gemini. Practical best practices with examples.',
     url: 'https://deepclario.com/blog/ai-prompt-best-practices',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('ai-prompt-best-practices')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'AI Prompt Best Practices',
   description: 'The most effective AI prompt best practices for ChatGPT, Claude, and Gemini.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/ai-prompt-best-practices/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

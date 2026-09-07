@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('claude-ai-prompts')
+
 export const metadata: Metadata = {
   title: 'Claude AI Prompts - How to Write Better Prompts for Claude',
   description: 'How to write prompts specifically for Claude (Anthropic). Covers where Claude differs from ChatGPT, what Claude is uniquely good at, and ready-to-use prompt examples.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'What makes a good Claude prompt different from a ChatGPT prompt, and how to get the best results from Anthropic\'s model.',
     url: 'https://deepclario.com/blog/claude-ai-prompts',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('claude-ai-prompts')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Claude AI Prompts - How to Write Better Prompts for Claude',
   description: 'How to write better prompts for Claude (Anthropic) with real examples.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/claude-ai-prompts/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

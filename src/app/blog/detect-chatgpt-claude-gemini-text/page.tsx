@@ -5,6 +5,8 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 import { CheckCTA } from '@/components/blog/CheckCTA'
 
+const post = getBlogPost('detect-chatgpt-claude-gemini-text')
+
 export const metadata: Metadata = {
   title: 'Can You Detect Text from ChatGPT, Claude, and Gemini?',
   description: 'Does the AI model change whether a detector can spot the text? Here is why detection works the same for ChatGPT, Claude, and Gemini, and where each one differs.',
@@ -14,18 +16,19 @@ export const metadata: Metadata = {
     description: 'Does the AI model change whether a detector can spot the text? Here is why detection works the same across ChatGPT, Claude, and Gemini.',
     url: 'https://deepclario.com/blog/detect-chatgpt-claude-gemini-text',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('detect-chatgpt-claude-gemini-text')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Can You Detect Text from ChatGPT, Claude, and Gemini?',
   description: 'Why AI detection does not depend much on which model wrote the text, and how ChatGPT, Claude, and Gemini output compares for a detector.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/detect-chatgpt-claude-gemini-text/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }

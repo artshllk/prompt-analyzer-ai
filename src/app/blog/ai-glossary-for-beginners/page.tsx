@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('ai-glossary-for-beginners')
+
 export const metadata: Metadata = {
   title: 'AI Glossary for Beginners: 30 Terms Explained Simply',
   description: 'A plain-English AI glossary. Clear, jargon-free definitions of the AI terms you keep seeing, from tokens and prompts to hallucinations and large language models.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'A plain-English AI glossary. Clear, jargon-free definitions of the AI terms you keep seeing.',
     url: 'https://deepclario.com/blog/ai-glossary-for-beginners',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('ai-glossary-for-beginners')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'AI Glossary for Beginners: 30 Terms Explained Simply',
   description: 'A beginner-friendly glossary of common AI terms, each defined in plain English without jargon.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/ai-glossary-for-beginners/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -199,10 +202,10 @@ export default function AIGlossaryPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Put the words into practice</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Deepclario helps you write clearer prompts and check whether text looks AI-written. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Try the prompt improver →
+            <h2 className="text-xl font-bold mb-3">Check the numbers in your own writing</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Now that the words make sense, the next question is whether your sources back up what you wrote. Deepclario opens every link and tells you. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

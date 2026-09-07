@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('what-is-an-llm')
+
 export const metadata: Metadata = {
   title: 'What Is an LLM? Large Language Models Explained Simply',
   description: 'LLM stands for large language model, the technology behind ChatGPT, Claude, and Gemini. Here is what that actually means, without the jargon.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'What LLM actually means, how these models are built, and why the term is everywhere right now.',
     url: 'https://deepclario.com/blog/what-is-an-llm',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('what-is-an-llm')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'What Is an LLM? Large Language Models Explained Simply',
   description: 'A plain-English explanation of what a large language model is, how it is built, and why the term matters.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/what-is-an-llm/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -176,10 +179,10 @@ export default function WhatIsAnLLMPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Get the most out of any language model</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Whichever LLM you use, a clearer prompt gets a better answer. Deepclario helps you write one. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">Every LLM can cite a page that does not say it</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">The link is real, it opens, and it still does not back the number next to it. Deepclario shows you the sentence that is actually there. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my links →
             </Link>
           </div>
 
@@ -194,6 +197,9 @@ export default function WhatIsAnLLMPage() {
               </Link>
               <Link href="/blog/ai-glossary-for-beginners" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 AI glossary for beginners →
+              </Link>
+              <Link href="/how-it-works" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                How we check a link →
               </Link>
             </div>
           </div>

@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('prompt-engineering-examples')
+
 export const metadata: Metadata = {
   title: 'Prompt Engineering Examples - Real Before and After Prompts',
   description: 'Real prompt engineering examples across writing, coding, research, and marketing. See exactly what changes when a weak prompt becomes a strong one.',
@@ -12,18 +14,20 @@ export const metadata: Metadata = {
     title: 'Prompt Engineering Examples - Real Before and After Prompts',
     description: 'Real before and after prompt examples across writing, coding, research, and marketing.',
     url: 'https://deepclario.com/blog/prompt-engineering-examples',
+    type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('prompt-engineering-examples')
 
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Prompt Engineering Examples - Real Before and After Prompts',
   description: 'Real prompt engineering examples with before and after comparisons across multiple use cases.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/prompt-engineering-examples/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
   mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://deepclario.com/blog/prompt-engineering-examples' },

@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('why-does-ai-have-token-limits')
+
 export const metadata: Metadata = {
   title: 'Why Does AI Have Token Limits? (And What to Do About It)',
   description: 'Every AI tool has a limit on how much text it can handle at once. Here is why the limit exists, what happens when you hit it, and how to work around it.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'Why every AI tool has a limit on text length, what happens when you hit it, and practical ways to work around it.',
     url: 'https://deepclario.com/blog/why-does-ai-have-token-limits',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('why-does-ai-have-token-limits')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Why Does AI Have Token Limits? (And What to Do About It)',
   description: 'Why AI models have a limit on how much text they can process, what happens at the limit, and how to work with it.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/why-does-ai-have-token-limits/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
@@ -188,10 +191,10 @@ export default function WhyDoesAIHaveTokenLimitsPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Make every token count</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Deepclario helps you write tighter prompts that leave more room for the answer. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">Check the sources in the answer</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A model that ran out of room still sounds confident about its numbers. Deepclario opens every link in your draft and checks that the page really says it. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

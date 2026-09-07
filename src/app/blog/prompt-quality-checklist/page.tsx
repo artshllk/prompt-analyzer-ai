@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { PostFooter } from '@/components/blog/PostFooter'
 
+const post = getBlogPost('prompt-quality-checklist')
+
 export const metadata: Metadata = {
   title: 'Prompt Quality Checklist: 9 Things to Check Before You Hit Send',
   description: 'A quick checklist to run your prompt through before sending it: goal, audience, format, limits, and a few things people forget. Bookmark it and check any prompt in under a minute.',
@@ -13,18 +15,19 @@ export const metadata: Metadata = {
     description: 'A quick checklist to run your prompt through before sending it, so you catch the common gaps in under a minute.',
     url: 'https://deepclario.com/blog/prompt-quality-checklist',
     type: 'article',
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
   },
 }
-
-const post = getBlogPost('prompt-quality-checklist')
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Prompt Quality Checklist: 9 Things to Check Before You Hit Send',
   description: 'A scannable checklist covering the nine most common gaps in AI prompts, meant to be run through quickly before sending anything that matters.',
-  author: { '@type': 'Person', name: 'Art Shllaku', url: 'https://deepclario.com' },
-  publisher: { '@type': 'Organization', name: 'Deepclario', url: 'https://deepclario.com' },
+  image: 'https://deepclario.com/blog/prompt-quality-checklist/opengraph-image',
+  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
 }
