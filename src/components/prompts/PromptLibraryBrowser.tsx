@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import type { PromptEntry } from '@/lib/prompt-library'
 
@@ -12,16 +13,22 @@ type Category = (typeof CATEGORIES)[number]
  *
  * SEO-safe: every entry is server-rendered into the initial HTML (this is
  * a client component, so Next still SSRs it), so crawlers see every prompt
- * link. Filtering only hides nodes on the client. `initialQuery` seeds the
- * box from ?q=, which makes the site's sitelinks-searchbox schema work.
+ * link. Filtering only hides nodes on the client.
+ *
+ * ?q= IS READ HERE, NOT ON THE SERVER. It seeds the box so the site's
+ * sitelinks-searchbox schema works. The page used to `await searchParams`
+ * to pass it in, which opted the whole route out of static rendering for a
+ * query string almost nobody arrives with. Reading it client-side keeps the
+ * behaviour and lets /prompts be prerendered and served from the CDN.
+ * Requires a Suspense boundary in the page, which useSearchParams always
+ * does on a static route.
  */
 export function PromptLibraryBrowser({
   entries,
-  initialQuery = '',
 }: {
   entries: PromptEntry[]
-  initialQuery?: string
 }) {
+  const initialQuery = useSearchParams().get('q') ?? ''
   const [query, setQuery] = useState(initialQuery)
   const [category, setCategory] = useState<Category>('All')
 

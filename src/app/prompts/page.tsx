@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { PROMPT_LIBRARY, CATEGORY_HUBS } from '@/lib/prompt-library'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { Suspense } from 'react'
 import { PromptLibraryBrowser } from '@/components/prompts/PromptLibraryBrowser'
 
 export const metadata: Metadata = {
@@ -22,13 +23,7 @@ export const metadata: Metadata = {
 
 const BASE = 'https://deepclario.com'
 
-export default async function PromptsIndexPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>
-}) {
-  const { q = '' } = await searchParams
-
+export default function PromptsIndexPage() {
   // Structured data: tells Google this is a curated collection and lists
   // every prompt page as an ItemList, which strengthens indexing of the
   // whole hub and its child pages. The index previously had no JSON-LD.
@@ -115,7 +110,9 @@ export default async function PromptsIndexPage({
         {/* Search + category filter (client). All entries are still
             server-rendered for crawlers; this only filters on the client. */}
         <div className="mt-12 md:mt-14">
-          <PromptLibraryBrowser entries={PROMPT_LIBRARY} initialQuery={q} />
+          <Suspense fallback={null}>
+            <PromptLibraryBrowser entries={PROMPT_LIBRARY} />
+          </Suspense>
         </div>
 
         {/* CTA */}

@@ -10,8 +10,6 @@ import { CheckClient } from "@/components/factcheck/CheckClient";
 import { WorkedExample } from "@/components/factcheck/WorkedExample";
 import { Reveal } from "@/components/ui/Reveal";
 import { defaultOGImage } from "@/lib/og-image";
-import { createClient } from "@/lib/supabase/server";
-import { getFactcheckAllowance } from "@/lib/db/usage";
 import { ANON_FACTCHECK_MONTH } from "@/lib/rate-limit";
 // { /* CUT - redundant with demo + steps */ }
 // import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
@@ -107,41 +105,21 @@ const structuredData = {
 };
 
 /**
- * The checker is also where a signed-in user lands, so the count they signed up
- * for is shown here rather than on a page of its own. That is what let the
- * dashboard be deleted instead of rewritten: a page whose only job was showing
- * this number had no job once the number lived next to the tool.
+ * NOTHING IS READ FROM THE SERVER HERE, AND THAT IS THE POINT. This page is
+ * prerendered and served from the CDN.
  *
- * Anonymous visitors see nothing. Their limit is 2 a day, best effort, and a
- * number we cannot enforce is not one we state. See CLAUDE.md.
+ * It used to await checksLeft(), a Supabase auth round trip plus a profiles
+ * query, before it could emit a byte. That single call opted the busiest page
+ * on the site out of static rendering, for a counter only signed-in visitors
+ * ever see. CheckClient now fetches it from /api/factcheck/allowance after
+ * paint. Anonymous visitors still see no number: their limit is best effort,
+ * and a number we cannot enforce is not one we state. See CLAUDE.md.
+ *
+ * viewerPlan() and foundingSeatsLeft() went earlier, when the pricing table
+ * came off this page. Keep it this way: anything awaited here costs every
+ * visitor and every crawl the edge cache.
  */
-async function checksLeft(): Promise<{ remaining: number; limit: number } | null> {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("tier")
-      .eq("id", user.id)
-      .single();
-    const a = await getFactcheckAllowance(user.id, profile?.tier ?? "free");
-    if (a.limit === null) return null;
-    return { remaining: a.remaining, limit: a.limit };
-  } catch {
-    // Never let a counter stop the page rendering. The tool is the point.
-    return null;
-  }
-}
-
-export default async function LandingPage() {
-  const left = await checksLeft();
-  /**
-   * No viewerPlan() and no foundingSeatsLeft() any more. Both existed only to
-   * feed the pricing table, and both are round trips: one to Postgres and one
-   * to Paddle, on every render of the busiest page on the site. Deleting the
-   * table deleted the reason for them.
-   */
+export default function LandingPage() {
   return (
     <>
       <script
@@ -220,7 +198,7 @@ export default async function LandingPage() {
                 because their ceiling is best effort and a number we cannot
                 enforce is not one we state. */}
             <Reveal index={1}>
-              <CheckClient checksLeft={left} />
+              <CheckClient />
             </Reveal>
           </div>
         </section>
