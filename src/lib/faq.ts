@@ -87,9 +87,4 @@ export const FAQS: Faq[] = [
     q: 'Can I give you a web address instead of pasting text?',
     a: `No. You have to paste the text. We decided against it for now for one reason: a web page is full of links in its menus, footers and adverts, and we would report those as if they were sources you had chosen.`,
   },
-  {
-    id: 'who-built-this',
-    q: 'Who built this?',
-    a: `Two people, Art Shllaku and Agon. It is new and it is not finished. If it gets something wrong, telling us is the fastest way to get it fixed.`,
-  },
 ]
