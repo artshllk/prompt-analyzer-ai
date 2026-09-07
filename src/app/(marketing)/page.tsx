@@ -497,6 +497,10 @@ export default async function LandingPage() {
               title="Product"
               links={[
                 { href: "/", label: "Check your sources" },
+                // The only original research on the site: 114 numbers read
+                // across 11 real articles. It had two links, both from
+                // components on this page, and none from the blog or here.
+                { href: "/how-it-works", label: "How we check a link" },
                 { href: "/detector", label: "AI text detector" },
                 // Extension, Prompt library and the improver came off the main
                 // nav because they point at the frozen product. They stay here,

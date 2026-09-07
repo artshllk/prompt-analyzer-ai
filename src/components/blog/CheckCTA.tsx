@@ -3,10 +3,17 @@ import Link from 'next/link'
 /**
  * The fact-checker CTA, for the handful of posts where it is not noise.
  *
- * ON 15 POSTS OUT OF 57, AND THAT IS THE POINT. The other 42 are prompt
- * engineering and AI explainers, where a link to a source checker is an
- * interruption. A CTA that appears everywhere teaches a reader to stop seeing
- * it.
+ * ON 15 POSTS OUT OF 56, AND THAT IS STILL THE POINT: this aside is an
+ * interruption mid-article, so it only runs where the reader is already
+ * thinking about whether the text is trustworthy. A CTA that appears
+ * everywhere teaches a reader to stop seeing it.
+ *
+ * It is not the only checker link on the blog. The 15 AI-explainer and
+ * model posts also END on a checker CTA, in the closing box every post
+ * already has. That box is not an interruption, it is the sign-off, and it
+ * used to advertise the frozen prompt improver. Repointing it is a different
+ * decision from adding this aside, and the two do not overlap: the one post
+ * that had both (why-ai-makes-mistakes) kept this aside and dropped the box.
  *
  * TWO VARIANTS, BECAUSE THE READER ARRIVED WITH A DIFFERENT WORRY.
  *
@@ -18,6 +25,12 @@ import Link from 'next/link'
  *
  * `hallucination` runs where the reader is already worried that AI invents
  * facts. No bridge is needed there, so it says the thing directly.
+ *
+ * LINKS TO `/`, NOT `/check`. `/check` is the signed-in app view: it is
+ * noindex, nofollow and it 307s signed-out visitors to `/`. Nearly everyone
+ * reading a blog post is signed out, so pointing here sent them through a
+ * redirect and passed no ranking signal to anything. `/` is the checker's
+ * real landing page.
  *
  * Copy is deliberately basic English. The words "citation", "verify", "claim"
  * and "coverage" appear nowhere.
@@ -39,7 +52,7 @@ export function CheckCTA({ variant }: { variant: keyof typeof COPY }) {
         {COPY[variant]}
       </p>
       <Link
-        href="/check"
+        href="/"
         className="mt-3 inline-block text-[15px] underline underline-offset-4"
         style={{ color: 'var(--brand-text)' }}
       >

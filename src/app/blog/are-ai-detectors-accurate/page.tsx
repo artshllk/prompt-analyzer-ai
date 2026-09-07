@@ -246,6 +246,9 @@ export default function AreAIDetectorsAccuratePage() {
               <Link href="/blog/ai-detection-score-explained" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 AI detection score explained →
               </Link>
+              <Link href="/how-it-works" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                How we check a link →
+              </Link>
             </div>
           </div>
           <PostFooter slug="are-ai-detectors-accurate" />

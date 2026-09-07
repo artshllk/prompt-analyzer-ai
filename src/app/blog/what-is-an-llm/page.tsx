@@ -176,10 +176,10 @@ export default function WhatIsAnLLMPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Get the most out of any language model</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Whichever LLM you use, a clearer prompt gets a better answer. Deepclario helps you write one. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">Every LLM can cite a page that does not say it</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">The link is real, it opens, and it still does not back the number next to it. Deepclario shows you the sentence that is actually there. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my links →
             </Link>
           </div>
 
@@ -194,6 +194,9 @@ export default function WhatIsAnLLMPage() {
               </Link>
               <Link href="/blog/ai-glossary-for-beginners" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 AI glossary for beginners →
+              </Link>
+              <Link href="/how-it-works" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                How we check a link →
               </Link>
             </div>
           </div>

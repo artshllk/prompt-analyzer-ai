@@ -197,10 +197,10 @@ export default function HowToReduceAITokenCostsPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Tighten a prompt without losing the important parts</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Deepclario keeps what matters and cuts the rest, then rewrites your prompt. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">Check the sources before you publish</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Cheap drafting still costs you if a number turns out wrong after it goes out. Deepclario opens every link in your draft and checks that the page really says it. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

@@ -172,10 +172,10 @@ export default function WhatAreAIModelParametersPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Test any model on your own prompt</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A clear, well-built prompt is the fairest way to compare what a model can actually do. Deepclario helps you write one. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">Parameter counts will not catch a wrong number</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Bigger models still cite pages that do not say what they claim. Deepclario opens every link in your draft and shows you what is actually on it. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

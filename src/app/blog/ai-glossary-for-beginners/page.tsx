@@ -199,10 +199,10 @@ export default function AIGlossaryPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Put the words into practice</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Deepclario helps you write clearer prompts and check whether text looks AI-written. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Try the prompt improver →
+            <h2 className="text-xl font-bold mb-3">Check the numbers in your own writing</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Now that the words make sense, the next question is whether your sources back up what you wrote. Deepclario opens every link and tells you. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

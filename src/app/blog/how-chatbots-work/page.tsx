@@ -201,10 +201,10 @@ export default function HowChatbotsWorkPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Get better chatbot answers</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A clearer message means a better reply. Paste your prompt into Deepclario and get a stronger version. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">The reply sounds sure. Check it anyway.</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A chatbot can hand you a real link next to a number that page never mentions. Deepclario opens each one and shows you the sentence that is there. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

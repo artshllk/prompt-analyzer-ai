@@ -185,10 +185,10 @@ export default function WhatIsAContextWindowPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Write prompts that respect the window</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Deepclario helps you write clear, focused prompts that don&apos;t waste the space you have. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">Check the sources in what comes back</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A model can lose the thread of a long document and still cite it confidently. Deepclario opens every link in your draft and checks that the page really says it. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

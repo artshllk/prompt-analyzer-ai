@@ -26,13 +26,13 @@ export function PostFooter({ slug }: { slug: string }) {
     <footer className="mt-14 pt-8" style={{ borderTop: '1px solid var(--color-rule)' }}>
       <p className="text-sm leading-relaxed mb-10" style={{ color: 'var(--color-paper-mute)' }}>
         Written by <span style={{ color: 'var(--color-paper)' }}>Art, founder of Deepclario</span>.
-        Deepclario turns bad prompts into great ones.{' '}
+        Deepclario opens every link in your writing and checks that the page really says it.{' '}
         <Link
-          href="/extension"
+          href="/"
           className="underline underline-offset-4 transition-opacity hover:opacity-80"
           style={{ color: 'var(--color-paper)' }}
         >
-          Try it free
+          Check your sources free
         </Link>
         .
       </p>

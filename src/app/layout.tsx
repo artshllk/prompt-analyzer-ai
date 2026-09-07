@@ -54,10 +54,10 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://deepclario.com'),
   title: {
-    default: 'Deepclario | Turn a bad prompt into a great one',
+    default: 'Deepclario | Check the sources in your writing',
     template: '%s | Deepclario',
   },
-  description: 'Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it so ChatGPT, Claude, and Gemini get it right the first time.',
+  description: 'Paste your article. Deepclario opens every link and checks that the page really says what you cited it for.',
   // Site-wide, so it must describe what Deepclario IS, not what it used to
   // be. Every one of these used to name the frozen prompt improver.
   keywords: ['check citations', 'link checker', 'source checker', 'fact check a blog post', 'broken citation', 'unsourced statistics', 'AI text detector'],
@@ -68,8 +68,8 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://deepclario.com',
     siteName: 'Deepclario',
-    title: 'Deepclario | Turn a bad prompt into a great one',
-    description: 'Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it. Works with ChatGPT, Claude, and Gemini.',
+    title: 'Deepclario | Check the sources in your writing',
+    description: 'Paste your article. We open every link and check that the page really says it.',
     // OG image is auto-generated from src/app/opengraph-image.tsx (1200x630).
   },
   twitter: {
@@ -77,8 +77,8 @@ export const metadata: Metadata = {
     // No `site` or `creator`. Asserting a handle that does not exist makes
     // the card render with a broken attribution, which is worse than having
     // no attribution at all. Add them back once the account is real.
-    title: 'Deepclario | Turn a bad prompt into a great one',
-    description: 'Paste your prompt. Deepclario spots what is missing, asks one quick question, and rewrites it. Works with ChatGPT, Claude, and Gemini.',
+    title: 'Deepclario | Check the sources in your writing',
+    description: 'Paste your article. We open every link and check that the page really says it.',
   },
   robots: {
     index: true,

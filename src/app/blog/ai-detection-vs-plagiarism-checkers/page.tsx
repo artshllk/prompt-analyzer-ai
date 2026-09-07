@@ -204,6 +204,9 @@ export default function AIDetectionVsPlagiarismCheckersPage() {
               <Link href="/blog/ai-detection-for-teachers" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 AI detection for teachers →
               </Link>
+              <Link href="/how-it-works" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                How we check a link →
+              </Link>
             </div>
           </div>
           <PostFooter slug="ai-detection-vs-plagiarism-checkers" />

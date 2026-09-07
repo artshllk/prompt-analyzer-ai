@@ -188,10 +188,10 @@ export default function HowAILearnsLanguagePage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Work with the language patterns, not against them</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A clear prompt gives the model the patterns it needs. Paste yours into Deepclario for a stronger version. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">Fluent writing is not checked writing</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A model learns to sound right, not to be right. Deepclario opens every link in your draft and checks that the page really says it. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

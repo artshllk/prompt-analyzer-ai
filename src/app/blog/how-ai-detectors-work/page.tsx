@@ -228,6 +228,9 @@ export default function HowAIDetectorsWorkPage() {
               <Link href="/blog/are-ai-detectors-accurate" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 Are AI detectors accurate? →
               </Link>
+              <Link href="/how-it-works" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                How we check a link →
+              </Link>
             </div>
           </div>
           <PostFooter slug="how-ai-detectors-work" />

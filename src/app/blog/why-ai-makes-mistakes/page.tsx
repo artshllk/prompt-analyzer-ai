@@ -203,14 +203,6 @@ export default function WhyAIMakesMistakesPage() {
 
           <CheckCTA variant="hallucination" />
 
-          <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Fewer mistakes start with a better prompt</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A clear, specific prompt gives the model less room to drift. Paste yours into Deepclario for a stronger version. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
-            </Link>
-          </div>
-
           <div className="mt-10 pt-6 border-t border-[color:var(--color-rule)]">
             <p className="text-xs text-[color:var(--color-paper-mute)] mb-3">Related reading</p>
             <div className="flex flex-col gap-2">
@@ -225,6 +217,9 @@ export default function WhyAIMakesMistakesPage() {
               </Link>
               <Link href="/blog/what-is-artificial-intelligence" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 What is artificial intelligence? →
+              </Link>
+              <Link href="/how-it-works" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                How we check a link →
               </Link>
             </div>
           </div>

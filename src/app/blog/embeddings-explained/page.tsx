@@ -189,10 +189,10 @@ export default function EmbeddingsExplainedPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">See how AI reads your text</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Deepclario helps you write clearer prompts and check whether text looks AI-written. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Try the prompt improver →
+            <h2 className="text-xl font-bold mb-3">Check what your sources actually say</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">A model can match your words to a page without that page backing your point. Deepclario opens every link in your draft and shows you the sentence that is really there. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my sources →
             </Link>
           </div>
 

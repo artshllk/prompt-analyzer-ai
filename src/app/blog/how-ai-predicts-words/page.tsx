@@ -215,10 +215,10 @@ export default function HowAIPredictsWordsPage() {
           </article>
 
           <div className="mt-14 rounded-2xl border border-[color:var(--color-rule-strong)] bg-[color:var(--color-ink-card)] p-8 text-center">
-            <h2 className="text-xl font-bold mb-3">Guide the guesses with a better prompt</h2>
-            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">The clearer your prompt, the better the model&apos;s next-word guesses. Paste yours into Deepclario and get a stronger version. Free, no account needed.</p>
-            <Link href="/prompt-improver" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
-              Improve my prompt →
+            <h2 className="text-xl font-bold mb-3">A good guess is not a checked fact</h2>
+            <p className="text-[color:var(--color-paper-mute)] text-sm mb-6">Predicting the next word is not the same as reading the source. Deepclario opens every link in your draft and shows you what the page actually says. Free, no account needed.</p>
+            <Link href="/" className="inline-block px-6 py-3 rounded-2xl btn-brand font-semibold transition-all">
+              Check my links →
             </Link>
           </div>
 
@@ -236,6 +236,9 @@ export default function HowAIPredictsWordsPage() {
               </Link>
               <Link href="/blog/how-ai-detectors-work" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
                 How AI detectors work →
+              </Link>
+              <Link href="/how-it-works" className="text-sm text-[color:var(--color-paper)] hover:opacity-70 transition-colors">
+                How we check a link →
               </Link>
             </div>
           </div>
