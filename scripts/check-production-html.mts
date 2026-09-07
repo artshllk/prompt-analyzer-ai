@@ -300,7 +300,7 @@ const CHECKS: Check[] = [
     text: [
       // The hero. The console is a client component, so this is also the
       // proof the page still server-renders at all.
-      'Was this written by a machine?',
+      'Was this written by AI ?',
       'Paste the text. We show you the signs we found.',
       // The promise the whole product is built on. See decision 0002.
       'We never give a score out of 100. Nobody can.',

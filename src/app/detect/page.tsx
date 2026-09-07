@@ -49,7 +49,7 @@ export default async function DetectPage() {
             className="font-serif text-2xl md:text-3xl tracking-tight"
             style={{ color: 'var(--color-paper)', fontWeight: 400 }}
           >
-            Was this written by a machine?
+            Was this written by AI ?
           </h1>
 
           <div className="mt-6 md:mt-8">
