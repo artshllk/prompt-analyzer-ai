@@ -69,6 +69,12 @@ const CHECKS: Check[] = [
     text: [
       // One phrase from every answer. A heading proves nothing: the page had
       // all ten questions and zero answers.
+      //
+      // Nine now, not ten. bf2af32 deleted the "who is behind Deepclario"
+      // answer, and this list still asserted it, so check:html went red on
+      // production the moment that deployed. That is the same failure the
+      // "rough"/"bad" note below records: an assertion outliving the copy it
+      // pins is how a guard stops being read.
       'It checks the sources in a piece of writing',
       'We never save it',
       'cut straight from the page',
@@ -78,7 +84,6 @@ const CHECKS: Check[] = [
       'Without an account you can run',
       'we list the ones with no source',
       'You have to paste the text',
-      'Two people, Art Shllaku and Agon',
     ],
     raw: [
       '"@type":"FAQPage"',
@@ -272,6 +277,77 @@ const CHECKS: Check[] = [
       'FreePromptImprover',
       // The meta description, whitespace-stripped like every raw match here.
       'Free,noaccountneeded',
+    ],
+  },
+  {
+    /**
+     * THE DETECTOR, WHICH THIS SCRIPT DID NOT COVER UNTIL IT CHANGED SHAPE.
+     *
+     * /detector used to serve two audiences from one route: it read the
+     * session and rendered either the marketing layout or the app shell. It is
+     * now the public page only, with /detect as the signed-in view. That split
+     * moved the SEO section, both schemas and the canonical across a rewrite,
+     * and none of it was pinned anywhere.
+     *
+     * The section below the tool is the entire reason this page ranks for
+     * "AI text detector" intent, and it renders only on the public page. If
+     * the split ever regresses and this route starts reading the session
+     * again, a signed-in render drops the whole section and the schemas with
+     * it. That failure is invisible to types, to the build and to npm test,
+     * because all three test the source. This tests the artifact.
+     */
+    path: '/detector',
+    text: [
+      // The hero. The console is a client component, so this is also the
+      // proof the page still server-renders at all.
+      'Was this written by a machine?',
+      'Paste the text. We show you the signs we found.',
+      // The promise the whole product is built on. See decision 0002.
+      'We never give a score out of 100. Nobody can.',
+
+      // The SEO section, heading and body for each block. A heading proves
+      // nothing on its own: the FAQ shipped all ten questions and zero
+      // answers, which is the bug this script was written for.
+      'How the AI text detector works',
+      'sentence-length burstiness, vocabulary diversity, em-dash density, transition-word frequency',
+      'three plain bands, likely human, mixed, or likely AI',
+      'Is AI content detection accurate?',
+      'false-positive rate on human writing',
+      'Stanford research found they flag non-native English speakers',
+      'AI text detector FAQ',
+
+      // Every question, and a phrase from every answer, the same way /faq
+      // does it. These are the four questions the FAQPage schema is built
+      // from, so a mismatch here is also a mismatch in the rich result.
+      'What is an AI text detector?',
+      'estimates whether a passage was written by a person',
+      'Is the AI text detector free?',
+      'raises that to five texts every 24 hours',
+      'Can it detect ChatGPT, Claude, and Gemini text?',
+      'statistical fingerprints common to modern large language models',
+      'How accurate is AI content detection?',
+      'never shows a made-up percentage',
+    ],
+    raw: [
+      // The title is what a stranger reads in a search result for "ai
+      // detector" before deciding to click, and it carries the site template.
+      '<title>Free AI Text Detector - Shows Its Work | Deepclario</title>',
+      // If the split ever regressed to serving the app shell, this is the
+      // first thing that would vanish.
+      'rel="canonical" href="https://deepclario.com/detector"',
+      '"@type":"WebApplication"',
+      '"@type":"FAQPage"',
+      '"acceptedAnswer"',
+      /**
+       * The app schema references the one Organization rather than minting
+       * its own, so a copy-paste of the old inline publisher shows up here.
+       *
+       * ANCHORED TO THE OFFERS FIELD ON PURPOSE. The bare publisher string
+       * also appears in the root layout's WebSite node, so on its own it
+       * passed with this page's entire schema block deleted. Proved by
+       * deleting it: everything else here failed and that line did not.
+       */
+      '"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"publisher":{"@id":"https://deepclario.com/#organization"}',
     ],
   },
   {
