@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Machine Learning Explained: A Simple Guide for Beginners',
   description: 'A plain-English explanation of machine learning: learning from examples instead of rules, the main types, and where it shows up in daily life.',
   image: 'https://deepclario.com/blog/machine-learning-explained/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

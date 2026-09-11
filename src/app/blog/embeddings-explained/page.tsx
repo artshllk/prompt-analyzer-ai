@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Embeddings Explained: How AI Turns Words Into Numbers',
   description: 'A plain-English explanation of embeddings: how AI turns words into numbers so it can measure meaning and find related things.',
   image: 'https://deepclario.com/blog/embeddings-explained/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'How AI Predicts Words: The Simple Idea Behind Chatbots',
   description: 'A plain-English explanation of how AI models predict the next word, why it works, and what it explains about how chatbots behave.',
   image: 'https://deepclario.com/blog/how-ai-predicts-words/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

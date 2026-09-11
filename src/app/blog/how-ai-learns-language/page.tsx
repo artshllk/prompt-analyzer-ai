@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'How Does AI Learn Language? A Simple Explanation',
   description: 'A plain-English explanation of how AI language models learn to read and write by practicing next-word prediction on huge amounts of text.',
   image: 'https://deepclario.com/blog/how-ai-learns-language/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

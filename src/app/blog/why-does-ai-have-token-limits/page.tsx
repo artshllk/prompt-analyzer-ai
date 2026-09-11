@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Why Does AI Have Token Limits? (And What to Do About It)',
   description: 'Why AI models have a limit on how much text they can process, what happens at the limit, and how to work with it.',
   image: 'https://deepclario.com/blog/why-does-ai-have-token-limits/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

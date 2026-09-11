@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'What Is a Token in AI? A Plain-English Explanation with Examples',
   description: 'A token is the small chunk of text an AI model reads instead of whole words. This guide explains tokens with real examples.',
   image: 'https://deepclario.com/blog/what-is-a-token-in-ai/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

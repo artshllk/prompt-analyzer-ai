@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'Why Does AI Make Mistakes? Hallucinations Explained Simply',
   description: 'A plain-English explanation of why AI models make confident mistakes, what an AI hallucination is, and how to reduce the risk.',
   image: 'https://deepclario.com/blog/why-ai-makes-mistakes/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

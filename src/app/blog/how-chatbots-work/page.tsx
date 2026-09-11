@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'How Do AI Chatbots Work? A Simple Explanation',
   description: 'A plain-English walkthrough of how AI chatbots read a message, predict a reply, and remember a conversation.',
   image: 'https://deepclario.com/blog/how-chatbots-work/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

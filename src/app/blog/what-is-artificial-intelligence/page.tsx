@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'What Is Artificial Intelligence? A Simple Guide for Beginners',
   description: 'A plain-English explanation of what artificial intelligence is, how it differs from normal software, and the main types of AI in everyday use.',
   image: 'https://deepclario.com/blog/what-is-artificial-intelligence/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

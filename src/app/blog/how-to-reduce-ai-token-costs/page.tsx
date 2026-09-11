@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'How to Reduce AI Token Costs Without Losing Quality',
   description: 'Practical ways to cut token use and AI costs without sacrificing the quality of your prompts or answers.',
   image: 'https://deepclario.com/blog/how-to-reduce-ai-token-costs/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

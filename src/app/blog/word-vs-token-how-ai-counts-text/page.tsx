@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Word Count vs Token Count: Why AI Counts Text Differently',
   description: 'The difference between word count and token count, why AI models use tokens, and a simple rule to convert between the two.',
   image: 'https://deepclario.com/blog/word-vs-token-how-ai-counts-text/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

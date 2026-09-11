@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'What Is a Context Window? Why AI Forgets Things',
   description: 'An explanation of the AI context window, why long conversations cause a model to lose earlier details, and how to work around the limit.',
   image: 'https://deepclario.com/blog/what-is-a-context-window/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

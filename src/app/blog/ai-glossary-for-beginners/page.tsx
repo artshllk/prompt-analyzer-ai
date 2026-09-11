@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'AI Glossary for Beginners: 30 Terms Explained Simply',
   description: 'A beginner-friendly glossary of common AI terms, each defined in plain English without jargon.',
   image: 'https://deepclario.com/blog/ai-glossary-for-beginners/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
