@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Best ChatGPT Prompts for Work (2026)',
   description: 'Ready-to-use ChatGPT prompts for emails, reports, analysis, and more work tasks.',
   image: 'https://deepclario.com/blog/best-chatgpt-prompts-for-work/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

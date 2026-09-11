@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'How to Write Better AI Prompts - 7 Proven Techniques',
   description: '7 practical, proven techniques to write better prompts for ChatGPT, Claude, and Gemini.',
   image: 'https://deepclario.com/blog/how-to-write-better-prompts/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

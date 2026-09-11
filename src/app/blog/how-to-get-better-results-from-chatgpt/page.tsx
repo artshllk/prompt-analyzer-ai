@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'How to Get Better Results from ChatGPT',
   description: '8 techniques that fix the most common reasons people get mediocre ChatGPT output.',
   image: 'https://deepclario.com/blog/how-to-get-better-results-from-chatgpt/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

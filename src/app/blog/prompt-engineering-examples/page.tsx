@@ -26,7 +26,7 @@ const structuredData = {
   headline: 'Prompt Engineering Examples - Real Before and After Prompts',
   description: 'Real prompt engineering examples with before and after comparisons across multiple use cases.',
   image: 'https://deepclario.com/blog/prompt-engineering-examples/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

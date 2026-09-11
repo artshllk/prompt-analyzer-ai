@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Zero-Shot vs Few-Shot Prompting',
   description: 'Clear explanation of zero-shot and few-shot prompting with real examples.',
   image: 'https://deepclario.com/blog/zero-shot-vs-few-shot-prompting/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
