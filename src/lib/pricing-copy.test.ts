@@ -785,28 +785,30 @@ test('the comparison is two columns, because the comparison is the product', () 
   )
 })
 
-test('the founder note is off prod, and has not been lost', () => {
+test('the owner is not named anywhere in the product', () => {
   /**
-   * Commented out at Art's request, not deleted. Two things to hold:
+   * NO PERSONAL NAME SHIPS. The founder's name used to appear in the byline on
+   * every blog post, in the JSON-LD author of all 62 posts, on the founder
+   * card and in the privacy policy. It was removed at the owner's request, and
+   * a name is exactly the kind of string that comes back by copy-paste from an
+   * old post or a design file.
    *
-   * It must not RENDER. copyOnly strips comments, so asserting on that is
-   * what distinguishes "commented out" from "shipping"; the raw file would
-   * have gone on matching happily and the guard would have been telling us
-   * the card was live while the page showed nothing.
-   *
-   * And it must still EXIST, because a block nobody can see is a block
-   * somebody tidies away. If it is genuinely finished, delete this test in
-   * the same commit that deletes the card.
+   * Scans every shipped source file, not one component, for the same reason
+   * the unlimited and per-day checks do. Test files are excluded by
+   * userFacingFiles, which is why this file can spell the name out.
    */
-  assert.doesNotMatch(copyOnly(trust), /Art Shllaku/, 'the founder card is rendering again')
-  assert.match(trust, /Art Shllaku/, 'the commented-out founder card is gone')
-  assert.match(trust, /Deepclario is new, so you will not find made-up reviews here\./)
-  // No stock photograph, whenever it comes back. There is no founder photo in
-  // the repo and inventing one on this particular card would be
-  // self-refuting.
+  const offenders: string[] = []
+  for (const file of [...userFacingFiles('src/app'), ...userFacingFiles('src/components'), ...userFacingFiles('src/lib')]) {
+    const src = readFileSync(file, 'utf8')
+    if (/Shllaku|Art, founder|deepclario\.com\/#art\b/.test(src)) offenders.push(file)
+  }
+  assert.deepEqual(offenders, [], 'the owner is named in:\n  ' + offenders.join('\n  '))
+
+  // No stock photograph on the founder card either. A face on the card that
+  // says we do not invent reviews would be self-refuting.
   assert.doesNotMatch(trust, /<Image|<img/, 'a face appeared on the founder card')
-  // The three privacy promises stay on the page. They are the half of this
-  // section that backs a claim /privacy also makes.
+  // The three privacy promises stay on the page. They back claims /privacy
+  // also makes.
   for (const t of ['Never used to train AI', 'Delete everything anytime', 'Payments by Paddle']) {
     assert.match(copyOnly(trust), new RegExp(t), `${t} stopped rendering`)
   }
