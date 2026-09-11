@@ -59,7 +59,7 @@ export type ProviderFailure =
   | 'timeout'
   | 'unavailable'     // 5xx, network, DNS
   | 'malformed'       // 200 with a body we could not read
-  | 'not_configured'  // no key set. The state this repo is in until Art adds one.
+  | 'not_configured'  // no key set. The state this repo is in until someone adds one.
 
 /**
  * The result of asking a provider for content.

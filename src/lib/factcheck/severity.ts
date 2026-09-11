@@ -254,7 +254,7 @@ export function summaryLines(g: GroupedFindings): string[] {
     )
   }
   if (g.unverifiable.length) {
-    // The sentence Art asked for. It is a finding stated with total
+    // The sentence that was asked for. It is a finding stated with total
     // confidence, not an apology for coverage we did not get.
     const b = g.unverifiableBreakdown
     const parts: string[] = []
