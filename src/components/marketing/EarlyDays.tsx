@@ -101,7 +101,7 @@ export function EarlyDays() {
           </p>
           <p className="mt-4 text-[15px] leading-[1.7]" style={{ color: 'var(--ink-soft)', textWrap: 'pretty' }}>
             The example above is real, and still published. Run your own article and judge it
-            yourself. If something looks wrong, email me at{' '}
+            yourself. If something looks wrong, email us at{' '}
             <a
               href="mailto:support@deepclario.com"
               className="underline underline-offset-[3px]"
@@ -109,7 +109,7 @@ export function EarlyDays() {
             >
               support@deepclario.com
             </a>
-            . I read every one.
+            . We read every one.
           </p>
           <div className="mt-6 pt-5 flex items-center gap-3" style={{ borderTop: '1px solid var(--border-warm)' }}>
             <span
@@ -117,16 +117,11 @@ export function EarlyDays() {
               style={{ background: 'var(--ink)', color: 'var(--paper)', fontWeight: 500 }}
               aria-hidden="true"
             >
-              A
+              D
             </span>
-            <div>
-              <p className="text-[14px]" style={{ color: 'var(--ink)', fontWeight: 600 }}>
-                Art Shllaku
-              </p>
-              <p className="text-[12px] mt-0.5" style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
-                Founder, Deepclario
-              </p>
-            </div>
+            <p className="text-[14px]" style={{ color: 'var(--ink)', fontWeight: 600 }}>
+              The Deepclario team
+            </p>
           </div>
         </div>
       </div>
