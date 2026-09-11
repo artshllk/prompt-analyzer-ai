@@ -197,10 +197,10 @@ export default function PrivacyPage() {
             support@deepclario.com
           </a>
         </p>
-        <p className="mt-2 text-sm">
-          Deepclario, operated by Art Shllaku. Write to the address above for a
+        {/* <p className="mt-2 text-sm">
+          Deepclario. Write to the address above for a
           postal address or for anything to do with your data.
-        </p>
+        </p> */}
       </Section>
     </article>
   )
