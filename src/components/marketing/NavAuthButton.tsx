@@ -21,7 +21,7 @@ export function NavAuthButton() {
            put a signed-in user into the app shell by accident and started the
            loop. The label stays: it is what this button says in every app. */
         href="/check"
-        className="inline-flex items-center px-4 py-2 rounded-full text-sm transition-all btn-paper"
+        className="inline-flex items-center px-4 py-2 rounded text-sm transition-all btn-paper"
         style={{
           background: 'var(--color-paper)',
           color: 'var(--color-ink)',
@@ -36,7 +36,7 @@ export function NavAuthButton() {
   return (
     <Link
       href="/login"
-      className="btn-outline inline-flex items-center px-4 py-2 rounded-full text-sm"
+      className="btn-outline inline-flex items-center px-4 py-2 rounded text-sm"
       style={{
         color: 'var(--color-paper)',
         border: '1px solid var(--color-rule-strong)',
