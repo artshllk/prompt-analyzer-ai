@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'AI Detection for Teachers: A Fair Way to Use It',
   description: 'A practical, fair approach for teachers using AI detection: what it can do, the false-positive risk to students, and how to handle a flagged paper.',
   image: 'https://deepclario.com/blog/ai-detection-for-teachers/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

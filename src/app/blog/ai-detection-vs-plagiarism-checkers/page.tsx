@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'AI Detection vs Plagiarism Checkers: What Is the Difference?',
   description: 'The difference between AI detection tools and plagiarism checkers, what each one measures, and why passing one says nothing about the other.',
   image: 'https://deepclario.com/blog/ai-detection-vs-plagiarism-checkers/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

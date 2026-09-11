@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'How AI Detectors Work: A Clear Guide to Accuracy and Limits',
   description: 'A plain explanation of how AI text detectors work, what signals they use, and the reasons they produce wrong answers.',
   image: 'https://deepclario.com/blog/how-ai-detectors-work/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'AI Detection for Recruiters and Hiring',
   description: 'How recruiters can use AI detection on applications fairly, the false-positive risk to candidates, and why a score should never trigger an automatic rejection.',
   image: 'https://deepclario.com/blog/ai-detection-for-recruiters/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

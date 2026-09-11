@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'Can AI Detectors Be Fooled? An Honest Answer',
   description: 'Whether AI detectors can be fooled, the common ways it happens, and why this limits how much weight a detection score should carry.',
   image: 'https://deepclario.com/blog/can-ai-detectors-be-fooled/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

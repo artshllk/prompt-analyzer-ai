@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'AI Detection False Positives: Why Human Writing Gets Flagged',
   description: 'What a false positive is, why AI detectors flag genuine human writing, which writers get hit most, and how to handle a flagged result fairly.',
   image: 'https://deepclario.com/blog/ai-detector-false-positives/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

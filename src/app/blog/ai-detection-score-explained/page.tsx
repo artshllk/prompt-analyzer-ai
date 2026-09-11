@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'AI Detection Score Explained: What the Percentage Means',
   description: 'How to read an AI detection score, what the percentage represents, and why it is a confidence estimate rather than a share of the text.',
   image: 'https://deepclario.com/blog/ai-detection-score-explained/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

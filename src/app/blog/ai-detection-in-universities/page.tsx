@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'AI Detection in Universities and Schools',
   description: 'How institutions use AI detection, the scale problems and fairness risks, and the elements of a sound academic-integrity policy.',
   image: 'https://deepclario.com/blog/ai-detection-in-universities/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

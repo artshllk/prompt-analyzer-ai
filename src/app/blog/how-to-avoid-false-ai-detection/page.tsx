@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'Wrongly Flagged as AI? Here Is What to Do',
   description: 'Why honest human writing sometimes gets flagged by AI detectors, who it happens to most, and practical steps to protect yourself and respond calmly.',
   image: 'https://deepclario.com/blog/how-to-avoid-false-ai-detection/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

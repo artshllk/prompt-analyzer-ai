@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'Human Text vs AI Text: What Actually Differs',
   description: 'The genuine differences between human and AI writing, why detectors rely on them, and why the differences are shrinking.',
   image: 'https://deepclario.com/blog/human-text-vs-ai-text/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'Are AI Detectors Accurate? What They Can and Cannot Tell You',
   description: 'How accurate AI detectors are, the cases where they are reliable, and the cases where the score should not be trusted on its own.',
   image: 'https://deepclario.com/blog/are-ai-detectors-accurate/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
