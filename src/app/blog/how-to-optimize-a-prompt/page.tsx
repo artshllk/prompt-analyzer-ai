@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'How to Optimize a Prompt, Step by Step',
   description: 'A step-by-step method for optimizing an AI prompt: start from a clear goal, fix one weak part at a time, test, and stop when it is reliable.',
   image: 'https://deepclario.com/blog/how-to-optimize-a-prompt/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

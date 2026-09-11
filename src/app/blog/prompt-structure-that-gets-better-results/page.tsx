@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Prompt Structure That Gets Better Results',
   description: 'A simple five-part prompt structure, in the right order, that produces clearer and more reliable answers from AI models.',
   image: 'https://deepclario.com/blog/prompt-structure-that-gets-better-results/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

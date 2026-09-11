@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Prompt Quality Checklist: 9 Things to Check Before You Hit Send',
   description: 'A scannable checklist covering the nine most common gaps in AI prompts, meant to be run through quickly before sending anything that matters.',
   image: 'https://deepclario.com/blog/prompt-quality-checklist/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

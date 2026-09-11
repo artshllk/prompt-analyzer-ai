@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Chain-of-Thought Prompting Explained (With Examples)',
   description: 'What chain-of-thought prompting is, why asking the model to reason step by step improves hard answers, and when to use it.',
   image: 'https://deepclario.com/blog/chain-of-thought-prompting/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'How to Compare Two AI Prompts (And Pick the Better One)',
   description: 'A fair method for comparing two AI prompts: same input, same standard, several runs, so you pick the better prompt on evidence not on a hunch.',
   image: 'https://deepclario.com/blog/how-to-compare-ai-prompts/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

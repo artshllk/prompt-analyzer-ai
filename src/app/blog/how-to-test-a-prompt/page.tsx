@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'How to Test a Prompt: A Simple Method',
   description: 'A practical method for testing an AI prompt: run it more than once, feed it hard inputs, and check the answer against a clear standard.',
   image: 'https://deepclario.com/blog/how-to-test-a-prompt/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

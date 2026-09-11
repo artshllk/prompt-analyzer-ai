@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'How to Improve a Weak Prompt (Instead of Chasing a Prompt Score)',
   description: 'How to find the one or two gaps that make a prompt weak, instead of chasing a number.',
   image: 'https://deepclario.com/blog/how-to-improve-a-prompt-score/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

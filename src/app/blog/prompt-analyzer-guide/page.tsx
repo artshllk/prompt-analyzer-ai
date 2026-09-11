@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Prompt Analyzer Guide: How to Use It Well',
   description: 'How to use a prompt analyzer effectively, what it checks for, and how to read the results to write better prompts.',
   image: 'https://deepclario.com/blog/prompt-analyzer-guide/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

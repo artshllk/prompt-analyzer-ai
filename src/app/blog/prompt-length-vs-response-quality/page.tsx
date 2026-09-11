@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Prompt Length vs Response Quality: Does Longer Help?',
   description: 'How prompt length affects AI response quality, why more words is not the same as more clarity, and when a long prompt starts to hurt.',
   image: 'https://deepclario.com/blog/prompt-length-vs-response-quality/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

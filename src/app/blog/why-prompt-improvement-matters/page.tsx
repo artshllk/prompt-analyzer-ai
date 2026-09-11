@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Why Prompt Improvement Matters More Than People Think',
   description: 'Why the small effort of improving a prompt before sending it pays off across every reply, drafts saved, and how it compounds with repeated use.',
   image: 'https://deepclario.com/blog/why-prompt-improvement-matters/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Why Most AI Prompts Fail (And How to Fix Yours)',
   description: 'The four common reasons AI prompts fail, with a weak and strong example of each, so you can find and fix the problem in your own prompts.',
   image: 'https://deepclario.com/blog/why-most-prompts-fail/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

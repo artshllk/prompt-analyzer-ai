@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Role Prompting: Examples That Improve AI Answers',
   description: 'What role prompting is, why assigning the AI a role changes its tone and depth, and copy-ready examples for common tasks.',
   image: 'https://deepclario.com/blog/role-prompting-examples/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

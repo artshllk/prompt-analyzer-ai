@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'What a Prompt Score Really Measures (And Why We Removed Ours)',
   description: 'What a prompt score is made of, why ours was not worth printing, and what is worth counting instead.',
   image: 'https://deepclario.com/blog/prompt-score-explained/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
