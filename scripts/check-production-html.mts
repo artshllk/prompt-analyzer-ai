@@ -170,7 +170,7 @@ const CHECKS: Check[] = [
       outOfAudit(CITATION_AUDIT.noSource),
       outOfAudit(CITATION_AUDIT.paywalled),
 
-      // The trust cards and the founder note.
+      // The trust cards.
       'Your writing stays yours.',
       'Never used to train AI',
       'Delete everything anytime',
@@ -221,9 +221,9 @@ const CHECKS: Check[] = [
       'sparktoro',
       'SparkToro',
 
-      // The founder's note, commented out in EarlyDays.tsx and off prod for
-      // now. Pinned absent so a stray uncomment shows up here rather than on
-      // the live page.
+      // The founder's note, removed from EarlyDays.tsx along with the owner's
+      // name. Pinned absent so a copy-paste from an old revision shows up here
+      // rather than on the live page.
       'Early days',
       'Deepclario is new, so you will not find made-up reviews here.',
       'Art Shllaku',

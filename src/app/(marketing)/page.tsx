@@ -178,7 +178,7 @@ export default async function LandingPage() {
           <CannotCheck />
         </SectionFrame>
 
-        {/* §04 PRIVACY AND THE FOUNDER'S NOTE. */}
+        {/* §04 PRIVACY. */}
         <SectionFrame
           index={4}
           total={TOTAL}

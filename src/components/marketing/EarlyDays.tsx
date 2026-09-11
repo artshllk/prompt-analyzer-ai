@@ -2,16 +2,18 @@ import Link from 'next/link'
 import { Mark } from '@/components/marketing/SectionFrame'
 
 /**
- * What happens to the text, and who is asking for it, in one section.
+ * What happens to the text you paste, in one section.
  *
  * Content only; the shell is SectionFrame in (marketing)/page.tsx.
  *
- * THE FOUNDER'S NOTE IS BACK, per the redesign brief, and so is the 7/5
- * split it was parked beside. Every claim on the left must match /privacy
- * word for word or the shorter one becomes the lie.
+ * Three cards in one row, and nothing beside them. The founder's note that
+ * used to take the right five columns is removed outright: the section now
+ * answers one question, what happens to your writing, and a 7/5 split with
+ * one side empty would read as something missing.
  *
- * A monogram, not a photograph. A stock face on a page arguing that we do
- * not invent things would be the worst possible place to put one.
+ * Every claim here must match /privacy word for word, or the shorter one
+ * becomes the lie. The cards stack the icon above the title, the same shape
+ * as the four cards in the section above, so the page has one card grammar.
  */
 
 const TRUST_POINTS: { title: string; body: string; icon: () => React.ReactElement }[] = [
@@ -43,88 +45,43 @@ export function EarlyDays() {
         Your writing <Mark>stays yours.</Mark>
       </h2>
 
-      <div className="grid lg:grid-cols-12 gap-5 mt-10 items-start">
-        <div className="lg:col-span-7 flex flex-col gap-4">
-          {TRUST_POINTS.map(t => {
-            const Icon = t.icon
-            return (
-              <div
-                key={t.title}
-                className="rounded-lg p-5 flex items-start gap-4"
-                style={{ background: 'var(--surface-card)', border: '1px solid var(--border-warm)' }}
+      <div className="grid md:grid-cols-3 gap-5 mt-10">
+        {TRUST_POINTS.map(t => {
+          const Icon = t.icon
+          return (
+            <div
+              key={t.title}
+              className="rounded-lg p-5 flex flex-col"
+              style={{ background: 'var(--surface-card)', border: '1px solid var(--border-warm)' }}
+            >
+              <span
+                className="inline-flex items-center justify-center w-9 h-9 rounded-md"
+                style={{ background: 'var(--color-accent-soft)', color: 'var(--brand)' }}
+                aria-hidden="true"
               >
-                <span
-                  className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-md"
-                  style={{ background: 'var(--color-accent-soft)', color: 'var(--brand)' }}
-                  aria-hidden="true"
-                >
-                  <Icon />
-                </span>
-                <div>
-                  <h3 className="text-[15px] leading-snug" style={{ color: 'var(--ink)', fontWeight: 600 }}>
-                    {t.title}
-                  </h3>
-                  <p
-                    className="mt-1.5 text-[14px] leading-[1.6]"
-                    style={{ color: 'var(--ink-soft)', textWrap: 'pretty' }}
-                  >
-                    {t.body}
-                  </p>
-                </div>
-              </div>
-            )
-          })}
-          <Link
-            href="/privacy"
-            className="self-start text-sm underline underline-offset-4"
-            style={{ color: 'var(--brand-text)' }}
-          >
-            Read the full privacy policy
-          </Link>
-        </div>
-
-        <div
-          className="lg:col-span-5 rounded-lg p-7"
-          style={{ background: 'var(--surface-card)', border: '1px solid var(--border-warm)' }}
-        >
-          <span
-            className="inline-flex items-center text-[10px] uppercase tracking-[0.14em] px-2 py-1 rounded-[3px]"
-            style={{ background: 'var(--guess-bg)', color: 'var(--guess)', fontFamily: 'var(--font-mono)' }}
-          >
-            Early days
-          </span>
-          <p
-            className="font-serif mt-5 text-[22px] md:text-[25px] leading-[1.35] font-normal"
-            style={{ color: 'var(--ink)', fontStyle: 'italic', textWrap: 'pretty' }}
-          >
-            Deepclario is new, so you will not find made-up reviews here.
-          </p>
-          <p className="mt-4 text-[15px] leading-[1.7]" style={{ color: 'var(--ink-soft)', textWrap: 'pretty' }}>
-            The example above is real, and still published. Run your own article and judge it
-            yourself. If something looks wrong, email us at{' '}
-            <a
-              href="mailto:support@deepclario.com"
-              className="underline underline-offset-[3px]"
-              style={{ color: 'var(--brand-text)' }}
-            >
-              support@deepclario.com
-            </a>
-            . We read every one.
-          </p>
-          <div className="mt-6 pt-5 flex items-center gap-3" style={{ borderTop: '1px solid var(--border-warm)' }}>
-            <span
-              className="font-serif shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-full text-[18px]"
-              style={{ background: 'var(--ink)', color: 'var(--paper)', fontWeight: 500 }}
-              aria-hidden="true"
-            >
-              D
-            </span>
-            <p className="text-[14px]" style={{ color: 'var(--ink)', fontWeight: 600 }}>
-              The Deepclario team
-            </p>
-          </div>
-        </div>
+                <Icon />
+              </span>
+              <h3 className="mt-4 text-[15px] leading-snug" style={{ color: 'var(--ink)', fontWeight: 600 }}>
+                {t.title}
+              </h3>
+              <p
+                className="mt-1.5 text-[14px] leading-[1.6]"
+                style={{ color: 'var(--ink-soft)', textWrap: 'pretty' }}
+              >
+                {t.body}
+              </p>
+            </div>
+          )
+        })}
       </div>
+
+      <Link
+        href="/privacy"
+        className="inline-block mt-6 text-sm underline underline-offset-4"
+        style={{ color: 'var(--brand-text)' }}
+      >
+        Read the full privacy policy
+      </Link>
     </div>
   )
 }

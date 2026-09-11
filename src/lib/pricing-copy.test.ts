@@ -788,7 +788,7 @@ test('the comparison is two columns, because the comparison is the product', () 
 test('the owner is not named anywhere in the product', () => {
   /**
    * NO PERSONAL NAME SHIPS. The founder's name used to appear in the byline on
-   * every blog post, in the JSON-LD author of all 62 posts, on the founder
+   * every blog post, in the JSON-LD author of all 56 posts, on the founder
    * card and in the privacy policy. It was removed at the owner's request, and
    * a name is exactly the kind of string that comes back by copy-paste from an
    * old post or a design file.
@@ -804,9 +804,9 @@ test('the owner is not named anywhere in the product', () => {
   }
   assert.deepEqual(offenders, [], 'the owner is named in:\n  ' + offenders.join('\n  '))
 
-  // No stock photograph on the founder card either. A face on the card that
-  // says we do not invent reviews would be self-refuting.
-  assert.doesNotMatch(trust, /<Image|<img/, 'a face appeared on the founder card')
+  // The founder card is gone, not just unnamed. It was removed outright, so
+  // neither its chip nor its quote may render from this section again.
+  assert.doesNotMatch(copyOnly(trust), /Early days|made-up reviews/, 'the founder card is back')
   // The three privacy promises stay on the page. They back claims /privacy
   // also makes.
   for (const t of ['Never used to train AI', 'Delete everything anytime', 'Payments by Paddle']) {
