@@ -89,8 +89,8 @@ export function MarketingNav({ current }: MarketingNavProps = {}) {
     <header
       className="fixed top-0 left-0 right-0 z-40 backdrop-blur-md"
       style={{
-        background: 'rgba(241, 240, 234, 0.82)',
-        borderBottom: '1px solid var(--color-rule)',
+        background: 'rgba(251, 249, 246, 0.86)',
+        borderBottom: '1px solid var(--rule-ground)',
       }}
     >
       <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
@@ -119,6 +119,8 @@ export function MarketingNav({ current }: MarketingNavProps = {}) {
                 style={{
                   color: isCurrent ? 'var(--ink)' : 'var(--ink-soft)',
                   fontWeight: isCurrent ? 500 : 400,
+                  borderBottom: isCurrent ? '1px solid var(--ink)' : '1px solid transparent',
+                  paddingBottom: 2,
                 }}
               >
                 {link.label}

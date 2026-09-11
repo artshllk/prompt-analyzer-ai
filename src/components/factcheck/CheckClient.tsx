@@ -319,7 +319,7 @@ export function CheckClient() {
             <button
               type="button"
               onClick={reset}
-              className="text-[14px] px-4 py-2 rounded-full"
+              className="text-[14px] px-4 py-2 rounded"
               style={{ background: 'var(--brand)', color: '#fff' }}
             >
               Check another
@@ -330,7 +330,7 @@ export function CheckClient() {
             <button
               type="button"
               onClick={() => window.print()}
-              className="text-[14px] px-4 py-2 rounded-full"
+              className="text-[14px] px-4 py-2 rounded"
               style={{ border: '1px solid var(--rule)', color: 'var(--ink)' }}
             >
               Save as PDF
@@ -561,7 +561,7 @@ export function CheckClient() {
                  matters most, and at 45% the primary action read as grey
                  chrome. It still has to look unavailable, so it is dimmed, but
                  it stays recognisably the vermilion. */
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium text-white bg-[var(--action)] hover:bg-[var(--action-hover)] active:scale-[0.98] transition-colors disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-[var(--action)]"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 w-full sm:w-auto min-h-[46px] sm:min-h-0 rounded-md text-sm font-medium text-white bg-[var(--action)] hover:bg-[var(--action-hover)] active:scale-[0.98] transition-colors disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-[var(--action)]"
               style={{
                 boxShadow:
                   'inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 2px rgba(24, 24, 27, 0.08)',

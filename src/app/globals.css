@@ -60,6 +60,8 @@
   --inverse-surface: #30312F;      /* the one dark section */
   --inverse-on-surface: #F2F0ED;   /* and the text that sits on it */
   --border-warm: #E5E0D8;          /* the hairline, everywhere */
+  --surface-inset: rgba(112, 84, 48, 0.09); /* translucent, so the parchment shows through */
+  --rule-ground: #d4c6ae; /* section rules on the parchment; --rule stays for cards */
 
   /* The three names the rest of the codebase already uses, repointed at the
      ladder rather than duplicated beside it. ~2,700 call sites say
@@ -98,25 +100,14 @@
   --rule: var(--border-warm);
 
   /* --- brand ---
-     --brand is the ink-side red: it is what a link, an inline accent and a
-     small piece of text use, because #C9452F is 5.72:1 as --brand-text and
-     the vermilion below is not.
-
-     --action is the PRIMARY BUTTON FILL, and it is a different colour on
-     purpose. DESIGN.md specifies #F95738 with white text for the one
-     deliberate action on a page. Measured, white on #F95738 is 3.25:1,
-     which clears AA for large text and for a UI boundary and does NOT
-     clear the 4.5:1 that 14px button text needs. It is here because the
-     design system says so and the call is the owner's; the note is here so
-     the next person does not have to measure it again. */
-  --brand: #C9452F;
-  --action: #F95738;
-  --action-hover: #EA580C;
-  --brand-deep: #A93520;
-  /* #C9452F is 4.20:1 on paper: fine as a button fill under white text
-     (4.80:1), below AA as small text. Links and inline brand text use the
-     deeper red, which is 5.72:1. */
-  --brand-text: #A93520;
+     Deep editorial ink blue. Every link, button and action. One colour for
+     fill and for text: #215C8C is 6.4:1 on --paper and white on it is 6.1:1,
+     so the fill/text split the vermilion needed is gone. */
+  --brand: #215c8c;
+  --action: #215c8c;
+  --action-hover: #1a4a72;
+  --brand-deep: #1a4a72;
+  --brand-text: #215c8c;
 
   /* --- meaning. Only ever these three things. --- */
   --machine: #2C5FD4;      /* the tool contributed this */
@@ -128,8 +119,8 @@
      #B8791A survives as --guess-accent for the dot and the remove control,
      which are shapes rather than text. */
   --guess: #8F5D12;        /* the tool assumed this, and you can remove it */
-  --guess-accent: #B8791A;
-  --guess-bg: #FBF1DE;
+  --guess-accent: #d9a441; /* the underline under a checked claim */
+  --guess-bg: #f7e3b5; /* the highlighter. Warm amber wash, "this was checked" */
   --confirm: #2E6F4E;      /* verified, removed, done */
   /* Added for the fact checker's three states, which are body text at body
      size and therefore inherit the AA constraint documented above.
@@ -193,8 +184,8 @@
 
   --color-accent: var(--brand);
   --color-accent-bright: var(--brand-deep);
-  --color-accent-soft: #F6E7E3;
-  --color-accent-glow: rgba(201, 69, 47, 0.16);
+  --color-accent-soft: #e6edf3;
+  --color-accent-glow: rgba(33, 92, 140, 0.16);
 
   /* Font aliases, same role-preserving logic as the colours above.
      ~40 call sites say var(--font-inter) or class="font-serif". Repointing
@@ -455,6 +446,36 @@ body {
   font-feature-settings: 'ss01', 'cv01';
 }
 
+/* Mottled parchment. Four soft washes over a deeper cream, repeating every
+   ~1500px so a long page never shows a seam. No mesh, no blur layers: these
+   are flat radial fills at low alpha, which is what old paper looks like. */
+.parchment {
+  background-color: #ebdfcc;
+  background-image:
+    radial-gradient(ellipse 70% 45% at 12% 8%, rgba(255, 249, 238, 0.95), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 88% 28%, rgba(205, 184, 152, 0.6), transparent 70%),
+    radial-gradient(ellipse 65% 40% at 45% 58%, rgba(255, 247, 232, 0.8), transparent 70%),
+    radial-gradient(ellipse 60% 45% at 85% 92%, rgba(198, 176, 142, 0.55), transparent 70%),
+    radial-gradient(ellipse 50% 35% at 8% 82%, rgba(255, 246, 230, 0.7), transparent 70%);
+  background-size:
+    100% 1300px,
+    100% 1700px,
+    100% 1100px,
+    100% 1900px,
+    100% 1500px;
+  background-repeat: repeat-y;
+}
+
+/* The highlighter mark behind a phrase in a heading. Amber only. */
+.mark {
+  background: var(--guess-bg);
+  padding: 0 0.12em;
+  margin: 0 -0.12em;
+  border-radius: 2px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 /* Marketing page-enter transition. MOBILE ONLY. Each client navigation
    remounts the page's `.editorial` root, so this fade + slight rise replays
    on every marketing route change - a soft transition instead of a hard
@@ -562,7 +583,7 @@ body {
      dark-canvas device: on a light page it washes the surface out instead
      of giving it texture. Dark noise in `multiply` at a third of the
      strength reads as paper rather than as fog. */
-  opacity: 0.022;
+  opacity: 0.025;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
@@ -626,22 +647,10 @@ body {
 .card-accent-edge {
   position: relative;
 }
-.card-accent-edge::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(180deg, var(--color-accent) 0%, transparent 40%);
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-          mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  pointer-events: none;
+/* A full accent border, not a gradient ring that fades out at 40%. */
+.card-accent-edge {
+  border-color: var(--color-accent);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
 }
 
 /* Inline accent text. Use on one or two words per page, max. */

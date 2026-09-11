@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { UpgradeButton } from "@/components/ui/UpgradeButton";
+import { Mark } from "@/components/marketing/SectionFrame";
 import Link from "next/link";
 import {
   FACTCHECK_FREE_LIMIT,
@@ -218,14 +219,14 @@ export function EditorialPricing({
 
   return (
     <div>
-      {/* Section header - centered: heading, then the billing toggle
-          directly below it. */}
-      <div className="flex flex-col items-center text-center mb-10 md:mb-12">
+      {/* Section header - left-aligned in the manuscript measure: heading,
+          then the billing toggle directly below it. */}
+      <div className="flex flex-col items-start text-left mb-10 md:mb-12">
         <Heading
           className="display text-3xl md:text-[38px] md:leading-[46px]"
           style={{ color: "var(--color-paper)" }}
         >
-          Free to start. Pay when you need more.
+          Free to start. <Mark>Pay when you need more.</Mark>
         </Heading>
         <p
           className="mt-4 text-lg leading-relaxed"
@@ -236,7 +237,7 @@ export function EditorialPricing({
 
         {/* Billing toggle */}
         <div
-          className="inline-flex p-1 rounded-full mt-8"
+          className="inline-flex p-1 rounded mt-8"
           style={{
             background: "var(--color-ink-card)",
             border: "1px solid var(--color-rule)",
@@ -295,7 +296,7 @@ export function EditorialPricing({
           {plan === "anon" && (
             <Link
               href="/login?signup=1"
-              className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-outline"
+              className="block w-full text-center py-3 rounded text-sm font-medium transition-all btn-outline"
               style={{
                 border: "1px solid var(--color-rule-strong)",
                 color: "var(--color-paper)",
@@ -335,9 +336,8 @@ export function EditorialPricing({
               <span
                 className="inline-flex items-center text-[11px] tracking-[0.08em] uppercase font-semibold px-2 py-0.5 rounded-full"
                 style={{
-                  background: "rgba(74, 176, 118, 0.12)",
-                  color: "#5FBE8C",
-                  border: "1px solid rgba(74, 176, 118, 0.28)",
+                  background: "var(--color-accent-soft)",
+                  color: "var(--brand-text)",
                 }}
               >
                 Save {LAUNCH.percentOff}%
@@ -372,7 +372,7 @@ export function EditorialPricing({
                   not another sentence of prose. The count is Paddle's, read at
                   request time, so it cannot advertise places that are sold. */}
               <span
-                className="inline-flex items-center gap-2 text-[11px] px-2.5 py-1 rounded-full"
+                className="inline-flex items-center gap-2 text-[11px] px-2.5 py-1 rounded-[3px]"
                 style={{
                   background: "var(--color-accent-soft)",
                   color: "var(--color-accent-bright)",
@@ -391,8 +391,13 @@ export function EditorialPricing({
               /* Comes back here after signing up, so the next click is
                  checkout rather than a hunt for the page they were on. */
               href="/login?signup=1&redirectTo=%2Fpricing"
-              className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-paper"
-              style={{ background: "var(--color-paper)", color: "var(--color-ink)" }}
+              className="block w-full text-center py-3 rounded text-sm font-medium transition-all btn-paper"
+              style={{
+                background: "var(--action)",
+                color: "#fff",
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), 0 1px 2px rgba(24,24,27,0.08)",
+              }}
             >
               Get Pro
             </Link>
@@ -400,7 +405,7 @@ export function EditorialPricing({
           {plan === "free" && (
             <UpgradeButton
               plan={checkoutPlan}
-              className="block w-full text-center py-3 rounded-full text-sm font-medium transition-all btn-paper"
+              className="block w-full text-center py-3 rounded text-sm font-medium transition-all btn-paper bg-[var(--action)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(0,0,0,0.15),0_1px_2px_rgba(24,24,27,0.08)]"
             >
               Get Pro
             </UpgradeButton>
@@ -492,7 +497,7 @@ function PricingCard({
           /* z-10 because card-accent-edge draws its ring in an ::after, which
              comes after this in paint order and was drawing the top edge
              straight through the word. */
-          className="absolute -top-2.5 left-6 md:left-7 z-10 inline-flex items-center text-[10px] tracking-[0.14em] uppercase font-semibold px-2.5 py-1 rounded-full"
+          className="absolute -top-2.5 left-6 md:left-7 z-10 inline-flex items-center text-[10px] tracking-[0.14em] uppercase font-semibold px-2.5 py-1 rounded-[3px]"
           style={{
             background: "var(--color-accent)",
             /* White, not paper. CLAUDE.md measures white on #C9452F at 4.80:1;
@@ -517,9 +522,9 @@ function PricingCard({
         </span>
         {chip && (
           <span
-            className="text-[10px] tracking-[0.14em] uppercase px-2.5 py-1 rounded-full"
+            className="text-[10px] tracking-[0.14em] uppercase px-2.5 py-1 rounded-[3px]"
             style={{
-              background: "var(--color-ink)",
+              background: "transparent",
               color: "var(--color-paper-mute)",
               border: "1px solid var(--color-rule)",
               fontFamily: "var(--font-mono)",
@@ -546,7 +551,7 @@ function BillingToggle({
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center px-4 md:px-5 py-2 rounded-full text-sm font-medium transition-colors"
+      className="inline-flex items-center px-4 md:px-5 py-2 rounded text-sm font-medium transition-colors"
       style={{
         background: active ? "var(--color-paper)" : "transparent",
         color: active ? "var(--color-ink)" : "var(--color-paper-mute)",

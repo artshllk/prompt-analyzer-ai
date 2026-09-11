@@ -55,22 +55,32 @@ function displayVerdict(claim: Claim): ClaimVerdict {
 }
 
 /**
- * The citation axis as a line rather than a colour.
+ * The citation axis. Solid amber: the link shows it. Dotted crimson: the
+ * link does not, and this is the ONLY place crimson appears in a document.
+ * Dashed grey: we could not open it. Nothing for not_applicable.
  *
  * `not_applicable` gets nothing at all. An absent line is the correct
  * rendering of "there was nothing to check", and drawing something would
  * imply we looked.
  */
-function underlineFor(claim: Claim): string | undefined {
+function underlineFor(claim: Claim): {
+  line?: string
+  colour?: string
+  bg?: string
+} {
   switch (claim.citation.check) {
     case 'supports':
-      return 'underline solid 1.5px'
+      return { line: 'underline solid 1.5px', colour: 'var(--guess-accent)' }
     case 'does_not_contain':
-      return 'underline dotted 2px'
+      return {
+        line: 'underline dotted 2px',
+        colour: 'var(--diff-discrepancy)',
+        bg: 'var(--diff-discrepancy-bg)',
+      }
     case 'source_unreachable':
-      return 'underline dashed 1.5px'
+      return { line: 'underline dashed 1.5px', colour: 'var(--ink-soft)' }
     default:
-      return undefined
+      return {}
   }
 }
 
@@ -135,17 +145,19 @@ export function MarkedDocument({
             const v = displayVerdict(claim)
             const s = STYLE[v]
             const isOpen = openId === claim.id
+            const u = underlineFor(claim)
             const skin = {
-              background: s.bg,
-              color: s.fg,
-              textDecoration: underlineFor(claim),
-              textUnderlineOffset: '3px',
-              boxShadow: isOpen ? `inset 0 0 0 2px ${s.fg}` : `inset 0 0 0 1px ${s.fg}33`,
+              background: u.bg ?? s.bg,
+              color: 'var(--ink)', // text stays ink; the fill carries the meaning
+              textDecoration: u.line,
+              textDecorationColor: u.colour,
+              textUnderlineOffset: '4px',
+              boxShadow: isOpen ? `inset 0 0 0 2px ${u.colour ?? s.fg}` : undefined,
             }
             /* Inline, so it sits in the paragraph rather than breaking it.
-               -my-1 py-1 grows the hit area without pushing the line height
-               around mid-paragraph. */
-            const shape = 'claim-mark inline text-left -my-1 py-1 px-1 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1'
+               py-0.5 keeps the fill tight to the line without pushing the
+               line height around mid-paragraph. */
+            const shape = 'claim-mark inline text-left py-0.5 px-1 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-offset-1'
 
             // A link inside the claim. The anchor wins the click and wears the
             // mark's colours, so the stretch still reads as one thing.
@@ -270,7 +282,7 @@ function DensityBanner({ density }: { density: CitationDensity }) {
 
   return (
     <div
-      className="rounded-2xl p-4"
+      className="rounded-lg p-4"
       style={{ background: 'var(--machine-bg)', border: '1px solid var(--rule)' }}
     >
       <p className="text-[14px] leading-relaxed" style={{ color: 'var(--machine)' }}>
@@ -374,12 +386,12 @@ function ClaimPanel({ claim, onClose }: { claim: Claim; onClose: () => void }) {
   const s = STYLE[v]
   return (
     <div
-      className="mt-4 rounded-2xl p-4 sm:p-5"
-      style={{ background: 'var(--card)', border: `1px solid ${s.fg}` }}
+      className="mt-4 pl-3.5"
+      style={{ borderLeft: `2px solid ${s.fg}` }}
     >
       <div className="flex items-start justify-between gap-4">
         <p
-          className="text-[12px] uppercase tracking-[0.12em]"
+          className="text-[10px] uppercase tracking-[0.12em]"
           style={{ color: s.fg, fontFamily: 'var(--font-mono)' }}
         >
           {s.label}
@@ -394,7 +406,10 @@ function ClaimPanel({ claim, onClose }: { claim: Claim; onClose: () => void }) {
         </button>
       </div>
 
-      <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--ink)' }}>
+      <p
+        className="font-serif mt-2 text-[15px] leading-[1.4]"
+        style={{ color: 'var(--ink)', fontStyle: 'italic' }}
+      >
         {claim.claimText}
       </p>
 
@@ -554,7 +569,7 @@ function Findings({ findings }: { findings: GroupedFindings }) {
 
   return (
     <div
-      className="mt-6 rounded-2xl p-4 sm:p-5"
+      className="mt-6 rounded-lg p-4 sm:p-5"
       style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}
     >
       <p className="eyebrow mb-3">What to fix</p>
@@ -663,7 +678,7 @@ function QuietFinding({ finding }: { finding: Finding }) {
 function WorthChecking({ flags }: { flags: ReturnType<typeof rankFlags> }) {
   return (
     <div
-      className="mt-6 rounded-2xl p-4 sm:p-5"
+      className="mt-6 rounded-lg p-4 sm:p-5"
       style={{ background: 'var(--guess-bg)', border: '1px solid var(--rule)' }}
     >
       <p className="eyebrow mb-3">Worth checking first</p>

@@ -1,47 +1,34 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-// { /* CUT - redundant with demo + steps */ }
-// import { StaticTransform } from '@/components/marketing/StaticTransform'
 import { EarlyDays } from "@/components/marketing/EarlyDays";
 import { CannotCheck } from "@/components/factcheck/CannotCheck";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { CheckClient } from "@/components/factcheck/CheckClient";
 import { WorkedExample } from "@/components/factcheck/WorkedExample";
+import { EditorialPricing } from "@/components/marketing/EditorialPricing";
+import { PaddleProvider } from "@/components/PaddleProvider";
+import { SectionFrame } from "@/components/marketing/SectionFrame";
 import { Reveal } from "@/components/ui/Reveal";
 import { defaultOGImage } from "@/lib/og-image";
 import { ANON_FACTCHECK_MONTH } from "@/lib/rate-limit";
-// { /* CUT - redundant with demo + steps */ }
-// import { FeatureShowcase } from '@/components/marketing/FeatureShowcase'
+import { foundingSeatsLeft } from "@/lib/paddle";
 
 export const metadata: Metadata = {
-  // The layout template appends "| Deepclario", so the brand stays out of
-  // this string. Leads on what someone actually searches for when they have
-  // this problem, which is a broken or missing source, not a product category
-  // nobody types.
-  // Searchable variant. It must not contradict the H1, which is the sentence
-  // a person sees on the page and on the share card.
   title: "Check the sources in your article",
-  // Read from the constant. It said "2 a day", which was the anonymous limit
-  // two changes ago, and this is the sentence Google shows.
   description: `Paste your article. We open every link and check that the page really says it. Free, ${ANON_FACTCHECK_MONTH.capacity} a month.`,
   alternates: { canonical: "https://deepclario.com" },
   openGraph: {
     title: "Does your source really say that?",
-    description:
-      "Paste your article. We open every link and check.",
+    description: "Paste your article. We open every link and check.",
     url: "https://deepclario.com",
     type: "website",
-    // This page defines its own openGraph object, which replaces (does not
-    // merge with) the root layout's openGraph - including its image. See
-    // defaultOGImage() for the full explanation.
     images: defaultOGImage("Does your source really say that?"),
   },
   twitter: {
     card: "summary_large_image",
     title: "Does your source really say that?",
-    description:
-      "Paste your article. We open every link and check.",
+    description: "Paste your article. We open every link and check.",
     images: ["/opengraph-image"],
   },
 };
@@ -105,367 +92,133 @@ const structuredData = {
 };
 
 /**
- * NOTHING IS READ FROM THE SERVER HERE, AND THAT IS THE POINT. This page is
- * prerendered and served from the CDN.
+ * PRICING IS BACK ON THIS PAGE, and that changes the render mode.
  *
- * It used to await checksLeft(), a Supabase auth round trip plus a profiles
- * query, before it could emit a byte. That single call opted the busiest page
- * on the site out of static rendering, for a counter only signed-in visitors
- * ever see. CheckClient now fetches it from /api/factcheck/allowance after
- * paint. Anonymous visitors still see no number: their limit is best effort,
- * and a number we cannot enforce is not one we state. See CLAUDE.md.
+ * The founding-seat count decides the PRICE on screen, so it has to come from
+ * the server (see /pricing for the reasoning). That means this page can no
+ * longer be fully static; it regenerates on the same five minute timer the
+ * pricing page uses. Everything else on the page is still free of server
+ * reads: CheckClient fetches its allowance after paint.
  *
- * viewerPlan() and foundingSeatsLeft() went earlier, when the pricing table
- * came off this page. Keep it this way: anything awaited here costs every
- * visitor and every crawl the edge cache.
+ * One component renders both tables, so the two pages cannot disagree.
  */
-export default function LandingPage() {
+export const revalidate = 300;
+
+const TOTAL = 5;
+
+export default async function LandingPage() {
+  const foundingLeft = await foundingSeatsLeft();
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <div
-        className="editorial grain min-h-screen relative"
-        style={{ background: "var(--color-ink)", color: "var(--color-paper)" }}
-      >
+      <div className="editorial parchment grain min-h-screen relative" style={{ color: "var(--ink)" }}>
         <MarketingNav current="home" />
 
-        {/*
-          THE HERO IS THE CONSOLE, and the console is the tool.
-
-          Restructured from docs/design/hero-console.html, which is the
-          approved design and is checked in unmodified so what shipped can be
-          held against what was signed off. Layout, spacing, the framing, the
-          toolbar, the counter, the keyboard hint and the serif headline with
-          its italic accent word are that file. What is NOT that file is
-          anything it said about this product that was not true: the pulsing
-          "v1.4" pill, an "Import URL" tab we do not offer, a headless
-          chromium we do not run, and a DOM engine that does not exist. All
-          four are gone rather than reworded.
-
-          The head block is server-rendered here rather than inside the client
-          console, so the H1 and the promise under it are in the HTML a
-          crawler gets whether or not the bundle ever loads.
-        */}
-        <section
-          id="try"
-          className="pt-24 md:pt-32 pb-20 md:pb-28 px-4 sm:px-6"
-          /* Declared, not inherited. Every section on this page names its own
-             tier from the ladder in globals.css, so the rhythm is readable in
-             one grep instead of being an accident of what the root happens to
-             be. */
-          style={{ background: "var(--surface)" }}
-        >
-          <div className="w-full max-w-4xl mx-auto">
+        {/* §01 THE HERO IS THE CONSOLE. Headline left-set in the measure with
+            the gutter note beside it; the console sits under it as one piece
+            of equipment. */}
+        <div className="pt-[68px]">
+          <SectionFrame
+            id="try"
+            index={1}
+            total={TOTAL}
+            head="Deepclario · Check the sources in your article"
+            note="Paste, then read what the page says. That is the whole tool."
+          >
             <Reveal>
-              <div className="text-center max-w-2xl mx-auto mb-8">
-                {/* display-hero from DESIGN.md: Newsreader 500, 56px, 64px
-                    line, -0.02em. The accent word is a real italic cut now,
-                    not a synthesised slant, which is the whole reason that
-                    face was loaded. */}
-                <h1
-                  className="font-serif text-balance text-[36px] leading-[44px] tracking-[-0.015em] md:text-[56px] md:leading-[64px] md:tracking-[-0.02em]"
-                  style={{ color: "var(--ink)" }}
-                >
-                  Does your source{" "}
-                  <em
-                    className="not-italic"
-                    style={{ color: "var(--brand)", fontStyle: "italic" }}
-                  >
-                    really
-                  </em>{" "}
-                  say that?
-                </h1>
-                <p
-                  className="mt-4 text-base sm:text-lg leading-relaxed"
-                  style={{ color: "var(--ink-soft)" }}
-                >
-                  Paste your article. We open every link and check that the page
-                  really says it.
-                </p>
-              </div>
-            </Reveal>
-
-            {/* The count a signed-in reader signed up for, passed into the
-                console so it sits in the toolbar's status slot beside the
-                character counter. That slot used to say "DOM Engine Ready",
-                which was furniture; this is the one status about this session
-                that is both true and enforced.
-
-                Anonymous visitors get null and the slot renders nothing,
-                because their ceiling is best effort and a number we cannot
-                enforce is not one we state. */}
-            <Reveal index={1}>
-              <CheckClient />
-            </Reveal>
-          </div>
-        </section>
-
-        {/*
-          THE REAL EXAMPLE, ITS OWN SECTION, ON ITS OWN TIER.
-
-          It used to sit inside a contained dark mount, which was the one dark
-          block on the page. That is gone. The mount was doing the job of
-          separating this section from the hero above it, and a ground of its
-          own does the same job with the same ladder every other section uses,
-          so the page now alternates the whole way down instead of alternating
-          everywhere except here.
-
-          surface-subtle, so it steps against the hero above and the taxonomy
-          below, both of which are surface. The white comparison container
-          reads harder on this than it did on white-adjacent cream.
-
-          --inverse-surface is still a token and is now used nowhere. It stays
-          in the ladder because DESIGN.md defines it and a tier that exists
-          only when something needs it is not a cost.
-
-          max-w-5xl rather than the 1180px the rest of the page uses. Two
-          columns of quoted prose get harder to compare the further apart they
-          sit, and this is the one section whose entire job is the comparison.
-        */}
-        <section
-          className="px-4 sm:px-6 py-12 sm:py-16 md:py-20"
-          style={{ background: "var(--surface-subtle)" }}
-        >
-          <div className="w-full max-w-5xl mx-auto">
-            <WorkedExample />
-          </div>
-        </section>
-
-        {/* CUT - redundant with demo + steps */}
-        {/* <StaticTransform /> */}
-
-        {/* CUT - redundant with demo + steps */}
-        {/* <FeatureShowcase /> */}
-
-        {/* CUT - thesis line moved to hero, essay paragraphs removed */}
-        {/*
-        <section id="why" className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)' }}>
-          <div className="max-w-[1180px] mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
-            <div className="md:col-span-3">
-              <p className="eyebrow">The thesis</p>
-            </div>
-            <div className="md:col-span-9 space-y-6">
+              <h1
+                className="font-serif text-balance text-[38px] leading-[1.1] tracking-[-0.015em] md:text-[64px] md:leading-[1.04] md:tracking-[-0.02em] max-w-[820px]"
+                style={{ color: "var(--ink)" }}
+              >
+                Does your source{" "}
+                <em style={{ color: "var(--brand)", fontStyle: "italic", fontWeight: 400 }}>
+                  really
+                </em>{" "}
+                say that?
+              </h1>
               <p
-                className="font-serif text-3xl md:text-[2.4rem] leading-tight tracking-tight"
-                style={{ color: 'var(--color-paper)', fontWeight: 400 }}
+                className="mt-4 md:mt-5 text-base md:text-lg leading-relaxed max-w-[560px]"
+                style={{ color: "var(--ink-soft)", textWrap: "pretty" }}
               >
-                The model is fine. The brief was vague.
+                Paste your article. We open every link and check that the page
+                really says it.
               </p>
-              <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper)' }}>
-                Most "ChatGPT gave me a bad answer" moments are actually "I sent a bad prompt" moments. One-line briefs, no audience, no format, no constraints. The AI guesses. You edit. You retry.
-              </p>
-              <p className="text-lg leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
-                Deepclario catches the vague brief before it costs you a generation. It reviews your prompt the way a senior teammate would, asks one quick question if it has to, and hands ChatGPT, Claude, or Gemini something they can act on. You get the output you wanted, first try.
-              </p>
-            </div>
-          </div>
-        </section>
-        */}
+            </Reveal>
+            <Reveal index={1}>
+              <div className="mt-8 md:mt-11">
+                <CheckClient />
+              </div>
+            </Reveal>
+          </SectionFrame>
+        </div>
 
-        {/* How it works - the same three steps the playground shows in its
-            idle state, so the promise on this page matches the product
-            word for word. */}
-        {/* <section
-          className="px-6 md:px-10 py-24 md:py-32"
-          style={{ borderTop: "1px solid var(--color-rule)" }}
+        {/* §02 THE REAL EXAMPLE. The side by side comparison is the most
+            important thing on the page. */}
+        <SectionFrame
+          index={2}
+          total={TOTAL}
+          head="A real example"
+          note="Both quotes are verbatim. Neither site is named."
+          tier="inset"
         >
-          <div className="max-w-[1180px] mx-auto">
-            <div className="grid md:grid-cols-12 gap-8 md:gap-16 mb-14 md:mb-20">
-              <div className="md:col-span-3">
-                <p className="eyebrow">How it works</p>
-              </div>
-              <div className="md:col-span-9">
-                <h2
-                  className="display text-4xl md:text-5xl"
-                  style={{ color: "var(--color-paper)" }}
-                >
-                  Three steps. None of them is hard.
-                </h2>
-              </div>
-            </div>
-            <div className="space-y-px">
-              <div className="rule-strong" />
-              {STEPS.map((s, i) => (
-                <Step key={s.title} index={i} {...s} />
-              ))}
-              <div className="rule-strong" />
-            </div>
-          </div>
-        </section> */}
+          <WorkedExample />
+        </SectionFrame>
 
-        {/* REMOVED: the extension promo, the use cases, and the prompt
-            engineering FAQ. All three sold the prompt improver, which is
-            frozen and lives at /prompt-improver. None of the routes are touched,
-            so every link into them still resolves. */}
-
-
-        {/* CUT - "A fair question" folded into FAQSection as one richer answer */}
-        {/*
-        <section className="px-6 md:px-10 py-24 md:py-32" style={{ borderTop: '1px solid var(--color-rule)', background: 'var(--color-ink-soft)' }}>
-          <div className="max-w-[1180px] mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
-            <div className="md:col-span-5">
-              <p className="eyebrow mb-6">A fair question</p>
-              <h2 className="display text-3xl md:text-5xl" style={{ color: 'var(--color-paper)' }}>
-                "Can't I just ask ChatGPT to do this?"
-              </h2>
-            </div>
-            <div className="md:col-span-7 space-y-6">
-              <p>You can. But you have to know your prompt was the problem in the first place...</p>
-            </div>
-          </div>
-        </section>
-        */}
-
-        {/* CUT - belongs on /about */}
-        {/*
-        <section className="px-6 md:px-10 py-32 md:py-40" style={{ borderTop: '1px solid var(--color-rule)' }}>
-          <div className="max-w-4xl mx-auto text-center">
-            <p className="eyebrow mb-10">Principles</p>
-            <p
-              className="font-serif text-3xl md:text-[2.8rem] leading-tight tracking-tight"
-              style={{ color: 'var(--color-paper)', fontWeight: 400 }}
-            >
-              We don't want you to spend more time with AI. We want you to spend it better.
-            </p>
-            <p className="mt-12 text-base md:text-lg max-w-xl mx-auto leading-[1.7]" style={{ color: 'var(--color-paper-mute)' }}>
-              Deepclario is for professionals who work with AI every day - engineers, writers, founders, researchers. For anyone who sees better prompting as a valuable skill for the future.
-            </p>
-          </div>
-        </section>
-        */}
-
-        {/* Trust - the product asks people to paste work emails, code, and
-            business ideas, so the data-handling answer lives on the page,
-            not just in the FAQ. Every claim here must match /privacy. */}
-        <CannotCheck />
-
-        {/*
-          WHAT HAPPENS TO YOUR TEXT, AND WHO IS ASKING FOR IT, in one section.
-
-          These were two stacked sections with a rule between them: "You own
-          your data" as three columns of plain text, and "Early days" as a
-          paragraph under an eyebrow. They answer the same question from two
-          sides, and neither was strong enough on its own to be the thing that
-          persuades somebody to paste an unpublished draft into a box.
-        */}
-        <EarlyDays />
-
-        {/* Pricing */}
-        {/*
-          PRICING LIVES AT /pricing AND NOWHERE ELSE.
-
-          The whole table was here as well, which meant two plans, two prices,
-          two founding counts and two feature lists rendered from one component
-          in two places a visitor could reach in one click of each other. A
-          second copy of a price is a second thing that can be read while the
-          first is being edited, and this site has already shipped five
-          copy-versus-reality gaps without help from duplication.
-
-          Nothing linked to /#pricing, so removing the anchor breaks no link:
-          the nav, the mobile menu and the footer all point at /pricing.
-
-          What survives is one line, because a page that ends on a privacy
-          section dead-ends. It states the free allowance from the constant the
-          server enforces and sends anyone who wants the rest to the page that
-          owns it.
-        */}
-        {/*
-          THE CLOSE. One section, not two.
-
-          Removing the pricing table left two one-line sections sitting on the
-          same ground with nothing between them, which reads as the page
-          trailing off rather than ending. They are the same thought anyway:
-          here is what else there is.
-
-          The Pro pointer gets a card because it is the only thing on this page
-          asking for money and it has to look deliberate. The detector keeps
-          its one quiet line: it has its own page, it is not what this site is
-          for, and a second card would give it equal billing.
-        */}
-        <section
-          className="px-6 md:px-10 py-16 md:py-24"
-          style={{ background: "var(--surface)" }}
+        {/* §03 WHEN WE CANNOT CHECK. */}
+        <SectionFrame
+          index={3}
+          total={TOTAL}
+          head="When we cannot check"
+          note="Every count is from the audit. No cell is invented."
         >
-          <div className="max-w-[1180px] mx-auto">
-            <div
-              className="rounded-lg p-6 md:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-              style={{
-                background: "var(--surface-card)",
-                border: "1px solid var(--border-warm)",
-              }}
-            >
-              <div>
-                <p className="text-[17px] leading-relaxed" style={{ color: "var(--ink)" }}>
-                  Free to start. {ANON_FACTCHECK_MONTH.capacity} checks a month
-                  without an account, more with one.
-                </p>
-                {/* The same identity line the Pro card uses, so the two
-                    pages describe the tier the same way. Where pricing lives
-                    is our problem, not the reader's, and the sentence that
-                    said so has no business on the page. */}
-                <p
-                  className="mt-1 text-[14px] leading-relaxed"
-                  style={{ color: "var(--ink-soft)" }}
-                >
-                  Pro is for people who publish every day.
-                </p>
-              </div>
-              <Link
-                href="/pricing"
-                className="shrink-0 inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                style={{
-                  border: "1px solid var(--border-warm)",
-                  background: "var(--surface-subtle)",
-                  color: "var(--ink)",
-                }}
-              >
-                See what Pro adds
-              </Link>
-            </div>
+          <CannotCheck />
+        </SectionFrame>
 
-            <p className="mt-6 text-[15px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
-              We also have a{" "}
-              <Link
-                href="/detector"
-                className="underline underline-offset-4"
-                style={{ color: "var(--brand-text)" }}
-              >
-                free AI text detector
-              </Link>
-              .
-            </p>
-          </div>
-        </section>
+        {/* §04 PRIVACY AND THE FOUNDER'S NOTE. */}
+        <SectionFrame
+          index={4}
+          total={TOTAL}
+          head="You own your data"
+          note="Every line here matches the privacy policy word for word."
+          tier="inset"
+        >
+          <EarlyDays />
+        </SectionFrame>
 
-      <footer
-          className="px-6 md:px-10 py-16"
+        {/* §05 PRICING. Same component as /pricing, same server count. */}
+        <SectionFrame
+          index={5}
+          total={TOTAL}
+          head="Pricing"
+          note="Every number is the one the server enforces."
+        >
+          <PaddleProvider>
+            <EditorialPricing headingLevel="h2" foundingLeft={foundingLeft} />
+          </PaddleProvider>
+        </SectionFrame>
+
+        <footer
+          className="px-4 sm:px-6 md:px-[50px] pt-14 pb-10"
           style={{
-            background: "var(--surface-subtle)",
-            borderTop: "1px solid var(--border-warm)",
+            background: "var(--surface-inset)",
+            borderTop: "1px solid var(--rule-ground)",
           }}
         >
-          <div className="max-w-[1180px] mx-auto grid md:grid-cols-12 gap-8 md:gap-16">
+          <div className="max-w-[1180px] mx-auto grid md:grid-cols-12 gap-8 md:gap-12">
             <div className="md:col-span-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Image
-                  src="/logo.png"
-                  alt="Deepclario"
-                  width={24}
-                  height={24}
-                />
-                <span
-                  className="text-sm"
-                  style={{ color: "var(--color-paper)", fontWeight: 500 }}
-                >
+              <div className="flex items-center gap-2 mb-3.5">
+                <Image src="/logo.png" alt="Deepclario" width={22} height={22} className="rounded" />
+                <span className="text-sm" style={{ color: "var(--ink)", fontWeight: 500 }}>
                   Deepclario
                 </span>
               </div>
               <p
                 className="text-sm leading-[1.7] max-w-sm"
-                style={{ color: "var(--color-paper-mute)" }}
+                style={{ color: "var(--ink-soft)", textWrap: "pretty" }}
               >
                 Deepclario opens the links in your writing and checks that the
                 page really says the number you put next to it.
@@ -475,20 +228,8 @@ export default function LandingPage() {
               title="Product"
               links={[
                 { href: "/", label: "Check your sources" },
-                // The only original research on the site: 114 numbers read
-                // across 11 real articles. It had two links, both from
-                // components on this page, and none from the blog or here.
                 { href: "/how-it-works", label: "How we check a link" },
                 { href: "/detector", label: "AI text detector" },
-                // Extension, Prompt library and the improver came off the main
-                // nav because they point at the frozen product. They stay here,
-                // and their routes are untouched, so every existing link
-                // resolves.
-                //
-                // The improver was reachable from ONE place, an FAQ answer that
-                // has since been deleted, which left a working page with no way
-                // in. It belongs here rather than in the nav: hard to find is
-                // the right amount of findable for something we do not sell.
                 { href: "/prompt-improver", label: "Prompt improver" },
                 { href: "/extension", label: "Extension" },
                 { href: "/prompts", label: "Prompt library" },
@@ -498,25 +239,10 @@ export default function LandingPage() {
             <FooterCol
               title="Reading"
               links={[
-                // Swapped from three prompt-engineering posts. Those are still
-                // published and still linked from /blog; they just no longer
-                // sit in the footer of a page about checking sources.
-                {
-                  href: "/blog/why-ai-makes-mistakes",
-                  label: "Why AI makes things up",
-                },
-                {
-                  href: "/blog/are-ai-detectors-accurate",
-                  label: "Are AI detectors accurate",
-                },
-                {
-                  href: "/blog/human-text-vs-ai-text",
-                  label: "Human text vs AI text",
-                },
-                {
-                  href: "/blog/prompt-engineering-examples",
-                  label: "Examples",
-                },
+                { href: "/blog/why-ai-makes-mistakes", label: "Why AI makes things up" },
+                { href: "/blog/are-ai-detectors-accurate", label: "Are AI detectors accurate" },
+                { href: "/blog/human-text-vs-ai-text", label: "Human text vs AI text" },
+                { href: "/blog/prompt-engineering-examples", label: "Examples" },
                 { href: "/blog", label: "All guides" },
                 { href: "/faq", label: "FAQ" },
               ]}
@@ -531,21 +257,21 @@ export default function LandingPage() {
             />
           </div>
           <div
-            className="max-w-[1180px] mx-auto mt-16 pt-6 text-xs"
+            className="max-w-[1180px] mx-auto mt-14 pt-5 flex justify-between text-[11px]"
             style={{
-              borderTop: "1px solid var(--color-rule)",
-              color: "var(--color-paper-mute)",
+              borderTop: "1px solid var(--rule)",
+              color: "var(--ink-soft)",
+              fontFamily: "var(--font-mono)",
             }}
           >
-            © 2026 Deepclario
+            <span>© 2026 Deepclario</span>
+            <span>End of page</span>
           </div>
         </footer>
       </div>
     </>
   );
 }
-
-/* ===== Sub-components ===== */
 
 function FooterCol({
   title,
@@ -558,12 +284,12 @@ function FooterCol({
     <div className="md:col-span-2">
       <p className="eyebrow mb-4">{title}</p>
       <ul className="space-y-2.5">
-        {links.map((l, index) => (
-          <li key={index}>
+        {links.map((l) => (
+          <li key={l.href}>
             <Link
               href={l.href}
-              className="text-sm transition-opacity hover:opacity-100 opacity-80"
-              style={{ color: "var(--color-paper)" }}
+              className="text-sm transition-colors hover:text-[var(--brand)]"
+              style={{ color: "var(--ink)" }}
             >
               {l.label}
             </Link>
