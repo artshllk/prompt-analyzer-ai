@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'What Is an LLM? Large Language Models Explained Simply',
   description: 'A plain-English explanation of what a large language model is, how it is built, and why the term matters.',
   image: 'https://deepclario.com/blog/what-is-an-llm/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

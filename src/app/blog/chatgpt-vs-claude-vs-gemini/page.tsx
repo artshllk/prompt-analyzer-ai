@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'ChatGPT vs Claude vs Gemini: An Honest Comparison',
   description: 'A practical comparison of ChatGPT, Claude, and Gemini, focused on how each one tends to behave and who each one tends to suit.',
   image: 'https://deepclario.com/blog/chatgpt-vs-claude-vs-gemini/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

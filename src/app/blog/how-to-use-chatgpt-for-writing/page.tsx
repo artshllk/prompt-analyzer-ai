@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'How to Use ChatGPT for Writing - A Practical Guide',
   description: 'How to use ChatGPT for writing without sounding like a robot.',
   image: 'https://deepclario.com/blog/how-to-use-chatgpt-for-writing/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

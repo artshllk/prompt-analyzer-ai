@@ -27,7 +27,7 @@ const articleSchema = {
   headline: 'ChatGPT System Prompt Examples',
   description: 'What system prompts are, how they work, and real examples for common use cases.',
   image: 'https://deepclario.com/blog/chatgpt-system-prompt-examples/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

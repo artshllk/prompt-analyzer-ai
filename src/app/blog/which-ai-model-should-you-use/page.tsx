@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'Which AI Model Should You Use? A Simple Guide',
   description: 'A practical decision guide for choosing between ChatGPT, Claude, and Gemini based on your actual use case.',
   image: 'https://deepclario.com/blog/which-ai-model-should-you-use/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,

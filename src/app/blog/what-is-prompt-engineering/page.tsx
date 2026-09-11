@@ -26,7 +26,7 @@ const articleSchema = {
   headline: 'What is Prompt Engineering? A Complete Guide for Beginners',
   description: 'A comprehensive guide to prompt engineering - what it is, why it matters, and how to write better prompts for ChatGPT, Claude, and Gemini.',
   image: 'https://deepclario.com/blog/what-is-prompt-engineering/opengraph-image',
-  author: { '@type': 'Person', '@id': 'https://deepclario.com/#art', name: 'Art Shllaku', url: 'https://deepclario.com' },
+  author: { '@type': 'Organization', '@id': 'https://deepclario.com/#organization', name: 'Deepclario', url: 'https://deepclario.com' },
   publisher: { '@id': 'https://deepclario.com/#organization' },
   datePublished: post.datePublished,
   dateModified: post.dateModified,
